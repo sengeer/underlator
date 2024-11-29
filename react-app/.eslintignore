@@ -1,0 +1,8 @@
+/.git
+/.vscode
+node_modules
+public
+build
+storybook-static
+.eslintrc.json
+docs

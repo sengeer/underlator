@@ -1,0 +1,22 @@
+/* Необходимые sass */
+@import '../../../node_modules/bootstrap/scss/functions';
+
+/* Необходимые sass */
+@import '../../../node_modules/bootstrap/scss/variables';
+@import '../../../node_modules/bootstrap/scss/variables-dark';
+@import '../../../node_modules/bootstrap/scss/maps';
+@import '../../../node_modules/bootstrap/scss/mixins';
+@import '../../../node_modules/bootstrap/scss/root';
+
+/* Опциональные sass для работы форм */
+@import '../../../node_modules/bootstrap/scss/forms';
+@import '../../../node_modules/bootstrap/scss/forms/floating-labels';
+@import '../../../node_modules/bootstrap/scss/forms/form-check';
+@import '../../../node_modules/bootstrap/scss/forms/form-control';
+@import '../../../node_modules/bootstrap/scss/forms/form-range';
+@import '../../../node_modules/bootstrap/scss/forms/form-select';
+@import '../../../node_modules/bootstrap/scss/forms/form-text';
+@import '../../../node_modules/bootstrap/scss/forms/input-group';
+@import '../../../node_modules/bootstrap/scss/forms/labels';
+@import '../../../node_modules/bootstrap/scss/forms/validation';
+@import '../../../node_modules/bootstrap/scss/reboot';

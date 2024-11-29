@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd ./react-app
+npx lint-staged
