@@ -1,20 +1,26 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const { Worker } = require('worker_threads');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
+let worker = null;
+let mainWindow = null;
+
 const createWindow = () => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1440,
     height: 1024,
     minWidth: 808,
     minHeight: 177,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      enableRemoteModule: true,
     },
   });
   mainWindow.setMenuBarVisibility(false);
@@ -22,6 +28,29 @@ const createWindow = () => {
   // mainWindow.loadURL('http://localhost:3000');
   // Production mode
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
+
+  // Add a handler for the `transformers:run` event.
+  ipcMain.handle('transformers:run', (event, args) => {
+    return new Promise((resolve, reject) => {
+      if (!worker) {
+        worker = new Worker(path.join(__dirname, 'worker.js'));
+        worker.on('message', (message) => {
+          mainWindow.webContents.send('transformers:status', message);
+          if (message.status === 'complete') {
+            resolve(message.output);
+          } else if (message.status === 'error') {
+            reject(new Error(message.error));
+          }
+        });
+        worker.on('error', reject);
+        worker.on('exit', (code) => {
+          if (code !== 0)
+            reject(new Error(`Worker stopped with exit code ${code}`));
+        });
+      }
+      worker.postMessage(args);
+    });
+  });
 };
 
 // This method will be called when Electron has finished

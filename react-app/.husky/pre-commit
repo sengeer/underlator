@@ -2,3 +2,6 @@
 
 cd ./react-app
 npx lint-staged
+
+cd ../electron
+npm run format
