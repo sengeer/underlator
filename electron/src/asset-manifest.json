@@ -10,5 +10,8 @@
     "main.44ecf22d.css.map": "./static/css/main.44ecf22d.css.map",
     "main.f3861132.js.map": "./static/js/main.f3861132.js.map"
   },
-  "entrypoints": ["static/css/main.44ecf22d.css", "static/js/main.f3861132.js"]
+  "entrypoints": [
+    "static/css/main.44ecf22d.css",
+    "static/js/main.f3861132.js"
+  ]
 }

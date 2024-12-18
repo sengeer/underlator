@@ -1,4 +1,4 @@
-export default function Progress({ text, percentage }) {
+export default function ProgressBar({ text, percentage }) {
   percentage = percentage ?? 0;
   return (
     <div className='progress-container'>

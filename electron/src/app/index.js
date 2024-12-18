@@ -13,10 +13,10 @@ let mainWindow = null;
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1440,
-    height: 1024,
-    minWidth: 808,
-    minHeight: 177,
+    width: 470,
+    height: 250,
+    minWidth: 470,
+    minHeight: 250,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -25,9 +25,9 @@ const createWindow = () => {
   });
   mainWindow.setMenuBarVisibility(false);
   // Development mode
-  // mainWindow.loadURL('http://localhost:3000');
+  mainWindow.loadURL('http://localhost:3000');
   // Production mode
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  // mainWindow.loadFile(path.join('src', 'index.html'));
 
   // Add a handler for the `transformers:run` event.
   ipcMain.handle('transformers:run', (event, args) => {

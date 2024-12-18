@@ -1,0 +1,10 @@
+@import 'normalize';
+@import 'scrollbar';
+@import '../../shared/assets/fonts/fonts.css';
+@import 'vars';
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

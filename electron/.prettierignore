@@ -1,3 +1,11 @@
 package-lock.json
 package.json
-/src/assets/models/*
+
+# Ignore all files and folders in /src
+/src/*
+
+# Exclude the /src/app folder from being ignored
+!/src/app/
+
+# Ignore the /src/app/models folder
+/src/app/models/
