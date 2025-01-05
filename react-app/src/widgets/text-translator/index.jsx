@@ -6,6 +6,8 @@ function TextTranslator() {
   // Model loading
   const [progressItems, setProgressItems] = useState([]);
 
+  const NODE_ENV = process.env.NODE_ENV;
+
   // Inputs and outputs
   const [input, setInput] = useState('I like to translate.');
   const [sourceLanguage, setSourceLanguage] = useState('eng_Latn');
@@ -13,32 +15,36 @@ function TextTranslator() {
   const [output, setOutput] = useState('');
 
   useEffect(() => {
-    window.electron.onStatus((message) => {
-      switch (message.status) {
-        case 'progress':
-          setProgressItems(() => [message.data]);
-          break;
-        case 'update':
-          setOutput(message.output);
-          break;
-        case 'complete':
-          setOutput(message.output[0].translation_text);
-          setProgressItems([]);
-          break;
-        case 'error':
-          console.error(message.error);
-          break;
-      }
-    });
+    NODE_ENV === 'development'
+      ? null
+      : window.electron.onStatus((message) => {
+          switch (message.status) {
+            case 'progress':
+              setProgressItems(() => [message.data]);
+              break;
+            case 'update':
+              setOutput(message.output);
+              break;
+            case 'complete':
+              setOutput(message.output[0].translation_text);
+              setProgressItems([]);
+              break;
+            case 'error':
+              console.error(message.error);
+              break;
+          }
+        });
   }, []);
 
   const translate = async () => {
     try {
-      await window.electron.run({
-        text: input,
-        src_lang: sourceLanguage,
-        tgt_lang: targetLanguage,
-      });
+      NODE_ENV === 'development'
+        ? null
+        : await window.electronrun({
+            text: input,
+            src_lang: sourceLanguage,
+            tgt_lang: targetLanguage,
+          });
     } catch (error) {
       console.error(error.message);
     }
