@@ -37,8 +37,8 @@
   },
   "build": {
     "asar": false,
-    "appId": "com.example.secure-translator",
-    "productName": "Secure Translator",
+    "appId": "com.example.underlator",
+    "productName": "Underlator",
     "directories": {
       "output": "out"
     },
