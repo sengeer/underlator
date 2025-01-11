@@ -36,7 +36,7 @@
     "lint:fix": "eslint --fix . --ext .jsx",
     "stylelint": "stylelint '**/*{.css,.scss}'",
     "stylelint:fix": "stylelint '**/*{.css,.scss}' --fix",
-    "format": "prettier . --write",
+    "prettier": "prettier --write .",
     "lint-staged": "lint-staged",
     "prepare": "cd ../ && husky ./react-app/.husky",
     "jsdoc": "npx jsdoc -c .jsdoc.json",
@@ -62,10 +62,15 @@
   },
   "devDependencies": {
     "@feature-sliced/eslint-config": "^0.1.1",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
     "cpy": "^11.1.0",
-    "eslint": "^8.57.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-boundaries": "^4.2.2",
     "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-react": "^7.34.0",
     "husky": "^9.1.4",
     "jsdoc": "^4.0.3",
@@ -80,8 +85,8 @@
     "stylelint-selector-bem-pattern": "^4.0.1"
   },
   "lint-staged": {
-    "*.{js,jsx}": "npm run lint:fix",
+    "*.{js,jsx,ts,tsx}": "npm run lint:fix",
     "*{.css,.scss}": "npm run stylelint:fix",
-    "*.{js,jsx,scss,md,html,json}": "npm run format"
+    "*.{js,jsx,ts,tsx,scss,md,html,json}": "npm run prettier"
   }
 }
