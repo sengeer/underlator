@@ -13,8 +13,8 @@ let mainWindow = null;
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 470,
-    height: 250,
+    width: 1920,
+    height: 1080,
     minWidth: 470,
     minHeight: 250,
     webPreferences: {
