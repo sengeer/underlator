@@ -1,0 +1,15 @@
+.side-navigate {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  min-width: 5rem;
+  height: calc(100vh - 32px);
+  padding: 16px 0;
+  border-right: 1px solid var(--main);
+  background-color: var(--background);
+
+  & > button:last-child {
+    margin-top: auto;
+  }
+}
