@@ -349,3 +349,7 @@ template {
 [hidden] {
   display: none;
 }
+
+svg {
+  shape-rendering: crispedges;
+}
