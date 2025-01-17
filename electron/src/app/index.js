@@ -25,9 +25,9 @@ const createWindow = () => {
   });
   mainWindow.setMenuBarVisibility(false);
   // Development mode
-  mainWindow.loadURL('http://localhost:3000');
+  // mainWindow.loadURL('http://localhost:3000');
   // Production mode
-  // mainWindow.loadFile(path.join('src', 'index.html'));
+  mainWindow.loadFile(path.join('src', 'index.html'));
 
   // Add a handler for the `transformers:run` event.
   ipcMain.handle('transformers:run', (event, args) => {

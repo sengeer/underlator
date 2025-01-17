@@ -9,7 +9,6 @@ import './index.scss';
 function SideNavigate() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  console.log(pathname);
 
   return (
     <aside className='side-navigate'>

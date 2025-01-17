@@ -7,7 +7,7 @@ import './index.scss';
 
 function TextTranslator() {
   // Model loading
-  const [progressItems, setProgressItems] = useState([]);
+  const [progressItems, setProgressItems] = useState<Progress>({});
 
   const NODE_ENV = process.env.NODE_ENV;
 
@@ -23,14 +23,19 @@ function TextTranslator() {
       : window.electron.onStatus((message) => {
           switch (message.status) {
             case 'progress':
-              setProgressItems(() => [message.data]);
+              if (message.data) setProgressItems(message.data);
               break;
             case 'update':
-              setOutput(message.output);
+              if (message.output) setOutput(message.output as string);
               break;
             case 'complete':
-              setOutput(message.output[0].translation_text);
-              setProgressItems([]);
+              if (
+                Array.isArray(message.output) &&
+                message.output[0]?.translation_text
+              ) {
+                setOutput(message.output[0].translation_text);
+                setProgressItems({});
+              }
               break;
             case 'error':
               console.error(message.error);
@@ -49,7 +54,7 @@ function TextTranslator() {
             tgt_lang: targetLanguage,
           });
     } catch (error) {
-      console.error(error.message);
+      console.error((error as Error).message);
     }
   };
 
@@ -61,12 +66,16 @@ function TextTranslator() {
           <LanguageSelector
             type={'Source'}
             defaultLanguage={'eng_Latn'}
-            onChange={(x) => setSourceLanguage(x.target.value)}
+            onChange={(x: React.ChangeEvent<HTMLSelectElement>) =>
+              setSourceLanguage(x.target.value)
+            }
           />
           <LanguageSelector
             type={'Target'}
             defaultLanguage={'rus_Cyrl'}
-            onChange={(x) => setTargetLanguage(x.target.value)}
+            onChange={(x: React.ChangeEvent<HTMLSelectElement>) =>
+              setTargetLanguage(x.target.value)
+            }
           />
         </div>
 
@@ -82,11 +91,12 @@ function TextTranslator() {
       <button onClick={translate}>Translate</button>
 
       <div className='progress-bars-container'>
-        {progressItems.map((data) => (
-          <div key={data.file}>
-            <ProgressBar text={data.file} percentage={data.progress} />
-          </div>
-        ))}
+        <div>
+          <ProgressBar
+            text={progressItems.file}
+            percentage={progressItems.progress}
+          />
+        </div>
       </div>
     </main>
   );
