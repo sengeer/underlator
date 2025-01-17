@@ -1,6 +1,9 @@
+import React from 'react';
 import { useEffect, useState } from 'react';
-import LanguageSelector from '../../shared/ui/language-selector';
-import ProgressBar from '../../shared/ui/progress-bar';
+import SideNavigate from 'widgets/side-navigate';
+import LanguageSelector from '../../../shared/ui/language-selector';
+import ProgressBar from '../../../shared/ui/progress-bar';
+import './index.scss';
 
 function TextTranslator() {
   // Model loading
@@ -40,7 +43,7 @@ function TextTranslator() {
     try {
       NODE_ENV === 'development'
         ? null
-        : await window.electronrun({
+        : await window.electron.run({
             text: input,
             src_lang: sourceLanguage,
             tgt_lang: targetLanguage,
@@ -51,7 +54,8 @@ function TextTranslator() {
   };
 
   return (
-    <>
+    <main className='text-translator'>
+      <SideNavigate />
       <div className='container'>
         <div className='language-container'>
           <LanguageSelector
@@ -84,7 +88,7 @@ function TextTranslator() {
           </div>
         ))}
       </div>
-    </>
+    </main>
   );
 }
 

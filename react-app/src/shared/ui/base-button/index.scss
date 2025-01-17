@@ -1,11 +1,13 @@
 .base-button {
   all: unset;
   cursor: pointer;
-  transition: all ease-in-out 0.2s;
 
   & path {
     fill: var(--main);
-    transition: fill ease-in-out 0.2s;
+  }
+
+  &_active path {
+    fill: var(--accent);
   }
 
   &:hover path {
@@ -14,9 +16,5 @@
 
   &_disabled {
     cursor: not-allowed;
-  }
-
-  &_active {
-    background-color: var(--accent);
   }
 }

@@ -3,6 +3,8 @@ import { useCallback, useState, useRef } from 'react';
 import { pdfjs, Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
+import SideNavigate from 'widgets/side-navigate';
+import './index.scss';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -18,7 +20,7 @@ const resizeObserverOptions = {};
 
 const maxWidth = 800;
 
-export default function PdfViewer() {
+export default function PdfTranslator() {
   const [file, setFile] = useState('../assets/Lecture01.pdf');
   const [numPages, setNumPages] = useState();
   const [containerRef, setContainerRef] = useState(null);
@@ -51,7 +53,8 @@ export default function PdfViewer() {
   }
 
   return (
-    <div className='Example'>
+    <main className='pdf-translator'>
+      <SideNavigate />
       <header>
         <h1>react-pdf sample page</h1>
       </header>
@@ -81,6 +84,6 @@ export default function PdfViewer() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -2,15 +2,15 @@ import React from 'react';
 import './index.scss';
 
 interface BaseButton {
-  children: React.ReactNode;
-  className: string;
-  id: string;
-  text: string;
-  style: React.CSSProperties;
-  onClick: () => void;
-  isActiveStyle: boolean;
-  isDisabled: boolean;
-  tooltipText: string;
+  children?: React.ReactNode;
+  className?: string;
+  id?: string;
+  text?: string;
+  style?: React.CSSProperties;
+  onClick?: () => void;
+  isActiveStyle?: boolean;
+  isDisabled?: boolean;
+  tooltipText?: string;
 }
 
 /**
