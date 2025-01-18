@@ -2,6 +2,8 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { Worker } = require('worker_threads');
 
+const isDev = process.env.NODE_ENV === 'development';
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
@@ -24,10 +26,12 @@ const createWindow = () => {
     },
   });
   mainWindow.setMenuBarVisibility(false);
-  // Development mode
-  // mainWindow.loadURL('http://localhost:3000');
-  // Production mode
-  mainWindow.loadFile(path.join('src', 'index.html'));
+
+  if (isDev) {
+    mainWindow.loadURL('http://localhost:3000');
+  } else {
+    mainWindow.loadFile(path.join('src', 'index.html'));
+  }
 
   // Add a handler for the `transformers:run` event.
   ipcMain.handle('transformers:run', (event, args) => {

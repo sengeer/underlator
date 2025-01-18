@@ -1,11 +1,13 @@
 {
-  "name": "electron-app",
-  "productName": "electron-app",
+  "name": "underlator",
+  "productName": "underlator",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "ML translator",
   "main": "src/app/index.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:3000 && npm run start:electron\"",
+    "start:react": "cd ../react-app && cross-env BROWSER=none npm run start",
+    "start:electron": "cross-env NODE_ENV=development electron-forge start",
     "package": "electron-forge package",
     "make": "electron-builder --dir",
     "publish": "electron-forge publish",
@@ -21,9 +23,12 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.3.0",
     "@electron-forge/plugin-fuses": "^7.3.0",
     "@electron/fuses": "^1.7.0",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
     "electron": "29.1.0",
     "electron-builder": "^24.13.3",
-    "prettier": "^3.4.2"
+    "prettier": "^3.4.2",
+    "wait-on": "^8.0.2"
   },
   "keywords": [],
   "author": {

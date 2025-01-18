@@ -9,8 +9,6 @@ function TextTranslator() {
   // Model loading
   const [progressItems, setProgressItems] = useState<Progress>({});
 
-  const NODE_ENV = process.env.NODE_ENV;
-
   // Inputs and outputs
   const [input, setInput] = useState('I like to translate.');
   const [sourceLanguage, setSourceLanguage] = useState('eng_Latn');
@@ -18,41 +16,37 @@ function TextTranslator() {
   const [output, setOutput] = useState('');
 
   useEffect(() => {
-    NODE_ENV === 'development'
-      ? null
-      : window.electron.onStatus((message) => {
-          switch (message.status) {
-            case 'progress':
-              if (message.data) setProgressItems(message.data);
-              break;
-            case 'update':
-              if (message.output) setOutput(message.output as string);
-              break;
-            case 'complete':
-              if (
-                Array.isArray(message.output) &&
-                message.output[0]?.translation_text
-              ) {
-                setOutput(message.output[0].translation_text);
-                setProgressItems({});
-              }
-              break;
-            case 'error':
-              console.error(message.error);
-              break;
+    window.electron.onStatus((message) => {
+      switch (message.status) {
+        case 'progress':
+          if (message.data) setProgressItems(message.data);
+          break;
+        case 'update':
+          if (message.output) setOutput(message.output as string);
+          break;
+        case 'complete':
+          if (
+            Array.isArray(message.output) &&
+            message.output[0]?.translation_text
+          ) {
+            setOutput(message.output[0].translation_text);
+            setProgressItems({});
           }
-        });
+          break;
+        case 'error':
+          console.error(message.error);
+          break;
+      }
+    });
   }, []);
 
   const translate = async () => {
     try {
-      NODE_ENV === 'development'
-        ? null
-        : await window.electron.run({
-            text: input,
-            src_lang: sourceLanguage,
-            tgt_lang: targetLanguage,
-          });
+      await window.electron.run({
+        text: input,
+        src_lang: sourceLanguage,
+        tgt_lang: targetLanguage,
+      });
     } catch (error) {
       console.error((error as Error).message);
     }
