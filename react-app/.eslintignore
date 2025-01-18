@@ -6,3 +6,5 @@ build
 storybook-static
 .eslintrc.json
 docs
+electron-build.mjs
+order.js
