@@ -1,8 +1,16 @@
+import loadPixelperfect from 'pixelperfect-tool';
 import React from 'react';
 import { HashRouter, Routes, Navigate, Route } from 'react-router-dom';
 import PdfTranslator from 'pages/pdf-translator/ui';
 import Settings from 'pages/settings/ui';
 import TextTranslator from 'pages/text-translator/ui';
+
+loadPixelperfect({
+  page: 'index',
+  breakpoints: [1920],
+  folder: 'pixelperfect',
+  ext: 'png',
+});
 
 function App() {
   return (
