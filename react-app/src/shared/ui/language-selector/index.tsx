@@ -1,3 +1,6 @@
+import React from 'react';
+import './index.scss';
+
 const LANGUAGES = {
   'Acehnese (Arabic script)': 'ace_Arab',
   'Acehnese (Latin script)': 'ace_Latn',
@@ -205,14 +208,30 @@ const LANGUAGES = {
   Zulu: 'zul_Latn',
 };
 
-export default function LanguageSelector({ type, onChange, defaultLanguage }) {
+interface LanguageSelector {
+  children: React.ReactNode;
+  onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  defaultLanguage: string;
+}
+
+export default function LanguageSelector({
+  children,
+  onChange,
+  defaultLanguage,
+}: LanguageSelector) {
   return (
     <div className='language-selector'>
-      <label>{type}: </label>
-      <select onChange={onChange} defaultValue={defaultLanguage}>
+      {children}
+      <select
+        className='language-selector__select'
+        onChange={onChange}
+        defaultValue={defaultLanguage}>
         {Object.entries(LANGUAGES).map(([key, value]) => {
           return (
-            <option key={key} value={value}>
+            <option
+              className='language-selector__option'
+              key={key}
+              value={value}>
               {key}
             </option>
           );

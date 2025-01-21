@@ -1,6 +1,9 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import SideNavigate from 'widgets/side-navigate';
+import GlobeIcon from 'shared/assets/icons/globe-icon';
+import GlobeUkIcon from 'shared/assets/icons/globe-uk-icon';
+import TextButton from 'shared/ui/text-button/text-button';
 import LanguageSelector from '../../../shared/ui/language-selector';
 import ProgressBar from '../../../shared/ui/progress-bar';
 import './index.scss';
@@ -55,36 +58,38 @@ function TextTranslator() {
   return (
     <main className='text-translator'>
       <SideNavigate />
-      <div className='container'>
-        <div className='language-container'>
-          <LanguageSelector
-            type={'Source'}
-            defaultLanguage={'eng_Latn'}
-            onChange={(x: React.ChangeEvent<HTMLSelectElement>) =>
-              setSourceLanguage(x.target.value)
-            }
-          />
-          <LanguageSelector
-            type={'Target'}
-            defaultLanguage={'rus_Cyrl'}
-            onChange={(x: React.ChangeEvent<HTMLSelectElement>) =>
-              setTargetLanguage(x.target.value)
-            }
-          />
-        </div>
-
-        <div className='textbox-container'>
-          <textarea
-            value={input}
-            rows={3}
-            onChange={(e) => setInput(e.target.value)}></textarea>
-          <textarea value={output} rows={3} readOnly></textarea>
-        </div>
-      </div>
-
-      <button onClick={translate}>Translate</button>
-
-      <div className='progress-bars-container'>
+      <div className='text-translator__container'>
+        <LanguageSelector
+          defaultLanguage={'eng_Latn'}
+          onChange={(x: React.ChangeEvent<HTMLSelectElement>) =>
+            setSourceLanguage(x.target.value)
+          }>
+          <GlobeIcon color='var(--main)' />
+        </LanguageSelector>
+        <textarea
+          className='text-translator__textarea'
+          value={input}
+          rows={3}
+          onChange={(e) => setInput(e.target.value)}
+        />
+        <LanguageSelector
+          defaultLanguage={'rus_Cyrl'}
+          onChange={(x: React.ChangeEvent<HTMLSelectElement>) =>
+            setTargetLanguage(x.target.value)
+          }>
+          <GlobeUkIcon color='var(--main)' />
+        </LanguageSelector>
+        <textarea
+          className='text-translator__textarea'
+          value={output}
+          rows={3}
+          readOnly
+        />
+        <TextButton
+          text='Translate'
+          style={{ width: 'min-content', alignSelf: 'center' }}
+          onClick={translate}
+        />
         <div>
           <ProgressBar
             text={progressItems.file}
