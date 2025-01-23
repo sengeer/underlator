@@ -1,8 +1,6 @@
 interface Progress {
-  [key: string]: {
-    file: string;
-    progress: number;
-  };
+  file: string;
+  progress: number;
 }
 
 interface Message {

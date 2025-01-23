@@ -1,7 +1,21 @@
-import React from 'react';
-import './index.scss';
+import React, { useState, useEffect } from 'react';
+import Popup from 'shared/ui/popup';
+import TextButton from 'shared/ui/text-button/text-button';
 
-const LANGUAGES = {
+interface LanguageSelectorPopup {
+  isOpened: boolean;
+  setOpened: (value: boolean) => void;
+  setSelectedLanguageKey: (value: string) => void;
+  selectedLanguageValue: string;
+  setSelectedLanguageValue: (value: string) => void;
+  defaultLanguage: string;
+}
+
+export interface Languages {
+  [key: string]: string;
+}
+
+const LANGUAGES: Languages = {
   'Acehnese (Arabic script)': 'ace_Arab',
   'Acehnese (Latin script)': 'ace_Latn',
   Afrikaans: 'afr_Latn',
@@ -208,35 +222,45 @@ const LANGUAGES = {
   Zulu: 'zul_Latn',
 };
 
-interface LanguageSelector {
-  children: React.ReactNode;
-  onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
-  defaultLanguage: string;
-}
-
-export default function LanguageSelector({
-  children,
-  onChange,
+function LanguageSelectorPopup({
+  isOpened,
+  setOpened,
+  setSelectedLanguageKey,
+  selectedLanguageValue,
+  setSelectedLanguageValue,
   defaultLanguage,
-}: LanguageSelector) {
+}: LanguageSelectorPopup) {
+  useEffect(() => {
+    if (defaultLanguage) {
+      const defaultKey = Object.keys(LANGUAGES).find(
+        (key) => LANGUAGES[key] === defaultLanguage
+      );
+      if (defaultKey) {
+        setSelectedLanguageKey(defaultKey);
+        setSelectedLanguageValue(defaultLanguage);
+      }
+    }
+  }, [defaultLanguage, setSelectedLanguageKey, setSelectedLanguageValue]);
+
   return (
-    <div className='language-selector'>
-      {children}
-      <select
-        className='language-selector__select'
-        onChange={onChange}
-        defaultValue={defaultLanguage}>
-        {Object.entries(LANGUAGES).map(([key, value]) => {
-          return (
-            <option
-              className='language-selector__option'
-              key={key}
-              value={value}>
-              {key}
-            </option>
-          );
-        })}
-      </select>
-    </div>
+    <Popup isOpened={isOpened} setOpened={setOpened}>
+      <div className='language-selector-popup'>
+        {Object.entries(LANGUAGES).map(([key, value]) => (
+          <TextButton
+            key={value}
+            text={key}
+            style={{ margin: '0.5rem 0' }}
+            onClick={() => {
+              setSelectedLanguageKey(key);
+              setSelectedLanguageValue(value);
+              setOpened(false);
+            }}
+            isActiveStyle={selectedLanguageValue === value}
+          />
+        ))}
+      </div>
+    </Popup>
   );
 }
+
+export default LanguageSelectorPopup;

@@ -1,7 +1,20 @@
 .base-button {
   all: unset;
+  display: flex;
+  align-self: center;
   color: var(--main);
   cursor: pointer;
+
+  &:hover {
+    color: var(--foreground);
+  }
+
+  &__text {
+    align-self: center;
+    margin: 0;
+    text-align: center;
+    text-wrap: nowrap;
+  }
 
   & path {
     fill: var(--main);
@@ -17,5 +30,9 @@
 
   &_disabled {
     cursor: not-allowed;
+  }
+
+  &_active {
+    color: var(--accent);
   }
 }
