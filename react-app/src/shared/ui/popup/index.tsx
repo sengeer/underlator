@@ -1,5 +1,5 @@
 import React from 'react';
-import { useEffect, createRef } from 'react';
+import { useEffect } from 'react';
 import './index.scss';
 
 interface Popup {

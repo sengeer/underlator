@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function TranslateIcon() {
+export default function TranslateIconL() {
   return (
     <svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'>
       <g>

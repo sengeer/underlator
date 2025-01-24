@@ -2,9 +2,9 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import LanguageSelectorPopup from 'widgets/language-selector-popup';
-import SideNavigate from 'widgets/side-navigate';
 import GlobeIcon from 'shared/assets/icons/globe-icon';
 import GlobeUkIcon from 'shared/assets/icons/globe-uk-icon';
+import TranslateIconM from 'shared/assets/icons/translate-icon-m';
 import {
   openElement,
   closeElement,
@@ -14,7 +14,7 @@ import Loader from 'shared/ui/loader';
 import TextAndIconButton from 'shared/ui/text-and-icon-button';
 import './index.scss';
 
-function TextTranslator() {
+function TextTranslator({ isOpened }: { isOpened: boolean }) {
   // Model loading
   const [progressItems, setProgressItems] = useState<Progress>({
     file: '',
@@ -79,67 +79,62 @@ function TextTranslator() {
   };
 
   return (
-    <main className='text-translator'>
-      <SideNavigate />
-      <div className='text-translator__container'>
-        <TextAndIconButton
-          text={selectedSourceLanguageKey}
-          style={{ margin: '2rem auto 0' }}
-          onClick={() => dispatch(openElement('sourceLanguageSelectorPopup'))}>
-          <GlobeIcon color='var(--main)' />
-        </TextAndIconButton>
-        <LanguageSelectorPopup
-          key='source-language-selector-popup'
-          isOpened={isOpenSourceLanguageSelectorPopup}
-          setOpened={() =>
-            dispatch(closeElement('sourceLanguageSelectorPopup'))
-          }
-          setSelectedLanguageKey={setSelectedSourceLanguageKey}
-          selectedLanguageValue={sourceLanguage}
-          setSelectedLanguageValue={setSourceLanguage}
-          defaultLanguage={'eng_Latn'}
-        />
-        <textarea
-          className='text-translator__textarea'
-          value={input}
-          rows={3}
-          onChange={(e) => setInput(e.target.value)}
-        />
-        <TextAndIconButton
-          text={selectedTargetLanguageKey}
-          style={{ margin: '2rem auto 0' }}
-          onClick={() => dispatch(openElement('targetLanguageSelectorPopup'))}>
-          <GlobeUkIcon color='var(--main)' />
-        </TextAndIconButton>
-        <LanguageSelectorPopup
-          key='target-language-selector-popup'
-          isOpened={isOpenTargetLanguageSelectorPopup}
-          setOpened={() =>
-            dispatch(closeElement('targetLanguageSelectorPopup'))
-          }
-          setSelectedLanguageKey={setSelectedTargetLanguageKey}
-          selectedLanguageValue={targetLanguage}
-          setSelectedLanguageValue={setTargetLanguage}
-          defaultLanguage={'rus_Cyrl'}
-        />
-        <textarea
-          className='text-translator__textarea'
-          value={output}
-          rows={3}
-          readOnly
-        />
-        <TextAndIconButton
-          text={progressItems.file === '' ? 'Translate' : progressItems.file}
-          style={{
-            margin: '0 auto 2rem',
-            width: 'min-content',
-            alignSelf: 'center',
-          }}
-          onClick={translate}>
-          <Loader isLoading={progressItems.file !== ''} />
-        </TextAndIconButton>
-      </div>
-    </main>
+    <section
+      className={`text-translator${isOpened ? ' text-translator_open' : ''}`}>
+      <TextAndIconButton
+        text={selectedSourceLanguageKey}
+        style={{ margin: '2rem auto 0' }}
+        onClick={() => dispatch(openElement('sourceLanguageSelectorPopup'))}>
+        <GlobeIcon color='var(--main)' />
+      </TextAndIconButton>
+      <LanguageSelectorPopup
+        key='source-language-selector-popup'
+        isOpened={isOpenSourceLanguageSelectorPopup}
+        setOpened={() => dispatch(closeElement('sourceLanguageSelectorPopup'))}
+        setSelectedLanguageKey={setSelectedSourceLanguageKey}
+        selectedLanguageValue={sourceLanguage}
+        setSelectedLanguageValue={setSourceLanguage}
+        defaultLanguage={'eng_Latn'}
+      />
+      <textarea
+        className='text-translator__textarea'
+        value={input}
+        rows={3}
+        onChange={(e) => setInput(e.target.value)}
+      />
+      <TextAndIconButton
+        text={selectedTargetLanguageKey}
+        style={{ margin: '2rem auto 0' }}
+        onClick={() => dispatch(openElement('targetLanguageSelectorPopup'))}>
+        <GlobeUkIcon color='var(--main)' />
+      </TextAndIconButton>
+      <LanguageSelectorPopup
+        key='target-language-selector-popup'
+        isOpened={isOpenTargetLanguageSelectorPopup}
+        setOpened={() => dispatch(closeElement('targetLanguageSelectorPopup'))}
+        setSelectedLanguageKey={setSelectedTargetLanguageKey}
+        selectedLanguageValue={targetLanguage}
+        setSelectedLanguageValue={setTargetLanguage}
+        defaultLanguage={'rus_Cyrl'}
+      />
+      <textarea
+        className='text-translator__textarea'
+        value={output}
+        rows={3}
+        readOnly
+      />
+      <TextAndIconButton
+        text={progressItems.file === '' ? 'Translate' : progressItems.file}
+        style={{
+          margin: '0 auto 2rem',
+          width: 'min-content',
+          alignSelf: 'center',
+        }}
+        isDisabled={progressItems.file !== ''}
+        onClick={translate}>
+        {progressItems.file !== '' ? <Loader /> : <TranslateIconM />}
+      </TextAndIconButton>
+    </section>
   );
 }
 

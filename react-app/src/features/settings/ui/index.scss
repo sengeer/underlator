@@ -1,0 +1,8 @@
+.settings {
+  display: none;
+  flex-direction: row;
+
+  &__open {
+    display: flex;
+  }
+}

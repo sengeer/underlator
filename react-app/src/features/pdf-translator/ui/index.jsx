@@ -20,7 +20,7 @@ const resizeObserverOptions = {};
 
 const maxWidth = 800;
 
-export default function PdfTranslator() {
+export default function PdfTranslator({ isOpened }) {
   const [file, setFile] = useState('../assets/Lecture01.pdf');
   const [numPages, setNumPages] = useState();
   const [containerRef, setContainerRef] = useState(null);
@@ -53,8 +53,8 @@ export default function PdfTranslator() {
   }
 
   return (
-    <main className='pdf-translator'>
-      <SideNavigate />
+    <section
+      className={`pdf-translator${isOpened ? ' pdf-translator_open' : ''}`}>
       <header>
         <h1>react-pdf sample page</h1>
       </header>
@@ -84,6 +84,6 @@ export default function PdfTranslator() {
           </div>
         </div>
       </div>
-    </main>
+    </section>
   );
 }

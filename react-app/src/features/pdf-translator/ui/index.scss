@@ -1,0 +1,8 @@
+.pdf-translator {
+  display: none;
+  flex-direction: row;
+
+  &_open {
+    display: flex;
+  }
+}

@@ -5,7 +5,7 @@ interface Elements {
 }
 
 const initialState: Elements = {
-  elements: [],
+  elements: ['textTranslationSection'],
 };
 
 const elementStateSlice = createSlice({

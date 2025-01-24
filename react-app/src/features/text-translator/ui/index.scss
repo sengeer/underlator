@@ -1,0 +1,28 @@
+.text-translator {
+  display: none;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--background);
+
+  &_open {
+    display: flex;
+  }
+
+  &__textarea {
+    box-sizing: border-box;
+    height: 100%;
+    margin: 3rem 5rem 0;
+    padding: 0;
+    border: none;
+    background-color: var(--background);
+    color: var(--main);
+    font-weight: 400;
+    font-size: 2rem;
+    resize: none;
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
