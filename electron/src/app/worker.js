@@ -34,6 +34,7 @@ parentPort.on('message', async (event) => {
       parentPort.postMessage({ status: 'progress', data: x });
     });
 
+    // We perform translation
     let output = await translator(event.text, {
       tgt_lang: event.tgt_lang,
       src_lang: event.src_lang,
@@ -47,11 +48,13 @@ parentPort.on('message', async (event) => {
       },
     });
 
+    // We send result
     parentPort.postMessage({
       status: 'complete',
       output: output,
     });
   } catch (error) {
+    // We send an error if something goes wrong
     parentPort.postMessage({
       status: 'error',
       error: error.message,
