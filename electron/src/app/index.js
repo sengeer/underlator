@@ -1,3 +1,4 @@
+const { Console } = require('console');
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { Worker } = require('worker_threads');
@@ -33,25 +34,39 @@ const createWindow = () => {
     mainWindow.loadFile(path.join('src', 'index.html'));
   }
 
+  // Checking for a repeated call of a worker.
+  let isWorkerBusy = false;
+
   // Add a handler for the `transformers:run` event.
   ipcMain.handle('transformers:run', (event, args) => {
     return new Promise((resolve, reject) => {
+      if (isWorkerBusy) {
+        reject(new Error('Worker is busy'));
+        return;
+      }
+
       if (!worker) {
         worker = new Worker(path.join(__dirname, 'worker.js'));
-        worker.on('message', (message) => {
-          mainWindow.webContents.send('transformers:status', message);
-          if (message.status === 'complete') {
-            resolve(message.output);
-          } else if (message.status === 'error') {
-            reject(new Error(message.error));
-          }
-        });
-        worker.on('error', reject);
-        worker.on('exit', (code) => {
-          if (code !== 0)
-            reject(new Error(`Worker stopped with exit code ${code}`));
-        });
       }
+
+      isWorkerBusy = true;
+
+      worker.on('message', (message) => {
+        mainWindow.webContents.send('transformers:status', message);
+        if (message.status === 'complete') {
+          resolve(message.output);
+          isWorkerBusy = false;
+        } else if (message.status === 'error') {
+          reject(new Error(message.error));
+          isWorkerBusy = false;
+        }
+      });
+
+      worker.on('error', (error) => {
+        reject(error);
+        isWorkerBusy = false;
+      });
+
       worker.postMessage(args);
     });
   });

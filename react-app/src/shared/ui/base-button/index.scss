@@ -6,10 +6,6 @@
   cursor: pointer;
   transition: color 0.125s;
 
-  &:hover {
-    color: var(--foreground);
-  }
-
   &__text {
     align-self: center;
     margin: 0;
@@ -26,12 +22,18 @@
     fill: var(--accent);
   }
 
-  &:hover path {
-    fill: var(--foreground);
+  &:not(&_disabled) {
+    &:hover {
+      color: var(--foreground);
+    }
+
+    &:hover path {
+      fill: var(--foreground);
+    }
   }
 
   &_disabled {
-    cursor: not-allowed;
+    cursor: default;
   }
 
   &_active {

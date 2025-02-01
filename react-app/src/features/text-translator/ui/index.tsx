@@ -1,15 +1,8 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import LanguageSelectorPopup from 'widgets/language-selector-popup';
 import GlobeIcon from 'shared/assets/icons/globe-icon';
 import GlobeUkIcon from 'shared/assets/icons/globe-uk-icon';
 import TranslateIconM from 'shared/assets/icons/translate-icon-m';
-import {
-  openElement,
-  closeElement,
-  isElementOpen,
-} from 'shared/model/element-state-slice';
 import Loader from 'shared/ui/loader';
 import TextAndIconButton from 'shared/ui/text-and-icon-button';
 import './index.scss';
@@ -23,23 +16,7 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
 
   // Inputs and outputs
   const [input, setInput] = useState('I like to translate.');
-  const [selectedSourceLanguageKey, setSelectedSourceLanguageKey] =
-    useState('English');
-  const [selectedTargetLanguageKey, setSelectedTargetLanguageKey] =
-    useState('Russian');
-  const [sourceLanguage, setSourceLanguage] = useState('eng_Latn');
-  const [targetLanguage, setTargetLanguage] = useState('rus_Cyrl');
   const [output, setOutput] = useState('');
-
-  const dispatch = useDispatch();
-
-  const isOpenSourceLanguageSelectorPopup = useSelector((state) =>
-    isElementOpen(state, 'sourceLanguageSelectorPopup')
-  );
-
-  const isOpenTargetLanguageSelectorPopup = useSelector((state) =>
-    isElementOpen(state, 'targetLanguageSelectorPopup')
-  );
 
   useEffect(() => {
     window.electron.onStatus((message) => {
@@ -70,8 +47,6 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
     try {
       await window.electron.run({
         text: input,
-        src_lang: sourceLanguage,
-        tgt_lang: targetLanguage,
       });
     } catch (error) {
       console.error((error as Error).message);
@@ -82,20 +57,11 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
     <section
       className={`text-translator${isOpened ? ' text-translator_open' : ''}`}>
       <TextAndIconButton
-        text={selectedSourceLanguageKey}
+        text='English'
         style={{ margin: '2rem auto 0' }}
-        onClick={() => dispatch(openElement('sourceLanguageSelectorPopup'))}>
+        isDisabled>
         <GlobeIcon color='var(--main)' />
       </TextAndIconButton>
-      <LanguageSelectorPopup
-        key='source-language-selector-popup'
-        isOpened={isOpenSourceLanguageSelectorPopup}
-        setOpened={() => dispatch(closeElement('sourceLanguageSelectorPopup'))}
-        setSelectedLanguageKey={setSelectedSourceLanguageKey}
-        selectedLanguageValue={sourceLanguage}
-        setSelectedLanguageValue={setSourceLanguage}
-        defaultLanguage={'eng_Latn'}
-      />
       <textarea
         className='text-translator__textarea'
         value={input}
@@ -103,20 +69,11 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
         onChange={(e) => setInput(e.target.value)}
       />
       <TextAndIconButton
-        text={selectedTargetLanguageKey}
+        text='Русский'
         style={{ margin: '2rem auto 0' }}
-        onClick={() => dispatch(openElement('targetLanguageSelectorPopup'))}>
+        isDisabled>
         <GlobeUkIcon color='var(--main)' />
       </TextAndIconButton>
-      <LanguageSelectorPopup
-        key='target-language-selector-popup'
-        isOpened={isOpenTargetLanguageSelectorPopup}
-        setOpened={() => dispatch(closeElement('targetLanguageSelectorPopup'))}
-        setSelectedLanguageKey={setSelectedTargetLanguageKey}
-        selectedLanguageValue={targetLanguage}
-        setSelectedLanguageValue={setTargetLanguage}
-        defaultLanguage={'rus_Cyrl'}
-      />
       <textarea
         className='text-translator__textarea'
         value={output}
