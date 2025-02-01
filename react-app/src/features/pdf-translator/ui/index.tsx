@@ -1,9 +1,9 @@
 import { useResizeObserver } from '@wojtekmaj/react-hooks';
-import { useCallback, useState, useRef } from 'react';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
+import React, { useCallback, useState, useRef } from 'react';
 import { pdfjs, Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import SideNavigate from 'widgets/side-navigate';
 import './index.scss';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -20,15 +20,15 @@ const resizeObserverOptions = {};
 
 const maxWidth = 800;
 
-export default function PdfTranslator({ isOpened }) {
-  const [file, setFile] = useState('../assets/Lecture01.pdf');
-  const [numPages, setNumPages] = useState();
-  const [containerRef, setContainerRef] = useState(null);
-  const [containerWidth, setContainerWidth] = useState();
+export default function PdfTranslator({ isOpened }: { isOpened: boolean }) {
+  const [file, setFile] = useState<File>();
+  const [numPages, setNumPages] = useState<number>();
+  const [containerRef, setContainerRef] = useState<HTMLElement | null>(null);
+  const [containerWidth, setContainerWidth] = useState<number>();
 
   const translateRef = useRef(null);
 
-  const onResize = useCallback((entries) => {
+  const onResize = useCallback<ResizeObserverCallback>((entries) => {
     const [entry] = entries;
 
     if (entry) {
@@ -38,7 +38,7 @@ export default function PdfTranslator({ isOpened }) {
 
   useResizeObserver(containerRef, resizeObserverOptions, onResize);
 
-  function onFileChange(event) {
+  function onFileChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { files } = event.target;
 
     const nextFile = files?.[0];
@@ -48,7 +48,9 @@ export default function PdfTranslator({ isOpened }) {
     }
   }
 
-  function onDocumentLoadSuccess({ numPages: nextNumPages }) {
+  function onDocumentLoadSuccess({
+    numPages: nextNumPages,
+  }: PDFDocumentProxy): void {
     setNumPages(nextNumPages);
   }
 
