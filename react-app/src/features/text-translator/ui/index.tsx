@@ -2,7 +2,9 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import GlobeIcon from 'shared/assets/icons/globe-icon';
 import GlobeUkIcon from 'shared/assets/icons/globe-uk-icon';
+import SyncIconL from 'shared/assets/icons/sync-icon-l';
 import TranslateIconM from 'shared/assets/icons/translate-icon-m';
+import IconButton from 'shared/ui/icon-button';
 import Loader from 'shared/ui/loader';
 import TextAndIconButton from 'shared/ui/text-and-icon-button';
 import './index.scss';
@@ -14,9 +16,19 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
     progress: 0,
   });
 
+  const [translateModel, setTranslateModel] = useState<'en-ru' | 'ru-en'>(
+    'en-ru'
+  );
+
   // Inputs and outputs
-  const [input, setInput] = useState('I like to translate.');
+  const [input, setInput] = useState(
+    'The quick brown fox jumps over the lazy dog.'
+  );
   const [output, setOutput] = useState('');
+
+  const toggleTranslateDirection = () => {
+    setTranslateModel((prev) => (prev === 'en-ru' ? 'ru-en' : 'en-ru'));
+  };
 
   useEffect(() => {
     window.electron.onStatus((message) => {
@@ -46,6 +58,7 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
   const translate = async () => {
     try {
       await window.electron.run({
+        translate: translateModel,
         text: input,
       });
     } catch (error) {
@@ -56,24 +69,45 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
   return (
     <section
       className={`text-translator${isOpened ? ' text-translator_open' : ''}`}>
-      <TextAndIconButton
-        text='English'
-        style={{ margin: '2rem auto 0' }}
-        isDisabled>
-        <GlobeIcon color='var(--main)' />
-      </TextAndIconButton>
+      {'en-ru' === translateModel ? (
+        <TextAndIconButton
+          text='English'
+          style={{ margin: '1rem auto 0' }}
+          isDisabled>
+          <GlobeIcon color='var(--main)' />
+        </TextAndIconButton>
+      ) : (
+        <TextAndIconButton
+          text='Русский'
+          style={{ margin: '1rem auto 0' }}
+          isDisabled>
+          <GlobeUkIcon color='var(--main)' />
+        </TextAndIconButton>
+      )}
       <textarea
         className='text-translator__textarea'
         value={input}
         rows={3}
         onChange={(e) => setInput(e.target.value)}
       />
-      <TextAndIconButton
-        text='Русский'
-        style={{ margin: '2rem auto 0' }}
-        isDisabled>
-        <GlobeUkIcon color='var(--main)' />
-      </TextAndIconButton>
+      <IconButton onClick={toggleTranslateDirection}>
+        <SyncIconL color='var(--main)' />
+      </IconButton>
+      {'ru-en' === translateModel ? (
+        <TextAndIconButton
+          text='English'
+          style={{ margin: '1rem auto 0' }}
+          isDisabled>
+          <GlobeIcon color='var(--main)' />
+        </TextAndIconButton>
+      ) : (
+        <TextAndIconButton
+          text='Русский'
+          style={{ margin: '1rem auto 0' }}
+          isDisabled>
+          <GlobeUkIcon color='var(--main)' />
+        </TextAndIconButton>
+      )}
       <textarea
         className='text-translator__textarea'
         value={output}
@@ -81,9 +115,9 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
         readOnly
       />
       <TextAndIconButton
-        text={progressItems.file === '' ? 'Translate' : progressItems.file}
+        text={progressItems.file === '' ? 'Перевести' : progressItems.file}
         style={{
-          margin: '0 auto 2rem',
+          margin: '0 auto 1rem',
           width: 'min-content',
           alignSelf: 'center',
         }}

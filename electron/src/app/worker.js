@@ -5,9 +5,12 @@ const TranslationPipeline = require('./model');
 // Message handler for workflow.
 parentPort.on('message', async (event) => {
   try {
-    let translator = await TranslationPipeline.getInstance((x) => {
-      parentPort.postMessage({ status: 'progress', data: x });
-    });
+    let translator = await TranslationPipeline.getInstance(
+      event.translate,
+      (x) => {
+        parentPort.postMessage({ status: 'progress', data: x });
+      }
+    );
 
     // We perform translation.
     let output = await translator(event.text, {
