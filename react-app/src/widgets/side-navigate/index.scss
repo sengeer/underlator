@@ -6,12 +6,12 @@
   display: flex;
   flex: 0 1 auto;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
   align-items: center;
   box-sizing: border-box;
   min-width: 5rem;
   height: calc(100vh);
-  padding: 16px 0;
+  padding: 1rem 0;
   border-right: 1px solid var(--main);
 
   & > button:last-child {

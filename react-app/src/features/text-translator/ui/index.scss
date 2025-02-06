@@ -11,6 +11,7 @@
   &__textarea {
     box-sizing: border-box;
     height: 100%;
+    min-height: min-content;
     margin: 3rem 5rem 1rem;
     padding: 0;
     border: none;

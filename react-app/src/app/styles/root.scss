@@ -8,4 +8,12 @@
   font-family: -apple-system, 'Roboto Mono', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  @media (width <= 1280px) {
+    font-size: 14px;
+  }
+
+  @media (width <= 768px) {
+    font-size: 12px;
+  }
 }

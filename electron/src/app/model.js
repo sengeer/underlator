@@ -7,12 +7,12 @@ class TranslationPipeline {
   static instance = null;
 
   static async getInstance(
-    translateDirection = 'en-ru',
+    translateLanguage = 'en-ru',
     progress_callback = null
   ) {
     if (
       this.instance === null ||
-      this.model !== `opus-mt-${translateDirection}`
+      this.model !== `opus-mt-${translateLanguage}`
     ) {
       // Dynamically import the Transformers.js library.
       let { pipeline, env } = await import('@xenova/transformers');
@@ -24,7 +24,7 @@ class TranslationPipeline {
       env.localModelPath = path.join(__dirname, 'models');
       env.allowRemoteModels = false;
 
-      this.model = `opus-mt-${translateDirection}`;
+      this.model = `opus-mt-${translateLanguage}`;
       this.instance = pipeline(this.task, this.model, { progress_callback });
     }
 

@@ -1,5 +1,6 @@
+import { useResizeObserver } from '@wojtekmaj/react-hooks';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
-import React, { useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { pdfjs, Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
@@ -17,9 +18,25 @@ const options = {
   standardFontDataUrl: '/standard_fonts/',
 };
 
+const resizeObserverOptions = {};
+
 export default function PdfTranslator({ isOpened }: { isOpened: boolean }) {
   const [file, setFile] = useState<File>();
   const [numPages, setNumPages] = useState<number>();
+  const [containerRef, setContainerRef] = useState<HTMLElement | null>(null);
+  const [containerWidth, setContainerWidth] = useState<number>();
+
+  const translateRef = useRef(null);
+
+  const onResize = useCallback<ResizeObserverCallback>((entries) => {
+    const [entry] = entries;
+
+    if (entry) {
+      setContainerWidth(entry.contentRect.width);
+    }
+  }, []);
+
+  useResizeObserver(containerRef, resizeObserverOptions, onResize);
 
   const { width: pdfTranslatorWidth, ref: pdfTranslatorRef } =
     useResizeDetector({
@@ -49,8 +66,9 @@ export default function PdfTranslator({ isOpened }: { isOpened: boolean }) {
       <div className='pdf-translator__container' ref={pdfTranslatorRef}>
         <FileUpload isOpened={!file} onChange={onFileChange} />
         <div
-          className={`pdf-translator__document${file ? ' pdf-translator__document_show' : ''}`}>
-          <div>
+          className={`pdf-translator__document${file ? ' pdf-translator__document_show' : ''}`}
+          ref={setContainerRef}>
+          <div ref={translateRef}>
             <Document
               file={file}
               onLoadSuccess={onDocumentLoadSuccess}
@@ -59,7 +77,7 @@ export default function PdfTranslator({ isOpened }: { isOpened: boolean }) {
                 <Page
                   key={`page_${index + 1}`}
                   pageNumber={index + 1}
-                  width={pdfTranslatorWidth}
+                  width={containerWidth}
                 />
               ))}
             </Document>

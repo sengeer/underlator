@@ -16,7 +16,7 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
     progress: 0,
   });
 
-  const [translateModel, setTranslateModel] = useState<'en-ru' | 'ru-en'>(
+  const [translateLanguage, setTranslateLanguage] = useState<'en-ru' | 'ru-en'>(
     'en-ru'
   );
 
@@ -26,8 +26,8 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
   );
   const [output, setOutput] = useState('');
 
-  const toggleTranslateDirection = () => {
-    setTranslateModel((prev) => (prev === 'en-ru' ? 'ru-en' : 'en-ru'));
+  const toggleTranslateLanguage = () => {
+    setTranslateLanguage((prev) => (prev === 'en-ru' ? 'ru-en' : 'en-ru'));
   };
 
   useEffect(() => {
@@ -58,7 +58,7 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
   const translate = async () => {
     try {
       await window.electron.run({
-        translate: translateModel,
+        translate: translateLanguage,
         text: input,
       });
     } catch (error) {
@@ -69,7 +69,7 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
   return (
     <section
       className={`text-translator${isOpened ? ' text-translator_open' : ''}`}>
-      {'en-ru' === translateModel ? (
+      {'en-ru' === translateLanguage ? (
         <TextAndIconButton
           text='English'
           style={{ margin: '1rem auto 0' }}
@@ -87,13 +87,13 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
       <textarea
         className='text-translator__textarea'
         value={input}
-        rows={3}
+        rows={1}
         onChange={(e) => setInput(e.target.value)}
       />
-      <IconButton onClick={toggleTranslateDirection}>
+      <IconButton onClick={toggleTranslateLanguage}>
         <SyncIconL color='var(--main)' />
       </IconButton>
-      {'ru-en' === translateModel ? (
+      {'ru-en' === translateLanguage ? (
         <TextAndIconButton
           text='English'
           style={{ margin: '1rem auto 0' }}
@@ -111,7 +111,7 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
       <textarea
         className='text-translator__textarea'
         value={output}
-        rows={3}
+        rows={1}
         readOnly
       />
       <TextAndIconButton
