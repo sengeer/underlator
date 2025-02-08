@@ -1,70 +1,25 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
 import GlobeIcon from 'shared/assets/icons/globe-icon';
 import GlobeUkIcon from 'shared/assets/icons/globe-uk-icon';
 import SyncIconL from 'shared/assets/icons/sync-icon-l';
 import TranslateIconM from 'shared/assets/icons/translate-icon-m';
+import { useTranslate } from 'shared/lib/hooks/use-translate';
+import { useTranslateStatus } from 'shared/lib/hooks/use-translate-status';
 import IconButton from 'shared/ui/icon-button';
 import Loader from 'shared/ui/loader';
 import TextAndIconButton from 'shared/ui/text-and-icon-button';
 import './index.scss';
 
 function TextTranslator({ isOpened }: { isOpened: boolean }) {
-  // Model loading
-  const [progressItems, setProgressItems] = useState<Progress>({
-    file: '',
-    progress: 0,
-  });
+  const { progressItems, output } = useTranslateStatus();
 
-  const [translateLanguage, setTranslateLanguage] = useState<'en-ru' | 'ru-en'>(
-    'en-ru'
-  );
-
-  // Inputs and outputs
-  const [input, setInput] = useState(
-    'The quick brown fox jumps over the lazy dog.'
-  );
-  const [output, setOutput] = useState('');
-
-  const toggleTranslateLanguage = () => {
-    setTranslateLanguage((prev) => (prev === 'en-ru' ? 'ru-en' : 'en-ru'));
-  };
-
-  useEffect(() => {
-    window.electron.onStatus((message) => {
-      switch (message.status) {
-        case 'progress':
-          if (message.data) setProgressItems(message.data);
-          break;
-        case 'update':
-          if (message.output) setOutput(message.output as string);
-          break;
-        case 'complete':
-          if (
-            Array.isArray(message.output) &&
-            message.output[0]?.translation_text
-          ) {
-            setOutput(message.output[0].translation_text);
-            setProgressItems({ file: '', progress: 0 });
-          }
-          break;
-        case 'error':
-          console.error(message.error);
-          break;
-      }
-    });
-  }, []);
-
-  const translate = async () => {
-    try {
-      await window.electron.run({
-        translate: translateLanguage,
-        text: input,
-      });
-    } catch (error) {
-      console.error((error as Error).message);
-    }
-  };
+  const {
+    translateLanguage,
+    input,
+    setInput,
+    toggleTranslateLanguage,
+    translate,
+  } = useTranslate();
 
   return (
     <section

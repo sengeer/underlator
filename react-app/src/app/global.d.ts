@@ -1,8 +1,3 @@
-interface Progress {
-  file: string;
-  progress: number;
-}
-
 interface Message {
   status: string;
   data?: Progress;

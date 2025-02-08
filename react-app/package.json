@@ -20,6 +20,7 @@
     "react-dom": "^18.2.0",
     "react-pdf": "^9.1.1",
     "react-redux": "^9.2.0",
+    "react-resize-detector": "^12.0.2",
     "react-scripts": "^5.0.1",
     "sass": "^1.70.0",
     "typescript": "^4.9.5",
