@@ -76,8 +76,7 @@
     "stylelint-order": "^6.0.4",
     "stylelint-prettier": "^5.0.2",
     "stylelint-scss": "^6.5.0",
-    "stylelint-selector-bem-pattern": "^4.0.1",
-    "vite-plugin-sass": "^0.1.0"
+    "stylelint-selector-bem-pattern": "^4.0.1"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "npm run lint:fix",

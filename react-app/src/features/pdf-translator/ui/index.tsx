@@ -13,6 +13,7 @@ import FileUpload from '../../../shared/ui/file-upload';
 import IconButton from '../../../shared/ui/icon-button';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import { useTranslate } from './../../../shared/lib/hooks/use-translate';
+import Loader from './../../../shared/ui/loader';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -32,13 +33,8 @@ function PdfTranslator({ isOpened }: { isOpened: boolean }) {
 
   const { progressItems, output } = useTranslateStatus();
 
-  const {
-    translateLanguage,
-    input,
-    setInput,
-    toggleTranslateLanguage,
-    translate,
-  } = useTranslate();
+  const { translateLanguage, toggleTranslateLanguage, translate } =
+    useTranslate();
 
   const { width: documentWidth, ref: documentRef } = useResizeDetector({
     refreshMode: 'debounce',
@@ -93,9 +89,13 @@ function PdfTranslator({ isOpened }: { isOpened: boolean }) {
               <GlobeUkIcon color='var(--main)' />
             </TextAndIconButton>
           )}
-          <IconButton onClick={toggleTranslateLanguage}>
-            <SyncIconM color='var(--main)' />
-          </IconButton>
+          {progressItems.file !== '' ? (
+            <Loader />
+          ) : (
+            <IconButton onClick={toggleTranslateLanguage}>
+              <SyncIconM color='var(--main)' />
+            </IconButton>
+          )}
           {'ru-en' === translateLanguage ? (
             <TextAndIconButton text='English' isDisabled>
               <GlobeIcon color='var(--main)' />
