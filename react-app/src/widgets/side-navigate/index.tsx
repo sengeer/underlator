@@ -1,14 +1,13 @@
-import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import PdfIcon from 'shared/assets/icons/pdf-icon';
-import SettingsIcon from 'shared/assets/icons/settings-icon';
-import TranslateIconL from 'shared/assets/icons/translate-icon-l';
+import PdfIcon from '../../shared/assets/icons/pdf-icon';
+import SettingsIcon from '../../shared/assets/icons/settings-icon';
+import TranslateIconL from '../../shared/assets/icons/translate-icon-l';
 import {
   openElement,
   closeElement,
   isElementOpen,
-} from 'shared/model/element-state-slice';
-import IconButton from 'shared/ui/icon-button';
+} from '../../shared/model/element-state-slice';
+import IconButton from '../../shared/ui/icon-button';
 import './index.scss';
 
 function SideNavigate() {

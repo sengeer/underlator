@@ -5,14 +5,14 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import './index.scss';
 import { useResizeDetector } from 'react-resize-detector';
-import GlobeIcon from 'shared/assets/icons/globe-icon';
-import GlobeUkIcon from 'shared/assets/icons/globe-uk-icon';
-import SyncIconM from 'shared/assets/icons/sync-icon-m';
-import FileUpload from 'shared/ui/file-upload';
-import IconButton from 'shared/ui/icon-button';
-import TextAndIconButton from 'shared/ui/text-and-icon-button';
-import { useTranslate } from '../../../shared/lib/hooks/use-translate';
+import GlobeIcon from '../../../shared/assets/icons/globe-icon';
+import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
+import SyncIconM from '../../../shared/assets/icons/sync-icon-m';
 import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
+import FileUpload from '../../../shared/ui/file-upload';
+import IconButton from '../../../shared/ui/icon-button';
+import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
+import { useTranslate } from './../../../shared/lib/hooks/use-translate';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',

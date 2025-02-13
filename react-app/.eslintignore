@@ -8,3 +8,5 @@ storybook-static
 docs
 electron-build.mjs
 order.js
+vite.config.js
+vite-env.d.ts

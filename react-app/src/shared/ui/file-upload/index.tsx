@@ -1,6 +1,6 @@
 import React from 'react';
 import './index.scss';
-import CloudIcon from 'shared/assets/icons/cloud-icon';
+import CloudIcon from '../../assets/icons/cloud-icon';
 
 function FileUpload({
   isOpened,

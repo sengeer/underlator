@@ -1,10 +1,9 @@
-import React from 'react';
 import { useSelector } from 'react-redux';
-import SideNavigate from 'widgets/side-navigate';
-import PdfTranslator from 'features/pdf-translator/ui';
-import Settings from 'features/settings/ui';
-import TextTranslator from 'features/text-translator/ui';
-import { isElementOpen } from 'shared/model/element-state-slice';
+import PdfTranslator from '../../../features/pdf-translator/ui';
+import Settings from '../../../features/settings/ui';
+import TextTranslator from '../../../features/text-translator/ui';
+import { isElementOpen } from '../../../shared/model/element-state-slice';
+import SideNavigate from '../../../widgets/side-navigate';
 import './index.scss';
 
 function Main() {

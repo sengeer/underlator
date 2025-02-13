@@ -1,7 +1,7 @@
-@import 'normalize';
-@import 'scrollbar';
-@import '../../shared/assets/fonts/fonts.css';
-@import 'vars';
+@use 'normalize';
+@use 'scrollbar';
+@use '../../shared/assets/fonts/fonts.css';
+@use 'vars';
 
 :root {
   background-color: var(--background);

@@ -1,13 +1,12 @@
-import React from 'react';
-import GlobeIcon from 'shared/assets/icons/globe-icon';
-import GlobeUkIcon from 'shared/assets/icons/globe-uk-icon';
-import SyncIconL from 'shared/assets/icons/sync-icon-l';
-import TranslateIconM from 'shared/assets/icons/translate-icon-m';
-import { useTranslate } from 'shared/lib/hooks/use-translate';
-import { useTranslateStatus } from 'shared/lib/hooks/use-translate-status';
-import IconButton from 'shared/ui/icon-button';
-import Loader from 'shared/ui/loader';
-import TextAndIconButton from 'shared/ui/text-and-icon-button';
+import GlobeIcon from '../../../shared/assets/icons/globe-icon';
+import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
+import SyncIconL from '../../../shared/assets/icons/sync-icon-l';
+import TranslateIconM from '../../../shared/assets/icons/translate-icon-m';
+import { useTranslate } from '../../../shared/lib/hooks/use-translate';
+import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
+import IconButton from '../../../shared/ui/icon-button';
+import Loader from '../../../shared/ui/loader';
+import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import './index.scss';
 
 function TextTranslator({ isOpened }: { isOpened: boolean }) {

@@ -1,6 +1,5 @@
 import loadPixelperfect from 'pixelperfect-tool';
-import React from 'react';
-import Main from 'pages/main/ui';
+import Main from '../pages/main/ui';
 
 loadPixelperfect({
   page: 'index',
