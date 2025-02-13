@@ -110,6 +110,7 @@ function PdfTranslator({ isOpened }: { isOpened: boolean }) {
       </div>
 
       <div className='pdf-translator__container'>
+        <div className='pdf-translator__gradient' />
         <FileUpload isOpened={!file} onChange={onFileChange} />
         <div
           className={`pdf-translator__document${file ? ' pdf-translator__document_show' : ''}`}
