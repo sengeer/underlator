@@ -81,11 +81,11 @@ function PdfTranslator({ isOpened }: { isOpened: boolean }) {
         className={`pdf-translator__top-bar${file ? ' pdf-translator__top-bar_show' : ''}`}>
         <div className='pdf-translator__btns-group'>
           {'en-ru' === translateLanguage ? (
-            <TextAndIconButton text='English' isDisabled>
+            <TextAndIconButton text='english' isDisabled>
               <GlobeIcon color='var(--main)' />
             </TextAndIconButton>
           ) : (
-            <TextAndIconButton text='Русский' isDisabled>
+            <TextAndIconButton text='русский' isDisabled>
               <GlobeUkIcon color='var(--main)' />
             </TextAndIconButton>
           )}
@@ -97,11 +97,11 @@ function PdfTranslator({ isOpened }: { isOpened: boolean }) {
             </IconButton>
           )}
           {'ru-en' === translateLanguage ? (
-            <TextAndIconButton text='English' isDisabled>
+            <TextAndIconButton text='english' isDisabled>
               <GlobeIcon color='var(--main)' />
             </TextAndIconButton>
           ) : (
-            <TextAndIconButton text='Русский' isDisabled>
+            <TextAndIconButton text='русский' isDisabled>
               <GlobeUkIcon color='var(--main)' />
             </TextAndIconButton>
           )}

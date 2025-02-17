@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState } from 'react';
 import './index.scss';
 import CloudIcon from '../../assets/icons/cloud-icon';

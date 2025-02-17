@@ -25,14 +25,14 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
       className={`text-translator${isOpened ? ' text-translator_open' : ''}`}>
       {'en-ru' === translateLanguage ? (
         <TextAndIconButton
-          text='English'
+          text='english'
           style={{ margin: '1rem auto 0' }}
           isDisabled>
           <GlobeIcon color='var(--main)' />
         </TextAndIconButton>
       ) : (
         <TextAndIconButton
-          text='Русский'
+          text='русский'
           style={{ margin: '1rem auto 0' }}
           isDisabled>
           <GlobeUkIcon color='var(--main)' />
@@ -49,14 +49,14 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
       </IconButton>
       {'ru-en' === translateLanguage ? (
         <TextAndIconButton
-          text='English'
+          text='english'
           style={{ margin: '1rem auto 0' }}
           isDisabled>
           <GlobeIcon color='var(--main)' />
         </TextAndIconButton>
       ) : (
         <TextAndIconButton
-          text='Русский'
+          text='русский'
           style={{ margin: '1rem auto 0' }}
           isDisabled>
           <GlobeUkIcon color='var(--main)' />
