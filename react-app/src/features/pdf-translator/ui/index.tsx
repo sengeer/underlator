@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import React, { useState, useEffect } from 'react';
 import { pdfjs, Document, Page } from 'react-pdf';
@@ -30,6 +31,8 @@ const maxWidth = 2560;
 function PdfTranslator({ isOpened }: { isOpened: boolean }) {
   const [file, setFile] = useState<File>();
   const [numPages, setNumPages] = useState<number>();
+
+  const { t } = useLingui();
 
   const { progressItems, output } = useTranslateStatus();
 
@@ -81,11 +84,11 @@ function PdfTranslator({ isOpened }: { isOpened: boolean }) {
         className={`pdf-translator__top-bar${file ? ' pdf-translator__top-bar_show' : ''}`}>
         <div className='pdf-translator__btns-group'>
           {'en-ru' === translateLanguage ? (
-            <TextAndIconButton text='english' isDisabled>
+            <TextAndIconButton text={t`english`} isDisabled>
               <GlobeIcon color='var(--main)' />
             </TextAndIconButton>
           ) : (
-            <TextAndIconButton text='русский' isDisabled>
+            <TextAndIconButton text={t`russian`} isDisabled>
               <GlobeUkIcon color='var(--main)' />
             </TextAndIconButton>
           )}
@@ -97,11 +100,11 @@ function PdfTranslator({ isOpened }: { isOpened: boolean }) {
             </IconButton>
           )}
           {'ru-en' === translateLanguage ? (
-            <TextAndIconButton text='english' isDisabled>
+            <TextAndIconButton text={t`english`} isDisabled>
               <GlobeIcon color='var(--main)' />
             </TextAndIconButton>
           ) : (
-            <TextAndIconButton text='русский' isDisabled>
+            <TextAndIconButton text={t`russian`} isDisabled>
               <GlobeUkIcon color='var(--main)' />
             </TextAndIconButton>
           )}

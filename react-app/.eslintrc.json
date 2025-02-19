@@ -9,7 +9,8 @@
     "plugin:react/jsx-runtime",
     "plugin:import/typescript",
     "plugin:prettier/recommended",
-    "@feature-sliced"
+    "@feature-sliced",
+    "plugin:lingui/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "overrides": [],

@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro';
 import { useState } from 'react';
 import './index.scss';
 import CloudIcon from '../../assets/icons/cloud-icon';
@@ -58,9 +59,15 @@ function FileUpload({
         <div className='file-upload__design'>
           <CloudIcon />
           <div className='file-upload__text-wrapper'>
-            <p className='file-upload__text'>Перетащите</p>
-            <p className='file-upload__text'>или</p>
-            <p className='file-upload__text'>выберите файл</p>
+            <p className='file-upload__text'>
+              <Trans>drag and drop your file here</Trans>
+            </p>
+            <p className='file-upload__text'>
+              <Trans>or click</Trans>
+            </p>
+            <p className='file-upload__text'>
+              <Trans>to select a file!</Trans>
+            </p>
           </div>
         </div>
         <input id='file' type='file' onChange={onChange} />

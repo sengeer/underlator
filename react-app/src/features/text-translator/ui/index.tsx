@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIconL from '../../../shared/assets/icons/sync-icon-l';
@@ -12,6 +13,8 @@ import './index.scss';
 function TextTranslator({ isOpened }: { isOpened: boolean }) {
   const { progressItems, output } = useTranslateStatus();
 
+  const { t } = useLingui();
+
   const {
     translateLanguage,
     input,
@@ -25,14 +28,14 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
       className={`text-translator${isOpened ? ' text-translator_open' : ''}`}>
       {'en-ru' === translateLanguage ? (
         <TextAndIconButton
-          text='english'
+          text={t`english`}
           style={{ margin: '1rem auto 0' }}
           isDisabled>
           <GlobeIcon color='var(--main)' />
         </TextAndIconButton>
       ) : (
         <TextAndIconButton
-          text='русский'
+          text={t`russian`}
           style={{ margin: '1rem auto 0' }}
           isDisabled>
           <GlobeUkIcon color='var(--main)' />
@@ -49,14 +52,14 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
       </IconButton>
       {'ru-en' === translateLanguage ? (
         <TextAndIconButton
-          text='english'
+          text={t`english`}
           style={{ margin: '1rem auto 0' }}
           isDisabled>
           <GlobeIcon color='var(--main)' />
         </TextAndIconButton>
       ) : (
         <TextAndIconButton
-          text='русский'
+          text={t`russian`}
           style={{ margin: '1rem auto 0' }}
           isDisabled>
           <GlobeUkIcon color='var(--main)' />
@@ -69,7 +72,7 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
         readOnly
       />
       <TextAndIconButton
-        text={progressItems.file === '' ? 'Перевести' : progressItems.file}
+        text={progressItems.file === '' ? t`Translate` : progressItems.file}
         style={{
           margin: '0 auto 1rem',
           width: 'min-content',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import Popup from '../popup';
 import TextButton from '../text-button/text-button';
 
@@ -16,8 +16,8 @@ export interface Languages {
 }
 
 const LANGUAGES: Languages = {
-  english: 'eng',
-  russian: 'rus',
+  english: 'en',
+  русский: 'ru',
 };
 
 function LanguageSelectorPopup({
