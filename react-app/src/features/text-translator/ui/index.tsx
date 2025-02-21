@@ -5,6 +5,7 @@ import SyncIconL from '../../../shared/assets/icons/sync-icon-l';
 import TranslateIconM from '../../../shared/assets/icons/translate-icon-m';
 import { useTranslate } from '../../../shared/lib/hooks/use-translate';
 import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
+import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import IconButton from '../../../shared/ui/icon-button';
 import Loader from '../../../shared/ui/loader';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
@@ -27,19 +28,17 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
     <section
       className={`text-translator${isOpened ? ' text-translator_open' : ''}`}>
       {'en-ru' === translateLanguage ? (
-        <TextAndIconButton
+        <DecorativeTextAndIconButton
           text={t`english`}
-          style={{ margin: '1rem auto 0' }}
-          isDisabled>
-          <GlobeIcon color='var(--main)' />
-        </TextAndIconButton>
+          style={{ margin: '1rem auto 0' }}>
+          <GlobeIcon />
+        </DecorativeTextAndIconButton>
       ) : (
-        <TextAndIconButton
+        <DecorativeTextAndIconButton
           text={t`russian`}
-          style={{ margin: '1rem auto 0' }}
-          isDisabled>
-          <GlobeUkIcon color='var(--main)' />
-        </TextAndIconButton>
+          style={{ margin: '1rem auto 0' }}>
+          <GlobeUkIcon />
+        </DecorativeTextAndIconButton>
       )}
       <textarea
         className='text-translator__textarea'
@@ -51,19 +50,17 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
         <SyncIconL color='var(--main)' />
       </IconButton>
       {'ru-en' === translateLanguage ? (
-        <TextAndIconButton
+        <DecorativeTextAndIconButton
           text={t`english`}
-          style={{ margin: '1rem auto 0' }}
-          isDisabled>
-          <GlobeIcon color='var(--main)' />
-        </TextAndIconButton>
+          style={{ margin: '1rem auto 0' }}>
+          <GlobeIcon />
+        </DecorativeTextAndIconButton>
       ) : (
-        <TextAndIconButton
+        <DecorativeTextAndIconButton
           text={t`russian`}
-          style={{ margin: '1rem auto 0' }}
-          isDisabled>
-          <GlobeUkIcon color='var(--main)' />
-        </TextAndIconButton>
+          style={{ margin: '1rem auto 0' }}>
+          <GlobeUkIcon />
+        </DecorativeTextAndIconButton>
       )}
       <textarea
         className='text-translator__textarea'
@@ -72,7 +69,7 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
         readOnly
       />
       <TextAndIconButton
-        text={progressItems.file === '' ? t`Translate` : progressItems.file}
+        text={progressItems.file === '' ? t`translate` : progressItems.file}
         style={{
           margin: '0 auto 1rem',
           width: 'min-content',

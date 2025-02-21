@@ -35,7 +35,6 @@
     "prettier": "prettier --write .",
     "lint-staged": "lint-staged",
     "prepare": "cd ../ && husky ./react-app/.husky",
-    "jsdoc": "npx jsdoc -c .jsdoc.json",
     "electron": "npm run build && node electron-build.mjs && cd ../electron && npm run make",
     "extract": "lingui extract",
     "compile": "lingui compile --typescript"
@@ -76,7 +75,6 @@
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-react": "^7.34.0",
     "husky": "^9.1.4",
-    "jsdoc": "^4.0.3",
     "lint-staged": "^15.2.10",
     "prettier": "^3.2.5",
     "rimraf": "^6.0.1",

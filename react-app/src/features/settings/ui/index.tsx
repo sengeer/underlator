@@ -1,5 +1,6 @@
 import './index.scss';
 import { useLingui } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 import { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
@@ -8,8 +9,10 @@ import {
   closeElement,
   isElementOpen,
 } from '../../../shared/model/element-state-slice';
+import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background ';
+import ColorPicker from '../../../shared/ui/color-picker';
 import LanguageSelectorPopup from '../../../shared/ui/language-selector-popup';
-import TextAndIconButtonWithBackground from '../../../shared/ui/text-and-icon-button-with-background/';
+import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 
 function Settings({ isOpened }: { isOpened: boolean }) {
   const [languageKey, setLanguageKey] = useState('russian');
@@ -32,22 +35,58 @@ function Settings({ isOpened }: { isOpened: boolean }) {
   return (
     <section className={`settings${isOpened ? ' settings_open' : ''}`}>
       <div className='settings__container'>
-        <TextAndIconButtonWithBackground
-          text={t`Interface language`}
-          value={languageKey}
-          onClick={() => dispatch(openElement('languageSelectorPopup'))}>
-          <LanguageIcon />
-        </TextAndIconButtonWithBackground>
-
-        <LanguageSelectorPopup
-          isOpened={isOpenLanguageSelectorPopup}
-          setOpened={() => dispatch(closeElement('languageSelectorPopup'))}
-          setSelectedLanguageKey={setLanguageKey}
-          selectedLanguageValue={language}
-          setSelectedLanguageValue={handleLanguageChange}
-          defaultLanguage={'ru'}
-        />
+        <div className='settings__column'>
+          <h2 className='settings__title'>
+            <Trans>main settings</Trans>
+          </h2>
+          <ButtonWrapperWithBackground
+            onClick={() => dispatch(openElement('languageSelectorPopup'))}>
+            <TextAndIconButton
+              className='text-and-icon-button'
+              text={t`interface language`}
+              style={{ marginLeft: '1rem' }}
+              isDisabled>
+              <LanguageIcon />
+            </TextAndIconButton>
+            <p className='settings__text'>{languageKey}</p>
+          </ButtonWrapperWithBackground>
+        </div>
+        <div className='settings__column'>
+          <h2 className='settings__title'>
+            <Trans>color scheme</Trans>
+          </h2>
+          <div className='settings__btns-group'>
+            <ColorPicker
+              text={t`main color`}
+              variable='--main'
+              color='#6272a4'
+            />
+            <ColorPicker
+              text={t`background color`}
+              variable='--background'
+              color='#282a36'
+            />
+            <ColorPicker
+              text={t`accent color`}
+              variable='--accent'
+              color='#bd93f9'
+            />
+            <ColorPicker
+              text={t`foreground color`}
+              variable='--foreground'
+              color='#f8f8f2'
+            />
+          </div>
+        </div>
       </div>
+      <LanguageSelectorPopup
+        isOpened={isOpenLanguageSelectorPopup}
+        setOpened={() => dispatch(closeElement('languageSelectorPopup'))}
+        setSelectedLanguageKey={setLanguageKey}
+        selectedLanguageValue={language}
+        setSelectedLanguageValue={handleLanguageChange}
+        defaultLanguage={'ru'}
+      />
     </section>
   );
 }

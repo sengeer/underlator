@@ -1,14 +1,11 @@
 @use 'normalize';
 @use 'scrollbar';
-@use '../../shared/assets/fonts/fonts.css';
 @use 'vars';
+@import '../../shared/assets/fonts/fonts.css';
 
 :root {
   background-color: var(--background);
-  font-family:
-    'Roboto Mono',
-    -apple-system,
-    sans-serif;
+  font-family: 'Roboto Mono', monospace, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 

@@ -13,6 +13,18 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/settings/ui/index.tsx
+msgid "accent color"
+msgstr "accent color"
+
+#: src/features/settings/ui/index.tsx
+msgid "background color"
+msgstr "background color"
+
+#: src/features/settings/ui/index.tsx
+msgid "color scheme"
+msgstr "color scheme"
+
 #: src/shared/ui/file-upload/index.tsx
 msgid "drag and drop your file here"
 msgstr "drag and drop your file here"
@@ -25,8 +37,20 @@ msgid "english"
 msgstr "english"
 
 #: src/features/settings/ui/index.tsx
-msgid "Interface language"
-msgstr "Interface language"
+msgid "foreground color"
+msgstr "foreground color"
+
+#: src/features/settings/ui/index.tsx
+msgid "interface language"
+msgstr "interface language"
+
+#: src/features/settings/ui/index.tsx
+msgid "main color"
+msgstr "main color"
+
+#: src/features/settings/ui/index.tsx
+msgid "main settings"
+msgstr "main settings"
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "or click"
@@ -44,5 +68,5 @@ msgid "to select a file!"
 msgstr "to select a file!"
 
 #: src/features/text-translator/ui/index.tsx
-msgid "Translate"
-msgstr "Translate"
+msgid "translate"
+msgstr "translate"

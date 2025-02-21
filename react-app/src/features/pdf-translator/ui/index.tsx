@@ -10,9 +10,9 @@ import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIconM from '../../../shared/assets/icons/sync-icon-m';
 import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
+import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import FileUpload from '../../../shared/ui/file-upload';
 import IconButton from '../../../shared/ui/icon-button';
-import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import { useTranslate } from './../../../shared/lib/hooks/use-translate';
 import Loader from './../../../shared/ui/loader';
 
@@ -84,13 +84,13 @@ function PdfTranslator({ isOpened }: { isOpened: boolean }) {
         className={`pdf-translator__top-bar${file ? ' pdf-translator__top-bar_show' : ''}`}>
         <div className='pdf-translator__btns-group'>
           {'en-ru' === translateLanguage ? (
-            <TextAndIconButton text={t`english`} isDisabled>
-              <GlobeIcon color='var(--main)' />
-            </TextAndIconButton>
+            <DecorativeTextAndIconButton text={t`english`}>
+              <GlobeIcon />
+            </DecorativeTextAndIconButton>
           ) : (
-            <TextAndIconButton text={t`russian`} isDisabled>
-              <GlobeUkIcon color='var(--main)' />
-            </TextAndIconButton>
+            <DecorativeTextAndIconButton text={t`russian`}>
+              <GlobeUkIcon />
+            </DecorativeTextAndIconButton>
           )}
           {progressItems.file !== '' ? (
             <Loader />
@@ -100,13 +100,13 @@ function PdfTranslator({ isOpened }: { isOpened: boolean }) {
             </IconButton>
           )}
           {'ru-en' === translateLanguage ? (
-            <TextAndIconButton text={t`english`} isDisabled>
-              <GlobeIcon color='var(--main)' />
-            </TextAndIconButton>
+            <DecorativeTextAndIconButton text={t`english`}>
+              <GlobeIcon />
+            </DecorativeTextAndIconButton>
           ) : (
-            <TextAndIconButton text={t`russian`} isDisabled>
-              <GlobeUkIcon color='var(--main)' />
-            </TextAndIconButton>
+            <DecorativeTextAndIconButton text={t`russian`}>
+              <GlobeUkIcon />
+            </DecorativeTextAndIconButton>
           )}
         </div>
         <p className='pdf-translator__output'>{output}</p>
