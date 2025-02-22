@@ -36,6 +36,10 @@ msgstr "drag and drop your file here"
 msgid "english"
 msgstr "english"
 
+#: src/features/pdf-translator/ui/custom-error-message/index.tsx
+msgid "failed to load PDF file"
+msgstr "failed to load PDF file"
+
 #: src/features/settings/ui/index.tsx
 msgid "foreground color"
 msgstr "foreground color"

@@ -36,6 +36,10 @@ msgstr "Перетащите"
 msgid "english"
 msgstr "английский"
 
+#: src/features/pdf-translator/ui/custom-error-message/index.tsx
+msgid "failed to load PDF file"
+msgstr "Не удалось загрузить PDF-файл"
+
 #: src/features/settings/ui/index.tsx
 msgid "foreground color"
 msgstr "Цвет текста"

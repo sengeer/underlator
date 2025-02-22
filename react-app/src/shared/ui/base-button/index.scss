@@ -6,6 +6,12 @@
   cursor: pointer;
   transition: color 0.125s;
 
+  &__icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   &__text {
     align-self: center;
     margin: 0;

@@ -22,12 +22,20 @@
     }
   }
 
+  &__btns-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 1rem 5rem 0;
+  }
+
   &__btns-group {
     display: flex;
+    flex-direction: row;
     gap: 1rem;
     justify-content: center;
     align-items: center;
-    margin-top: 1rem;
   }
 
   &__output {
