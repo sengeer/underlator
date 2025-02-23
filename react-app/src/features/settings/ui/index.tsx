@@ -11,11 +11,20 @@ import {
 } from '../../../shared/model/element-state-slice';
 import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background ';
 import ColorPicker from '../../../shared/ui/color-picker';
-import LanguageSelectorPopup from '../../../shared/ui/language-selector-popup';
+import SelectorPopup from '../../../shared/ui/selector-popup';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 
+export interface Languages {
+  [key: string]: string;
+}
+
+const LANGUAGES: Languages = {
+  english: 'en',
+  русский: 'ru',
+};
+
 function Settings({ isOpened }: { isOpened: boolean }) {
-  const [languageKey, setLanguageKey] = useState('russian');
+  const [languageKey, setLanguageKey] = useState('русский');
   const [language, setLanguage] = useState('ru');
   const { i18n, t } = useLingui();
   const dispatch = useDispatch();
@@ -79,13 +88,13 @@ function Settings({ isOpened }: { isOpened: boolean }) {
           </div>
         </div>
       </div>
-      <LanguageSelectorPopup
+      <SelectorPopup
+        data={LANGUAGES}
         isOpened={isOpenLanguageSelectorPopup}
         setOpened={() => dispatch(closeElement('languageSelectorPopup'))}
-        setSelectedLanguageKey={setLanguageKey}
-        selectedLanguageValue={language}
-        setSelectedLanguageValue={handleLanguageChange}
-        defaultLanguage={'ru'}
+        setSelectedKey={setLanguageKey}
+        selectedValue={language}
+        setSelectedValue={handleLanguageChange}
       />
     </section>
   );

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import PaletteIcon from '../../assets/icons/palette-icon';
 import {
   getStorageWrite,
-  addStorageWrite,
+  setStorageWrite,
 } from '../../lib/utils/control-local-storage';
 import ButtonWrapperWithBackground from '../button-wrapper-with-background ';
 import TextAndIconButton from '../text-and-icon-button';
@@ -36,7 +36,7 @@ function ColorPicker({
     const newColor = e.target.value;
     updateColorVariable(newColor);
     setSelectedColor(newColor);
-    addStorageWrite(variable, newColor);
+    setStorageWrite(variable, newColor);
   };
 
   const handleButtonClick = () => {

@@ -1,11 +1,11 @@
 import './index.scss';
 
-interface AnimatingWrapperProps {
+interface AnimatingWrapper {
   children: React.ReactNode;
   isShow: boolean;
 }
 
-function AnimatingWrapper({ children, isShow }: AnimatingWrapperProps) {
+function AnimatingWrapper({ children, isShow }: AnimatingWrapper) {
   return (
     <div
       className={`animating-wrapper${isShow ? ' animating-wrapper_show' : ''}`}>
