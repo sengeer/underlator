@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 
 export function useTranslate() {
   const [translateLanguage, setTranslateLanguage] = useState<'en-ru' | 'ru-en'>(

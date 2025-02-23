@@ -7,12 +7,16 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import './index.scss';
 import { useResizeDetector } from 'react-resize-detector';
+import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CloseIcon from '../../../shared/assets/icons/close-icon';
+import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIconM from '../../../shared/assets/icons/sync-icon-m';
+import { useCopying } from '../../../shared/lib/hooks/use-copying';
 import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
 import { isElementOpen } from '../../../shared/model/element-state-slice';
+import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import FileUpload from '../../../shared/ui/file-upload';
 import IconButton from '../../../shared/ui/icon-button';
@@ -36,6 +40,8 @@ const maxWidth = 2560;
 function PdfTranslator({ isOpened }: { isOpened: boolean }) {
   const [file, setFile] = useState<File>();
   const [numPages, setNumPages] = useState<number>();
+
+  const { isCopied, handleCopy } = useCopying();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -141,7 +147,26 @@ function PdfTranslator({ isOpened }: { isOpened: boolean }) {
             <CloseIcon />
           </IconButton>
         </div>
-        <p className='pdf-translator__output'>{output}</p>
+        <div className='pdf-translator__output-wrapper'>
+          <p className='pdf-translator__output'>{output}</p>
+          {output && (
+            <IconButton
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+              }}
+              onClick={() => handleCopy(output)}
+              isDisabled={output === '' || isCopied}>
+              <AnimatingWrapper isShow={isCopied}>
+                <CheckIcon />
+              </AnimatingWrapper>
+              <AnimatingWrapper isShow={!isCopied}>
+                <CopyIcon />
+              </AnimatingWrapper>
+            </IconButton>
+          )}
+        </div>
       </div>
 
       <div className='pdf-translator__container'>

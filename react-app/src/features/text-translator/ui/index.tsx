@@ -1,10 +1,15 @@
 import { useLingui } from '@lingui/react/macro';
+import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
+import CheckIcon from '../../../shared/assets/icons/check-icon';
+import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIconL from '../../../shared/assets/icons/sync-icon-l';
 import TranslateIconM from '../../../shared/assets/icons/translate-icon-m';
+import { useCopying } from '../../../shared/lib/hooks/use-copying';
 import { useTranslate } from '../../../shared/lib/hooks/use-translate';
 import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
+import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import IconButton from '../../../shared/ui/icon-button';
 import Loader from '../../../shared/ui/loader';
@@ -13,6 +18,8 @@ import './index.scss';
 
 function TextTranslator({ isOpened }: { isOpened: boolean }) {
   const { progressItems, output } = useTranslateStatus();
+
+  const { isCopied, handleCopy } = useCopying();
 
   const { t } = useLingui();
 
@@ -23,6 +30,10 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
     toggleTranslateLanguage,
     translate,
   } = useTranslate();
+
+  const handleClear = () => {
+    setInput('');
+  };
 
   return (
     <section
@@ -40,12 +51,24 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
           <GlobeUkIcon />
         </DecorativeTextAndIconButton>
       )}
-      <textarea
-        className='text-translator__textarea'
-        value={input}
-        rows={1}
-        onChange={(e) => setInput(e.target.value)}
-      />
+      <div className='text-translator__textarea-wrapper'>
+        <textarea
+          className='text-translator__textarea'
+          value={input}
+          rows={1}
+          onChange={(e) => setInput(e.target.value)}
+        />
+        <IconButton
+          style={{
+            position: 'absolute',
+            top: '1rem',
+            right: '1rem',
+          }}
+          onClick={handleClear}
+          isDisabled={input === ''}>
+          <BackspaceIcon />
+        </IconButton>
+      </div>
       <IconButton onClick={toggleTranslateLanguage}>
         <SyncIconL color='var(--main)' />
       </IconButton>
@@ -62,12 +85,29 @@ function TextTranslator({ isOpened }: { isOpened: boolean }) {
           <GlobeUkIcon />
         </DecorativeTextAndIconButton>
       )}
-      <textarea
-        className='text-translator__textarea'
-        value={output}
-        rows={1}
-        readOnly
-      />
+      <div className='text-translator__textarea-wrapper'>
+        <textarea
+          className='text-translator__textarea'
+          value={output}
+          rows={1}
+          readOnly
+        />
+        <IconButton
+          style={{
+            position: 'absolute',
+            top: '1rem',
+            right: '1rem',
+          }}
+          onClick={() => handleCopy(output)}
+          isDisabled={output === '' || isCopied}>
+          <AnimatingWrapper isShow={isCopied}>
+            <CheckIcon />
+          </AnimatingWrapper>
+          <AnimatingWrapper isShow={!isCopied}>
+            <CopyIcon />
+          </AnimatingWrapper>
+        </IconButton>
+      </div>
       <TextAndIconButton
         text={progressItems.file === '' ? t`translate` : progressItems.file}
         style={{
