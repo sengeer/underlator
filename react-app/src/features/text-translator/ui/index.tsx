@@ -16,7 +16,11 @@ import Loader from '../../../shared/ui/loader';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import './index.scss';
 
-function TextTranslator({ isOpened }: { isOpened: boolean }) {
+interface TextTranslator {
+  isOpened: boolean;
+}
+
+function TextTranslator({ isOpened }: TextTranslator) {
   const { progressItems, output } = useTranslateStatus();
 
   const { isCopied, handleCopy } = useCopying();

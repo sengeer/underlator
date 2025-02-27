@@ -23,7 +23,11 @@ const LANGUAGES: Languages = {
   русский: 'ru',
 };
 
-function Settings({ isOpened }: { isOpened: boolean }) {
+interface Settings {
+  isOpened: boolean;
+}
+
+function Settings({ isOpened }: Settings) {
   const [languageKey, setLanguageKey] = useState('русский');
   const [language, setLanguage] = useState('ru');
   const { i18n, t } = useLingui();

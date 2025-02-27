@@ -8,15 +8,13 @@ import {
 import ButtonWrapperWithBackground from '../button-wrapper-with-background ';
 import TextAndIconButton from '../text-and-icon-button';
 
-function ColorPicker({
-  text,
-  variable,
-  color,
-}: {
+interface ColorPicker {
   text: string;
   variable: string;
   color: string;
-}) {
+}
+
+function ColorPicker({ text, variable, color }: ColorPicker) {
   const [selectedColor, setSelectedColor] = useState(color);
   const colorInputRef = useRef<HTMLInputElement>(null);
 

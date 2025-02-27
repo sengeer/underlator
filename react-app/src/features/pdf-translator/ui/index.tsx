@@ -37,7 +37,11 @@ const options = {
 
 const maxWidth = 2560;
 
-function PdfTranslator({ isOpened }: { isOpened: boolean }) {
+interface PdfTranslator {
+  isOpened: boolean;
+}
+
+function PdfTranslator({ isOpened }: PdfTranslator) {
   const [file, setFile] = useState<File>();
   const [numPages, setNumPages] = useState<number>();
 

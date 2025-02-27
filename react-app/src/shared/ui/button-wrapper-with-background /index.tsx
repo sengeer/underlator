@@ -1,12 +1,14 @@
 import './index.scss';
 
+interface ButtonWrapperWithBackground {
+  onClick: () => void;
+  children: React.ReactNode;
+}
+
 function ButtonWrapperWithBackground({
   onClick,
   children,
-}: {
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+}: ButtonWrapperWithBackground) {
   return (
     <div className='button-wrapper-with-background' onClick={onClick}>
       {children}

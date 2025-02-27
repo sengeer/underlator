@@ -5,7 +5,6 @@ export function useTranslate() {
     'en-ru'
   );
 
-  // Inputs and outputs
   const [input, setInput] = useState('');
 
   const toggleTranslateLanguage = () => {
