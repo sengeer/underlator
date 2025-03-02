@@ -4,6 +4,7 @@ import { Trans } from '@lingui/react/macro';
 import { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
+import { loadCatalog } from '../../../shared/lib/i18n';
 import {
   openElement,
   closeElement,
@@ -30,7 +31,7 @@ interface Settings {
 function Settings({ isOpened }: Settings) {
   const [languageKey, setLanguageKey] = useState('русский');
   const [language, setLanguage] = useState('ru');
-  const { i18n, t } = useLingui();
+  const { t } = useLingui();
   const dispatch = useDispatch();
 
   const isOpenLanguageSelectorPopup = useSelector((state) =>
@@ -40,9 +41,9 @@ function Settings({ isOpened }: Settings) {
   const handleLanguageChange = useCallback(
     (lang: string) => {
       setLanguage(lang);
-      i18n.activate(lang);
+      loadCatalog(lang);
     },
-    [i18n]
+    [loadCatalog]
   );
 
   return (

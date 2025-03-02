@@ -3,9 +3,9 @@ import cpy from 'cpy';
 import { sync as rimrafSync } from 'rimraf';
 
 async function moveReactBuild() {
-  await cpy(['build/**/*'], path.join(process.cwd(), '../electron/src/'));
+  await cpy(['dist/**/*'], path.join(process.cwd(), '../electron/src/'));
 
-  rimrafSync(path.join(process.cwd(), 'build'));
+  rimrafSync(path.join(process.cwd(), 'dist'));
 }
 
 async function removeElectronOut() {

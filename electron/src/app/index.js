@@ -12,6 +12,7 @@ if (require('electron-squirrel-startup')) {
 
 let worker = null;
 let mainWindow = null;
+let isHandlerRegistered = false;
 
 const createWindow = () => {
   // Create the browser window.
@@ -34,42 +35,59 @@ const createWindow = () => {
     mainWindow.loadFile(path.join('src', 'index.html'));
   }
 
+  // Explicitly remove the handler on the closed event.
+  mainWindow.on('closed', () => {
+    ipcMain.removeHandler('transformers:run');
+    isHandlerRegistered = false;
+
+    if (worker) {
+      worker.terminate();
+      worker = null;
+    }
+
+    mainWindow = null;
+  });
+
   // Checking for a repeated call of a worker.
   let isWorkerBusy = false;
 
   // Add a handler for the `transformers:run` event.
-  ipcMain.handle('transformers:run', (event, args) => {
-    return new Promise((resolve, reject) => {
-      if (isWorkerBusy) {
-        reject(new Error('Worker is busy'));
-        return;
-      }
-
-      if (!worker) {
-        worker = new Worker(path.join(__dirname, 'worker.js'));
-      }
-
-      isWorkerBusy = true;
-
-      worker.on('message', (message) => {
-        mainWindow.webContents.send('transformers:status', message);
-        if (message.status === 'complete') {
-          resolve(message.output);
-          isWorkerBusy = false;
-        } else if (message.status === 'error') {
-          reject(new Error(message.error));
-          isWorkerBusy = false;
+  if (!isHandlerRegistered) {
+    ipcMain.handle('transformers:run', (event, args) => {
+      return new Promise((resolve, reject) => {
+        if (isWorkerBusy) {
+          reject(new Error('Worker is busy'));
+          return;
         }
-      });
 
-      worker.on('error', (error) => {
-        reject(error);
-        isWorkerBusy = false;
-      });
+        if (!worker) {
+          worker = new Worker(path.join(__dirname, 'worker.js'));
+        }
 
-      worker.postMessage(args);
+        isWorkerBusy = true;
+
+        worker.on('message', (message) => {
+          mainWindow.webContents.send('transformers:status', message);
+          if (message.status === 'complete') {
+            resolve(message.output);
+            isWorkerBusy = false;
+          } else if (message.status === 'error') {
+            reject(new Error(message.error));
+            isWorkerBusy = false;
+          }
+        });
+
+        worker.on('error', (error) => {
+          reject(error);
+          isWorkerBusy = false;
+        });
+
+        worker.postMessage(args);
+      });
     });
-  });
+
+    isHandlerRegistered = true;
+  }
 };
 
 // This method will be called when Electron has finished

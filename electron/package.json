@@ -52,11 +52,10 @@
         "portable"
       ]
     },
-    "linux": {
-      "target": [
-        "dir"
-      ],
-      "category": "Utility"
+    "mac": {
+      "category": "public.app-category.utilities",
+      "icon": "icons/mac/underlator.icns",
+      "target": "dmg"
     }
   }
 }
