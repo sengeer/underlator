@@ -1,8 +1,10 @@
 import { defineConfig } from '@lingui/cli';
 import { formatter } from '@lingui/format-po';
 
+const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE;
+
 export default defineConfig({
-  sourceLocale: 'ru',
+  sourceLocale: defaultLocale,
   locales: ['ru', 'en'],
   catalogs: [
     {

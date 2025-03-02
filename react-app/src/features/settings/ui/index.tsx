@@ -6,6 +6,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
 import { loadCatalog } from '../../../shared/lib/i18n';
 import {
+  getStorageWrite,
+  setStorageWrite,
+} from '../../../shared/lib/utils/control-local-storage';
+import {
   openElement,
   closeElement,
   isElementOpen,
@@ -14,6 +18,8 @@ import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-
 import ColorPicker from '../../../shared/ui/color-picker';
 import SelectorPopup from '../../../shared/ui/selector-popup';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
+
+const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE;
 
 export interface Languages {
   [key: string]: string;
@@ -29,8 +35,30 @@ interface Settings {
 }
 
 function Settings({ isOpened }: Settings) {
-  const [languageKey, setLanguageKey] = useState('русский');
-  const [language, setLanguage] = useState('ru');
+  const [languageKey, setLanguageKey] = useState(() => {
+    const localeFromStorage = getStorageWrite('locale');
+
+    if (typeof localeFromStorage === 'string' && localeFromStorage !== '') {
+      return Object.keys(LANGUAGES).find(
+        (key) => LANGUAGES[key] === localeFromStorage
+      );
+    } else {
+      const entry = Object.entries(LANGUAGES).find(
+        ([key, val]) => val === defaultLocale
+      );
+
+      return entry ? entry[0] : '';
+    }
+  });
+
+  const [language, setLanguage] = useState(() => {
+    const localeFromStorage = getStorageWrite('locale');
+
+    return typeof localeFromStorage === 'string' && localeFromStorage !== ''
+      ? localeFromStorage
+      : defaultLocale;
+  });
+
   const { t } = useLingui();
   const dispatch = useDispatch();
 
@@ -42,6 +70,7 @@ function Settings({ isOpened }: Settings) {
     (lang: string) => {
       setLanguage(lang);
       loadCatalog(lang);
+      setStorageWrite('locale', lang);
     },
     [loadCatalog]
   );
