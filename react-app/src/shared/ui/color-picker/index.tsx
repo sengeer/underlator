@@ -5,7 +5,7 @@ import {
   getStorageWrite,
   setStorageWrite,
 } from '../../lib/utils/control-local-storage';
-import ButtonWrapperWithBackground from '../button-wrapper-with-background ';
+import ButtonWrapperWithBackground from '../button-wrapper-with-background';
 import TextAndIconButton from '../text-and-icon-button';
 
 interface ColorPicker {

@@ -14,7 +14,7 @@ import {
   closeElement,
   isElementOpen,
 } from '../../../shared/model/element-state-slice';
-import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background ';
+import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background';
 import ColorPicker from '../../../shared/ui/color-picker';
 import SelectorPopup from '../../../shared/ui/selector-popup';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
