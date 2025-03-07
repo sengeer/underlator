@@ -1,8 +1,7 @@
 .popup {
-  position: fixed;
+  position: absolute;
   top: 0;
   right: 0;
-  left: 5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -21,7 +20,7 @@
   &__wrapper {
     display: flex;
     flex-direction: column;
-    min-width: 456px;
+    min-width: calc(100% - 10rem);
     max-height: 80%;
     border-radius: 0.5rem;
     background: var(--background);

@@ -5,7 +5,7 @@ import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIconL from '../../../shared/assets/icons/sync-icon-l';
-import TranslateIconM from '../../../shared/assets/icons/translate-icon-m';
+import TranslateIconS from '../../../shared/assets/icons/translate-icon-s';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
 import { useTranslate } from '../../../shared/lib/hooks/use-translate';
 import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
@@ -121,7 +121,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
         }}
         isDisabled={progressItems.file !== ''}
         onClick={translate}>
-        {progressItems.file !== '' ? <Loader /> : <TranslateIconM />}
+        {progressItems.file !== '' ? <Loader /> : <TranslateIconS />}
       </TextAndIconButton>
     </section>
   );

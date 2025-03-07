@@ -1,4 +1,5 @@
 .settings {
+  position: relative;
   display: none;
   flex-direction: row;
   width: 100%;
@@ -13,6 +14,10 @@
     gap: 5rem;
     width: 100%;
     margin: 2rem 5rem;
+
+    @media (width <= 768px) {
+      flex-direction: column;
+    }
   }
 
   &__column {

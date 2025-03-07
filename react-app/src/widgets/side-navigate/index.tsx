@@ -1,7 +1,11 @@
 import { useDispatch, useSelector } from 'react-redux';
-import PdfIcon from '../../shared/assets/icons/pdf-icon';
-import SettingsIcon from '../../shared/assets/icons/settings-icon';
+import PdfIconL from '../../shared/assets/icons/pdf-icon-l';
+import PdfIconM from '../../shared/assets/icons/pdf-icon-m';
+import SettingsIconL from '../../shared/assets/icons/settings-icon-l';
+import SettingsIconM from '../../shared/assets/icons/settings-icon-m';
 import TranslateIconL from '../../shared/assets/icons/translate-icon-l';
+import TranslateIconM from '../../shared/assets/icons/translate-icon-m';
+import useWindowSize from '../../shared/lib/hooks/use-window-size/use-window-size';
 import {
   openElement,
   closeElement,
@@ -25,6 +29,10 @@ function SideNavigate() {
     isElementOpen(state, 'settingsSection')
   );
 
+  const { width } = useWindowSize();
+
+  const isMobile = width <= 768;
+
   return (
     <aside className='side-navigate'>
       <IconButton
@@ -34,7 +42,7 @@ function SideNavigate() {
           dispatch(closeElement('pdfTranslationSection'));
           dispatch(closeElement('settingsSection'));
         }}>
-        <TranslateIconL />
+        {isMobile ? <TranslateIconM /> : <TranslateIconL />}
       </IconButton>
       <IconButton
         isActiveStyle={isOpenPdfTranslationSection}
@@ -43,7 +51,7 @@ function SideNavigate() {
           dispatch(closeElement('textTranslationSection'));
           dispatch(closeElement('settingsSection'));
         }}>
-        <PdfIcon />
+        {isMobile ? <PdfIconM /> : <PdfIconL />}
       </IconButton>
       <IconButton
         isActiveStyle={isOpenSettingsSection}
@@ -52,7 +60,7 @@ function SideNavigate() {
           dispatch(closeElement('textTranslationSection'));
           dispatch(closeElement('pdfTranslationSection'));
         }}>
-        <SettingsIcon />
+        {isMobile ? <SettingsIconM /> : <SettingsIconL />}
       </IconButton>
     </aside>
   );

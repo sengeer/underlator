@@ -17,10 +17,10 @@ let isHandlerRegistered = false;
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 640,
-    height: 495,
-    minWidth: 640,
-    minHeight: 495,
+    width: 480,
+    height: 320,
+    minWidth: 480,
+    minHeight: 320,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
