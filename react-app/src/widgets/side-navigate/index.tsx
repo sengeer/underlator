@@ -1,11 +1,14 @@
 import { useDispatch, useSelector } from 'react-redux';
 import PdfIconL from '../../shared/assets/icons/pdf-icon-l';
 import PdfIconM from '../../shared/assets/icons/pdf-icon-m';
+import PdfIconS from '../../shared/assets/icons/pdf-icon-s';
 import SettingsIconL from '../../shared/assets/icons/settings-icon-l';
 import SettingsIconM from '../../shared/assets/icons/settings-icon-m';
+import SettingsIconS from '../../shared/assets/icons/settings-icon-s';
 import TranslateIconL from '../../shared/assets/icons/translate-icon-l';
 import TranslateIconM from '../../shared/assets/icons/translate-icon-m';
-import useWindowSize from '../../shared/lib/hooks/use-window-size/use-window-size';
+import TranslateIconS from '../../shared/assets/icons/translate-icon-s';
+import useWindowSize from '../../shared/lib/hooks/use-window-size';
 import {
   openElement,
   closeElement,
@@ -13,6 +16,32 @@ import {
 } from '../../shared/model/element-state-slice';
 import IconButton from '../../shared/ui/icon-button';
 import './index.scss';
+
+interface icons {
+  [key: string]: {
+    S: React.FC;
+    M: React.FC;
+    L: React.FC;
+  };
+}
+
+const icons: icons = {
+  Translate: {
+    S: TranslateIconS,
+    M: TranslateIconM,
+    L: TranslateIconL,
+  },
+  Pdf: {
+    S: PdfIconS,
+    M: PdfIconM,
+    L: PdfIconL,
+  },
+  Settings: {
+    S: SettingsIconS,
+    M: SettingsIconM,
+    L: SettingsIconL,
+  },
+};
 
 function SideNavigate() {
   const dispatch = useDispatch();
@@ -31,7 +60,15 @@ function SideNavigate() {
 
   const { width } = useWindowSize();
 
-  const isMobile = width <= 768;
+  const hasSizeS = width <= 768;
+  const hasSizeM = width <= 1024;
+
+  function Icon({ type }: { type: string }) {
+    const size = hasSizeS ? 'S' : hasSizeM ? 'M' : 'L';
+    const IconComponent = icons[type][size];
+
+    return <IconComponent />;
+  }
 
   return (
     <aside className='side-navigate'>
@@ -42,7 +79,7 @@ function SideNavigate() {
           dispatch(closeElement('pdfTranslationSection'));
           dispatch(closeElement('settingsSection'));
         }}>
-        {isMobile ? <TranslateIconM /> : <TranslateIconL />}
+        <Icon type='Translate' />
       </IconButton>
       <IconButton
         isActiveStyle={isOpenPdfTranslationSection}
@@ -51,7 +88,7 @@ function SideNavigate() {
           dispatch(closeElement('textTranslationSection'));
           dispatch(closeElement('settingsSection'));
         }}>
-        {isMobile ? <PdfIconM /> : <PdfIconL />}
+        <Icon type='Pdf' />
       </IconButton>
       <IconButton
         isActiveStyle={isOpenSettingsSection}
@@ -60,7 +97,7 @@ function SideNavigate() {
           dispatch(closeElement('textTranslationSection'));
           dispatch(closeElement('pdfTranslationSection'));
         }}>
-        {isMobile ? <SettingsIconM /> : <SettingsIconL />}
+        <Icon type='Settings' />
       </IconButton>
     </aside>
   );

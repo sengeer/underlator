@@ -5,10 +5,12 @@ import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIconL from '../../../shared/assets/icons/sync-icon-l';
-import TranslateIconS from '../../../shared/assets/icons/translate-icon-s';
+import SyncIconXS from '../../../shared/assets/icons/sync-icon-xs';
+import TranslateIconXS from '../../../shared/assets/icons/translate-icon-xs';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
 import { useTranslate } from '../../../shared/lib/hooks/use-translate';
 import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
+import useWindowSize from '../../../shared/lib/hooks/use-window-size';
 import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import IconButton from '../../../shared/ui/icon-button';
@@ -38,6 +40,10 @@ function TextTranslator({ isOpened }: TextTranslator) {
   const handleClear = () => {
     setInput('');
   };
+
+  const { width } = useWindowSize();
+
+  const hasSizeS = width <= 768;
 
   return (
     <section
@@ -74,7 +80,11 @@ function TextTranslator({ isOpened }: TextTranslator) {
         </IconButton>
       </div>
       <IconButton onClick={toggleTranslateLanguage}>
-        <SyncIconL color='var(--main)' />
+        {hasSizeS ? (
+          <SyncIconXS color='var(--main)' />
+        ) : (
+          <SyncIconL color='var(--main)' />
+        )}
       </IconButton>
       {'ru-en' === translateLanguage ? (
         <DecorativeTextAndIconButton
@@ -121,7 +131,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
         }}
         isDisabled={progressItems.file !== ''}
         onClick={translate}>
-        {progressItems.file !== '' ? <Loader /> : <TranslateIconS />}
+        {progressItems.file !== '' ? <Loader /> : <TranslateIconXS />}
       </TextAndIconButton>
     </section>
   );

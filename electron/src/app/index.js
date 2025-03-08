@@ -1,4 +1,3 @@
-const { Console } = require('console');
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { Worker } = require('worker_threads');
@@ -18,9 +17,9 @@ const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 480,
-    height: 320,
+    height: 350,
     minWidth: 480,
-    minHeight: 320,
+    minHeight: 350,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

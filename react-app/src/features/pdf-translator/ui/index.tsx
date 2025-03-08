@@ -12,7 +12,7 @@ import CloseIcon from '../../../shared/assets/icons/close-icon';
 import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
-import SyncIconM from '../../../shared/assets/icons/sync-icon-m';
+import SyncIconXS from '../../../shared/assets/icons/sync-icon-xs';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
 import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
 import { isElementOpen } from '../../../shared/model/element-state-slice';
@@ -127,7 +127,10 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
               <Loader />
             ) : (
               <IconButton onClick={toggleTranslateLanguage}>
-                <SyncIconM color='var(--main)' />
+                <SyncIconXS
+                  color='var(--main)'
+                  style={{ transform: 'rotate(0.25turn)' }}
+                />
               </IconButton>
             )}
             {'ru-en' === translateLanguage ? (
