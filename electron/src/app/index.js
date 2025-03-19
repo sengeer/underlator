@@ -13,11 +13,10 @@ let worker = null;
 let mainWindow = null;
 let isHandlerRegistered = false;
 
-
 // Remove menu-bar.
 const template = [];
 const menu = Menu.buildFromTemplate(template);
-Menu.setApplicationMenu(menu);
+!isDev && Menu.setApplicationMenu(menu);
 
 const createWindow = () => {
   // Create the browser window.
