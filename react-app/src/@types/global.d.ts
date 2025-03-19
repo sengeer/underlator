@@ -1,3 +1,10 @@
+interface Icon {
+  width?: number;
+  height?: number;
+  color?: string;
+  style?: CSSPropertyRuleStyle;
+}
+
 interface Message {
   status: string;
   data?: Progress;

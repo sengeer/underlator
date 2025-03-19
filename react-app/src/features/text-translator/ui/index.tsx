@@ -4,9 +4,8 @@ import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
-import SyncIconL from '../../../shared/assets/icons/sync-icon-l';
-import SyncIconXS from '../../../shared/assets/icons/sync-icon-xs';
-import TranslateIconXS from '../../../shared/assets/icons/translate-icon-xs';
+import SyncIcon from '../../../shared/assets/icons/sync-icon';
+import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
 import { useTranslate } from '../../../shared/lib/hooks/use-translate';
 import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
@@ -81,9 +80,17 @@ function TextTranslator({ isOpened }: TextTranslator) {
       </div>
       <IconButton onClick={toggleTranslateLanguage}>
         {hasSizeS ? (
-          <SyncIconXS color='var(--main)' />
+          <SyncIcon
+            style={{ transform: 'rotate(0.25turn)' }}
+            color='var(--main)'
+          />
         ) : (
-          <SyncIconL color='var(--main)' />
+          <SyncIcon
+            width={48}
+            height={48}
+            style={{ transform: 'rotate(0.25turn)' }}
+            color='var(--main)'
+          />
         )}
       </IconButton>
       {'ru-en' === translateLanguage ? (
@@ -131,7 +138,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
         }}
         isDisabled={progressItems.file !== ''}
         onClick={translate}>
-        {progressItems.file !== '' ? <Loader /> : <TranslateIconXS />}
+        {progressItems.file !== '' ? <Loader /> : <TranslateIcon />}
       </TextAndIconButton>
     </section>
   );

@@ -1,13 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
-import PdfIconL from '../../shared/assets/icons/pdf-icon-l';
-import PdfIconM from '../../shared/assets/icons/pdf-icon-m';
-import PdfIconS from '../../shared/assets/icons/pdf-icon-s';
-import SettingsIconL from '../../shared/assets/icons/settings-icon-l';
-import SettingsIconM from '../../shared/assets/icons/settings-icon-m';
-import SettingsIconS from '../../shared/assets/icons/settings-icon-s';
-import TranslateIconL from '../../shared/assets/icons/translate-icon-l';
-import TranslateIconM from '../../shared/assets/icons/translate-icon-m';
-import TranslateIconS from '../../shared/assets/icons/translate-icon-s';
+import PdfIcon from '../../shared/assets/icons/pdf-icon';
+import SettingsIcon from '../../shared/assets/icons/settings-icon';
+import TranslateIcon from '../../shared/assets/icons/translate-icon';
 import useWindowSize from '../../shared/lib/hooks/use-window-size';
 import {
   openElement,
@@ -17,29 +11,29 @@ import {
 import IconButton from '../../shared/ui/icon-button';
 import './index.scss';
 
-interface icons {
+interface iconsSet {
   [key: string]: {
-    S: React.FC;
-    M: React.FC;
-    L: React.FC;
+    S: React.ReactNode;
+    M: React.ReactNode;
+    L: React.ReactNode;
   };
 }
 
-const icons: icons = {
+const iconsSet: iconsSet = {
   Translate: {
-    S: TranslateIconS,
-    M: TranslateIconM,
-    L: TranslateIconL,
+    S: <TranslateIcon width={32} height={32} />,
+    M: <TranslateIcon width={40} height={40} />,
+    L: <TranslateIcon width={48} height={48} />,
   },
   Pdf: {
-    S: PdfIconS,
-    M: PdfIconM,
-    L: PdfIconL,
+    S: <PdfIcon width={32} height={32} />,
+    M: <PdfIcon width={40} height={40} />,
+    L: <PdfIcon width={48} height={48} />,
   },
   Settings: {
-    S: SettingsIconS,
-    M: SettingsIconM,
-    L: SettingsIconL,
+    S: <SettingsIcon width={32} height={32} />,
+    M: <SettingsIcon width={40} height={40} />,
+    L: <SettingsIcon width={48} height={48} />,
   },
 };
 
@@ -65,9 +59,9 @@ function SideNavigate() {
 
   function Icon({ type }: { type: string }) {
     const size = hasSizeS ? 'S' : hasSizeM ? 'M' : 'L';
-    const IconComponent = icons[type][size];
+    const IconComponent = iconsSet[type][size];
 
-    return <IconComponent />;
+    return IconComponent;
   }
 
   return (
