@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
 const { Worker } = require('worker_threads');
 
@@ -13,6 +13,12 @@ let worker = null;
 let mainWindow = null;
 let isHandlerRegistered = false;
 
+
+// Remove menu-bar.
+const template = [];
+const menu = Menu.buildFromTemplate(template);
+Menu.setApplicationMenu(menu);
+
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -26,7 +32,6 @@ const createWindow = () => {
       enableRemoteModule: true,
     },
   });
-  mainWindow.setMenuBarVisibility(false);
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:3000');
