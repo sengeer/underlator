@@ -13,12 +13,41 @@ let worker = null;
 let mainWindow = null;
 let isHandlerRegistered = false;
 
-// Remove menu-bar.
-const template = [];
-const menu = Menu.buildFromTemplate(template);
-!isDev && Menu.setApplicationMenu(menu);
+let translations = {
+};
+
+ipcMain.on('update-translations', (_, newTranslations) => {
+  translations = newTranslations;
+  buildMenu();
+});
+
+function buildMenu() {
+  const template = [
+    {
+      label: '',
+      submenu: [
+        {
+          role: 'about',
+          label: translations.about || 'About',
+        },
+        { role: 'undo', label: translations.undo || 'Undo' },
+        { role: 'redo', label: translations.redo || 'Redo' },
+        { role: 'cut', label: translations.cut || 'Cut' },
+        { role: 'copy', label: translations.copy || 'Copy' },
+        { role: 'paste', label: translations.paste || 'Paste' },
+        { role: 'selectall', label: translations.selectAll || 'Select All' },
+        { role: 'toggleDevTools', visible: isDev },
+      ],
+    },
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
 
 const createWindow = () => {
+  buildMenu();
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 480,
@@ -31,6 +60,8 @@ const createWindow = () => {
       enableRemoteModule: true,
     },
   });
+
+  mainWindow.setMenu(null);
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:3000');

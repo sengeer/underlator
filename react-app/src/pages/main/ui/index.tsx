@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import PdfTranslator from '../../../features/pdf-translator/ui';
-import Settings from '../../../features/settings/ui';
-import TextTranslator from '../../../features/text-translator/ui';
+import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { isElementOpen } from '../../../shared/model/element-state-slice';
-import SideNavigate from '../../../widgets/side-navigate';
+import PdfTranslator from '../../../widgets/pdf-translator/ui';
+import Settings from '../../../widgets/settings/ui';
+import SideNavigate from '../../../widgets/side-navigate/ui';
+import TextTranslator from '../../../widgets/text-translator/ui';
 import './index.scss';
 
 function Main() {
@@ -18,6 +20,12 @@ function Main() {
   const isOpenSettingsSection = useSelector((state) =>
     isElementOpen(state, 'settingsSection')
   );
+
+  const { translateElectron } = useElectronTranslation();
+
+  useEffect(() => {
+    translateElectron();
+  }, [translateElectron]);
 
   return (
     <main className='main'>

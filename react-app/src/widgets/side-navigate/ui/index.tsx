@@ -1,14 +1,14 @@
 import { useDispatch, useSelector } from 'react-redux';
-import PdfIcon from '../../shared/assets/icons/pdf-icon';
-import SettingsIcon from '../../shared/assets/icons/settings-icon';
-import TranslateIcon from '../../shared/assets/icons/translate-icon';
-import useWindowSize from '../../shared/lib/hooks/use-window-size';
+import PdfIcon from '../../../shared/assets/icons/pdf-icon';
+import SettingsIcon from '../../../shared/assets/icons/settings-icon';
+import TranslateIcon from '../../../shared/assets/icons/translate-icon';
+import useWindowSize from '../../../shared/lib/hooks/use-window-size';
 import {
   openElement,
   closeElement,
   isElementOpen,
-} from '../../shared/model/element-state-slice';
-import IconButton from '../../shared/ui/icon-button';
+} from '../../../shared/model/element-state-slice';
+import IconButton from '../../../shared/ui/icon-button';
 import './index.scss';
 
 interface iconsSet {

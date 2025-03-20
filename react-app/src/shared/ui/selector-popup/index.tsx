@@ -19,7 +19,10 @@ function SelectorPopup({
   setSelectedValue,
 }: SelectorPopup) {
   return (
-    <Popup isOpened={isOpened} setOpened={setOpened}>
+    <Popup
+      isOpened={isOpened}
+      setOpened={setOpened}
+      styleWrapper={{ minWidth: '30.4352%' }}>
       <div className='selector-popup'>
         {Object.entries(data).map(([key, value]) => (
           <TextButton

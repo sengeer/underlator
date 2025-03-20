@@ -13,46 +13,58 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/features/settings/ui/index.tsx
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "About underlator"
+msgstr "О underlator"
+
+#: src/widgets/settings/ui/index.tsx
 msgid "accent color"
 msgstr "Акцентный цвет"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "background color"
 msgstr "Цвет фона"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "color scheme"
 msgstr "Цветовая схема"
+
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Copy"
+msgstr "Копировать"
+
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Cut"
+msgstr "Вырезать"
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "drag and drop your file here"
 msgstr "Перетащите"
 
-#: src/features/text-translator/ui/index.tsx
-#: src/features/text-translator/ui/index.tsx
-#: src/features/pdf-translator/ui/index.tsx
-#: src/features/pdf-translator/ui/index.tsx
+#: src/widgets/text-translator/ui/index.tsx
+#: src/widgets/text-translator/ui/index.tsx
+#: src/widgets/pdf-translator/ui/index.tsx
+#: src/widgets/pdf-translator/ui/index.tsx
 msgid "english"
 msgstr "английский"
 
-#: src/features/pdf-translator/ui/custom-error-message/index.tsx
+#: src/widgets/pdf-translator/ui/custom-error-message/index.tsx
 msgid "failed to load PDF file"
 msgstr "Не удалось загрузить PDF-файл"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "foreground color"
 msgstr "Цвет текста"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "interface language"
 msgstr "Язык интерфейса"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "main color"
 msgstr "Основной цвет"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "main settings"
 msgstr "Основные настройки"
 
@@ -60,17 +72,33 @@ msgstr "Основные настройки"
 msgid "or click"
 msgstr "или"
 
-#: src/features/text-translator/ui/index.tsx
-#: src/features/text-translator/ui/index.tsx
-#: src/features/pdf-translator/ui/index.tsx
-#: src/features/pdf-translator/ui/index.tsx
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Paste"
+msgstr "Вставить"
+
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Redo"
+msgstr "Повторить"
+
+#: src/widgets/text-translator/ui/index.tsx
+#: src/widgets/text-translator/ui/index.tsx
+#: src/widgets/pdf-translator/ui/index.tsx
+#: src/widgets/pdf-translator/ui/index.tsx
 msgid "russian"
 msgstr "русский"
+
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Select All"
+msgstr "Выбрать все"
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "to select a file!"
 msgstr "выберите файл"
 
-#: src/features/text-translator/ui/index.tsx
+#: src/widgets/text-translator/ui/index.tsx
 msgid "translate"
 msgstr "Перевести"
+
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Undo"
+msgstr "Отменить"

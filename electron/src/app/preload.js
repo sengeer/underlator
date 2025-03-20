@@ -12,4 +12,7 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.on('transformers:status', (event, message) =>
       callback(message)
     ),
+  updateTranslations: (translations) => {
+    ipcRenderer.send('update-translations', translations);
+  },
 });

@@ -2,7 +2,7 @@ interface Icon {
   width?: number;
   height?: number;
   color?: string;
-  style?: CSSPropertyRuleStyle;
+  style?: React.CSSProperties;
 }
 
 interface Message {
@@ -16,5 +16,6 @@ interface Window {
   electron: {
     onStatus: (callback: (message: Message) => void) => void;
     run: (message: any) => void;
+    updateTranslations: (message: any) => void;
   };
 }

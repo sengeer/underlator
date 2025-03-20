@@ -13,46 +13,58 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/features/settings/ui/index.tsx
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "About underlator"
+msgstr "About underlator"
+
+#: src/widgets/settings/ui/index.tsx
 msgid "accent color"
 msgstr "accent color"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "background color"
 msgstr "background color"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "color scheme"
 msgstr "color scheme"
+
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Copy"
+msgstr "Copy"
+
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Cut"
+msgstr "Cut"
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "drag and drop your file here"
 msgstr "drag and drop your file here"
 
-#: src/features/text-translator/ui/index.tsx
-#: src/features/text-translator/ui/index.tsx
-#: src/features/pdf-translator/ui/index.tsx
-#: src/features/pdf-translator/ui/index.tsx
+#: src/widgets/text-translator/ui/index.tsx
+#: src/widgets/text-translator/ui/index.tsx
+#: src/widgets/pdf-translator/ui/index.tsx
+#: src/widgets/pdf-translator/ui/index.tsx
 msgid "english"
 msgstr "english"
 
-#: src/features/pdf-translator/ui/custom-error-message/index.tsx
+#: src/widgets/pdf-translator/ui/custom-error-message/index.tsx
 msgid "failed to load PDF file"
 msgstr "failed to load PDF file"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "foreground color"
 msgstr "foreground color"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "interface language"
 msgstr "interface language"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "main color"
 msgstr "main color"
 
-#: src/features/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "main settings"
 msgstr "main settings"
 
@@ -60,17 +72,33 @@ msgstr "main settings"
 msgid "or click"
 msgstr "or click"
 
-#: src/features/text-translator/ui/index.tsx
-#: src/features/text-translator/ui/index.tsx
-#: src/features/pdf-translator/ui/index.tsx
-#: src/features/pdf-translator/ui/index.tsx
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Paste"
+msgstr "Paste"
+
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Redo"
+msgstr "Redo"
+
+#: src/widgets/text-translator/ui/index.tsx
+#: src/widgets/text-translator/ui/index.tsx
+#: src/widgets/pdf-translator/ui/index.tsx
+#: src/widgets/pdf-translator/ui/index.tsx
 msgid "russian"
 msgstr "russian"
+
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Select All"
+msgstr "Select All"
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "to select a file!"
 msgstr "to select a file!"
 
-#: src/features/text-translator/ui/index.tsx
+#: src/widgets/text-translator/ui/index.tsx
 msgid "translate"
 msgstr "translate"
+
+#: src/shared/lib/hooks/use-electron-translations/index.ts
+msgid "Undo"
+msgstr "Undo"

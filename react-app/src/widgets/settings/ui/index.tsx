@@ -4,6 +4,7 @@ import { Trans } from '@lingui/react/macro';
 import { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
+import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { loadCatalog } from '../../../shared/lib/i18n';
 import {
   getStorageWrite,
@@ -61,6 +62,7 @@ function Settings({ isOpened }: Settings) {
 
   const { t } = useLingui();
   const dispatch = useDispatch();
+  const { translateElectron } = useElectronTranslation();
 
   const isOpenLanguageSelectorPopup = useSelector((state) =>
     isElementOpen(state, 'languageSelectorPopup')
@@ -71,6 +73,7 @@ function Settings({ isOpened }: Settings) {
       setLanguage(lang);
       loadCatalog(lang);
       setStorageWrite('locale', lang);
+      translateElectron();
     },
     [loadCatalog]
   );

@@ -14,6 +14,7 @@ import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
+import { useTranslate } from '../../../shared/lib/hooks/use-translate';
 import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
 import { isElementOpen } from '../../../shared/model/element-state-slice';
 import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
@@ -21,7 +22,6 @@ import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-
 import FileUpload from '../../../shared/ui/file-upload';
 import IconButton from '../../../shared/ui/icon-button';
 import Loader from '../../../shared/ui/loader';
-import { useTranslate } from './../../../shared/lib/hooks/use-translate';
 import CustomErrorMessage from './custom-error-message';
 import CustomLoading from './custom-loading';
 

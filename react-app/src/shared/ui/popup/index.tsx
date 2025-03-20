@@ -6,9 +6,10 @@ interface Popup {
   children: React.ReactNode;
   isOpened: boolean;
   setOpened: (value: boolean) => void;
+  styleWrapper?: React.CSSProperties;
 }
 
-function Popup({ children, isOpened, setOpened }: Popup) {
+function Popup({ children, isOpened, setOpened, styleWrapper }: Popup) {
   const popupRef = React.createRef<HTMLDivElement>();
 
   useEffect(() => {
@@ -61,7 +62,7 @@ function Popup({ children, isOpened, setOpened }: Popup) {
       tabIndex={0}
       onMouseDown={handleOverlay}
       ref={popupRef}>
-      <div className='popup__wrapper'>
+      <div className='popup__wrapper' style={styleWrapper}>
         <div className='popup__content'>{children}</div>
       </div>
     </div>
