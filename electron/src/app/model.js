@@ -15,13 +15,10 @@ class TranslationPipeline {
       this.model !== `opus-mt-${translateLanguage}`
     ) {
       // Dynamically import the Transformers.js library.
-      let { pipeline, env } = await import('@xenova/transformers');
-
-      // NOTE: Uncomment this to change the cache directory.
-      // env.cacheDir = './.cache';
+      let { pipeline, env } = await import('@huggingface/transformers');
 
       // Search model locally.
-      env.localModelPath = path.join(__dirname, 'models');
+      env.cacheDir = path.join(__dirname, 'models');
       env.allowRemoteModels = false;
 
       this.model = `opus-mt-${translateLanguage}`;
