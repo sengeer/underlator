@@ -41,6 +41,13 @@ interface PdfTranslator {
   isOpened: boolean;
 }
 
+let uiBtn: HTMLImageElement | null = null; // плавающая иконка
+let activeBlock: HTMLElement | null = null; // выбранный блочный DOM-элемент
+let textInfos: {
+  node: Text;
+  original: string;
+}[] = [];
+
 function PdfTranslator({ isOpened }: PdfTranslator) {
   const [file, setFile] = useState<File>();
   const [numPages, setNumPages] = useState<number>();
@@ -90,14 +97,116 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
     }
   };
 
-  useEffect(() => {
-    const handleMouseUp = async () => {
-      const selection = window.getSelection();
-      const text = selection && selection.toString().trim();
+  function collectVisibleTextNodes(root: Node) {
+    const out: { node: Text; original: string }[] = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (!node.nodeValue?.trim()) return NodeFilter.FILTER_REJECT;
 
-      if (text && isOpenPdfTranslationSection) {
-        translate(text);
+        const el = node.parentElement as HTMLElement | null;
+        if (!el) return NodeFilter.FILTER_REJECT;
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+
+    while (walker.nextNode()) {
+      const n = walker.currentNode as Text;
+      out.push({ node: n, original: n.nodeValue! });
+    }
+    return out;
+  }
+
+  function findClosestBlockElement(node: Node) {
+    let cur: Node | null = node;
+    while (cur && cur !== document.body) {
+      if (
+        cur.nodeType === Node.ELEMENT_NODE &&
+        [
+          'block',
+          'flex',
+          'grid',
+          'list-item',
+          'table',
+          'table-row',
+          'table-cell',
+        ].includes(getComputedStyle(cur as Element).display)
+      ) {
+        return cur as HTMLElement;
       }
+      cur = cur.parentNode;
+    }
+    return null;
+  }
+
+  function removeBtn() {
+    uiBtn?.remove();
+    uiBtn = null;
+  }
+  function showBtn(x: number, y: number) {
+    removeBtn();
+    uiBtn = document.createElement('img');
+    Object.assign(uiBtn.style, {
+      position: 'absolute',
+      top: `${y}px`,
+      left: `${x}px`,
+      width: '24px',
+      height: '24px',
+      cursor: 'pointer',
+      zIndex: '2147483647',
+    } as CSSStyleDeclaration);
+    document.body.appendChild(uiBtn);
+    uiBtn.addEventListener('click', onTranslateClick);
+  }
+
+  async function onTranslateClick() {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+
+    // 4.1 Блок
+    const block = findClosestBlockElement(range.commonAncestorContainer);
+    if (!block) return;
+    activeBlock = block;
+    block.style.backgroundColor = 'yellow';
+
+    // 4.2 Сбор текстовых узлов
+    textInfos = collectVisibleTextNodes(block);
+    if (textInfos.length === 0) {
+      block.style.backgroundColor = '';
+      return;
+    }
+    const payload = textInfos.map((t) => t.original);
+
+    console.log(payload);
+
+    removeBtn();
+  }
+
+  useEffect(() => {
+    const handleMouseUp = async (e: Event) => {
+      if (uiBtn && e.target === uiBtn) return;
+      setTimeout(() => {
+        const sel = window.getSelection();
+        const txt = sel?.toString().trim();
+        if (!txt || !sel) {
+          removeBtn();
+          return;
+        }
+        const ae = document.activeElement;
+        if (ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName)) {
+          removeBtn();
+          return;
+        }
+        const rect = sel.getRangeAt(0).getBoundingClientRect();
+        showBtn(
+          rect.right + window.scrollX - 12,
+          rect.top + window.scrollY - 28
+        );
+      }, 10);
     };
 
     document.addEventListener('mouseup', handleMouseUp);
