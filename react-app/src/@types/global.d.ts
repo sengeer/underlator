@@ -14,7 +14,7 @@ interface Message {
 
 interface Window {
   electron: {
-    onStatus: (callback: (message: Message) => void) => void;
+    onStatus: (callback: (message: Message) => void) => () => void;
     run: (message: any) => void;
     updateTranslations: (message: any) => void;
   };

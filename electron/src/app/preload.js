@@ -8,10 +8,14 @@ const { contextBridge, ipcRenderer } = require('electron');
 // And also send the `transformers:status` status back to the react-app.
 contextBridge.exposeInMainWorld('electron', {
   run: (text) => ipcRenderer.invoke('transformers:run', text),
-  onStatus: (callback) =>
-    ipcRenderer.on('transformers:status', (event, message) =>
-      callback(message)
-    ),
+  onStatus: (callback) => {
+    const subscription = (event, message) => callback(message);
+    ipcRenderer.on('transformers:status', subscription);
+
+    return () => {
+      ipcRenderer.removeListener('transformers:status', subscription);
+    };
+  },
   updateTranslations: (translations) => {
     ipcRenderer.send('update-translations', translations);
   },

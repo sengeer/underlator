@@ -16,6 +16,7 @@ export function useTranslate() {
       await window.electron.run({
         translate: translateLanguage,
         text: input || text,
+        isBlockTranslation: false,
       });
     } catch (error) {
       console.error((error as Error).message);

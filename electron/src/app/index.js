@@ -13,8 +13,7 @@ let worker = null;
 let mainWindow = null;
 let isHandlerRegistered = false;
 
-let translations = {
-};
+let translations = {};
 
 ipcMain.on('update-translations', (_, newTranslations) => {
   translations = newTranslations;

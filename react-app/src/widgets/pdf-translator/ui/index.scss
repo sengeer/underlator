@@ -38,18 +38,6 @@
     align-items: center;
   }
 
-  &__output-wrapper {
-    position: relative;
-    margin: 0.5rem 5rem;
-  }
-
-  &__output {
-    margin: 0;
-    color: var(--foreground);
-    font-weight: 400;
-    font-size: 2rem;
-  }
-
   &__container {
     position: relative;
     display: flex;

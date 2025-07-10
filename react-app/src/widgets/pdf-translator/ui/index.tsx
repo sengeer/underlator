@@ -2,22 +2,19 @@ import { useLingui } from '@lingui/react/macro';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import React, { useState, useEffect, useRef } from 'react';
 import { pdfjs, Document, Page } from 'react-pdf';
-import { useSelector } from 'react-redux';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import './index.scss';
 import { useResizeDetector } from 'react-resize-detector';
-import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CloseIcon from '../../../shared/assets/icons/close-icon';
-import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
+import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
+import { usePdfBlockTranslator } from '../../../shared/lib/hooks/use-pdf-block-translator';
 import { useTranslate } from '../../../shared/lib/hooks/use-translate';
 import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
-import { isElementOpen } from '../../../shared/model/element-state-slice';
-import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import FileUpload from '../../../shared/ui/file-upload';
 import IconButton from '../../../shared/ui/icon-button';
@@ -41,16 +38,29 @@ interface PdfTranslator {
   isOpened: boolean;
 }
 
-let uiBtn: HTMLImageElement | null = null; // плавающая иконка
-let activeBlock: HTMLElement | null = null; // выбранный блочный DOM-элемент
-let textInfos: {
+let activeBlock: HTMLElement | null = null;
+
+type TextInfo = {
   node: Text;
   original: string;
-}[] = [];
+};
+
+type TranslateButtonPosition = {
+  x: number;
+  y: number;
+};
 
 function PdfTranslator({ isOpened }: PdfTranslator) {
   const [file, setFile] = useState<File>();
+  const [textInfos, setTextInfos] = useState<TextInfo[]>([]);
   const [numPages, setNumPages] = useState<number>();
+  const [positionOfTranslateButton, setPositionOfTranslateButton] =
+    useState<TranslateButtonPosition>({
+      x: 0,
+      y: 0,
+    });
+  const [isTranslateButtonVisible, setIsTranslateButtonVisible] =
+    useState<boolean>(false);
 
   const { isCopied, handleCopy } = useCopying();
 
@@ -58,14 +68,16 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
 
   const { t } = useLingui();
 
-  const { progressItems, output } = useTranslateStatus();
+  const { progressItems } = useTranslateStatus();
 
-  const { translateLanguage, toggleTranslateLanguage, translate } =
-    useTranslate();
-
-  const isOpenPdfTranslationSection = useSelector((state) =>
-    isElementOpen(state, 'pdfTranslationSection')
-  );
+  const { translateLanguage, toggleTranslateLanguage } = useTranslate();
+  const {
+    status: blockStatus,
+    translatedChunks,
+    error: blockError,
+    translateBlock,
+    reset: resetBlockTranslator,
+  } = usePdfBlockTranslator();
 
   const { width: documentWidth, ref: documentRef } = useResizeDetector({
     refreshMode: 'debounce',
@@ -142,79 +154,109 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
     return null;
   }
 
-  function removeBtn() {
-    uiBtn?.remove();
-    uiBtn = null;
-  }
-  function showBtn(x: number, y: number) {
-    removeBtn();
-    uiBtn = document.createElement('img');
-    Object.assign(uiBtn.style, {
-      position: 'absolute',
-      top: `${y}px`,
-      left: `${x}px`,
-      width: '24px',
-      height: '24px',
-      cursor: 'pointer',
-      zIndex: '2147483647',
-    } as CSSStyleDeclaration);
-    document.body.appendChild(uiBtn);
-    uiBtn.addEventListener('click', onTranslateClick);
-  }
-
   async function onTranslateClick() {
+    setIsTranslateButtonVisible(false);
+
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
 
-    // 4.1 Блок
     const block = findClosestBlockElement(range.commonAncestorContainer);
     if (!block) return;
     activeBlock = block;
-    block.style.backgroundColor = 'yellow';
 
-    // 4.2 Сбор текстовых узлов
-    textInfos = collectVisibleTextNodes(block);
-    if (textInfos.length === 0) {
+    if (block.tagName.toLowerCase() === 'span') {
+      block.style.backgroundColor = 'var(--background)';
+      block.style.color = 'var(--foreground)';
+    }
+
+    const spans = block.getElementsByTagName('span');
+    for (let i = 0; i < spans.length; i++) {
+      const span = spans[i];
+      span.style.color = 'var(--foreground)';
+      span.style.backgroundColor = 'var(--background)';
+    }
+
+    const collectedTextInfos = collectVisibleTextNodes(block);
+    if (collectedTextInfos.length === 0) {
       block.style.backgroundColor = '';
       return;
     }
-    const payload = textInfos.map((t) => t.original);
-
-    console.log(payload);
-
-    removeBtn();
+    setTextInfos(collectedTextInfos);
+    const payload = collectedTextInfos.map((t) => t.original);
+    translateBlock(payload, translateLanguage);
+    setIsTranslateButtonVisible(false);
   }
 
+  // Processing block translation results.
   useEffect(() => {
-    const handleMouseUp = async (e: Event) => {
-      if (uiBtn && e.target === uiBtn) return;
+    if (Object.keys(translatedChunks).length === 0) return;
+
+    Object.entries(translatedChunks).forEach(([idx, text]) => {
+      const index = parseInt(idx, 10);
+      if (textInfos[index] && textInfos[index].node) {
+        textInfos[index].node.nodeValue = text;
+      } else {
+        console.warn(`Node at index ${index} not found in textInfos.`);
+      }
+    });
+
+    if (blockStatus === 'success' || blockStatus === 'error') {
+      if (activeBlock) {
+        if (blockStatus === 'error' && blockError) {
+          const span = document.createElement('span');
+          span.style.color = 'red';
+          span.textContent = `Ошибка перевода: ${blockError}`;
+          activeBlock.appendChild(span);
+        }
+        activeBlock = null;
+      }
+      setTextInfos([]);
+      resetBlockTranslator();
+    }
+  }, [
+    translatedChunks,
+    blockStatus,
+    blockError,
+    resetBlockTranslator,
+    textInfos,
+  ]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (activeBlock && activeBlock.contains(e.target as Node)) {
+        return;
+      }
+
       setTimeout(() => {
         const sel = window.getSelection();
         const txt = sel?.toString().trim();
         if (!txt || !sel) {
-          removeBtn();
+          setIsTranslateButtonVisible(false);
           return;
         }
         const ae = document.activeElement;
         if (ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName)) {
-          removeBtn();
+          setIsTranslateButtonVisible(false);
           return;
         }
         const rect = sel.getRangeAt(0).getBoundingClientRect();
-        showBtn(
-          rect.right + window.scrollX - 12,
-          rect.top + window.scrollY - 28
-        );
+
+        setIsTranslateButtonVisible(true);
+
+        setPositionOfTranslateButton({
+          x: rect.right + window.scrollX - 12,
+          y: rect.top + window.scrollY - 28,
+        });
       }, 10);
     };
 
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('click', handleClick);
 
     return () => {
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('click', handleClick);
     };
-  }, [isOpenPdfTranslationSection]);
+  }, [activeBlock]);
 
   return (
     <section
@@ -260,29 +302,22 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
             <CloseIcon />
           </IconButton>
         </div>
-        <div className='pdf-translator__output-wrapper'>
-          <p className='pdf-translator__output'>{output}</p>
-          {output && (
-            <IconButton
-              style={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-              }}
-              onClick={() => handleCopy(output)}
-              isDisabled={output === '' || isCopied}>
-              <AnimatingWrapper isShow={isCopied}>
-                <CheckIcon />
-              </AnimatingWrapper>
-              <AnimatingWrapper isShow={!isCopied}>
-                <CopyIcon />
-              </AnimatingWrapper>
-            </IconButton>
-          )}
-        </div>
       </div>
 
       <div className='pdf-translator__container'>
+        {isTranslateButtonVisible && (
+          <IconButton
+            style={{
+              position: 'absolute',
+              top: `${positionOfTranslateButton.y}px`,
+              left: `${positionOfTranslateButton.x}px`,
+              cursor: 'pointer',
+              zIndex: 3,
+            }}
+            onClick={() => onTranslateClick()}>
+            <TranslateIcon />
+          </IconButton>
+        )}
         <div className='pdf-translator__gradient' />
         <FileUpload
           isOpened={!file}
