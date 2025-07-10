@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
+import { useEffect, useState } from 'react';
 import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
 import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CopyIcon from '../../../shared/assets/icons/copy-icon';
@@ -7,8 +8,7 @@ import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
-import { useTranslate } from '../../../shared/lib/hooks/use-translate';
-import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
+import { useTextTranslator } from '../../../shared/lib/hooks/use-text-translator';
 import useWindowSize from '../../../shared/lib/hooks/use-window-size';
 import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
@@ -22,19 +22,19 @@ interface TextTranslator {
 }
 
 function TextTranslator({ isOpened }: TextTranslator) {
-  const { progressItems, output } = useTranslateStatus();
+  const {
+    progressItems,
+    translatedChunks,
+    translateChunks,
+    translateLanguage,
+    toggleTranslateLanguage,
+  } = useTextTranslator();
 
   const { isCopied, handleCopy } = useCopying();
+  const [input, setInput] = useState<string>('');
+  const [output, setOutput] = useState<string>(translatedChunks[0]);
 
   const { t } = useLingui();
-
-  const {
-    translateLanguage,
-    input,
-    setInput,
-    toggleTranslateLanguage,
-    translate,
-  } = useTranslate();
 
   const handleClear = () => {
     setInput('');
@@ -43,6 +43,10 @@ function TextTranslator({ isOpened }: TextTranslator) {
   const { width } = useWindowSize();
 
   const hasSizeS = width <= 768;
+
+  useEffect(() => {
+    setOutput(translatedChunks[0]);
+  }, [translatedChunks[0]]);
 
   return (
     <section
@@ -119,8 +123,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
             top: '1rem',
             right: '1rem',
           }}
-          onClick={() => handleCopy(output)}
-          isDisabled={output === '' || isCopied}>
+          onClick={() => handleCopy(input)}
+          isDisabled={!input || isCopied}>
           <AnimatingWrapper isShow={isCopied}>
             <CheckIcon />
           </AnimatingWrapper>
@@ -137,7 +141,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
           alignSelf: 'center',
         }}
         isDisabled={progressItems.file !== ''}
-        onClick={translate}>
+        onClick={() => translateChunks([input])}>
         {progressItems.file !== '' ? <Loader /> : <TranslateIcon />}
       </TextAndIconButton>
     </section>

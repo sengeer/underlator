@@ -12,50 +12,30 @@ parentPort.on('message', async (event) => {
       }
     );
 
-    if (event.isBlockTranslation) {
-      const texts = event.text.split(event.delimiter);
-      for (let i = 0; i < texts.length; i++) {
-        const text = texts[i];
-        if (!text.trim()) {
+    const texts = event.text.split(event.delimiter);
+    for (let i = 0; i < texts.length; i++) {
+      const text = texts[i];
+      if (!text.trim()) {
 
-          parentPort.postMessage({
-            status: 'block-chunk',
-            data: { idx: i, text: '' },
-          });
-          continue;
-        }
-        const output = await translator(text);
-        const translatedText = output[0].translation_text;
         parentPort.postMessage({
-          status: 'block-chunk',
-          data: { idx: i, text: translatedText },
+          status: 'chunk',
+          data: { idx: i, text: '' },
         });
+        continue;
       }
-      parentPort.postMessage({ status: 'block-complete' });
-    } else {
-      // We perform translation.
-      let output = await translator(event.text, {
-        callback_function: (x) => {
-          parentPort.postMessage({
-            status: 'update',
-            output: translator.tokenizer.decode(x[0].output_token_ids, {
-              skip_special_tokens: true,
-            }),
-          });
-        },
-      });
-
-      // We send result
+      const output = await translator(text);
+      const translatedText = output[0].translation_text;
       parentPort.postMessage({
-        status: 'complete',
-        output: output,
+        status: 'chunk',
+        data: { idx: i, text: translatedText },
       });
     }
+
+    parentPort.postMessage({ status: 'complete' });
   } catch (error) {
     // We send an error if something goes wrong.
-    const status = event.isBlockTranslation ? 'block-error' : 'error';
     parentPort.postMessage({
-      status: status,
+      status: 'error',
       error: error.message,
     });
   }

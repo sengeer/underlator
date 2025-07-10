@@ -11,10 +11,7 @@ import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
-import { useCopying } from '../../../shared/lib/hooks/use-copying';
-import { usePdfBlockTranslator } from '../../../shared/lib/hooks/use-pdf-block-translator';
-import { useTranslate } from '../../../shared/lib/hooks/use-translate';
-import { useTranslateStatus } from '../../../shared/lib/hooks/use-translate-status';
+import { useTextTranslator } from '../../../shared/lib/hooks/use-text-translator';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import FileUpload from '../../../shared/ui/file-upload';
 import IconButton from '../../../shared/ui/icon-button';
@@ -62,22 +59,20 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
   const [isTranslateButtonVisible, setIsTranslateButtonVisible] =
     useState<boolean>(false);
 
-  const { isCopied, handleCopy } = useCopying();
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { t } = useLingui();
 
-  const { progressItems } = useTranslateStatus();
-
-  const { translateLanguage, toggleTranslateLanguage } = useTranslate();
   const {
     status: blockStatus,
+    progressItems,
     translatedChunks,
-    error: blockError,
-    translateBlock,
-    reset: resetBlockTranslator,
-  } = usePdfBlockTranslator();
+    error: translationErrors,
+    translateChunks,
+    translateLanguage,
+    toggleTranslateLanguage,
+    reset: resetTranslator,
+  } = useTextTranslator();
 
   const { width: documentWidth, ref: documentRef } = useResizeDetector({
     refreshMode: 'debounce',
@@ -184,7 +179,7 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
     }
     setTextInfos(collectedTextInfos);
     const payload = collectedTextInfos.map((t) => t.original);
-    translateBlock(payload, translateLanguage);
+    translateChunks(payload);
     setIsTranslateButtonVisible(false);
   }
 
@@ -203,22 +198,22 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
 
     if (blockStatus === 'success' || blockStatus === 'error') {
       if (activeBlock) {
-        if (blockStatus === 'error' && blockError) {
+        if (blockStatus === 'error' && translationErrors) {
           const span = document.createElement('span');
           span.style.color = 'red';
-          span.textContent = `Ошибка перевода: ${blockError}`;
+          span.textContent = `Ошибка перевода: ${translationErrors}`;
           activeBlock.appendChild(span);
         }
         activeBlock = null;
       }
       setTextInfos([]);
-      resetBlockTranslator();
+      resetTranslator();
     }
   }, [
     translatedChunks,
     blockStatus,
-    blockError,
-    resetBlockTranslator,
+    translationErrors,
+    resetTranslator,
     textInfos,
   ]);
 

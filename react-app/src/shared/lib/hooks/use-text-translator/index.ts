@@ -1,9 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 
+interface Progress {
+  file: string;
+  progress: number;
+}
+
 type Status = 'idle' | 'translating' | 'success' | 'error';
 
-export function usePdfBlockTranslator() {
+export function useTextTranslator() {
+  const [progressItems, setProgressItems] = useState<Progress>({
+    file: '',
+    progress: 0,
+  });
   const [status, setStatus] = useState<Status>('idle');
+  const [translateLanguage, setTranslateLanguage] = useState<'en-ru' | 'ru-en'>(
+    'en-ru'
+  );
+
+  const toggleTranslateLanguage = () => {
+    setTranslateLanguage((prev) => (prev === 'en-ru' ? 'ru-en' : 'en-ru'));
+  };
+
   const [translatedChunks, setTranslatedChunks] = useState<
     Record<number, string>
   >({});
@@ -11,7 +28,10 @@ export function usePdfBlockTranslator() {
 
   const handleStatusUpdate = useCallback((message: any) => {
     switch (message.status) {
-      case 'block-chunk':
+      case 'progress':
+        if (message.data) setProgressItems(message.data);
+        break;
+      case 'chunk':
         if (
           message.data?.idx !== undefined &&
           message.data?.text !== undefined
@@ -24,13 +44,11 @@ export function usePdfBlockTranslator() {
         break;
       case 'complete':
         setStatus('success');
+        setProgressItems({ file: '', progress: 0 });
         break;
-      case 'block-error':
+      case 'error':
         setError(message.error || 'Unknown error');
         setStatus('error');
-        break;
-      default:
-        // Игнорируем другие статусы
         break;
     }
   }, []);
@@ -42,10 +60,7 @@ export function usePdfBlockTranslator() {
     };
   }, [handleStatusUpdate]);
 
-  const translateBlock = async (
-    texts: string[],
-    language: 'en-ru' | 'ru-en'
-  ) => {
+  const translateChunks = async (texts: string[]) => {
     setStatus('translating');
     setTranslatedChunks({});
     setError(null);
@@ -54,11 +69,9 @@ export function usePdfBlockTranslator() {
     const joinedText = texts.join(DELIM);
 
     try {
-      // Адаптируем вызов под API, которое ожидает `useTranslate`
       await window.electron.run({
-        translate: language,
+        translate: translateLanguage,
         text: joinedText,
-        isBlockTranslation: true, // Добавим флаг, чтобы основной процесс понял, что это блочный перевод
         delimiter: DELIM,
       });
     } catch (e) {
@@ -77,9 +90,12 @@ export function usePdfBlockTranslator() {
 
   return {
     status,
+    progressItems,
     translatedChunks,
+    translateLanguage,
+    toggleTranslateLanguage,
     error,
-    translateBlock,
+    translateChunks,
     reset,
   };
 }
