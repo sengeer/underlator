@@ -11,6 +11,7 @@ import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
+import WithAdaptiveSize from '../../../shared/lib/HOCs/with-adaptive-size';
 import { useTextTranslator } from '../../../shared/lib/hooks/use-text-translator';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import FileUpload from '../../../shared/ui/file-upload';
@@ -35,11 +36,10 @@ interface PdfTranslator {
   isOpened: boolean;
 }
 
-let activeBlock: HTMLElement | null = null;
-
 type TextInfo = {
   node: Text;
   original: string;
+  element: HTMLElement;
 };
 
 type TranslateButtonPosition = {
@@ -104,34 +104,59 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
     }
   };
 
-  function collectVisibleTextNodes(root: Node) {
-    const out: { node: Text; original: string }[] = [];
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode(node) {
-        if (!node.nodeValue?.trim()) return NodeFilter.FILTER_REJECT;
-
-        const el = node.parentElement as HTMLElement | null;
-        if (!el) return NodeFilter.FILTER_REJECT;
-        const cs = getComputedStyle(el);
-        if (cs.display === 'none' || cs.visibility === 'hidden') {
-          return NodeFilter.FILTER_REJECT;
-        }
-        return NodeFilter.FILTER_ACCEPT;
-      },
-    });
-
-    while (walker.nextNode()) {
-      const n = walker.currentNode as Text;
-      out.push({ node: n, original: n.nodeValue! });
-    }
-    return out;
+  interface CollectTextNodes {
+    node: Text;
+    original: string;
+    element: HTMLElement;
   }
 
-  function findClosestBlockElement(node: Node) {
-    let cur: Node | null = node;
-    while (cur && cur !== document.body) {
+  function collectTextNodes(rootNode: Node, range: Range): CollectTextNodes[] {
+    const visibleTextInfos: TextInfo[] = [];
+    const treeWalker = document.createTreeWalker(
+      rootNode,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node: Node) {
+          if (!range.intersectsNode(node)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+
+          if (!node.nodeValue?.trim()) return NodeFilter.FILTER_REJECT;
+
+          const parentElement = node.parentElement as HTMLElement | null;
+          if (!parentElement) return NodeFilter.FILTER_REJECT;
+
+          const computedStyle = getComputedStyle(parentElement);
+          if (
+            computedStyle.display === 'none' ||
+            computedStyle.visibility === 'hidden'
+          ) {
+            return NodeFilter.FILTER_REJECT;
+          }
+
+          return NodeFilter.FILTER_ACCEPT;
+        },
+      }
+    );
+
+    while (treeWalker.nextNode()) {
+      const textNode = treeWalker.currentNode as Text;
+      visibleTextInfos.push({
+        node: textNode,
+        original: textNode.nodeValue!,
+        element: textNode.parentElement as HTMLElement,
+      });
+    }
+
+    return visibleTextInfos;
+  }
+
+  function findClosestElement(startNode: Node): HTMLElement | null {
+    let currentNode: Node | null = startNode;
+
+    while (currentNode && currentNode !== document.body) {
       if (
-        cur.nodeType === Node.ELEMENT_NODE &&
+        currentNode.nodeType === Node.ELEMENT_NODE &&
         [
           'block',
           'flex',
@@ -140,12 +165,13 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
           'table',
           'table-row',
           'table-cell',
-        ].includes(getComputedStyle(cur as Element).display)
+        ].includes(getComputedStyle(currentNode as Element).display)
       ) {
-        return cur as HTMLElement;
+        return currentNode as HTMLElement;
       }
-      cur = cur.parentNode;
+      currentNode = currentNode.parentNode;
     }
+
     return null;
   }
 
@@ -156,27 +182,19 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
 
-    const block = findClosestBlockElement(range.commonAncestorContainer);
+    const block = findClosestElement(range.commonAncestorContainer);
     if (!block) return;
-    activeBlock = block;
 
-    if (block.tagName.toLowerCase() === 'span') {
-      block.style.backgroundColor = 'var(--background)';
-      block.style.color = 'var(--foreground)';
-    }
-
-    const spans = block.getElementsByTagName('span');
-    for (let i = 0; i < spans.length; i++) {
-      const span = spans[i];
-      span.style.color = 'var(--foreground)';
-      span.style.backgroundColor = 'var(--background)';
-    }
-
-    const collectedTextInfos = collectVisibleTextNodes(block);
+    const collectedTextInfos = collectTextNodes(block, range);
     if (collectedTextInfos.length === 0) {
-      block.style.backgroundColor = '';
       return;
     }
+
+    collectedTextInfos.forEach(({ element }) => {
+      element.style.backgroundColor = 'var(--background)';
+      element.style.color = 'var(--foreground)';
+    });
+
     setTextInfos(collectedTextInfos);
     const payload = collectedTextInfos.map((t) => t.original);
     translateChunks(payload);
@@ -197,15 +215,12 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
     });
 
     if (blockStatus === 'success' || blockStatus === 'error') {
-      if (activeBlock) {
-        if (blockStatus === 'error' && translationErrors) {
-          const span = document.createElement('span');
-          span.style.color = 'red';
-          span.textContent = `Ошибка перевода: ${translationErrors}`;
-          activeBlock.appendChild(span);
-        }
-        activeBlock = null;
+      if (blockStatus === 'error' && translationErrors) {
+        const span = document.createElement('span');
+        span.style.color = 'red';
+        span.textContent = `Ошибка перевода: ${translationErrors}`;
       }
+
       setTextInfos([]);
       resetTranslator();
     }
@@ -219,10 +234,6 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (activeBlock && activeBlock.contains(e.target as Node)) {
-        return;
-      }
-
       setTimeout(() => {
         const sel = window.getSelection();
         const txt = sel?.toString().trim();
@@ -251,7 +262,7 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
     return () => {
       document.removeEventListener('click', handleClick);
     };
-  }, [activeBlock]);
+  }, []);
 
   return (
     <section
@@ -307,10 +318,11 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
               top: `${positionOfTranslateButton.y}px`,
               left: `${positionOfTranslateButton.x}px`,
               cursor: 'pointer',
+              transform: 'translate(-50%, -50%)',
               zIndex: 3,
             }}
             onClick={() => onTranslateClick()}>
-            <TranslateIcon />
+            <WithAdaptiveSize WrappedComponent={TranslateIcon} />
           </IconButton>
         )}
         <div className='pdf-translator__gradient' />

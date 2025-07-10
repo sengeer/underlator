@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import PdfIcon from '../../../shared/assets/icons/pdf-icon';
 import SettingsIcon from '../../../shared/assets/icons/settings-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
-import useWindowSize from '../../../shared/lib/hooks/use-window-size';
+import WithAdaptiveSize from '../../../shared/lib/HOCs/with-adaptive-size';
 import {
   openElement,
   closeElement,
@@ -10,32 +10,6 @@ import {
 } from '../../../shared/model/element-state-slice';
 import IconButton from '../../../shared/ui/icon-button';
 import './index.scss';
-
-interface iconsSet {
-  [key: string]: {
-    S: React.ReactNode;
-    M: React.ReactNode;
-    L: React.ReactNode;
-  };
-}
-
-const iconsSet: iconsSet = {
-  Translate: {
-    S: <TranslateIcon width={32} height={32} />,
-    M: <TranslateIcon width={40} height={40} />,
-    L: <TranslateIcon width={48} height={48} />,
-  },
-  Pdf: {
-    S: <PdfIcon width={32} height={32} />,
-    M: <PdfIcon width={40} height={40} />,
-    L: <PdfIcon width={48} height={48} />,
-  },
-  Settings: {
-    S: <SettingsIcon width={32} height={32} />,
-    M: <SettingsIcon width={40} height={40} />,
-    L: <SettingsIcon width={48} height={48} />,
-  },
-};
 
 function SideNavigate() {
   const dispatch = useDispatch();
@@ -52,18 +26,6 @@ function SideNavigate() {
     isElementOpen(state, 'settingsSection')
   );
 
-  const { width } = useWindowSize();
-
-  const hasSizeS = width <= 768;
-  const hasSizeM = width <= 1024;
-
-  function Icon({ type }: { type: string }) {
-    const size = hasSizeS ? 'S' : hasSizeM ? 'M' : 'L';
-    const IconComponent = iconsSet[type][size];
-
-    return IconComponent;
-  }
-
   return (
     <aside className='side-navigate'>
       <IconButton
@@ -73,7 +35,7 @@ function SideNavigate() {
           dispatch(closeElement('pdfTranslationSection'));
           dispatch(closeElement('settingsSection'));
         }}>
-        <Icon type='Translate' />
+        <WithAdaptiveSize WrappedComponent={TranslateIcon} />
       </IconButton>
       <IconButton
         isActiveStyle={isOpenPdfTranslationSection}
@@ -82,7 +44,7 @@ function SideNavigate() {
           dispatch(closeElement('textTranslationSection'));
           dispatch(closeElement('settingsSection'));
         }}>
-        <Icon type='Pdf' />
+        <WithAdaptiveSize WrappedComponent={PdfIcon} />
       </IconButton>
       <IconButton
         isActiveStyle={isOpenSettingsSection}
@@ -91,7 +53,7 @@ function SideNavigate() {
           dispatch(closeElement('textTranslationSection'));
           dispatch(closeElement('pdfTranslationSection'));
         }}>
-        <Icon type='Settings' />
+        <WithAdaptiveSize WrappedComponent={SettingsIcon} />
       </IconButton>
     </aside>
   );

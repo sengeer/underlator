@@ -63,7 +63,7 @@ const createWindow = () => {
   mainWindow.setMenu(null);
 
   if (isDev) {
-    mainWindow.loadURL('http://localhost:3000');
+    mainWindow.loadURL('http://localhost:8000');
   } else {
     mainWindow.loadFile(path.join('src', 'index.html'));
   }

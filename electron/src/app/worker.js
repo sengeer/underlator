@@ -16,7 +16,6 @@ parentPort.on('message', async (event) => {
     for (let i = 0; i < texts.length; i++) {
       const text = texts[i];
       if (!text.trim()) {
-
         parentPort.postMessage({
           status: 'chunk',
           data: { idx: i, text: '' },
