@@ -12,7 +12,7 @@ import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import WithAdaptiveSize from '../../../shared/lib/HOCs/with-adaptive-size';
-import { useTextTranslator } from '../../../shared/lib/hooks/use-text-translator';
+import { useModel } from '../../../shared/lib/hooks/use-model';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import FileUpload from '../../../shared/ui/file-upload';
 import IconButton from '../../../shared/ui/icon-button';
@@ -66,13 +66,13 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
   const {
     status: blockStatus,
     progressItems,
-    translatedChunks,
+    generatedResponse,
     error: translationErrors,
-    translateChunks,
+    generate,
     translateLanguage,
     toggleTranslateLanguage,
     reset: resetTranslator,
-  } = useTextTranslator();
+  } = useModel();
 
   const { width: documentWidth, ref: documentRef } = useResizeDetector({
     refreshMode: 'debounce',
@@ -197,15 +197,15 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
 
     setTextInfos(collectedTextInfos);
     const payload = collectedTextInfos.map((t) => t.original);
-    translateChunks(payload);
+    generate(payload);
     setIsTranslateButtonVisible(false);
   }
 
   // Processing block translation results.
   useEffect(() => {
-    if (Object.keys(translatedChunks).length === 0) return;
+    if (Object.keys(generatedResponse).length === 0) return;
 
-    Object.entries(translatedChunks).forEach(([idx, text]) => {
+    Object.entries(generatedResponse).forEach(([idx, text]) => {
       const index = parseInt(idx, 10);
       if (textInfos[index] && textInfos[index].node) {
         textInfos[index].node.nodeValue = text;
@@ -225,7 +225,7 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
       resetTranslator();
     }
   }, [
-    translatedChunks,
+    generatedResponse,
     blockStatus,
     translationErrors,
     resetTranslator,
@@ -313,6 +313,7 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
       <div className='pdf-translator__container'>
         {isTranslateButtonVisible && (
           <IconButton
+            isActiveStyle
             style={{
               position: 'absolute',
               top: `${positionOfTranslateButton.y}px`,

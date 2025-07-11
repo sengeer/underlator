@@ -8,7 +8,7 @@ import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
-import { useTextTranslator } from '../../../shared/lib/hooks/use-text-translator';
+import { useModel } from '../../../shared/lib/hooks/use-model';
 import useWindowSize from '../../../shared/lib/hooks/use-window-size';
 import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
@@ -24,15 +24,15 @@ interface TextTranslator {
 function TextTranslator({ isOpened }: TextTranslator) {
   const {
     progressItems,
-    translatedChunks,
-    translateChunks,
+    generatedResponse,
+    generate,
     translateLanguage,
     toggleTranslateLanguage,
-  } = useTextTranslator();
+  } = useModel();
 
   const { isCopied, handleCopy } = useCopying();
   const [input, setInput] = useState<string>('');
-  const [output, setOutput] = useState<string>(translatedChunks[0]);
+  const [output, setOutput] = useState<string>(generatedResponse[0]);
 
   const { t } = useLingui();
 
@@ -45,8 +45,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
   const hasSizeS = width <= 768;
 
   useEffect(() => {
-    setOutput(translatedChunks[0]);
-  }, [translatedChunks[0]]);
+    setOutput(generatedResponse[0]);
+  }, [generatedResponse[0]]);
 
   return (
     <section
@@ -141,7 +141,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
           alignSelf: 'center',
         }}
         isDisabled={progressItems.file !== ''}
-        onClick={() => translateChunks([input])}>
+        onClick={() => generate([input])}>
         {progressItems.file !== '' ? <Loader /> : <TranslateIcon />}
       </TextAndIconButton>
     </section>

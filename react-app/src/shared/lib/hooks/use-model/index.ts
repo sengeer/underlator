@@ -7,7 +7,7 @@ interface Progress {
 
 type Status = 'idle' | 'translating' | 'success' | 'error';
 
-export function useTextTranslator() {
+export function useModel() {
   const [progressItems, setProgressItems] = useState<Progress>({
     file: '',
     progress: 0,
@@ -21,7 +21,7 @@ export function useTextTranslator() {
     setTranslateLanguage((prev) => (prev === 'en-ru' ? 'ru-en' : 'en-ru'));
   };
 
-  const [translatedChunks, setTranslatedChunks] = useState<
+  const [generatedResponse, setGeneratedResponse] = useState<
     Record<number, string>
   >({});
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ export function useTextTranslator() {
           message.data?.idx !== undefined &&
           message.data?.text !== undefined
         ) {
-          setTranslatedChunks((prev) => ({
+          setGeneratedResponse((prev) => ({
             ...prev,
             [message.data.idx]: message.data.text,
           }));
@@ -60,9 +60,9 @@ export function useTextTranslator() {
     };
   }, [handleStatusUpdate]);
 
-  const translateChunks = async (texts: string[]) => {
+  const generate = async (texts: string[]) => {
     setStatus('translating');
-    setTranslatedChunks({});
+    setGeneratedResponse({});
     setError(null);
 
     const DELIM = '␟'; // U+241F
@@ -84,18 +84,18 @@ export function useTextTranslator() {
 
   const reset = () => {
     setStatus('idle');
-    setTranslatedChunks({});
+    setGeneratedResponse({});
     setError(null);
   };
 
   return {
     status,
     progressItems,
-    translatedChunks,
+    generatedResponse,
     translateLanguage,
     toggleTranslateLanguage,
     error,
-    translateChunks,
+    generate,
     reset,
   };
 }
