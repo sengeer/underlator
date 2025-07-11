@@ -1,3 +1,8 @@
+interface Progress {
+  file: string;
+  progress: number;
+}
+
 interface Icon {
   width?: number;
   height?: number;

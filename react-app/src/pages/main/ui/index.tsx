@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
-import { isElementOpen } from '../../../shared/model/element-state-slice';
+import { isElementOpen } from '../../../shared/models/element-state-slice';
 import PdfTranslator from '../../../widgets/pdf-translator/ui';
 import Settings from '../../../widgets/settings/ui';
 import SideNavigate from '../../../widgets/side-navigate/ui';

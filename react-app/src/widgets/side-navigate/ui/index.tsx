@@ -7,7 +7,7 @@ import {
   openElement,
   closeElement,
   isElementOpen,
-} from '../../../shared/model/element-state-slice';
+} from '../../../shared/models/element-state-slice';
 import IconButton from '../../../shared/ui/icon-button';
 import './index.scss';
 
