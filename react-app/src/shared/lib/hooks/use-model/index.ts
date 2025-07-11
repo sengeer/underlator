@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { selectProviderSettings } from '../../../models/provider-settings-slice';
-import { getTranslationProvider } from '../../../providers';
+import { getTranslationProvider } from '../../providers';
 
 type Status = 'idle' | 'translating' | 'success' | 'error';
 
@@ -46,6 +46,7 @@ export function useModel() {
       const finalResult = await provider.generate({
         text: texts,
         translateLanguage,
+        model: providerSettings.ollamaModel,
         onChunk: handleChunk,
         onProgress: handleProgress,
       });

@@ -1,10 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ProviderType } from '../../providers';
+import { ProviderType } from '../../lib/providers';
 
 interface InitialState {
   provider: ProviderType;
-  // ollamaModel: string;
-  // ... другие настройки
+  ollamaModel: string;
 }
 
 interface State {
@@ -12,8 +11,8 @@ interface State {
 }
 
 const initialState: InitialState = {
-  provider: 'local', // default
-  // ollamaModel: 'llama3',
+  provider: 'local',
+  ollamaModel: 'qwen3:8b',
 };
 
 export const providerSettingsSlice = createSlice({

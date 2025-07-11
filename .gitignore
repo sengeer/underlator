@@ -1,2 +1,5 @@
 # sonarqube
-/.scannerwork
+.scannerwork
+
+# misc
+.DS_Store

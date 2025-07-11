@@ -11,7 +11,7 @@ import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
-import WithAdaptiveSize from '../../../shared/lib/HOCs/with-adaptive-size';
+import WithAdaptiveSize from '../../../shared/lib/hocs/with-adaptive-size';
 import { useModel } from '../../../shared/lib/hooks/use-model';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import FileUpload from '../../../shared/ui/file-upload';

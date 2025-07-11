@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import PdfIcon from '../../../shared/assets/icons/pdf-icon';
 import SettingsIcon from '../../../shared/assets/icons/settings-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
-import WithAdaptiveSize from '../../../shared/lib/HOCs/with-adaptive-size';
+import WithAdaptiveSize from '../../../shared/lib/hocs/with-adaptive-size';
 import {
   openElement,
   closeElement,
