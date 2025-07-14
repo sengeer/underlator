@@ -23,11 +23,14 @@
   &__column {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1rem;
     width: 100%;
   }
 
   &__title {
+    display: flex;
+    align-items: center;
+    min-height: 4rem;
     margin: 0;
     color: var(--foreground);
     font-weight: 400;
@@ -52,6 +55,21 @@
     @media (width <= 1280px) {
       grid-template-rows: repeat(4, 1fr);
       grid-template-columns: 1fr;
+    }
+  }
+
+  &__input {
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    outline: none;
+    text-align: right;
+    unicode-bidi: plaintext;
+    direction: rtl;
+
+    &::placeholder {
+      color: inherit;
     }
   }
 }

@@ -1,10 +1,14 @@
 import './index.scss';
 import { useLingui } from '@lingui/react/macro';
 import { Trans } from '@lingui/react/macro';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import CableIcon from '../../../shared/assets/icons/cable-icon';
+import HttpIcon from '../../../shared/assets/icons/http-icon';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
+import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
+import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
 import { loadCatalog } from '../../../shared/lib/i18n';
 import {
   getStorageWrite,
@@ -22,13 +26,18 @@ import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 
 const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE;
 
-export interface Languages {
+export interface PopupSelectorData {
   [key: string]: string;
 }
 
-const LANGUAGES: Languages = {
+const LANGUAGES: PopupSelectorData = {
   english: 'en',
   русский: 'ru',
+};
+
+const PROVIDERS: PopupSelectorData = {
+  local: 'local',
+  ollama: 'ollama',
 };
 
 interface Settings {
@@ -36,6 +45,8 @@ interface Settings {
 }
 
 function Settings({ isOpened }: Settings) {
+  const { values, handleChange, resetForm, setValues } = useFormAndValidation();
+
   const [languageKey, setLanguageKey] = useState(() => {
     const localeFromStorage = getStorageWrite('locale');
 
@@ -60,12 +71,18 @@ function Settings({ isOpened }: Settings) {
       : defaultLocale;
   });
 
+  const [provider, setProvider] = useState('local');
+
   const { t } = useLingui();
   const dispatch = useDispatch();
   const { translateElectron } = useElectronTranslation();
 
   const isOpenLanguageSelectorPopup = useSelector((state) =>
     isElementOpen(state, 'languageSelectorPopup')
+  );
+
+  const isOpenProviderSelectorPopup = useSelector((state) =>
+    isElementOpen(state, 'providerSelectorPopup')
   );
 
   const handleLanguageChange = useCallback(
@@ -77,6 +94,13 @@ function Settings({ isOpened }: Settings) {
     },
     [loadCatalog]
   );
+
+  useEffect(() => {
+    resetForm();
+    setValues({
+      url: '',
+    });
+  }, [resetForm, setValues]);
 
   return (
     <section className={`settings${isOpened ? ' settings_open' : ''}`}>
@@ -96,6 +120,60 @@ function Settings({ isOpened }: Settings) {
             </TextAndIconButton>
             <p className='settings__text'>{languageKey}</p>
           </ButtonWrapperWithBackground>
+          <h2 className='settings__title'>
+            <Trans>API configuration</Trans>
+          </h2>
+          <ButtonWrapperWithBackground
+            onClick={() => dispatch(openElement('providerSelectorPopup'))}>
+            <TextAndIconButton
+              className='text-and-icon-button'
+              text={t`API provider`}
+              style={{ marginLeft: '1rem' }}
+              isDisabled>
+              <CableIcon />
+            </TextAndIconButton>
+            <p className='settings__text'>{provider}</p>
+          </ButtonWrapperWithBackground>
+          {provider === 'ollama' && (
+            <>
+              <ButtonWrapperWithBackground>
+                <TextAndIconButton
+                  className='text-and-icon-button'
+                  text={'URL'}
+                  style={{ marginLeft: '1rem' }}
+                  isDisabled>
+                  <HttpIcon />
+                </TextAndIconButton>
+                <input
+                  className='settings__input settings__text'
+                  placeholder='http://localhost:11434'
+                  type='url'
+                  id='url'
+                  name='url'
+                  value={values.url || ''}
+                  onChange={handleChange}
+                />
+              </ButtonWrapperWithBackground>
+              <ButtonWrapperWithBackground>
+                <TextAndIconButton
+                  className='text-and-icon-button'
+                  text={t`model`}
+                  style={{ marginLeft: '1rem' }}
+                  isDisabled>
+                  <NetworkIntelligenceIcon />
+                </TextAndIconButton>
+                <input
+                  className='settings__input settings__text'
+                  placeholder='llama3.1'
+                  type='text'
+                  id='model'
+                  name='model'
+                  value={values.model || ''}
+                  onChange={handleChange}
+                />
+              </ButtonWrapperWithBackground>
+            </>
+          )}
         </div>
         <div className='settings__column'>
           <h2 className='settings__title'>
@@ -132,6 +210,14 @@ function Settings({ isOpened }: Settings) {
         setSelectedKey={setLanguageKey}
         selectedValue={language}
         setSelectedValue={handleLanguageChange}
+      />
+      <SelectorPopup
+        data={PROVIDERS}
+        isOpened={isOpenProviderSelectorPopup}
+        setOpened={() => dispatch(closeElement('providerSelectorPopup'))}
+        setSelectedKey={setProvider}
+        selectedValue={provider}
+        setSelectedValue={() => console.log('')}
       />
     </section>
   );

@@ -1,7 +1,7 @@
 import './index.scss';
 
 interface ButtonWrapperWithBackground {
-  onClick: () => void;
+  onClick?: () => void;
   children: React.ReactNode;
 }
 
