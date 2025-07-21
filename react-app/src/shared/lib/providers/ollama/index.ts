@@ -1,5 +1,4 @@
-// react-app/src/shared/lib/translation-provider/providers/ollama.ts
-import { generatePrompt } from '../../../apis/ollama';
+import { OllamaApi } from '../../../apis/ollama';
 import { TranslationProvider, GenerateOptions } from '../types';
 
 export const ollamaProvider: TranslationProvider = {
@@ -7,19 +6,23 @@ export const ollamaProvider: TranslationProvider = {
     text,
     translateLanguage,
     model,
+    url,
     onChunk,
   }: GenerateOptions) => {
     if (!model) {
       throw new Error('Ollama model is not specified');
     }
 
+    const ollamaApi = new OllamaApi(url);
     const texts = Array.isArray(text) ? text : [text];
     const results: Record<number, string> = {};
 
     await Promise.all(
       texts.map(async (singleText, index) => {
-        const prompt = `Translate from ${translateLanguage.split('-')[0]} to ${translateLanguage.split('-')[1]} the text after the colon, and return only the translated text: "${singleText}"`;
-        const response = await generatePrompt(model, prompt);
+        const prompt = `Translate from ${translateLanguage.split('-')[0]} to ${
+          translateLanguage.split('-')[1]
+        } the text after the colon, and return only the translated text: "${singleText}"`;
+        const response = await ollamaApi.generatePrompt(model, prompt);
 
         if (!response) {
           throw new Error(`Failed to get response for text at index ${index}`);
@@ -32,9 +35,6 @@ export const ollamaProvider: TranslationProvider = {
             if (done) break;
 
             const chunk = new TextDecoder().decode(value);
-            const { response } = JSON.parse(chunk);
-
-            if (onChunk) onChunk({ idx: index, text: response });
           }
         }
       })

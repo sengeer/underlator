@@ -10,6 +10,7 @@ import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intell
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
 import { loadCatalog } from '../../../shared/lib/i18n';
+import { ProviderType } from '../../../shared/lib/providers';
 import {
   getStorageWrite,
   setStorageWrite,
@@ -19,6 +20,11 @@ import {
   closeElement,
   isElementOpen,
 } from '../../../shared/models/element-state-slice';
+import {
+  selectProviderSettings,
+  setProvider as setProviderAction,
+  updateProviderSettings,
+} from '../../../shared/models/provider-settings-slice';
 import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background';
 import ColorPicker from '../../../shared/ui/color-picker';
 import SelectorPopup from '../../../shared/ui/selector-popup';
@@ -46,6 +52,10 @@ interface Settings {
 
 function Settings({ isOpened }: Settings) {
   const { values, handleChange, resetForm, setValues } = useFormAndValidation();
+  const dispatch = useDispatch();
+  const providerSettings = useSelector(selectProviderSettings);
+  const { provider, settings } = providerSettings;
+  const currentProviderSettings = settings[provider] || {};
 
   const [languageKey, setLanguageKey] = useState(() => {
     const localeFromStorage = getStorageWrite('locale');
@@ -71,10 +81,7 @@ function Settings({ isOpened }: Settings) {
       : defaultLocale;
   });
 
-  const [provider, setProvider] = useState('local');
-
   const { t } = useLingui();
-  const dispatch = useDispatch();
   const { translateElectron } = useElectronTranslation();
 
   const isOpenLanguageSelectorPopup = useSelector((state) =>
@@ -92,15 +99,28 @@ function Settings({ isOpened }: Settings) {
       setStorageWrite('locale', lang);
       translateElectron();
     },
-    [loadCatalog]
+    [loadCatalog, translateElectron]
   );
 
+  const handleProviderChange = (newProvider: string) => {
+    dispatch(setProviderAction(newProvider as ProviderType));
+  };
+
+  // When changing inputs, save them in the store
   useEffect(() => {
-    resetForm();
-    setValues({
-      url: '',
-    });
-  }, [resetForm, setValues]);
+    if (provider && (values.url !== undefined || values.model !== undefined)) {
+      dispatch(updateProviderSettings({ provider, settings: values }));
+    }
+  }, [values, provider, dispatch]);
+
+  // When changing the provider or initializing, set the values from the store
+  useEffect(() => {
+    if (provider && settings[provider]) {
+      setValues(settings[provider]);
+    } else {
+      resetForm();
+    }
+  }, [provider, setValues, resetForm]);
 
   return (
     <section className={`settings${isOpened ? ' settings_open' : ''}`}>
@@ -146,11 +166,11 @@ function Settings({ isOpened }: Settings) {
                 </TextAndIconButton>
                 <input
                   className='settings__input settings__text'
-                  placeholder='http://localhost:11434'
+                  placeholder='http://127.0.0.1:11434'
                   type='url'
                   id='url'
                   name='url'
-                  value={values.url || ''}
+                  value={currentProviderSettings.url || ''}
                   onChange={handleChange}
                 />
               </ButtonWrapperWithBackground>
@@ -168,7 +188,7 @@ function Settings({ isOpened }: Settings) {
                   type='text'
                   id='model'
                   name='model'
-                  value={values.model || ''}
+                  value={currentProviderSettings.model || ''}
                   onChange={handleChange}
                 />
               </ButtonWrapperWithBackground>
@@ -215,9 +235,9 @@ function Settings({ isOpened }: Settings) {
         data={PROVIDERS}
         isOpened={isOpenProviderSelectorPopup}
         setOpened={() => dispatch(closeElement('providerSelectorPopup'))}
-        setSelectedKey={setProvider}
+        setSelectedKey={() => {}}
         selectedValue={provider}
-        setSelectedValue={() => console.log('')}
+        setSelectedValue={handleProviderChange}
       />
     </section>
   );

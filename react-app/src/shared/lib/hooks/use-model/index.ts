@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { selectProviderSettings } from '../../../models/provider-settings-slice';
+import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
 import { getTranslationProvider } from '../../providers';
 
 type Status = 'idle' | 'translating' | 'success' | 'error';
@@ -23,7 +23,7 @@ export function useModel() {
     setTranslateLanguage((prev) => (prev === 'en-ru' ? 'ru-en' : 'en-ru'));
   };
 
-  const providerSettings = useSelector(selectProviderSettings);
+  const providerSettings = useSelector(selectActiveProviderSettings);
 
   const handleChunk = useCallback((chunk: { idx: number; text: string }) => {
     setGeneratedResponse((prev) => ({
@@ -44,15 +44,17 @@ export function useModel() {
     try {
       const provider = getTranslationProvider(providerSettings.provider);
       const finalResult = await provider.generate({
+        ...providerSettings,
         text: texts,
         translateLanguage,
-        model: providerSettings.ollamaModel,
         onChunk: handleChunk,
         onProgress: handleProgress,
       });
 
       // If the provider does not stream, but returns the full result
-      setGeneratedResponse(finalResult);
+      if (finalResult) {
+        setGeneratedResponse(finalResult);
+      }
       setStatus('success');
     } catch (e) {
       const err = e as Error;
