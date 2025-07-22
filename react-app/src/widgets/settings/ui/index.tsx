@@ -42,8 +42,8 @@ const LANGUAGES: PopupSelectorData = {
 };
 
 const PROVIDERS: PopupSelectorData = {
-  'opus-mt': 'opus-mt',
-  ollama: 'ollama',
+  'Electron IPC': 'Electron IPC',
+  Ollama: 'Ollama',
 };
 
 interface Settings {
@@ -153,7 +153,7 @@ function Settings({ isOpened }: Settings) {
             </TextAndIconButton>
             <p className='settings__text'>{provider}</p>
           </ButtonWrapperWithBackground>
-          {provider === 'ollama' && (
+          {provider === 'Ollama' && (
             <>
               <ButtonWrapperWithBackground>
                 <TextAndIconButton
@@ -192,6 +192,26 @@ function Settings({ isOpened }: Settings) {
                 />
               </ButtonWrapperWithBackground>
             </>
+          )}
+          {provider === 'Electron IPC' && (
+            <ButtonWrapperWithBackground>
+              <TextAndIconButton
+                className='text-and-icon-button'
+                text={t`model`}
+                style={{ marginLeft: '1rem' }}
+                isDisabled>
+                <NetworkIntelligenceIcon />
+              </TextAndIconButton>
+              <input
+                className='settings__input settings__text'
+                type='text'
+                id='model'
+                name='model'
+                value={'opus-mt'}
+                onChange={handleChange}
+                disabled
+              />
+            </ButtonWrapperWithBackground>
           )}
         </div>
         <div className='settings__column'>

@@ -77,6 +77,7 @@ msgid "main settings"
 msgstr "Основные настройки"
 
 #: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "model"
 msgstr "Модель"
 

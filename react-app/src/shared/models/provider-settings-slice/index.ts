@@ -24,10 +24,10 @@ interface State {
 function getInitialState(): ProviderSettingsState {
   const savedState = getStorageWrite('providerSettings');
   const defaultState: ProviderSettingsState = {
-    provider: 'local',
+    provider: 'Electron IPC',
     settings: {
-      local: {},
-      ollama: {
+      'Electron IPC': {},
+      Ollama: {
         url: 'http://127.0.0.1:11434',
         model: 'gemma:2b',
       },

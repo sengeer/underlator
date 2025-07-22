@@ -77,6 +77,7 @@ msgid "main settings"
 msgstr "main settings"
 
 #: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
 msgid "model"
 msgstr "model"
 
