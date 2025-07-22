@@ -194,7 +194,7 @@ function Settings({ isOpened }: Settings) {
             </>
           )}
           {provider === 'Electron IPC' && (
-            <ButtonWrapperWithBackground>
+            <ButtonWrapperWithBackground isDisabled>
               <TextAndIconButton
                 className='text-and-icon-button'
                 text={t`model`}

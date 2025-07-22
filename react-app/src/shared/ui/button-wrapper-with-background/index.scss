@@ -14,4 +14,8 @@
   &:hover {
     background-color: var(--foreground);
   }
+
+  &_disabled {
+    pointer-events: none;
+  }
 }
