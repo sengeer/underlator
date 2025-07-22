@@ -13,24 +13,24 @@ const FileUpload = forwardRef<HTMLInputElement, FileUpload>(
   ({ isOpened, onChange }, ref) => {
     const [isDragging, setIsDragging] = useState(false);
 
-    const handleDrag = (e: React.DragEvent) => {
+    function handleDrag(e: React.DragEvent) {
       e.preventDefault();
       e.stopPropagation();
-    };
+    }
 
-    const handleDragIn = (e: React.DragEvent) => {
+    function handleDragIn(e: React.DragEvent) {
       handleDrag(e);
       if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
         setIsDragging(true);
       }
-    };
+    }
 
-    const handleDragOut = (e: React.DragEvent) => {
+    function handleDragOut(e: React.DragEvent) {
       handleDrag(e);
       setIsDragging(false);
-    };
+    }
 
-    const handleDrop = (e: React.DragEvent) => {
+    function handleDrop(e: React.DragEvent) {
       handleDrag(e);
       setIsDragging(false);
 
@@ -44,7 +44,7 @@ const FileUpload = forwardRef<HTMLInputElement, FileUpload>(
         onChange(syntheticEvent);
         e.dataTransfer.clearData();
       }
-    };
+    }
 
     return (
       <form

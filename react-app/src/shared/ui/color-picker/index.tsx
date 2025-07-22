@@ -37,11 +37,11 @@ function ColorPicker({ text, variable, color }: ColorPicker) {
     setStorageWrite(variable, newColor);
   };
 
-  const handleButtonClick = () => {
+  function handleButtonClick() {
     if (colorInputRef.current) {
       colorInputRef.current.click(); // Программно вызываем клик по input
     }
-  };
+  }
 
   return (
     <ButtonWrapperWithBackground onClick={handleButtonClick}>

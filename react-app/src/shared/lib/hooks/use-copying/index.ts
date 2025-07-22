@@ -3,7 +3,7 @@ import { useState } from 'react';
 export function useCopying() {
   const [isCopied, setIsCopied] = useState(false);
 
-  const handleCopy = async (output: string) => {
+  async function handleCopy(output: string) {
     try {
       await navigator.clipboard.writeText(output);
       setIsCopied(true);
@@ -11,7 +11,7 @@ export function useCopying() {
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
-  };
+  }
 
   return {
     isCopied,

@@ -38,9 +38,9 @@ function TextTranslator({ isOpened }: TextTranslator) {
 
   const { t } = useLingui();
 
-  const handleClear = () => {
+  function handleClear() {
     setInput('');
-  };
+  }
 
   const { width } = useWindowSize();
 

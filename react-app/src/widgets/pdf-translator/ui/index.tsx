@@ -95,14 +95,14 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
     setNumPages(nextNumPages);
   }
 
-  const handleReset = () => {
+  function handleReset() {
     setFile(undefined);
     setNumPages(undefined);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
+  }
 
   interface CollectTextNodes {
     node: Text;

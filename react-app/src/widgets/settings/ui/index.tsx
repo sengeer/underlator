@@ -102,9 +102,9 @@ function Settings({ isOpened }: Settings) {
     [loadCatalog, translateElectron]
   );
 
-  const handleProviderChange = (newProvider: string) => {
+  function handleProviderChange(newProvider: string) {
     dispatch(setProviderAction(newProvider as ProviderType));
-  };
+  }
 
   // When changing inputs, save them in the store
   useEffect(() => {

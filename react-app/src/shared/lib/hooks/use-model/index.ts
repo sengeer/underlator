@@ -19,9 +19,9 @@ export function useModel() {
   const [translateLanguage, setTranslateLanguage] = useState<'en-ru' | 'ru-en'>(
     'en-ru'
   );
-  const toggleTranslateLanguage = () => {
+  function toggleTranslateLanguage() {
     setTranslateLanguage((prev) => (prev === 'en-ru' ? 'ru-en' : 'en-ru'));
-  };
+  }
 
   const providerSettings = useSelector(selectActiveProviderSettings);
 
@@ -36,7 +36,7 @@ export function useModel() {
     setProgressItems(progress);
   }, []);
 
-  const generate = async (texts: string[]) => {
+  async function generate(texts: string[]) {
     setStatus('translating');
     setGeneratedResponse([]);
     setError(null);
@@ -62,13 +62,13 @@ export function useModel() {
       setError(err.message);
       setStatus('error');
     }
-  };
+  }
 
-  const reset = () => {
+  function reset() {
     setStatus('idle');
     setGeneratedResponse([]);
     setError(null);
-  };
+  }
 
   return {
     status,

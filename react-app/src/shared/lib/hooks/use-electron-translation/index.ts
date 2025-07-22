@@ -3,7 +3,7 @@ import { useLingui } from '@lingui/react/macro';
 export function useElectronTranslation() {
   const { t } = useLingui();
 
-  const translateElectron = async () => {
+  async function translateElectron() {
     try {
       await window.electron.updateTranslations({
         about: t`About underlator`,
@@ -17,7 +17,7 @@ export function useElectronTranslation() {
     } catch (error) {
       console.error((error as Error).message);
     }
-  };
+  }
 
   return {
     translateElectron,
