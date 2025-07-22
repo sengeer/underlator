@@ -22,7 +22,7 @@ import {
 } from '../../../shared/models/element-state-slice';
 import {
   selectProviderSettings,
-  setProvider as setProviderAction,
+  setProvider,
   updateProviderSettings,
 } from '../../../shared/models/provider-settings-slice';
 import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background';
@@ -42,7 +42,7 @@ const LANGUAGES: PopupSelectorData = {
 };
 
 const PROVIDERS: PopupSelectorData = {
-  local: 'local',
+  'opus-mt': 'opus-mt',
   ollama: 'ollama',
 };
 
@@ -53,8 +53,7 @@ interface Settings {
 function Settings({ isOpened }: Settings) {
   const { values, handleChange, resetForm, setValues } = useFormAndValidation();
   const dispatch = useDispatch();
-  const providerSettings = useSelector(selectProviderSettings);
-  const { provider, settings } = providerSettings;
+  const { provider, settings } = useSelector(selectProviderSettings);
   const currentProviderSettings = settings[provider] || {};
 
   const [languageKey, setLanguageKey] = useState(() => {
@@ -103,7 +102,7 @@ function Settings({ isOpened }: Settings) {
   );
 
   function handleProviderChange(newProvider: string) {
-    dispatch(setProviderAction(newProvider as ProviderType));
+    dispatch(setProvider(newProvider as ProviderType));
   }
 
   // When changing inputs, save them in the store

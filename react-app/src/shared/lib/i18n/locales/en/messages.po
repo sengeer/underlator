@@ -13,13 +13,21 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/shared/lib/hooks/use-electron-translations/index.ts
+#: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "About underlator"
 msgstr "About underlator"
 
 #: src/widgets/settings/ui/index.tsx
 msgid "accent color"
 msgstr "accent color"
+
+#: src/widgets/settings/ui/index.tsx
+msgid "API configuration"
+msgstr "API configuration"
+
+#: src/widgets/settings/ui/index.tsx
+msgid "API provider"
+msgstr "API provider"
 
 #: src/widgets/settings/ui/index.tsx
 msgid "background color"
@@ -29,11 +37,11 @@ msgstr "background color"
 msgid "color scheme"
 msgstr "color scheme"
 
-#: src/shared/lib/hooks/use-electron-translations/index.ts
+#: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Copy"
 msgstr "Copy"
 
-#: src/shared/lib/hooks/use-electron-translations/index.ts
+#: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Cut"
 msgstr "Cut"
 
@@ -68,15 +76,19 @@ msgstr "main color"
 msgid "main settings"
 msgstr "main settings"
 
+#: src/widgets/settings/ui/index.tsx
+msgid "model"
+msgstr "model"
+
 #: src/shared/ui/file-upload/index.tsx
 msgid "or click"
 msgstr "or click"
 
-#: src/shared/lib/hooks/use-electron-translations/index.ts
+#: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Paste"
 msgstr "Paste"
 
-#: src/shared/lib/hooks/use-electron-translations/index.ts
+#: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Redo"
 msgstr "Redo"
 
@@ -87,7 +99,7 @@ msgstr "Redo"
 msgid "russian"
 msgstr "russian"
 
-#: src/shared/lib/hooks/use-electron-translations/index.ts
+#: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Select All"
 msgstr "Select All"
 
@@ -99,6 +111,6 @@ msgstr "to select a file!"
 msgid "translate"
 msgstr "translate"
 
-#: src/shared/lib/hooks/use-electron-translations/index.ts
+#: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Undo"
 msgstr "Undo"
