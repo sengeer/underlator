@@ -1,6 +1,5 @@
 import { OLLAMA_API_BASE_URL } from '../../lib/constants';
 
-// Generate prompt
 export class OllamaApi {
   private baseUrl: string;
 
@@ -8,6 +7,7 @@ export class OllamaApi {
     this.baseUrl = baseUrl || OLLAMA_API_BASE_URL;
   }
 
+  // Generate prompt
   generatePrompt = async (model: string, prompt: string) => {
     let error = null;
 

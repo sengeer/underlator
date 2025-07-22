@@ -35,6 +35,9 @@ export const ollamaProvider: TranslationProvider = {
             if (done) break;
 
             const chunk = new TextDecoder().decode(value);
+            const { response: chunkResponse } = JSON.parse(chunk);
+
+            if (onChunk) onChunk({ idx: index, text: chunkResponse });
           }
         }
       })

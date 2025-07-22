@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
 import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CopyIcon from '../../../shared/assets/icons/copy-icon';
@@ -33,6 +33,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
   const { isCopied, handleCopy } = useCopying();
   const [input, setInput] = useState<string>('');
   const [output, setOutput] = useState<string>(generatedResponse[0]);
+
+  const outputRef = useRef<HTMLTextAreaElement | null>(null);
 
   const { t } = useLingui();
 
@@ -113,6 +115,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
       <div className='text-translator__textarea-wrapper'>
         <textarea
           className='text-translator__textarea'
+          ref={outputRef}
           value={output}
           rows={1}
           readOnly
@@ -123,8 +126,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
             top: '1rem',
             right: '1rem',
           }}
-          onClick={() => handleCopy(input)}
-          isDisabled={!input || isCopied}>
+          onClick={() => handleCopy(outputRef.current?.value || '')}
+          isDisabled={output === '' || isCopied}>
           <AnimatingWrapper isShow={isCopied}>
             <CheckIcon />
           </AnimatingWrapper>

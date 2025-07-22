@@ -13,7 +13,7 @@ export function useModel() {
   const [status, setStatus] = useState<Status>('idle');
   const [generatedResponse, setGeneratedResponse] = useState<
     Record<number, string>
-  >({});
+  >([]);
   const [error, setError] = useState<string | null>(null);
 
   const [translateLanguage, setTranslateLanguage] = useState<'en-ru' | 'ru-en'>(
@@ -38,7 +38,7 @@ export function useModel() {
 
   const generate = async (texts: string[]) => {
     setStatus('translating');
-    setGeneratedResponse({});
+    setGeneratedResponse([]);
     setError(null);
 
     try {
@@ -66,7 +66,7 @@ export function useModel() {
 
   const reset = () => {
     setStatus('idle');
-    setGeneratedResponse({});
+    setGeneratedResponse([]);
     setError(null);
   };
 
