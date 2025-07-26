@@ -89,17 +89,13 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     generate,
     translateLanguage,
     toggleTranslateLanguage,
-    reset: resetTranslator,
+    reset: resetResponse,
   } = useModel();
 
   const { width: documentWidth, ref: documentRef } = useResizeDetector({
     refreshMode: 'debounce',
     refreshRate: 100,
   });
-
-  function handleClear() {
-    setInstruction('');
-  }
 
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { files } = event.target;
@@ -252,13 +248,13 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       if (settings.typeUse !== 'instruction') {
         setTextInfos([]);
       }
-      resetTranslator();
+      resetResponse();
     }
   }, [
     generatedResponse,
     blockStatus,
     translationErrors,
-    resetTranslator,
+    resetResponse,
     textInfos,
     settings.typeUse,
   ]);
@@ -296,13 +292,12 @@ function PdfViewer({ isOpened }: PdfTranslator) {
   }, []);
 
   return (
-    <section
-      className={`pdf-translator${isOpened ? ' pdf-translator_open' : ''}`}>
+    <section className={`pdf-viewer${isOpened ? ' pdf-viewer_open' : ''}`}>
       <div
-        className={`pdf-translator__top-bar${file ? ' pdf-translator__top-bar_show' : ''}`}>
-        <div className='pdf-translator__btns-container'>
+        className={`pdf-viewer__top-bar${file ? ' pdf-viewer__top-bar_show' : ''}`}>
+        <div className='pdf-viewer__btns-container'>
           {provider === 'Ollama' && (
-            <div className='pdf-translator__switch-wrapper'>
+            <div className='pdf-viewer__switch-wrapper'>
               <DecorativeTextAndIconButton text={t`translation`} />
               <Switch
                 checked={settings.typeUse === 'instruction'}
@@ -321,7 +316,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
               <DecorativeTextAndIconButton text={t`instruction`} />
             </div>
           )}
-          <div className='pdf-translator__btns-group'>
+          <div className='pdf-viewer__horizontal-btns-group'>
             {settings.typeUse === 'translation' && (
               <>
                 {'en-ru' === translateLanguage ? (
@@ -365,9 +360,9 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         </div>
         {provider === 'Ollama' && settings.typeUse === 'instruction' && (
           <>
-            <div className='pdf-translator__text-wrapper'>
+            <div className='pdf-viewer__text-wrapper'>
               <textarea
-                className='pdf-translator__textarea'
+                className='pdf-viewer__textarea'
                 value={instruction}
                 rows={1}
                 onChange={(e) => {
@@ -375,29 +370,26 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                   dispatch(setPrompt({ provider, prompt: e.target.value }));
                 }}
               />
-              <IconButton
-                style={{
-                  position: 'absolute',
-                  right: 0,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                }}
-                onClick={handleClear}
-                isDisabled={instruction === ''}>
-                <BackspaceIcon />
-              </IconButton>
             </div>
-            <div className='pdf-translator__text-wrapper'>
-              <p className='pdf-translator__output'>{generatedResponse}</p>
-              {generatedResponse && (
+            {generatedResponse && (
+              <div className='pdf-viewer__text-wrapper'>
+                <p className='pdf-viewer__output'>{generatedResponse}</p>
                 <IconButton
                   style={{
                     position: 'absolute',
-                    top: 0,
                     right: 0,
+                    top: 0,
                   }}
-                  onClick={() => handleCopy(generatedResponse)}
-                  isDisabled={generatedResponse === '' || isCopied}>
+                  onClick={resetResponse}>
+                  <BackspaceIcon />
+                </IconButton>
+                <IconButton
+                  style={{
+                    position: 'absolute',
+                    right: 0,
+                    top: '24px',
+                  }}
+                  onClick={() => handleCopy(generatedResponse)}>
                   <AnimatingWrapper isShow={isCopied}>
                     <CheckIcon />
                   </AnimatingWrapper>
@@ -405,13 +397,13 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                     <CopyIcon />
                   </AnimatingWrapper>
                 </IconButton>
-              )}
-            </div>
+              </div>
+            )}
           </>
         )}
       </div>
 
-      <div className='pdf-translator__container'>
+      <div className='pdf-viewer__container'>
         {isTranslateButtonVisible && (
           <IconButton
             isActiveStyle
@@ -427,14 +419,14 @@ function PdfViewer({ isOpened }: PdfTranslator) {
             <WithAdaptiveSize WrappedComponent={TranslateIcon} />
           </IconButton>
         )}
-        <div className='pdf-translator__gradient' />
+        <div className='pdf-viewer__gradient' />
         <FileUpload
           isOpened={!file}
           onChange={onFileChange}
           ref={fileInputRef}
         />
         <div
-          className={`pdf-translator__document${file ? ' pdf-translator__document_show' : ''}`}
+          className={`pdf-viewer__document${file ? ' pdf-viewer__document_show' : ''}`}
           ref={documentRef}>
           <Document
             file={file}
