@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
 import { getTranslationProvider } from '../../providers';
 
-type Status = 'idle' | 'translating' | 'success' | 'error';
+type Status = 'idle' | 'process' | 'success' | 'error';
 
 export function useModel() {
   const [progressItems, setProgressItems] = useState<Progress>({
@@ -11,9 +11,7 @@ export function useModel() {
     progress: 0,
   });
   const [status, setStatus] = useState<Status>('idle');
-  const [generatedResponse, setGeneratedResponse] = useState<
-    Record<number, string>
-  >([]);
+  const [generatedResponse, setGeneratedResponse] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   const [translateLanguage, setTranslateLanguage] = useState<'en-ru' | 'ru-en'>(
@@ -26,34 +24,32 @@ export function useModel() {
   const providerSettings = useSelector(selectActiveProviderSettings);
 
   const handleChunk = useCallback((chunk: { idx: number; text: string }) => {
-    setGeneratedResponse((prev) => ({
-      ...prev,
-      [chunk.idx]: (prev[chunk.idx] || '') + chunk.text, // Concatenation
-    }));
+    setGeneratedResponse((prev) => prev + chunk.text);
   }, []);
 
   const handleProgress = useCallback((progress: Progress) => {
     setProgressItems(progress);
   }, []);
 
-  async function generate(texts: string[]) {
-    setStatus('translating');
-    setGeneratedResponse([]);
+  async function generate(texts: string[], instruction?: string) {
+    setStatus('process');
+    setGeneratedResponse('');
     setError(null);
 
     try {
       const provider = getTranslationProvider(providerSettings.provider);
       const finalResult = await provider.generate({
-        ...providerSettings,
+        ...providerSettings.settings,
         text: texts,
         translateLanguage,
         onChunk: handleChunk,
         onProgress: handleProgress,
+        prompt: instruction,
       });
 
       // If the provider does not stream, but returns the full result
       if (finalResult) {
-        setGeneratedResponse(finalResult);
+        setGeneratedResponse(Object.values(finalResult).join(' '));
       }
       setStatus('success');
     } catch (e) {
@@ -66,7 +62,7 @@ export function useModel() {
 
   function reset() {
     setStatus('idle');
-    setGeneratedResponse([]);
+    setGeneratedResponse('');
     setError(null);
   }
 

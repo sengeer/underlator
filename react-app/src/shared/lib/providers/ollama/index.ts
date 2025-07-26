@@ -8,6 +8,8 @@ export const ollamaProvider: TranslationProvider = {
     model,
     url,
     onChunk,
+    typeUse,
+    prompt,
   }: GenerateOptions) => {
     if (!model) {
       throw new Error('Ollama model is not specified');
@@ -19,10 +21,17 @@ export const ollamaProvider: TranslationProvider = {
 
     await Promise.all(
       texts.map(async (singleText, index) => {
-        const prompt = `Translate from ${translateLanguage.split('-')[0]} to ${
-          translateLanguage.split('-')[1]
-        } the text after the colon, and return only the translated text: "${singleText}"`;
-        const response = await ollamaApi.generatePrompt(model, prompt);
+        let finalPrompt: string;
+
+        if (typeUse === 'instruction' && prompt) {
+          finalPrompt = `${prompt}: ${singleText}`;
+        } else {
+          finalPrompt = `Translate from ${translateLanguage.split('-')[0]} to ${
+            translateLanguage.split('-')[1]
+          } the text after the colon, and return only the translated text: "${singleText}"`;
+        }
+
+        const response = await ollamaApi.generatePrompt(model, finalPrompt);
 
         if (!response) {
           throw new Error(`Failed to get response for text at index ${index}`);

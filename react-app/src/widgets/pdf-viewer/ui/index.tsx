@@ -2,23 +2,35 @@ import { useLingui } from '@lingui/react/macro';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import React, { useState, useEffect, useRef } from 'react';
 import { pdfjs, Document, Page } from 'react-pdf';
+import { useDispatch, useSelector } from 'react-redux';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import './index.scss';
 import { useResizeDetector } from 'react-resize-detector';
+import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
+import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CloseIcon from '../../../shared/assets/icons/close-icon';
+import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import WithAdaptiveSize from '../../../shared/lib/hocs/with-adaptive-size';
+import { useCopying } from '../../../shared/lib/hooks/use-copying';
 import { useModel } from '../../../shared/lib/hooks/use-model';
+import {
+  selectActiveProviderSettings,
+  setPrompt,
+  setTypeUse,
+} from '../../../shared/models/provider-settings-slice';
+import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import FileUpload from '../../../shared/ui/file-upload';
 import IconButton from '../../../shared/ui/icon-button';
 import Loader from '../../../shared/ui/loader';
+import Switch from '../../../shared/ui/switch';
 import CustomErrorMessage from './custom-error-message';
 import CustomLoading from './custom-loading';
+import './index.scss';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -47,7 +59,7 @@ type TranslateButtonPosition = {
   y: number;
 };
 
-function PdfTranslator({ isOpened }: PdfTranslator) {
+function PdfViewer({ isOpened }: PdfTranslator) {
   const [file, setFile] = useState<File>();
   const [textInfos, setTextInfos] = useState<TextInfo[]>([]);
   const [numPages, setNumPages] = useState<number>();
@@ -58,6 +70,12 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
     });
   const [isTranslateButtonVisible, setIsTranslateButtonVisible] =
     useState<boolean>(false);
+  const [instruction, setInstruction] = useState<string>('');
+
+  const { provider, settings } = useSelector(selectActiveProviderSettings);
+  const dispatch = useDispatch();
+
+  const { isCopied, handleCopy } = useCopying();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -78,6 +96,10 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
     refreshMode: 'debounce',
     refreshRate: 100,
   });
+
+  function handleClear() {
+    setInstruction('');
+  }
 
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { files } = event.target;
@@ -190,29 +212,35 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
       return;
     }
 
-    collectedTextInfos.forEach(({ element }) => {
-      element.style.backgroundColor = 'var(--background)';
-      element.style.color = 'var(--foreground)';
-    });
-
-    setTextInfos(collectedTextInfos);
     const payload = collectedTextInfos.map((t) => t.original);
-    generate(payload);
+
+    if (settings.typeUse === 'instruction') {
+      generate(payload, instruction);
+    } else {
+      collectedTextInfos.forEach(({ element }) => {
+        element.style.backgroundColor = 'var(--background)';
+        element.style.color = 'var(--foreground)';
+      });
+      setTextInfos(collectedTextInfos);
+      generate(payload);
+    }
+
     setIsTranslateButtonVisible(false);
   }
 
   // Processing block translation results.
   useEffect(() => {
-    if (Object.keys(generatedResponse).length === 0) return;
+    if (generatedResponse === '') return;
 
-    Object.entries(generatedResponse).forEach(([idx, text]) => {
-      const index = parseInt(idx, 10);
-      if (textInfos[index] && textInfos[index].node) {
-        textInfos[index].node.nodeValue = text;
-      } else {
-        console.warn(`Node at index ${index} not found in textInfos.`);
+    if (settings.typeUse !== 'instruction') {
+      textInfos.forEach((info) => {
+        info.node.nodeValue = '';
+      });
+
+      if (textInfos.length > 0) {
+        textInfos[0].node.nodeValue = generatedResponse;
       }
-    });
+    }
 
     if (blockStatus === 'success' || blockStatus === 'error') {
       if (blockStatus === 'error' && translationErrors) {
@@ -221,7 +249,9 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
         span.textContent = `Ошибка перевода: ${translationErrors}`;
       }
 
-      setTextInfos([]);
+      if (settings.typeUse !== 'instruction') {
+        setTextInfos([]);
+      }
       resetTranslator();
     }
   }, [
@@ -230,6 +260,7 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
     translationErrors,
     resetTranslator,
     textInfos,
+    settings.typeUse,
   ]);
 
   useEffect(() => {
@@ -270,31 +301,55 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
       <div
         className={`pdf-translator__top-bar${file ? ' pdf-translator__top-bar_show' : ''}`}>
         <div className='pdf-translator__btns-container'>
+          {provider === 'Ollama' && (
+            <div className='pdf-translator__switch-wrapper'>
+              <DecorativeTextAndIconButton text={t`translation`} />
+              <Switch
+                checked={settings.typeUse === 'instruction'}
+                onChange={() =>
+                  dispatch(
+                    setTypeUse({
+                      provider,
+                      typeUse:
+                        settings.typeUse === 'instruction'
+                          ? 'translation'
+                          : 'instruction',
+                    })
+                  )
+                }
+              />
+              <DecorativeTextAndIconButton text={t`instruction`} />
+            </div>
+          )}
           <div className='pdf-translator__btns-group'>
-            {'en-ru' === translateLanguage ? (
-              <DecorativeTextAndIconButton text={t`english`}>
-                <GlobeIcon />
-              </DecorativeTextAndIconButton>
-            ) : (
-              <DecorativeTextAndIconButton text={t`russian`}>
-                <GlobeUkIcon />
-              </DecorativeTextAndIconButton>
-            )}
-            {progressItems.file !== '' ? (
-              <Loader />
-            ) : (
-              <IconButton onClick={toggleTranslateLanguage}>
-                <SyncIcon color='var(--main)' />
-              </IconButton>
-            )}
-            {'ru-en' === translateLanguage ? (
-              <DecorativeTextAndIconButton text={t`english`}>
-                <GlobeIcon />
-              </DecorativeTextAndIconButton>
-            ) : (
-              <DecorativeTextAndIconButton text={t`russian`}>
-                <GlobeUkIcon />
-              </DecorativeTextAndIconButton>
+            {settings.typeUse === 'translation' && (
+              <>
+                {'en-ru' === translateLanguage ? (
+                  <DecorativeTextAndIconButton text={t`english`}>
+                    <GlobeIcon />
+                  </DecorativeTextAndIconButton>
+                ) : (
+                  <DecorativeTextAndIconButton text={t`russian`}>
+                    <GlobeUkIcon />
+                  </DecorativeTextAndIconButton>
+                )}
+                {progressItems.file !== '' ? (
+                  <Loader />
+                ) : (
+                  <IconButton onClick={toggleTranslateLanguage}>
+                    <SyncIcon color='var(--main)' />
+                  </IconButton>
+                )}
+                {'ru-en' === translateLanguage ? (
+                  <DecorativeTextAndIconButton text={t`english`}>
+                    <GlobeIcon />
+                  </DecorativeTextAndIconButton>
+                ) : (
+                  <DecorativeTextAndIconButton text={t`russian`}>
+                    <GlobeUkIcon />
+                  </DecorativeTextAndIconButton>
+                )}
+              </>
             )}
           </div>
           <IconButton
@@ -308,6 +363,52 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
             <CloseIcon />
           </IconButton>
         </div>
+        {provider === 'Ollama' && settings.typeUse === 'instruction' && (
+          <>
+            <div className='pdf-translator__text-wrapper'>
+              <textarea
+                className='pdf-translator__textarea'
+                value={instruction}
+                rows={1}
+                onChange={(e) => {
+                  setInstruction(e.target.value);
+                  dispatch(setPrompt({ provider, prompt: e.target.value }));
+                }}
+              />
+              <IconButton
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                }}
+                onClick={handleClear}
+                isDisabled={instruction === ''}>
+                <BackspaceIcon />
+              </IconButton>
+            </div>
+            <div className='pdf-translator__text-wrapper'>
+              <p className='pdf-translator__output'>{generatedResponse}</p>
+              {generatedResponse && (
+                <IconButton
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                  }}
+                  onClick={() => handleCopy(generatedResponse)}
+                  isDisabled={generatedResponse === '' || isCopied}>
+                  <AnimatingWrapper isShow={isCopied}>
+                    <CheckIcon />
+                  </AnimatingWrapper>
+                  <AnimatingWrapper isShow={!isCopied}>
+                    <CopyIcon />
+                  </AnimatingWrapper>
+                </IconButton>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       <div className='pdf-translator__container'>
@@ -357,4 +458,4 @@ function PdfTranslator({ isOpened }: PdfTranslator) {
   );
 }
 
-export default PdfTranslator;
+export default PdfViewer;

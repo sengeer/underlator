@@ -51,18 +51,22 @@ msgstr "drag and drop your file here"
 
 #: src/widgets/text-translator/ui/index.tsx
 #: src/widgets/text-translator/ui/index.tsx
-#: src/widgets/pdf-translator/ui/index.tsx
-#: src/widgets/pdf-translator/ui/index.tsx
+#: src/widgets/pdf-viewer/ui/index.tsx
+#: src/widgets/pdf-viewer/ui/index.tsx
 msgid "english"
 msgstr "english"
 
-#: src/widgets/pdf-translator/ui/custom-error-message/index.tsx
+#: src/widgets/pdf-viewer/ui/custom-error-message/index.tsx
 msgid "failed to load PDF file"
 msgstr "failed to load PDF file"
 
 #: src/widgets/settings/ui/index.tsx
 msgid "foreground color"
 msgstr "foreground color"
+
+#: src/widgets/pdf-viewer/ui/index.tsx
+msgid "instruction"
+msgstr "instruction"
 
 #: src/widgets/settings/ui/index.tsx
 msgid "interface language"
@@ -95,8 +99,8 @@ msgstr "Redo"
 
 #: src/widgets/text-translator/ui/index.tsx
 #: src/widgets/text-translator/ui/index.tsx
-#: src/widgets/pdf-translator/ui/index.tsx
-#: src/widgets/pdf-translator/ui/index.tsx
+#: src/widgets/pdf-viewer/ui/index.tsx
+#: src/widgets/pdf-viewer/ui/index.tsx
 msgid "russian"
 msgstr "russian"
 
@@ -111,6 +115,10 @@ msgstr "to select a file!"
 #: src/widgets/text-translator/ui/index.tsx
 msgid "translate"
 msgstr "translate"
+
+#: src/widgets/pdf-viewer/ui/index.tsx
+msgid "translation"
+msgstr "translation"
 
 #: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Undo"

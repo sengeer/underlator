@@ -24,6 +24,7 @@ import {
   selectProviderSettings,
   setProvider,
   updateProviderSettings,
+  setTypeUse,
 } from '../../../shared/models/provider-settings-slice';
 import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background';
 import ColorPicker from '../../../shared/ui/color-picker';
@@ -109,6 +110,7 @@ function Settings({ isOpened }: Settings) {
   useEffect(() => {
     if (provider && (values.url !== undefined || values.model !== undefined)) {
       dispatch(updateProviderSettings({ provider, settings: values }));
+      dispatch(setTypeUse({ provider, typeUse: 'translation' }));
     }
   }, [values, provider, dispatch]);
 

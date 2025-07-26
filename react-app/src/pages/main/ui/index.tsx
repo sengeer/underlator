@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { isElementOpen } from '../../../shared/models/element-state-slice';
-import PdfTranslator from '../../../widgets/pdf-translator/ui';
+import PdfViewer from '../../../widgets/pdf-viewer/ui';
 import Settings from '../../../widgets/settings/ui';
 import SideNavigate from '../../../widgets/side-navigate/ui';
 import TextTranslator from '../../../widgets/text-translator/ui';
@@ -31,7 +31,7 @@ function Main() {
     <main className='main'>
       <SideNavigate />
       <TextTranslator isOpened={isOpenTextTranslationSection} />
-      <PdfTranslator isOpened={isOpenPdfTranslationSection} />
+      <PdfViewer isOpened={isOpenPdfTranslationSection} />
       <Settings isOpened={isOpenSettingsSection} />
     </main>
   );

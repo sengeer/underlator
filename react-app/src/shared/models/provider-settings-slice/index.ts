@@ -30,6 +30,8 @@ function getInitialState(): ProviderSettingsState {
       Ollama: {
         url: 'http://127.0.0.1:11434',
         model: 'gemma:2b',
+        typeUse: 'instruction',
+        prompt: '',
       },
     },
   };
@@ -63,17 +65,37 @@ export const providerSettingsSlice = createSlice({
       state.settings[provider] = { ...state.settings[provider], ...settings };
       setStorageWrite('providerSettings', JSON.stringify(state));
     },
+    setTypeUse(
+      state,
+      action: PayloadAction<{ provider: ProviderType; typeUse: string }>
+    ) {
+      const { provider, typeUse } = action.payload;
+      if (state.settings[provider]) {
+        state.settings[provider]!.typeUse = typeUse;
+        setStorageWrite('providerSettings', JSON.stringify(state));
+      }
+    },
+    setPrompt(
+      state,
+      action: PayloadAction<{ provider: ProviderType; prompt: string }>
+    ) {
+      const { provider, prompt } = action.payload;
+      if (state.settings[provider]) {
+        state.settings[provider]!.prompt = prompt;
+        setStorageWrite('providerSettings', JSON.stringify(state));
+      }
+    },
   },
 });
 
-export const { setProvider, updateProviderSettings } =
+export const { setProvider, updateProviderSettings, setTypeUse, setPrompt } =
   providerSettingsSlice.actions;
 
 export const selectProviderSettings = (state: State) => state.providerSettings;
 
 export const selectActiveProviderSettings = (state: State) => {
   const { provider, settings } = state.providerSettings;
-  return { provider, ...(settings[provider] || {}) };
+  return { provider, settings: settings[provider] || {} };
 };
 
 export default providerSettingsSlice.reducer;
