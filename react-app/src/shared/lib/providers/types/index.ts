@@ -7,6 +7,7 @@ export interface GenerateOptions {
   typeUse?: 'instruction' | 'translation';
   onChunk?: (chunk: { idx: number; text: string }) => void;
   onProgress?: (progress: Progress) => void;
+  signal?: AbortSignal;
 }
 
 export interface TranslationProvider {

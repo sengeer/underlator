@@ -8,7 +8,11 @@ export class OllamaApi {
   }
 
   // Generate prompt
-  generatePrompt = async (model: string, prompt: string) => {
+  generatePrompt = async (
+    model: string,
+    prompt: string,
+    signal?: AbortSignal
+  ) => {
     let error = null;
 
     const res = await fetch(`${this.baseUrl}/api/generate`, {
@@ -21,6 +25,7 @@ export class OllamaApi {
         model: model,
         prompt: prompt,
       }),
+      signal,
     }).catch((err) => {
       console.error(err);
       if ('detail' in err) {

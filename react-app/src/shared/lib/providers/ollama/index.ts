@@ -10,6 +10,7 @@ export const ollamaProvider: TranslationProvider = {
     onChunk,
     typeUse,
     prompt,
+    signal,
   }: GenerateOptions) => {
     if (!model) {
       throw new Error('Ollama model is not specified');
@@ -31,13 +32,19 @@ export const ollamaProvider: TranslationProvider = {
           } the text after the colon, and return only the translated text: "${singleText}"`;
         }
 
-        const response = await ollamaApi.generatePrompt(model, finalPrompt);
+        const response = await ollamaApi.generatePrompt(
+          model,
+          finalPrompt,
+          signal
+        );
 
         if (!response) {
           throw new Error(`Failed to get response for text at index ${index}`);
         }
 
         const reader = response.body?.getReader();
+        let fullResponse = '';
+
         while (true) {
           if (reader) {
             const { done, value } = await reader.read();
@@ -47,7 +54,10 @@ export const ollamaProvider: TranslationProvider = {
             const { response: chunkResponse } = JSON.parse(chunk);
 
             if (onChunk) onChunk({ idx: index, text: chunkResponse });
+            fullResponse += chunkResponse;
           }
+
+          results[index] = fullResponse;
         }
       })
     );

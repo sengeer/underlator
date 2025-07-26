@@ -32,7 +32,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
 
   const { isCopied, handleCopy } = useCopying();
   const [input, setInput] = useState<string>('');
-  const [output, setOutput] = useState<string>(generatedResponse[0]);
+  const [output, setOutput] = useState<string>(generatedResponse);
 
   const outputRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -47,8 +47,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
   const hasSizeS = width <= 768;
 
   useEffect(() => {
-    setOutput(generatedResponse[0]);
-  }, [generatedResponse[0]]);
+    setOutput(generatedResponse);
+  }, [generatedResponse]);
 
   return (
     <section

@@ -12,6 +12,7 @@ import CloseIcon from '../../../shared/assets/icons/close-icon';
 import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
+import StopCircleIcon from '../../../shared/assets/icons/stop-circle-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import WithAdaptiveSize from '../../../shared/lib/hocs/with-adaptive-size';
@@ -90,6 +91,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     translateLanguage,
     toggleTranslateLanguage,
     reset: resetResponse,
+    stop,
   } = useModel();
 
   const { width: documentWidth, ref: documentRef } = useResizeDetector({
@@ -248,15 +250,13 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       if (settings.typeUse !== 'instruction') {
         setTextInfos([]);
       }
-      resetResponse();
     }
   }, [
     generatedResponse,
     blockStatus,
     translationErrors,
-    resetResponse,
-    textInfos,
     settings.typeUse,
+    textInfos,
   ]);
 
   useEffect(() => {
@@ -371,18 +371,30 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                 }}
               />
             </div>
-            {generatedResponse && (
+            {(generatedResponse || blockStatus === 'process') && (
               <div className='pdf-viewer__text-wrapper'>
                 <p className='pdf-viewer__output'>{generatedResponse}</p>
-                <IconButton
-                  style={{
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                  }}
-                  onClick={resetResponse}>
-                  <BackspaceIcon />
-                </IconButton>
+                {blockStatus === 'process' ? (
+                  <IconButton
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: 0,
+                    }}
+                    onClick={stop}>
+                    <StopCircleIcon />
+                  </IconButton>
+                ) : (
+                  <IconButton
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: 0,
+                    }}
+                    onClick={resetResponse}>
+                    <BackspaceIcon />
+                  </IconButton>
+                )}
                 <IconButton
                   style={{
                     position: 'absolute',

@@ -52,6 +52,7 @@
 
   &__output {
     overflow-y: auto;
+    min-height: 4rem;
     max-height: calc(6 * 2rem);
     margin: 0;
     color: var(--foreground);

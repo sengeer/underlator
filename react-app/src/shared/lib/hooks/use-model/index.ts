@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
 import { getTranslationProvider } from '../../providers';
@@ -6,6 +6,8 @@ import { getTranslationProvider } from '../../providers';
 type Status = 'idle' | 'process' | 'success' | 'error';
 
 export function useModel() {
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const [progressItems, setProgressItems] = useState<Progress>({
     file: '',
     progress: 0,
@@ -36,6 +38,9 @@ export function useModel() {
     setGeneratedResponse('');
     setError(null);
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       const provider = getTranslationProvider(providerSettings.provider);
       const finalResult = await provider.generate({
@@ -45,6 +50,7 @@ export function useModel() {
         onChunk: handleChunk,
         onProgress: handleProgress,
         prompt: instruction,
+        signal: controller.signal,
       });
 
       // If the provider does not stream, but returns the full result
@@ -57,6 +63,8 @@ export function useModel() {
       console.error(err.message);
       setError(err.message);
       setStatus('error');
+    } finally {
+      abortControllerRef.current = null;
     }
   }
 
@@ -64,6 +72,12 @@ export function useModel() {
     setStatus('idle');
     setGeneratedResponse('');
     setError(null);
+  }
+
+  function stop() {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
   }
 
   return {
@@ -75,5 +89,6 @@ export function useModel() {
     error,
     generate,
     reset,
+    stop,
   };
 }
