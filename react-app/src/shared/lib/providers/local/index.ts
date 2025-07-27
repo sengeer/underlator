@@ -10,7 +10,7 @@ export const localProvider: TranslationProvider = {
     onProgress,
   }: GenerateOptions) => {
     return new Promise((resolve, reject) => {
-      const handleStatusUpdate = (message: any) => {
+      function handleStatusUpdate(message: any) {
         switch (message.status) {
           case 'progress':
             if (message.data && onProgress) onProgress(message.data);
@@ -25,7 +25,7 @@ export const localProvider: TranslationProvider = {
             break;
           case 'complete':
             unsubscribe();
-            resolve({});
+            resolve('');
             if (onProgress) onProgress({ file: '', progress: 0 });
             break;
           case 'error':
@@ -33,7 +33,7 @@ export const localProvider: TranslationProvider = {
             reject(new Error(message.error || 'Unknown electron error'));
             break;
         }
-      };
+      }
 
       const unsubscribe = window.electron.onStatus(handleStatusUpdate);
 

@@ -213,14 +213,14 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     const payload = collectedTextInfos.map((t) => t.original);
 
     if (settings.typeUse === 'instruction') {
-      generate(payload, instruction);
+      generate(payload, { responseMode: 'stream', instruction: instruction });
     } else {
       collectedTextInfos.forEach(({ element }) => {
         element.style.backgroundColor = 'var(--background)';
         element.style.color = 'var(--foreground)';
       });
       setTextInfos(collectedTextInfos);
-      generate(payload);
+      generate(payload, { responseMode: 'stream' });
     }
 
     setIsTranslateButtonVisible(false);

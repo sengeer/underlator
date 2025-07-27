@@ -5,6 +5,15 @@ import { getTranslationProvider } from '../../providers';
 
 type Status = 'idle' | 'process' | 'success' | 'error';
 
+interface Params {
+  responseMode: 'stream' | 'chunk' | string;
+  instruction?: string;
+}
+
+const defaultParams = {
+  responseMode: 'stream',
+};
+
 export function useModel() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -25,15 +34,23 @@ export function useModel() {
 
   const providerSettings = useSelector(selectActiveProviderSettings);
 
-  const handleChunk = useCallback((chunk: { idx: number; text: string }) => {
-    setGeneratedResponse((prev) => prev + chunk.text);
-  }, []);
+  const handleChunk = useCallback(
+    (chunk: { idx: number; text: string }, params: Params) => {
+      if (
+        providerSettings.provider === 'Electron IPC' &&
+        params.responseMode === 'chunk'
+      )
+        setGeneratedResponse(chunk.text);
+      else setGeneratedResponse((prev) => prev + chunk.text);
+    },
+    []
+  );
 
   const handleProgress = useCallback((progress: Progress) => {
     setProgressItems(progress);
   }, []);
 
-  async function generate(texts: string[], instruction?: string) {
+  async function generate(texts: string[], params: Params = defaultParams) {
     setStatus('process');
     setGeneratedResponse('');
     setError(null);
@@ -41,15 +58,19 @@ export function useModel() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
+    function wrappedHandleChunk(chunk: { idx: number; text: string }) {
+      handleChunk(chunk, params);
+    }
+
     try {
       const provider = getTranslationProvider(providerSettings.provider);
       const finalResult = await provider.generate({
         ...providerSettings.settings,
         text: texts,
         translateLanguage,
-        onChunk: handleChunk,
+        onChunk: wrappedHandleChunk,
         onProgress: handleProgress,
-        prompt: instruction,
+        prompt: params.instruction,
         signal: controller.signal,
       });
 
