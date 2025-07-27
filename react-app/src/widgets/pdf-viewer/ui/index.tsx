@@ -213,14 +213,17 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     const payload = collectedTextInfos.map((t) => t.original);
 
     if (settings.typeUse === 'instruction') {
-      generate(payload, { responseMode: 'stream', instruction: instruction });
+      generate(payload, {
+        responseMode: 'streamString',
+        instruction: instruction,
+      });
     } else {
       collectedTextInfos.forEach(({ element }) => {
         element.style.backgroundColor = 'var(--background)';
         element.style.color = 'var(--foreground)';
       });
       setTextInfos(collectedTextInfos);
-      generate(payload, { responseMode: 'stream' });
+      generate(payload, { responseMode: 'streamArray' });
     }
 
     setIsTranslateButtonVisible(false);
@@ -228,17 +231,16 @@ function PdfViewer({ isOpened }: PdfTranslator) {
 
   // Processing block translation results.
   useEffect(() => {
-    if (generatedResponse === '') return;
+    if (Object.keys(generatedResponse).length === 0) return;
 
-    if (settings.typeUse !== 'instruction') {
-      textInfos.forEach((info) => {
-        info.node.nodeValue = '';
-      });
-
-      if (textInfos.length > 0) {
-        textInfos[0].node.nodeValue = generatedResponse;
+    Object.entries(generatedResponse).forEach(([idx, text]) => {
+      const index = parseInt(idx, 10);
+      if (textInfos[index] && textInfos[index].node) {
+        textInfos[index].node.nodeValue = text;
+      } else {
+        console.warn(`Node at index ${index} not found in textInfos.`);
       }
-    }
+    });
 
     if (blockStatus === 'success' || blockStatus === 'error') {
       if (blockStatus === 'error' && translationErrors) {
@@ -249,6 +251,8 @@ function PdfViewer({ isOpened }: PdfTranslator) {
 
       if (settings.typeUse !== 'instruction') {
         setTextInfos([]);
+
+        resetResponse();
       }
     }
   }, [

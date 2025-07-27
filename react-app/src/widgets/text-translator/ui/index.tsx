@@ -144,7 +144,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
           alignSelf: 'center',
         }}
         isDisabled={progressItems.file !== ''}
-        onClick={() => generate([input], { responseMode: 'chunk' })}>
+        onClick={() => generate([input], { responseMode: 'stringChunk' })}>
         {progressItems.file !== '' ? <Loader /> : <TranslateIcon />}
       </TextAndIconButton>
     </section>

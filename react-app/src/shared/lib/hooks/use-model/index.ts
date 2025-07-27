@@ -6,12 +6,17 @@ import { getTranslationProvider } from '../../providers';
 type Status = 'idle' | 'process' | 'success' | 'error';
 
 interface Params {
-  responseMode: 'stream' | 'chunk' | string;
+  responseMode: 'streamArray' | 'stringChunk' | 'streamString' | string;
   instruction?: string;
 }
 
+interface Chunk {
+  idx: number;
+  text: string;
+}
+
 const defaultParams = {
-  responseMode: 'stream',
+  responseMode: 'streamString',
 };
 
 export function useModel() {
@@ -22,7 +27,7 @@ export function useModel() {
     progress: 0,
   });
   const [status, setStatus] = useState<Status>('idle');
-  const [generatedResponse, setGeneratedResponse] = useState<string>('');
+  const [generatedResponse, setGeneratedResponse] = useState<any>([]);
   const [error, setError] = useState<string | null>(null);
 
   const [translateLanguage, setTranslateLanguage] = useState<'en-ru' | 'ru-en'>(
@@ -35,15 +40,20 @@ export function useModel() {
   const providerSettings = useSelector(selectActiveProviderSettings);
 
   const handleChunk = useCallback(
-    (chunk: { idx: number; text: string }, params: Params) => {
+    (chunk: Chunk, params: Params) => {
       if (
         providerSettings.provider === 'Electron IPC' &&
-        params.responseMode === 'chunk'
+        params.responseMode === 'stringChunk'
       )
         setGeneratedResponse(chunk.text);
-      else setGeneratedResponse((prev) => prev + chunk.text);
+      else if (params.responseMode === 'streamArray')
+        setGeneratedResponse((prev: any) => ({
+          ...prev,
+          [chunk.idx]: (prev[chunk.idx] || '') + chunk.text,
+        }));
+      else setGeneratedResponse((prev: string) => prev + chunk.text);
     },
-    []
+    [providerSettings]
   );
 
   const handleProgress = useCallback((progress: Progress) => {
@@ -52,7 +62,7 @@ export function useModel() {
 
   async function generate(texts: string[], params: Params = defaultParams) {
     setStatus('process');
-    setGeneratedResponse('');
+    setGeneratedResponse([]);
     setError(null);
 
     const controller = new AbortController();
@@ -76,7 +86,9 @@ export function useModel() {
 
       // If the provider does not stream, but returns the full result
       if (finalResult) {
-        setGeneratedResponse(Object.values(finalResult).join(' '));
+        if (params.responseMode === 'streamArray')
+          setGeneratedResponse(finalResult);
+        else setGeneratedResponse(Object.values(finalResult).join(' '));
       }
       setStatus('success');
     } catch (e) {
@@ -91,7 +103,7 @@ export function useModel() {
 
   function reset() {
     setStatus('idle');
-    setGeneratedResponse('');
+    setGeneratedResponse([]);
     setError(null);
   }
 
