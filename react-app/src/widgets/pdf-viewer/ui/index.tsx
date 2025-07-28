@@ -211,10 +211,14 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       return;
     }
 
-    const payload = collectedTextInfos.map((t) => t.original);
+    const payloadArray = collectedTextInfos.map((t) => t.original);
+
+    const payloadString = collectedTextInfos
+      .map((item) => item.original)
+      .join(' ');
 
     if (settings.typeUse === 'instruction') {
-      generate(payload, {
+      generate([payloadString], {
         responseMode: 'stringStream',
         instruction: instruction,
       });
@@ -224,7 +228,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         element.style.color = 'var(--foreground)';
       });
       setTextInfos(collectedTextInfos);
-      generate(payload, { responseMode: 'arrayStream' });
+      generate(payloadArray, { responseMode: 'arrayStream' });
     }
 
     setIsTranslateButtonVisible(false);
