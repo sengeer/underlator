@@ -6,7 +6,7 @@ import { getTranslationProvider } from '../../providers';
 type Status = 'idle' | 'process' | 'success' | 'error';
 
 interface Params {
-  responseMode: 'streamArray' | 'stringChunk' | 'streamString' | string;
+  responseMode: 'arrayStream' | 'stringChunk' | 'stringStream' | string;
   instruction?: string;
 }
 
@@ -16,7 +16,7 @@ interface Chunk {
 }
 
 const defaultParams = {
-  responseMode: 'streamString',
+  responseMode: 'stringStream',
 };
 
 export function useModel() {
@@ -27,7 +27,9 @@ export function useModel() {
     progress: 0,
   });
   const [status, setStatus] = useState<Status>('idle');
-  const [generatedResponse, setGeneratedResponse] = useState<any>([]);
+  const [generatedResponse, setGeneratedResponse] = useState<
+    string | Record<number, string>
+  >('');
   const [error, setError] = useState<string | null>(null);
 
   const [translateLanguage, setTranslateLanguage] = useState<'en-ru' | 'ru-en'>(
@@ -44,14 +46,22 @@ export function useModel() {
       if (
         providerSettings.provider === 'Electron IPC' &&
         params.responseMode === 'stringChunk'
-      )
+      ) {
         setGeneratedResponse(chunk.text);
-      else if (params.responseMode === 'streamArray')
-        setGeneratedResponse((prev: any) => ({
-          ...prev,
-          [chunk.idx]: (prev[chunk.idx] || '') + chunk.text,
-        }));
-      else setGeneratedResponse((prev: string) => prev + chunk.text);
+      } else if (params.responseMode === 'arrayStream') {
+        setGeneratedResponse((prev) => {
+          if (typeof prev === 'string') return { 0: prev + chunk.text };
+
+          return {
+            ...prev,
+            [chunk.idx]: (prev[chunk.idx] || '') + chunk.text,
+          };
+        });
+      } else {
+        setGeneratedResponse((prev) =>
+          typeof prev === 'string' ? prev + chunk.text : ''
+        );
+      }
     },
     [providerSettings]
   );
@@ -62,7 +72,7 @@ export function useModel() {
 
   async function generate(texts: string[], params: Params = defaultParams) {
     setStatus('process');
-    setGeneratedResponse([]);
+    setGeneratedResponse(params.responseMode === 'arrayStream' ? {} : '');
     setError(null);
 
     const controller = new AbortController();
@@ -86,7 +96,7 @@ export function useModel() {
 
       // If the provider does not stream, but returns the full result
       if (finalResult) {
-        if (params.responseMode === 'streamArray')
+        if (params.responseMode === 'arrayStream')
           setGeneratedResponse(finalResult);
         else setGeneratedResponse(Object.values(finalResult).join(' '));
       }

@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import { useEffect, useState, useRef } from 'react';
+import stringifyGenerateResponse from 'shared/lib/utils/stringify-generate-response';
 import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
 import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CopyIcon from '../../../shared/assets/icons/copy-icon';
@@ -32,7 +33,9 @@ function TextTranslator({ isOpened }: TextTranslator) {
 
   const { isCopied, handleCopy } = useCopying();
   const [input, setInput] = useState<string>('');
-  const [output, setOutput] = useState<string>(generatedResponse);
+  const [output, setOutput] = useState<string>(
+    stringifyGenerateResponse(generatedResponse)
+  );
 
   const outputRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -47,7 +50,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
   const hasSizeS = width <= 768;
 
   useEffect(() => {
-    setOutput(generatedResponse);
+    setOutput(stringifyGenerateResponse(generatedResponse));
   }, [generatedResponse]);
 
   return (

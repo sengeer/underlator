@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { useResizeDetector } from 'react-resize-detector';
+import stringifyGenerateResponse from 'shared/lib/utils/stringify-generate-response';
 import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
 import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CloseIcon from '../../../shared/assets/icons/close-icon';
@@ -214,7 +215,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
 
     if (settings.typeUse === 'instruction') {
       generate(payload, {
-        responseMode: 'streamString',
+        responseMode: 'stringStream',
         instruction: instruction,
       });
     } else {
@@ -223,7 +224,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         element.style.color = 'var(--foreground)';
       });
       setTextInfos(collectedTextInfos);
-      generate(payload, { responseMode: 'streamArray' });
+      generate(payload, { responseMode: 'arrayStream' });
     }
 
     setIsTranslateButtonVisible(false);
@@ -377,7 +378,9 @@ function PdfViewer({ isOpened }: PdfTranslator) {
             </div>
             {(generatedResponse || blockStatus === 'process') && (
               <div className='pdf-viewer__text-wrapper'>
-                <p className='pdf-viewer__output'>{generatedResponse}</p>
+                <p className='pdf-viewer__output'>
+                  {stringifyGenerateResponse(generatedResponse)}
+                </p>
                 {blockStatus === 'process' ? (
                   <IconButton
                     style={{
@@ -405,7 +408,9 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                     right: 0,
                     top: '24px',
                   }}
-                  onClick={() => handleCopy(generatedResponse)}>
+                  onClick={() =>
+                    handleCopy(stringifyGenerateResponse(generatedResponse))
+                  }>
                   <AnimatingWrapper isShow={isCopied}>
                     <CheckIcon />
                   </AnimatingWrapper>
