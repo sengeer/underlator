@@ -113,7 +113,7 @@ export function useModel() {
 
   function reset() {
     setStatus('idle');
-    setGeneratedResponse([]);
+    setGeneratedResponse('');
     setError(null);
   }
 

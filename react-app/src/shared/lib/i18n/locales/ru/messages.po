@@ -108,6 +108,10 @@ msgstr "русский"
 msgid "Select All"
 msgstr "Выбрать все"
 
+#: src/widgets/text-translator/ui/index.tsx
+msgid "stop"
+msgstr "Стоп"
+
 #: src/shared/ui/file-upload/index.tsx
 msgid "to select a file!"
 msgstr "выберите файл"

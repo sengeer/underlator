@@ -15,7 +15,7 @@ import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import StopCircleIcon from '../../../shared/assets/icons/stop-circle-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
-import WithAdaptiveSize from '../../../shared/lib/hocs/with-adaptive-size';
+import UnderlatorIcon from '../../../shared/assets/icons/underlator-icon';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
 import { useModel } from '../../../shared/lib/hooks/use-model';
 import stringifyGenerateResponse from '../../../shared/lib/utils/stringify-generate-response';
@@ -84,7 +84,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
   const { t } = useLingui();
 
   const {
-    status: blockStatus,
+    status,
     progressItems,
     generatedResponse,
     error: translationErrors,
@@ -243,8 +243,8 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       }
     });
 
-    if (blockStatus === 'success' || blockStatus === 'error') {
-      if (blockStatus === 'error' && translationErrors) {
+    if (status === 'success' || status === 'error') {
+      if (status === 'error' && translationErrors) {
         const span = document.createElement('span');
         span.style.color = 'red';
         span.textContent = `Ошибка перевода: ${translationErrors}`;
@@ -258,14 +258,14 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     }
   }, [
     generatedResponse,
-    blockStatus,
+    status,
     translationErrors,
     settings.typeUse,
     textInfos,
   ]);
 
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
+    function handleClick(e: MouseEvent) {
       setTimeout(() => {
         const sel = window.getSelection();
         const txt = sel?.toString().trim();
@@ -287,7 +287,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
           y: rect.top + window.scrollY - 28,
         });
       }, 10);
-    };
+    }
 
     document.addEventListener('click', handleClick);
 
@@ -376,12 +376,12 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                 }}
               />
             </div>
-            {(generatedResponse || blockStatus === 'process') && (
+            {(generatedResponse || status === 'process') && (
               <div className='pdf-viewer__text-wrapper'>
                 <p className='pdf-viewer__output'>
                   {stringifyGenerateResponse(generatedResponse)}
                 </p>
-                {blockStatus === 'process' ? (
+                {status === 'process' ? (
                   <IconButton
                     style={{
                       position: 'absolute',
@@ -437,7 +437,11 @@ function PdfViewer({ isOpened }: PdfTranslator) {
               zIndex: 3,
             }}
             onClick={() => onTranslateClick()}>
-            <WithAdaptiveSize WrappedComponent={TranslateIcon} />
+            {settings.typeUse === 'instruction' ? (
+              <UnderlatorIcon />
+            ) : (
+              <TranslateIcon width={32} height={32} />
+            )}
           </IconButton>
         )}
         <div className='pdf-viewer__gradient' />
