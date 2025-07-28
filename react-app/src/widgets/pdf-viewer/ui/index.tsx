@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { useResizeDetector } from 'react-resize-detector';
-import stringifyGenerateResponse from 'shared/lib/utils/stringify-generate-response';
 import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
 import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CloseIcon from '../../../shared/assets/icons/close-icon';
@@ -19,6 +18,7 @@ import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import WithAdaptiveSize from '../../../shared/lib/hocs/with-adaptive-size';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
 import { useModel } from '../../../shared/lib/hooks/use-model';
+import stringifyGenerateResponse from '../../../shared/lib/utils/stringify-generate-response';
 import {
   selectActiveProviderSettings,
   setPrompt,

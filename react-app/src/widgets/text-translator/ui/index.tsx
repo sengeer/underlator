@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
 import { useEffect, useState, useRef } from 'react';
-import stringifyGenerateResponse from 'shared/lib/utils/stringify-generate-response';
 import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
 import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CopyIcon from '../../../shared/assets/icons/copy-icon';
@@ -11,6 +10,7 @@ import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
 import { useModel } from '../../../shared/lib/hooks/use-model';
 import useWindowSize from '../../../shared/lib/hooks/use-window-size';
+import stringifyGenerateResponse from '../../../shared/lib/utils/stringify-generate-response';
 import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import IconButton from '../../../shared/ui/icon-button';
