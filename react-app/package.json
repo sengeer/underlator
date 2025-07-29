@@ -17,9 +17,12 @@
     "pixelperfect-tool": "^1.9.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-markdown": "^10.1.0",
     "react-pdf": "^9.1.1",
     "react-redux": "^9.2.0",
     "react-resize-detector": "^12.0.2",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.1",
     "sass": "^1.70.0",
     "typescript": "^5.7.3",
     "vite": "^6.1.0"

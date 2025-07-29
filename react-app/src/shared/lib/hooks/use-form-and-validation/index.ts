@@ -14,8 +14,8 @@ export function useFormAndValidation() {
     const { name, value } = e.target;
     setValues({ ...values, [name]: value });
     setErrors({ ...errors, [name]: e.target.validationMessage });
-    setIsValid(e.target.closest('form').checkValidity());
-    setIsBtnEnabled(e.target.closest('form').checkValidity());
+    setIsValid(e.target.closest('form')?.checkValidity());
+    setIsBtnEnabled(e.target.closest('form')?.checkValidity());
   }
 
   const resetForm = useCallback(

@@ -17,6 +17,7 @@ import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import UnderlatorIcon from '../../../shared/assets/icons/underlator-icon';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
+import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
 import { useModel } from '../../../shared/lib/hooks/use-model';
 import stringifyGenerateResponse from '../../../shared/lib/utils/stringify-generate-response';
 import {
@@ -29,6 +30,7 @@ import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-
 import FileUpload from '../../../shared/ui/file-upload';
 import IconButton from '../../../shared/ui/icon-button';
 import Loader from '../../../shared/ui/loader';
+import MarkdownRenderer from '../../../shared/ui/markdown-renderer';
 import Switch from '../../../shared/ui/switch';
 import CustomErrorMessage from './custom-error-message';
 import CustomLoading from './custom-loading';
@@ -94,6 +96,8 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     reset: resetResponse,
     stop,
   } = useModel();
+
+  const { values, handleChange, resetForm, setValues } = useFormAndValidation();
 
   const { width: documentWidth, ref: documentRef } = useResizeDetector({
     refreshMode: 'debounce',
@@ -300,6 +304,13 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     };
   }, []);
 
+  useEffect(() => {
+    resetForm();
+    setValues({
+      instruction: '',
+    });
+  }, [resetForm, setValues]);
+
   return (
     <section className={`pdf-viewer${isOpened ? ' pdf-viewer_open' : ''}`}>
       <div
@@ -370,12 +381,14 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         {provider === 'Ollama' && settings.typeUse === 'instruction' && (
           <>
             <div className='pdf-viewer__text-wrapper'>
-              <textarea
-                className='pdf-viewer__textarea'
-                value={instruction}
-                rows={1}
+              <input
+                className='pdf-viewer__instruction'
+                type='text'
+                id='instruction'
+                name='instruction'
+                value={values.instruction || ''}
                 onChange={(e) => {
-                  setInstruction(e.target.value);
+                  handleChange(e);
                   dispatch(setPrompt({ provider, prompt: e.target.value }));
                 }}
               />

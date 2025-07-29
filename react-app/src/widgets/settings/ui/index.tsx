@@ -53,6 +53,7 @@ interface Settings {
 
 function Settings({ isOpened }: Settings) {
   const { values, handleChange, resetForm, setValues } = useFormAndValidation();
+
   const dispatch = useDispatch();
   const { provider, settings } = useSelector(selectProviderSettings);
   const currentProviderSettings = settings[provider] || {};
