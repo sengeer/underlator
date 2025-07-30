@@ -12,7 +12,6 @@ interface Chunk {
 
 const defaultParams = {
   responseMode: 'stringStream',
-  think: true,
 };
 
 export function useModel() {
@@ -39,6 +38,12 @@ export function useModel() {
 
   const handleChunk = useCallback(
     (chunk: Chunk, params: Params) => {
+      // Check validity of chunk
+      if (!chunk || typeof chunk.text !== 'string') {
+        console.warn('Invalid chunk received:', chunk);
+        return;
+      }
+
       if (
         providerSettings.provider === 'Electron IPC' &&
         params.responseMode === 'stringChunk'

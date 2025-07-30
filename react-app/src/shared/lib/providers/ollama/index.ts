@@ -1,4 +1,5 @@
 import { OllamaApi } from '../../../apis/ollama';
+import { createOllamaChunkProcessor } from '../../utils/safe-json-parser';
 import { TranslationProvider, GenerateOptions } from '../types';
 
 export const ollamaProvider: TranslationProvider = {
@@ -49,19 +50,26 @@ export const ollamaProvider: TranslationProvider = {
         const reader = response.body?.getReader();
         let fullResponse = '';
 
+        // Сhunk processor using a functional utility
+        const processChunk = createOllamaChunkProcessor(
+          (chunkResponse: string) => {
+            if (onChunk) onChunk({ idx: index, text: chunkResponse });
+            fullResponse += chunkResponse;
+            results[index] = fullResponse;
+          },
+          (error: string, line: string) => {
+            console.warn('Failed to parse JSON chunk:', line, error);
+          }
+        );
+
         while (true) {
           if (reader) {
             const { done, value } = await reader.read();
             if (done) break;
 
             const chunk = new TextDecoder().decode(value);
-            const { response: chunkResponse } = JSON.parse(chunk);
-
-            if (onChunk) onChunk({ idx: index, text: chunkResponse });
-            fullResponse += chunkResponse;
+            processChunk(chunk);
           }
-
-          results[index] = fullResponse;
         }
       })
     );

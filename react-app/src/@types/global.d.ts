@@ -1,7 +1,7 @@
 interface Params {
   responseMode: 'arrayStream' | 'stringChunk' | 'stringStream' | string;
   instruction?: string;
-  think?: boolean;
+  think?: false;
 }
 
 interface Progress {

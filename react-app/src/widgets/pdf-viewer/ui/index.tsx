@@ -21,6 +21,10 @@ import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-val
 import { useModel } from '../../../shared/lib/hooks/use-model';
 import stringifyGenerateResponse from '../../../shared/lib/utils/stringify-generate-response';
 import {
+  createUpdateHandler,
+  type TextInfo,
+} from '../../../shared/lib/utils/text-node-manager';
+import {
   selectActiveProviderSettings,
   setPrompt,
   setTypeUse,
@@ -51,12 +55,6 @@ const maxWidth = 2560;
 interface PdfTranslator {
   isOpened: boolean;
 }
-
-type TextInfo = {
-  node: Text;
-  original: string;
-  element: HTMLElement;
-};
 
 type TranslateButtonPosition = {
   x: number;
@@ -224,7 +222,6 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       generate([payloadString], {
         responseMode: 'stringStream',
         instruction: values.instruction,
-        think: true,
       });
     } else {
       collectedTextInfos.forEach(({ element }) => {
@@ -242,14 +239,12 @@ function PdfViewer({ isOpened }: PdfTranslator) {
   useEffect(() => {
     if (Object.keys(generatedResponse).length === 0) return;
 
-    Object.entries(generatedResponse).forEach(([idx, text]) => {
-      const index = parseInt(idx, 10);
-      if (textInfos[index] && textInfos[index].node) {
-        textInfos[index].node.nodeValue = text;
-      } else {
-        console.warn(`Node at index ${index} not found in textInfos.`);
-      }
-    });
+    // Functional utility for updating chunks
+    const shouldLogErrors =
+      (status === 'success' || status === 'error') && textInfos.length > 0;
+    const updateHandler = createUpdateHandler(textInfos, shouldLogErrors);
+
+    updateHandler(generatedResponse as Record<number, string>);
 
     if (status === 'success' || status === 'error') {
       if (status === 'error' && translationErrors) {
@@ -260,7 +255,6 @@ function PdfViewer({ isOpened }: PdfTranslator) {
 
       if (settings.typeUse !== 'instruction') {
         setTextInfos([]);
-
         resetResponse();
       }
     }
