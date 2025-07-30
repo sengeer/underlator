@@ -1,9 +1,9 @@
 export default function separateContentOfModel(processedContent: string) {
-  // Разделение контента на размышления и основной ответ
+  // Dividing content into thinking and main answer
   const thinkingParts = [];
   const mainContentParts = [];
 
-  // Извлечение всех блоков <think>
+  // Extracting all blocks <think>
   const thinkRegex = /<think>([\s\S]*?)<\/think>/g;
   let lastIndex = 0;
   let match;
@@ -16,12 +16,12 @@ export default function separateContentOfModel(processedContent: string) {
       }
     }
 
-    // Добавление размышления
+    // Adding thinking
     thinkingParts.push(match[1].trim());
     lastIndex = match.index + match[0].length;
   }
 
-  // Добавление оставшегося контента после последнего блока размышлений
+  // Adding remaining content after last block of thinking
   if (lastIndex < processedContent.length) {
     const afterThink = processedContent.slice(lastIndex).trim();
     if (afterThink) {

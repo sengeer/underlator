@@ -1,7 +1,4 @@
-/**
- * Утилита для управления текстовыми узлами DOM
- * Следует принципам функционального программирования и оптимизирована по Big-O
- */
+// Utility for managing DOM text nodes
 
 export interface TextInfo {
   node: Text;
@@ -9,18 +6,18 @@ export interface TextInfo {
   element: HTMLElement;
 }
 
-// Алгебраический тип для результата операции с узлом
+// Algebraic type for node operation result
 export type NodeOperationResult =
   | { success: true; updated: boolean }
   | { success: false; error: string };
 
-// Чистая функция для создания Map из массива TextInfo
+// Pure function for creating a Map from TextInfo array
 export const createTextInfoMap = (
   textInfos: TextInfo[]
 ): Map<number, TextInfo> =>
   new Map(textInfos.map((info, index) => [index, info]));
 
-// HOF для создания функции обновления узла с кастомной логикой
+// HOF for creating a node updater with custom logic
 export const createNodeUpdater =
   (onError?: (index: number, error: string) => void) =>
   (
@@ -53,7 +50,7 @@ export const createNodeUpdater =
     }
   };
 
-// Композиция функций для пакетного обновления узлов
+// Function composition for batch updating nodes
 export function updateTextNodes(
   textInfos: TextInfo[],
   updates: Record<number, string>,
@@ -83,7 +80,7 @@ export function updateTextNodes(
   return { successCount, errorCount };
 }
 
-// Каррированная функция для создания обработчика обновлений с контекстом
+// Curried function for creating an update handler with context
 export function createUpdateHandler(
   textInfos: TextInfo[],
   shouldLogErrors: boolean = false
@@ -97,7 +94,7 @@ export function createUpdateHandler(
     updateTextNodes(textInfos, updates, errorHandler);
 }
 
-// Утилита для валидации TextInfo массива
+// Utility for validating TextInfo array
 export function validateTextInfos(textInfos: TextInfo[]): boolean {
   return textInfos.every(
     (info) =>
@@ -109,7 +106,7 @@ export function validateTextInfos(textInfos: TextInfo[]): boolean {
   );
 }
 
-// Функция для безопасного получения статистики узлов
+// Function for safely retrieving node statistics
 export function getTextInfoStats(textInfos: TextInfo[]): {
   total: number;
   valid: number;

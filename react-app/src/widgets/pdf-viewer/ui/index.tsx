@@ -239,7 +239,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
   useEffect(() => {
     if (Object.keys(generatedResponse).length === 0) return;
 
-    // Functional utility for updating chunks
+    // Functional utility for updating text nodes
     const shouldLogErrors =
       (status === 'success' || status === 'error') && textInfos.length > 0;
     const updateHandler = createUpdateHandler(textInfos, shouldLogErrors);

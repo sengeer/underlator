@@ -7,7 +7,6 @@ import processThinkTags from '../../lib/utils/process-think-tags';
 import './index.scss';
 
 function MarkdownRenderer({ content, className, showThinking = true }) {
-  // Проверка наличия
   if (!content) return null;
 
   const processedContent = processThinkTags(content);
@@ -15,14 +14,14 @@ function MarkdownRenderer({ content, className, showThinking = true }) {
   const { thinkingParts, mainContentParts } =
     separateContentOfModel(processedContent);
 
-  // Определяем финальный контент для отображения
+  // Defining final content
   let finalContent;
 
   if (thinkingParts.length === 0) {
-    // Если нет размышлений, используем исходный контент
+    // If there is not <think>...</think>, use original content
     finalContent = processedContent;
   } else {
-    // Если есть размышления, используем только основной контент без тегов think
+    // If there is <think>...</think>, use only main content without think tags
     finalContent = mainContentParts.join('\n\n');
   }
 

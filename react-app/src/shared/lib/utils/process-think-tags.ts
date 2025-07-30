@@ -1,8 +1,8 @@
 export default function processThinkTags(modelContent: string): string {
-  // Проверка наличия
+  // Check for presence
   if (!modelContent) return modelContent;
 
-  // Обработка незакрытых тегов <think>
+  // Processing of unclosed tags <think>
   let processedContent = modelContent;
 
   const openThinkRegex = /<think>/g;
@@ -11,9 +11,9 @@ export default function processThinkTags(modelContent: string): string {
   const openMatches = [...processedContent.matchAll(openThinkRegex)];
   const closeMatches = [...processedContent.matchAll(closeThinkRegex)];
 
-  // Если есть незакрытые теги, закрываем их
+  // Closing tags
   if (openMatches.length > closeMatches.length) {
-    // Поиск последнего открывающего тега, без закрывающего
+    // Search for the last opening tag, without the closing one
     const lastOpenIndex = openMatches[openMatches.length - 1].index;
     const hasCloseAfterLastOpen = closeMatches.some(
       (match) =>
@@ -22,13 +22,13 @@ export default function processThinkTags(modelContent: string): string {
         match.index > lastOpenIndex
     );
 
-    // Добавление закрывающего тега если нет
+    // Adding a closing tag if not present
     if (!hasCloseAfterLastOpen) {
       processedContent += '</think>';
     }
   }
 
-  // Обработка всех тегов <think>, сохраняя их содержимое как есть
+  // Processing of all <think> tags, keeping their contents as is
   processedContent = processedContent.replace(
     /<think>([\s\S]*?)<\/think>/g,
     '<think>$1</think>'

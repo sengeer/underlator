@@ -1,14 +1,11 @@
-/**
- * Утилита для безопасного парсинга JSON с обработкой потоковых данных
- * Следует принципам функционального программирования
- */
+// Utility for safe JSON parsing with stream data processing
 
-// Алгебраический тип для результата парсинга
+// Algebraic type for parsing result
 export type ParseResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
 
-// Чистая функция для парсинга одной JSON строки
+// Pure function for parsing a single JSON string
 export function parseJsonLine<T = any>(line: string): ParseResult<T> {
   const trimmedLine = line.trim();
 
@@ -27,7 +24,7 @@ export function parseJsonLine<T = any>(line: string): ParseResult<T> {
   }
 }
 
-// HOF для создания парсера с кастомной обработкой ошибок
+// HOF for creating a parser with custom error handling
 export const createJsonParser =
   <T = any>(onError?: (error: string, line: string) => void) =>
   (line: string): ParseResult<T> => {
@@ -40,7 +37,7 @@ export const createJsonParser =
     return result;
   };
 
-// Композиция функций для обработки буфера с JSON строками
+// Function composition for processing a buffer with JSON strings
 export function processJsonBuffer<T = any>(
   buffer: string,
   processor: (data: T) => void,
@@ -61,7 +58,7 @@ export function processJsonBuffer<T = any>(
   return remainingBuffer;
 }
 
-// Каррированная функция для создания обработчика чанков
+// Curried function for creating a chunk handler
 export function createChunkProcessor<T = any>(
   onData: (data: T) => void,
   onError?: (error: string, line: string) => void
@@ -74,7 +71,7 @@ export function createChunkProcessor<T = any>(
   };
 }
 
-// Частичное применение для создания специализированного парсера Ollama
+// Partial application for creating a specialized Ollama parser
 export function createOllamaChunkProcessor(
   onChunk: (response: string) => void,
   onError?: (error: string, line: string) => void
