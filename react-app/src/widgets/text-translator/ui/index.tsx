@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
 import CheckIcon from '../../../shared/assets/icons/check-icon';
@@ -37,13 +37,9 @@ function TextTranslator({ isOpened }: TextTranslator) {
 
   const { isCopied, handleCopy } = useCopying();
   const [input, setInput] = useState<string>('');
-  const [output, setOutput] = useState<string>(
-    stringifyGenerateResponse(generatedResponse)
-  );
+  const [output, setOutput] = useState<string>('');
 
   const { provider } = useSelector(selectActiveProviderSettings);
-
-  const outputRef = useRef<HTMLTextAreaElement | null>(null);
 
   const { t } = useLingui();
 
@@ -124,7 +120,6 @@ function TextTranslator({ isOpened }: TextTranslator) {
       <div className='text-translator__textarea-wrapper'>
         <textarea
           className='text-translator__textarea'
-          ref={outputRef}
           value={output}
           rows={1}
           readOnly
@@ -135,7 +130,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
             top: '1rem',
             right: '1rem',
           }}
-          onClick={() => handleCopy(outputRef.current?.value || '')}
+          onClick={() => handleCopy(output)}
           isDisabled={output === '' || isCopied}>
           <AnimatingWrapper isShow={isCopied}>
             <CheckIcon />
@@ -163,7 +158,9 @@ function TextTranslator({ isOpened }: TextTranslator) {
             alignSelf: 'center',
           }}
           isDisabled={progressItems.file !== ''}
-          onClick={() => generate([input], { responseMode: 'stringChunk' })}>
+          onClick={() =>
+            generate([input], { responseMode: 'stringChunk', think: false })
+          }>
           {progressItems.file !== '' ? <Loader /> : <TranslateIcon />}
         </TextAndIconButton>
       )}

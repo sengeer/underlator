@@ -1,3 +1,9 @@
+interface Params {
+  responseMode: 'arrayStream' | 'stringChunk' | 'stringStream' | string;
+  instruction?: string;
+  think?: boolean;
+}
+
 interface Progress {
   file: string;
   progress: number;

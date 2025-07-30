@@ -11,6 +11,7 @@ export class OllamaApi {
   generatePrompt = async (
     model: string,
     prompt: string,
+    params: Params,
     signal?: AbortSignal
   ) => {
     let error = null;
@@ -24,6 +25,7 @@ export class OllamaApi {
       body: JSON.stringify({
         model: model,
         prompt: prompt,
+        think: params.think,
       }),
       signal,
     }).catch((err) => {

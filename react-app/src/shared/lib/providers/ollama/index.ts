@@ -9,8 +9,8 @@ export const ollamaProvider: TranslationProvider = {
     url,
     onChunk,
     typeUse,
-    prompt,
     signal,
+    params,
   }: GenerateOptions) => {
     if (!model) {
       throw new Error('Ollama model is not specified');
@@ -24,17 +24,21 @@ export const ollamaProvider: TranslationProvider = {
       texts.map(async (singleText, index) => {
         let finalPrompt: string;
 
-        if (typeUse === 'instruction' && prompt) {
-          finalPrompt = `${prompt}: ${singleText}`;
+        if (typeUse === 'instruction' && params.instruction) {
+          finalPrompt = `${params.instruction}: ${singleText}`;
         } else {
-          finalPrompt = `Translate from ${translateLanguage.split('-')[0]} to ${
-            translateLanguage.split('-')[1]
+          const sourceLanguage = translateLanguage.split('-')[0];
+          const targetLanguage = translateLanguage.split('-')[1];
+
+          finalPrompt = `Translate from ${sourceLanguage} to ${
+            targetLanguage
           } the text after the colon, and return only the translated text: "${singleText}"`;
         }
 
         const response = await ollamaApi.generatePrompt(
           model,
           finalPrompt,
+          params,
           signal
         );
 

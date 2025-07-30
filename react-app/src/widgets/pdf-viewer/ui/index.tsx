@@ -74,7 +74,6 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     });
   const [isTranslateButtonVisible, setIsTranslateButtonVisible] =
     useState<boolean>(false);
-  const [instruction, setInstruction] = useState<string>('');
 
   const { provider, settings } = useSelector(selectActiveProviderSettings);
   const dispatch = useDispatch();
@@ -224,7 +223,8 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     if (settings.typeUse === 'instruction') {
       generate([payloadString], {
         responseMode: 'stringStream',
-        instruction: instruction,
+        instruction: values.instruction,
+        think: true,
       });
     } else {
       collectedTextInfos.forEach(({ element }) => {
@@ -232,7 +232,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         element.style.color = 'var(--foreground)';
       });
       setTextInfos(collectedTextInfos);
-      generate(payloadArray, { responseMode: 'arrayStream' });
+      generate(payloadArray, { responseMode: 'arrayStream', think: false });
     }
 
     setIsTranslateButtonVisible(false);
@@ -395,14 +395,18 @@ function PdfViewer({ isOpened }: PdfTranslator) {
             </div>
             {(generatedResponse || status === 'process') && (
               <div className='pdf-viewer__text-wrapper'>
-                <p className='pdf-viewer__output'>
-                  {stringifyGenerateResponse(generatedResponse)}
-                </p>
+                <div className='pdf-viewer__output'>
+                  <MarkdownRenderer
+                    content={stringifyGenerateResponse(generatedResponse)}
+                    className=''
+                    showThinking
+                  />
+                </div>
                 {status === 'process' ? (
                   <IconButton
                     style={{
                       position: 'absolute',
-                      right: 0,
+                      right: '1rem',
                       top: 0,
                     }}
                     onClick={stop}>
@@ -412,7 +416,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                   <IconButton
                     style={{
                       position: 'absolute',
-                      right: 0,
+                      right: '1rem',
                       top: 0,
                     }}
                     onClick={resetResponse}>
@@ -422,7 +426,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                 <IconButton
                   style={{
                     position: 'absolute',
-                    right: 0,
+                    right: '1rem',
                     top: '24px',
                   }}
                   onClick={() =>

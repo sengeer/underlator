@@ -25,7 +25,7 @@
 .markdown-paragraph {
   margin: 0.75rem 0;
   color: var(--foreground);
-  font-size: 1rem;
+  font-size: 2rem;
   line-height: 1.6;
 }
 
@@ -73,23 +73,42 @@
   color: var(--foreground);
 }
 
+.markdown-thinking-section {
+  margin: 1rem 0;
+  padding: 1rem 1rem 0;
+  border-left: 4px solid var(--main);
+}
+
 .markdown-think {
   &__header {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    margin: 0;
-    padding: 0 1rem;
+    margin: 0 0 1rem;
     color: var(--foreground);
     font-weight: 600;
     font-size: 1rem;
   }
 
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
   &__paragraph {
     margin: 0;
-    padding: 0 1rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background: var(--black-20);
     color: var(--main);
     font-style: italic;
-    font-size: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
   }
+}
+
+.markdown-main-content {
+  margin-top: 1rem;
 }

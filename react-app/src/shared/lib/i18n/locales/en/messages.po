@@ -13,6 +13,10 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/shared/ui/markdown-renderer/index.jsx
+msgid "🤔 thinking:"
+msgstr "🤔 thinking:"
+
 #: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "About underlator"
 msgstr "About underlator"

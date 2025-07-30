@@ -5,11 +5,6 @@ import { getTranslationProvider } from '../../providers';
 
 type Status = 'idle' | 'process' | 'success' | 'error';
 
-interface Params {
-  responseMode: 'arrayStream' | 'stringChunk' | 'stringStream' | string;
-  instruction?: string;
-}
-
 interface Chunk {
   idx: number;
   text: string;
@@ -17,6 +12,7 @@ interface Chunk {
 
 const defaultParams = {
   responseMode: 'stringStream',
+  think: true,
 };
 
 export function useModel() {
@@ -90,8 +86,8 @@ export function useModel() {
         translateLanguage,
         onChunk: wrappedHandleChunk,
         onProgress: handleProgress,
-        prompt: params.instruction,
         signal: controller.signal,
+        params: params,
       });
 
       // If the provider does not stream, but returns the full result
