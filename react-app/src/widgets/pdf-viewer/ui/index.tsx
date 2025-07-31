@@ -330,7 +330,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
               <DecorativeTextAndIconButton text={t`instruction`} />
             </div>
           )}
-          <div className='pdf-viewer__horizontal-btns-group'>
+          <div className='pdf-viewer__translate-btns'>
             {settings.typeUse === 'translation' && (
               <>
                 {'en-ru' === translateLanguage ? (
@@ -379,6 +379,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                 className='pdf-viewer__instruction'
                 type='text'
                 id='instruction'
+                placeholder={t`what does this mean?`}
                 name='instruction'
                 value={values.instruction || ''}
                 onChange={(e) => {
@@ -388,7 +389,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
               />
             </div>
             {(generatedResponse || status === 'process') && (
-              <div className='pdf-viewer__text-wrapper'>
+              <div className='pdf-viewer__output-wrapper'>
                 <div className='pdf-viewer__output'>
                   <MarkdownRenderer
                     content={stringifyGenerateResponse(generatedResponse)}

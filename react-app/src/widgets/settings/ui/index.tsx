@@ -172,7 +172,7 @@ function Settings({ isOpened }: Settings) {
                   type='url'
                   id='url'
                   name='url'
-                  value={currentProviderSettings.url || ''}
+                  value={values.url || ''}
                   onChange={handleChange}
                 />
               </ButtonWrapperWithBackground>
@@ -190,7 +190,7 @@ function Settings({ isOpened }: Settings) {
                   type='text'
                   id='model'
                   name='model'
-                  value={currentProviderSettings.model || ''}
+                  value={values.model || ''}
                   onChange={handleChange}
                 />
               </ButtonWrapperWithBackground>

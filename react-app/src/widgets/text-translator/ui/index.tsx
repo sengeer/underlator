@@ -75,6 +75,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
         <textarea
           className='text-translator__textarea'
           value={input}
+          placeholder={'en-ru' === translateLanguage ? 'hello' : 'привет'}
           rows={1}
           onChange={(e) => setInput(e.target.value)}
         />
@@ -121,6 +122,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
         <textarea
           className='text-translator__textarea'
           value={output}
+          placeholder={'en-ru' === translateLanguage ? 'привет' : 'hello'}
           rows={1}
           readOnly
         />

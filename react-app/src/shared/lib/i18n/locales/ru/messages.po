@@ -131,3 +131,7 @@ msgstr "Перевод"
 #: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Undo"
 msgstr "Отменить"
+
+#: src/widgets/pdf-viewer/ui/index.tsx
+msgid "what does this mean?"
+msgstr "Что это значит?"
