@@ -7,7 +7,17 @@ import separateContentOfModel from '../../lib/utils/handle-response-of-model';
 import processThinkTags from '../../lib/utils/process-think-tags';
 import './index.scss';
 
-function MarkdownRenderer({ content, className, showThinking = true }) {
+interface MarkdownRenderer {
+  content: string | null;
+  className?: string;
+  showThinking?: boolean;
+}
+
+function MarkdownRenderer({
+  content,
+  className,
+  showThinking = true,
+}: MarkdownRenderer) {
   if (!content) return null;
 
   const processedContent = processThinkTags(content);
@@ -26,10 +36,12 @@ function MarkdownRenderer({ content, className, showThinking = true }) {
     finalContent = mainContentParts.join('\n\n');
   }
 
-  const anchorRef = useRef(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
 
   function scrollToBottom() {
-    anchorRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (anchorRef.current) {
+      anchorRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   useEffect(() => {

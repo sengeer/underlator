@@ -388,7 +388,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                 }}
               />
             </div>
-            {(generatedResponse || status === 'process') && (
+            {generatedResponse && status === 'process' && (
               <div className='pdf-viewer__output-wrapper'>
                 <MarkdownRenderer
                   content={stringifyGenerateResponse(generatedResponse)}
