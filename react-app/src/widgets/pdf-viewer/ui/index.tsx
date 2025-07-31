@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { pdfjs, Document, Page } from 'react-pdf';
 import { useDispatch, useSelector } from 'react-redux';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
@@ -390,13 +390,11 @@ function PdfViewer({ isOpened }: PdfTranslator) {
             </div>
             {(generatedResponse || status === 'process') && (
               <div className='pdf-viewer__output-wrapper'>
-                <div className='pdf-viewer__output'>
-                  <MarkdownRenderer
-                    content={stringifyGenerateResponse(generatedResponse)}
-                    className=''
-                    showThinking
-                  />
-                </div>
+                <MarkdownRenderer
+                  content={stringifyGenerateResponse(generatedResponse)}
+                  className='pdf-viewer__output'
+                  showThinking
+                />
                 {status === 'process' ? (
                   <IconButton
                     style={{

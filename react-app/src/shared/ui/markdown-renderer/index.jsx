@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/react/macro';
+import { useEffect, useRef } from 'react';
 import Markdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
@@ -24,6 +25,16 @@ function MarkdownRenderer({ content, className, showThinking = true }) {
     // If there is <think>...</think>, use only main content without think tags
     finalContent = mainContentParts.join('\n\n');
   }
+
+  const anchorRef = useRef(null);
+
+  function scrollToBottom() {
+    anchorRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [content]);
 
   return (
     <div className={`markdown-renderer ${className || ''}`}>
@@ -83,6 +94,7 @@ function MarkdownRenderer({ content, className, showThinking = true }) {
           </Markdown>
         </div>
       )}
+      <div ref={anchorRef} />
     </div>
   );
 }
