@@ -22,12 +22,12 @@
 .markdown-paragraph {
   margin: 0.75rem 0;
   color: var(--text);
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: 1.5rem;
+  line-height: 1.2;
 }
 
 .markdown-code {
-  padding: 0.2rem 0.4rem;
+  padding: 0.1rem 0.4rem;
   border-radius: 4px;
   background: var(--black-20);
   color: var(--accent);
@@ -66,15 +66,28 @@
 }
 
 .markdown-list-item {
-  margin: 0.25rem 0;
+  overflow: visible;
+  margin: 0 0 0 0.75em;
   color: var(--text);
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: 1.5rem;
+  line-height: 1.2;
+
+  &::marker {
+    color: var(--main);
+  }
+}
+
+.markdown-thematic-break {
+  overflow: visible;
+  height: 1px;
+  border: none;
+  border-top: 1px solid var(--main);
+  text-align: center;
 }
 
 .markdown-thinking-section {
   margin: 1rem 0;
-  padding: 1rem 1rem 0;
+  padding: 1rem 0 0 1rem;
   border-left: 4px solid var(--main);
 }
 
@@ -102,7 +115,7 @@
     background: var(--black-20);
     color: var(--main);
     font-style: italic;
-    font-size: 0.95rem;
+    font-size: 1rem;
     line-height: 1.5;
     white-space: pre-wrap;
   }

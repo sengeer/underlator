@@ -1,4 +1,4 @@
-export default function separateContentOfModel(processedContent: string) {
+export default function splittingContentOfModel(processedContent: string) {
   // Dividing content into thinking and main answer
   const thinkingParts = [];
   const mainContentParts = [];

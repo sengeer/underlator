@@ -13,7 +13,7 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/shared/ui/markdown-renderer/index.jsx
+#: src/shared/ui/markdown-renderer/index.tsx
 msgid "🤔 thinking:"
 msgstr "🤔 thinking:"
 
@@ -132,6 +132,7 @@ msgstr "translation"
 msgid "Undo"
 msgstr "Undo"
 
+#: src/widgets/pdf-viewer/ui/index.tsx
 #: src/widgets/pdf-viewer/ui/index.tsx
 msgid "what does this mean?"
 msgstr "what does this mean?"

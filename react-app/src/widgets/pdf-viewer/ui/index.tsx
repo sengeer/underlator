@@ -221,7 +221,10 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     if (settings.typeUse === 'instruction') {
       generate([payloadString], {
         responseMode: 'stringStream',
-        instruction: values.instruction,
+        instruction:
+          values.instruction === ''
+            ? t`what does this mean?`
+            : values.instruction,
       });
     } else {
       collectedTextInfos.forEach(({ element }) => {
@@ -388,7 +391,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                 }}
               />
             </div>
-            {generatedResponse && status === 'process' && (
+            {(generatedResponse || status === 'process') && (
               <div className='pdf-viewer__output-wrapper'>
                 <MarkdownRenderer
                   content={stringifyGenerateResponse(generatedResponse)}

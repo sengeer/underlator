@@ -3,8 +3,8 @@ import { useEffect, useRef } from 'react';
 import Markdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
-import separateContentOfModel from '../../lib/utils/handle-response-of-model';
 import processThinkTags from '../../lib/utils/process-think-tags';
+import splittingContentOfModel from '../../lib/utils/splitting-content-of-model';
 import './index.scss';
 
 interface MarkdownRenderer {
@@ -23,7 +23,7 @@ function MarkdownRenderer({
   const processedContent = processThinkTags(content);
 
   const { thinkingParts, mainContentParts } =
-    separateContentOfModel(processedContent);
+    splittingContentOfModel(processedContent);
 
   // Defining final content
   let finalContent;
@@ -100,6 +100,9 @@ function MarkdownRenderer({
               ),
               li: ({ children }) => (
                 <li className='markdown-list-item'>{children}</li>
+              ),
+              hr: ({ children }) => (
+                <hr className='markdown-thematic-break'>{children}</hr>
               ),
             }}>
             {finalContent}
