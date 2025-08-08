@@ -19,4 +19,19 @@ contextBridge.exposeInMainWorld('electron', {
   updateTranslations: (translations) => {
     ipcRenderer.send('update-translations', translations);
   },
+  // Model management API
+  models: {
+    checkAvailability: () => ipcRenderer.invoke('models:check-availability'),
+    download: (modelName) => ipcRenderer.invoke('models:download', modelName),
+    getAvailable: () => ipcRenderer.invoke('models:get-available'),
+    delete: (modelName) => ipcRenderer.invoke('models:delete', modelName),
+    onDownloadProgress: (callback) => {
+      const subscription = (event, progress) => callback(progress);
+      ipcRenderer.on('models:download-progress', subscription);
+
+      return () => {
+        ipcRenderer.removeListener('models:download-progress', subscription);
+      };
+    },
+  },
 });

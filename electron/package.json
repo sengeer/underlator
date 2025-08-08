@@ -11,7 +11,8 @@
     "package": "electron-forge package",
     "make": "electron-builder --dir",
     "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\"",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint --fix . --ext .js",
     "format": "prettier . --write"
   },
   "devDependencies": {
@@ -27,6 +28,8 @@
     "cross-env": "^7.0.3",
     "electron": "29.1.0",
     "electron-builder": "^24.13.3",
+    "eslint": "^9.32.0",
+    "eslint-plugin-n": "^17.21.3",
     "prettier": "^3.4.2",
     "wait-on": "^8.0.2"
   },

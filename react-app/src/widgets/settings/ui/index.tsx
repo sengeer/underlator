@@ -4,9 +4,11 @@ import { Trans } from '@lingui/react/macro';
 import { useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CableIcon from '../../../shared/assets/icons/cable-icon';
+import DownloadIcon from '../../../shared/assets/icons/download-icon';
 import HttpIcon from '../../../shared/assets/icons/http-icon';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
 import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
+import { useElectronModelsManagement } from '../../../shared/lib/hooks/use-electron-models-management';
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
 import { loadCatalog } from '../../../shared/lib/i18n';
@@ -28,8 +30,11 @@ import {
 } from '../../../shared/models/provider-settings-slice';
 import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background';
 import ColorPicker from '../../../shared/ui/color-picker';
+import Loader from '../../../shared/ui/loader';
+import Popup from '../../../shared/ui/popup';
 import SelectorPopup from '../../../shared/ui/selector-popup';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
+import TextButton from '../../../shared/ui/text-button/text-button';
 
 const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE;
 
@@ -57,6 +62,18 @@ function Settings({ isOpened }: Settings) {
   const dispatch = useDispatch();
   const { provider, settings } = useSelector(selectProviderSettings);
   const currentProviderSettings = settings[provider] || {};
+
+  const {
+    models,
+    downloadProgress,
+    areRequiredModelsDownloaded,
+    hasDownloadingModels,
+    downloadModel,
+    formatFileSize,
+    getModelProgress,
+    isModelDownloaded,
+    isModelDownloading,
+  } = useElectronModelsManagement();
 
   const [languageKey, setLanguageKey] = useState(() => {
     const localeFromStorage = getStorageWrite('locale');
@@ -91,6 +108,10 @@ function Settings({ isOpened }: Settings) {
 
   const isOpenProviderSelectorPopup = useSelector((state) =>
     isElementOpen(state, 'providerSelectorPopup')
+  );
+
+  const isOpenModelsManagementPopup = useSelector((state) =>
+    isElementOpen(state, 'modelsManagementPopup')
   );
 
   const handleLanguageChange = useCallback(
@@ -143,13 +164,13 @@ function Settings({ isOpened }: Settings) {
             <p className='settings__text'>{languageKey}</p>
           </ButtonWrapperWithBackground>
           <h2 className='settings__title'>
-            <Trans>API configuration</Trans>
+            <Trans>api configuration</Trans>
           </h2>
           <ButtonWrapperWithBackground
             onClick={() => dispatch(openElement('providerSelectorPopup'))}>
             <TextAndIconButton
               className='text-and-icon-button'
-              text={t`API provider`}
+              text={t`provider`}
               style={{ marginLeft: '1rem' }}
               isDisabled>
               <CableIcon />
@@ -161,7 +182,7 @@ function Settings({ isOpened }: Settings) {
               <ButtonWrapperWithBackground>
                 <TextAndIconButton
                   className='text-and-icon-button'
-                  text={'URL'}
+                  text={'url'}
                   style={{ marginLeft: '1rem' }}
                   isDisabled>
                   <HttpIcon />
@@ -197,24 +218,21 @@ function Settings({ isOpened }: Settings) {
             </>
           )}
           {provider === 'Electron IPC' && (
-            <ButtonWrapperWithBackground isDisabled>
-              <TextAndIconButton
-                className='text-and-icon-button'
-                text={t`model`}
-                style={{ marginLeft: '1rem' }}
-                isDisabled>
-                <NetworkIntelligenceIcon />
-              </TextAndIconButton>
-              <input
-                className='settings__input settings__text'
-                type='text'
-                id='model'
-                name='model'
-                value={'opus-mt'}
-                onChange={handleChange}
-                disabled
-              />
-            </ButtonWrapperWithBackground>
+            <>
+              <ButtonWrapperWithBackground
+                onClick={() => dispatch(openElement('modelsManagementPopup'))}>
+                <TextAndIconButton
+                  className='text-and-icon-button'
+                  text={t`downloading models`}
+                  style={{ marginLeft: '1rem' }}
+                  isDisabled>
+                  <DownloadIcon />
+                </TextAndIconButton>
+                <p className='settings__text'>
+                  {areRequiredModelsDownloaded ? t`done` : t`there downloads`}
+                </p>
+              </ButtonWrapperWithBackground>
+            </>
           )}
         </div>
         <div className='settings__column'>
@@ -261,6 +279,197 @@ function Settings({ isOpened }: Settings) {
         selectedValue={provider}
         setSelectedValue={handleProviderChange}
       />
+
+      {/* Model management pop-up */}
+      <Popup
+        isOpened={isOpenModelsManagementPopup}
+        setOpened={() => dispatch(closeElement('modelsManagementPopup'))}>
+        <div className='settings__models-management'>
+          <div className='settings__title-wrapper'>
+            <p className='settings__models-description'>
+              <Trans>
+                Download translation models to use offline translation. Both
+                models are needed to translate ru to en and en to ru.
+              </Trans>
+            </p>
+          </div>
+
+          <div className='settings__models-list'>
+            {/* EN-RU model */}
+            <div className='settings__model-item'>
+              <div className='settings__model-item-row'>
+                <h4 className='settings__model-name'>
+                  <Trans>english → russian</Trans>
+                </h4>
+                <p className='settings__model-description'>opus-mt-en-ru</p>
+              </div>
+
+              {/* Download progress */}
+              {isModelDownloading('opus-mt-en-ru') && (
+                <div className='settings__model-progress'>
+                  {(() => {
+                    const progress = getModelProgress('opus-mt-en-ru');
+                    if (progress) {
+                      return (
+                        <>
+                          <div className='settings__progress-bar'>
+                            <div
+                              className='settings__progress-fill'
+                              style={{ width: `${progress.overallProgress}%` }}
+                            />
+                          </div>
+                          <div className='settings__progress-info'>
+                            <span>{Math.round(progress.overallProgress)}%</span>
+                            <span>
+                              {formatFileSize(progress.downloadedSize)} /{' '}
+                              {formatFileSize(progress.totalSize)}
+                            </span>
+                          </div>
+                          <p className='settings__progress-file'>
+                            {progress.currentFile} ({progress.completedFiles}/
+                            {progress.totalFiles})
+                          </p>
+                        </>
+                      );
+                    }
+                    return <Loader />;
+                  })()}
+                </div>
+              )}
+
+              {/* Action button */}
+              <div className='settings__model-item-row'>
+                {isModelDownloaded('opus-mt-en-ru') && (
+                  <p className='settings__model-status settings__model-status_success'>
+                    <Trans>downloaded</Trans>
+                  </p>
+                )}
+                {isModelDownloading('opus-mt-en-ru') && (
+                  <p className='settings__model-status settings__model-status_loading'>
+                    <Trans>downloading...</Trans>
+                  </p>
+                )}
+                {!isModelDownloaded('opus-mt-en-ru') &&
+                  !isModelDownloading('opus-mt-en-ru') && (
+                    <p className='settings__model-status settings__model-status_error'>
+                      <Trans>not downloaded</Trans>
+                    </p>
+                  )}
+                {!isModelDownloaded('opus-mt-en-ru') &&
+                  !isModelDownloading('opus-mt-en-ru') && (
+                    <TextButton
+                      onClick={() => downloadModel('opus-mt-en-ru')}
+                      className='settings__download-btn'>
+                      <Trans>download</Trans>
+                    </TextButton>
+                  )}
+                {isModelDownloading('opus-mt-en-ru') && (
+                  <TextButton isDisabled className='settings__download-btn'>
+                    <Trans>downloading...</Trans>
+                  </TextButton>
+                )}
+              </div>
+            </div>
+
+            {/* RU-EN model */}
+            <div className='settings__model-item'>
+              <div className='settings__model-item-row'>
+                <h4 className='settings__model-name'>
+                  <Trans>russian → english</Trans>
+                </h4>
+                <p className='settings__model-description'>opus-mt-ru-en</p>
+              </div>
+
+              {/* Download progress */}
+              {isModelDownloading('opus-mt-ru-en') && (
+                <div className='settings__model-progress'>
+                  {(() => {
+                    const progress = getModelProgress('opus-mt-ru-en');
+                    if (progress) {
+                      return (
+                        <>
+                          <div className='settings__progress-bar'>
+                            <div
+                              className='settings__progress-fill'
+                              style={{ width: `${progress.overallProgress}%` }}
+                            />
+                          </div>
+                          <div className='settings__progress-info'>
+                            <span>{Math.round(progress.overallProgress)}%</span>
+                            <span>
+                              {formatFileSize(progress.downloadedSize)} /{' '}
+                              {formatFileSize(progress.totalSize)}
+                            </span>
+                          </div>
+                          <p className='settings__progress-file'>
+                            {progress.currentFile} ({progress.completedFiles}/
+                            {progress.totalFiles})
+                          </p>
+                        </>
+                      );
+                    }
+                    return <Loader />;
+                  })()}
+                </div>
+              )}
+
+              {/* Action button */}
+              <div className='settings__model-item-row'>
+                {isModelDownloaded('opus-mt-ru-en') && (
+                  <p className='settings__model-status settings__model-status_success'>
+                    <Trans>downloaded</Trans>
+                  </p>
+                )}
+                {isModelDownloading('opus-mt-ru-en') && (
+                  <p className='settings__model-status settings__model-status_loading'>
+                    <Trans>downloading...</Trans>
+                  </p>
+                )}
+                {!isModelDownloaded('opus-mt-ru-en') &&
+                  !isModelDownloading('opus-mt-ru-en') && (
+                    <p className='settings__model-status settings__model-status_error'>
+                      <Trans>not downloaded</Trans>
+                    </p>
+                  )}
+                {!isModelDownloaded('opus-mt-ru-en') &&
+                  !isModelDownloading('opus-mt-ru-en') && (
+                    <TextButton
+                      onClick={() => downloadModel('opus-mt-ru-en')}
+                      className='settings__download-btn'>
+                      <Trans>download</Trans>
+                    </TextButton>
+                  )}
+                {isModelDownloading('opus-mt-ru-en') && (
+                  <TextButton isDisabled className='settings__download-btn'>
+                    <Trans>downloading...</Trans>
+                  </TextButton>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* General statusDownload translation models to use offline translation. Both models are required for bidirectional translation. */}
+          <div className='settings__models-summary'>
+            {areRequiredModelsDownloaded && (
+              <p className='settings__summary-success'>
+                <Trans>All models downloaded.</Trans>
+              </p>
+            )}
+            {hasDownloadingModels && (
+              <p className='settings__summary-loading'>
+                <Trans>Models are being downloaded. Please wait...</Trans>
+              </p>
+            )}
+            {!areRequiredModelsDownloaded && !hasDownloadingModels && (
+              <p className='settings__summary-warning'>
+                <Trans>
+                  Download both or one of models to enable offline translation.
+                </Trans>
+              </p>
+            )}
+          </div>
+        </div>
+      </Popup>
     </section>
   );
 }

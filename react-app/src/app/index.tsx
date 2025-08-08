@@ -6,6 +6,9 @@ import Main from '../pages/main/ui';
 import { loadCatalog } from '../shared/lib/i18n';
 import { getStorageWrite } from '../shared/lib/utils/control-local-storage';
 
+// Re-exporting hooks via public API
+export { useAppDispatch, useAppSelector } from './model/hooks';
+
 const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE;
 
 loadPixelperfect({

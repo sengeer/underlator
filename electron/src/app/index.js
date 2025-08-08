@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
 const { Worker } = require('worker_threads');
+const ModelDownloader = require('./services/model-downloader');
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -44,7 +45,7 @@ function buildMenu() {
   Menu.setApplicationMenu(menu);
 }
 
-const createWindow = () => {
+function createWindow() {
   buildMenu();
 
   // Create the browser window.
@@ -71,6 +72,10 @@ const createWindow = () => {
   // Explicitly remove the handler on the closed event.
   mainWindow.on('closed', () => {
     ipcMain.removeHandler('transformers:run');
+    ipcMain.removeHandler('models:check-availability');
+    ipcMain.removeHandler('models:download');
+    ipcMain.removeHandler('models:get-available');
+    ipcMain.removeHandler('models:delete');
     isHandlerRegistered = false;
 
     if (worker) {
@@ -121,6 +126,43 @@ const createWindow = () => {
 
     isHandlerRegistered = true;
   }
+
+  // Add handlers for model management (always register these)
+  ipcMain.handle('models:check-availability', async () => {
+    try {
+      return await ModelDownloader.checkAllModelsAvailability();
+    } catch (error) {
+      throw new Error(`Failed to check models: ${error.message}`);
+    }
+  });
+
+  ipcMain.handle('models:download', async (event, modelName) => {
+    try {
+      await ModelDownloader.downloadModel(modelName, (progress) => {
+        mainWindow.webContents.send('models:download-progress', progress);
+      });
+      return { success: true };
+    } catch (error) {
+      throw new Error(`Failed to download model ${modelName}: ${error.message}`);
+    }
+  });
+
+  ipcMain.handle('models:get-available', () => {
+    try {
+      return ModelDownloader.getAvailableModels();
+    } catch (error) {
+      throw new Error(`Failed to get available models: ${error.message}`);
+    }
+  });
+
+  ipcMain.handle('models:delete', async (event, modelName) => {
+    try {
+      await ModelDownloader.deleteModel(modelName);
+      return { success: true };
+    } catch (error) {
+      throw new Error(`Failed to delete model ${modelName}: ${error.message}`);
+    }
+  });
 };
 
 // This method will be called when Electron has finished

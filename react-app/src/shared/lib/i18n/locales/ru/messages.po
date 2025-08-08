@@ -26,12 +26,12 @@ msgid "accent color"
 msgstr "Акцентный цвет"
 
 #: src/widgets/settings/ui/index.tsx
-msgid "API configuration"
-msgstr "Конфигурация API"
+msgid "All models downloaded."
+msgstr "Модели загружены."
 
 #: src/widgets/settings/ui/index.tsx
-msgid "API provider"
-msgstr "Провайдер API"
+msgid "api configuration"
+msgstr "Конфигурация API"
 
 #: src/widgets/settings/ui/index.tsx
 msgid "background color"
@@ -49,6 +49,39 @@ msgstr "Копировать"
 msgid "Cut"
 msgstr "Вырезать"
 
+#: src/widgets/settings/ui/index.tsx
+msgid "done"
+msgstr "модели загружены"
+
+#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
+msgid "download"
+msgstr "Загрузить"
+
+#: src/widgets/settings/ui/index.tsx
+msgid "Download both or one of models to enable offline translation."
+msgstr "Загрузите обе или одну из моделей, чтобы использовать автономный перевод."
+
+#: src/widgets/settings/ui/index.tsx
+msgid "Download translation models to use offline translation. Both models are needed to translate ru to en and en to ru."
+msgstr "Загрузите модели перевода, чтобы использовать автономный перевод. Обе модели необходимы для перевода с русского на английский и с английского на русский."
+
+#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
+msgid "downloaded"
+msgstr "Загружена"
+
+#: src/widgets/settings/ui/index.tsx
+msgid "downloading models"
+msgstr "Загрузка моделей"
+
+#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
+msgid "downloading..."
+msgstr "Загрузка..."
+
 #: src/shared/ui/file-upload/index.tsx
 msgid "drag and drop your file here"
 msgstr "Перетащите"
@@ -59,6 +92,10 @@ msgstr "Перетащите"
 #: src/widgets/pdf-viewer/ui/index.tsx
 msgid "english"
 msgstr "английский"
+
+#: src/widgets/settings/ui/index.tsx
+msgid "english → russian"
+msgstr "английский → русский"
 
 #: src/widgets/pdf-viewer/ui/custom-error-message/index.tsx
 msgid "failed to load PDF file"
@@ -85,9 +122,17 @@ msgid "main settings"
 msgstr "Основные настройки"
 
 #: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
 msgid "model"
 msgstr "Модель"
+
+#: src/widgets/settings/ui/index.tsx
+msgid "Models are being downloaded. Please wait..."
+msgstr "Модели загружаются. Пожалуйста, подождите..."
+
+#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/index.tsx
+msgid "not downloaded"
+msgstr "Не загружена"
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "or click"
@@ -96,6 +141,10 @@ msgstr "или"
 #: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Paste"
 msgstr "Вставить"
+
+#: src/widgets/settings/ui/index.tsx
+msgid "provider"
+msgstr "Провайдер"
 
 #: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Redo"
@@ -108,6 +157,10 @@ msgstr "Повторить"
 msgid "russian"
 msgstr "русский"
 
+#: src/widgets/settings/ui/index.tsx
+msgid "russian → english"
+msgstr "русский → английский"
+
 #: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Select All"
 msgstr "Выбрать все"
@@ -115,6 +168,10 @@ msgstr "Выбрать все"
 #: src/widgets/text-translator/ui/index.tsx
 msgid "stop"
 msgstr "Стоп"
+
+#: src/widgets/settings/ui/index.tsx
+msgid "there downloads"
+msgstr "есть загрузки"
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "to select a file!"
