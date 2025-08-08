@@ -143,7 +143,9 @@ function createWindow() {
       });
       return { success: true };
     } catch (error) {
-      throw new Error(`Failed to download model ${modelName}: ${error.message}`);
+      throw new Error(
+        `Failed to download model ${modelName}: ${error.message}`
+      );
     }
   });
 
@@ -163,7 +165,7 @@ function createWindow() {
       throw new Error(`Failed to delete model ${modelName}: ${error.message}`);
     }
   });
-};
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

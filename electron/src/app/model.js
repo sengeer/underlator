@@ -13,10 +13,7 @@ class TranslationPipeline {
   ) {
     const modelName = `opus-mt-${translateLanguage}`;
 
-    if (
-      this.instance === null ||
-      this.model !== modelName
-    ) {
+    if (this.instance === null || this.model !== modelName) {
       // Check availability of model before initialization
       const isModelAvailable =
         await ModelDownloader.checkModelAvailability(modelName);
