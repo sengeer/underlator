@@ -40,8 +40,8 @@ class ModelDownloader {
   };
 
   /**
-   * Cross-platform path to models folder
-   * @returns {string} - Path to models folder
+   * Cross-platform path to the models folder
+   * @returns {string} - Path to the models folder
    */
 
   static getModelsPath() {
@@ -82,7 +82,7 @@ class ModelDownloader {
     const modelPath = path.join(modelsPath, modelName);
 
     try {
-      // Checking existence of model folder
+      // Checking existence of the model folder
       await fs.access(modelPath);
 
       // We check all necessary files
@@ -194,7 +194,7 @@ class ModelDownloader {
   }
 
   /**
-   * Download a model from HuggingFace Hub
+   * Downloads a model from HuggingFace Hub
    * @param {string} modelName - Model name
    * @param {Function} onProgress - Callback for tracking progress
    * @returns {Promise<void>}
@@ -210,7 +210,7 @@ class ModelDownloader {
     const modelsPath = this.getModelsPath();
     const modelPath = path.join(modelsPath, modelName);
 
-    // Create a folder with a model
+    // Create a folder with the model
     await fs.mkdir(modelPath, { recursive: true });
 
     const encodedRepo = encodeURIComponent(modelConfig.huggingfaceRepo);

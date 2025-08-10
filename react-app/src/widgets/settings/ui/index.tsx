@@ -61,11 +61,8 @@ function Settings({ isOpened }: Settings) {
 
   const dispatch = useDispatch();
   const { provider, settings } = useSelector(selectProviderSettings);
-  const currentProviderSettings = settings[provider] || {};
 
   const {
-    models,
-    downloadProgress,
     areRequiredModelsDownloaded,
     hasDownloadingModels,
     downloadModel,
@@ -448,7 +445,7 @@ function Settings({ isOpened }: Settings) {
             </div>
           </div>
 
-          {/* General statusDownload translation models to use offline translation. Both models are required for bidirectional translation. */}
+          {/* General status: Download translation models to use offline translation. Both models are required for bidirectional translation. */}
           <div className='settings__models-summary'>
             {areRequiredModelsDownloaded && (
               <p className='settings__summary-success'>
@@ -463,7 +460,8 @@ function Settings({ isOpened }: Settings) {
             {!areRequiredModelsDownloaded && !hasDownloadingModels && (
               <p className='settings__summary-warning'>
                 <Trans>
-                  Download both or one of models to enable offline translation.
+                  Download both or one of the models to enable offline
+                  translation.
                 </Trans>
               </p>
             )}

@@ -87,7 +87,7 @@ export function useElectronModelsManagement() {
     [downloadProgress]
   );
 
-  // Getting information about model
+  // Getting information about the model
   const getModelInfo = useCallback(
     (modelName: string) => {
       return models[modelName];
@@ -95,7 +95,7 @@ export function useElectronModelsManagement() {
     [models]
   );
 
-  // Check if model is downloaded
+  // Check if the model is downloaded
   const isModelDownloaded = useCallback(
     (modelName: string) => {
       return models[modelName]?.status === 'downloaded';
@@ -103,7 +103,7 @@ export function useElectronModelsManagement() {
     [models]
   );
 
-  // Check if model is downloading
+  // Check if the model is downloading
   const isModelDownloading = useCallback(
     (modelName: string) => {
       return models[modelName]?.status === 'downloading';

@@ -1,8 +1,8 @@
-// This file (worker.js) contains all the logic for loading the model and running predictions.
+// This file (worker.js) contains all the logic for loading the model and running predictions
 const { parentPort } = require('worker_threads');
 const TranslationPipeline = require('./model');
 
-// Message handler for workflow.
+// Message handler for workflow
 parentPort.on('message', async (event) => {
   try {
     let translator = await TranslationPipeline.getInstance(
@@ -32,7 +32,7 @@ parentPort.on('message', async (event) => {
 
     parentPort.postMessage({ status: 'complete' });
   } catch (error) {
-    // We send an error if something goes wrong.
+    // We send an error if something goes wrong
     parentPort.postMessage({
       status: 'error',
       error: error.message,
