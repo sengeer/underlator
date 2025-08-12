@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
-import { getTranslationProvider } from '../../providers';
+import { getModelUseProvider } from '../../providers';
 
 type Status = 'idle' | 'process' | 'success' | 'error';
 
@@ -71,7 +71,7 @@ export function useModel() {
     abortControllerRef.current = controller;
 
     try {
-      const provider = getTranslationProvider(providerSettings.provider);
+      const provider = getModelUseProvider(providerSettings.provider);
       await provider.generate({
         ...providerSettings.settings,
         text: texts,

@@ -1,6 +1,6 @@
-import { TranslationProvider, GenerateOptions } from '../types';
+import { ModelUseProvider, GenerateOptions } from '../types';
 
-export const localProvider: TranslationProvider = {
+export const localProvider: ModelUseProvider = {
   generate: async ({
     text,
     translateLanguage,

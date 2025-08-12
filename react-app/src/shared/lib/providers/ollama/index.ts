@@ -1,8 +1,8 @@
 import { OllamaApi } from '../../../apis/ollama';
 import { createOllamaChunkProcessor } from '../../utils/safe-json-parser';
-import { TranslationProvider, GenerateOptions } from '../types';
+import { ModelUseProvider, GenerateOptions } from '../types';
 
-export const ollamaProvider: TranslationProvider = {
+export const ollamaProvider: ModelUseProvider = {
   generate: async ({
     text,
     translateLanguage,

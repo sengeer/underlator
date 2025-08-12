@@ -10,7 +10,7 @@ export interface GenerateOptions {
   params: Params;
 }
 
-export interface TranslationProvider {
+export interface ModelUseProvider {
   initialize?: () => Promise<void>;
   generate: (options: GenerateOptions) => Promise<Record<number, string>>;
   abort?: () => void;
