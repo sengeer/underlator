@@ -12,23 +12,13 @@ parentPort.on('message', async (event) => {
       }
     );
 
-    const texts = event.text.split(event.delimiter);
-    for (let i = 0; i < texts.length; i++) {
-      const text = texts[i];
-      if (!text.trim()) {
-        parentPort.postMessage({
-          status: 'chunk',
-          data: { idx: i, text: '' },
-        });
-        continue;
-      }
-      const output = await translator(text);
-      const translatedText = output[0].translation_text;
-      parentPort.postMessage({
-        status: 'chunk',
-        data: { idx: i, text: translatedText },
-      });
-    }
+    const output = await translator(event.text);
+    const translatedText = output[0].translation_text;
+
+    parentPort.postMessage({
+      status: 'message',
+      data: translatedText,
+    });
 
     parentPort.postMessage({ status: 'complete' });
   } catch (error) {

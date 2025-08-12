@@ -4,7 +4,7 @@ export interface GenerateOptions {
   model?: string;
   url?: string;
   typeUse?: 'instruction' | 'translation';
-  onChunk?: (chunk: { idx: number; text: string }) => void;
+  onModelResponse?: (response: ModelResponse) => void;
   onProgress?: (progress: Progress) => void;
   signal?: AbortSignal;
   params: Params;

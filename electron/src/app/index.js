@@ -104,6 +104,9 @@ function createWindow() {
 
         isWorkerBusy = true;
 
+        // Remove all previous message listeners
+        worker.removeAllListeners('message');
+
         worker.on('message', (message) => {
           mainWindow.webContents.send('transformers:status', message);
           if (message.status === 'complete') {

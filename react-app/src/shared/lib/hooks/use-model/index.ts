@@ -5,11 +5,6 @@ import { getTranslationProvider } from '../../providers';
 
 type Status = 'idle' | 'process' | 'success' | 'error';
 
-interface Chunk {
-  idx: number;
-  text: string;
-}
-
 const defaultParams = {
   responseMode: 'stringStream',
 };
@@ -36,33 +31,26 @@ export function useModel() {
 
   const providerSettings = useSelector(selectActiveProviderSettings);
 
-  const handleChunk = useCallback(
-    (chunk: Chunk, params: Params) => {
-      // Check validity of chunk
-      if (!chunk || typeof chunk.text !== 'string') {
-        console.warn('Invalid chunk received:', chunk);
-        return;
-      }
-
-      if (
-        providerSettings.provider === 'Electron IPC' &&
-        params.responseMode === 'stringChunk'
-      ) {
-        setGeneratedResponse(chunk.text);
-      } else if (params.responseMode === 'arrayStream') {
+  const handleResponse = useCallback(
+    (response: ModelResponse, params: Params) => {
+      if (typeof response === 'string' && params.responseMode === 'stringChunk')
+        setGeneratedResponse(response);
+      else if (
+        typeof response === 'object' &&
+        params.responseMode === 'arrayStream'
+      )
         setGeneratedResponse((prev) => {
-          if (typeof prev === 'string') return { 0: prev + chunk.text };
+          if (typeof prev === 'string') return { 0: prev + response.text };
 
           return {
             ...prev,
-            [chunk.idx]: (prev[chunk.idx] || '') + chunk.text,
+            [response.idx]: (prev[response.idx] || '') + response.text,
           };
         });
-      } else {
+      else if (typeof response === 'object')
         setGeneratedResponse((prev) =>
-          typeof prev === 'string' ? prev + chunk.text : ''
+          typeof prev === 'string' ? prev + response.text : ''
         );
-      }
     },
     [providerSettings]
   );
@@ -71,7 +59,10 @@ export function useModel() {
     setProgressItems(progress);
   }, []);
 
-  async function generate(texts: string[], params: Params = defaultParams) {
+  async function generate(
+    texts: string[] | string,
+    params: Params = defaultParams
+  ) {
     setStatus('process');
     setGeneratedResponse(params.responseMode === 'arrayStream' ? {} : '');
     setError(null);
@@ -79,28 +70,19 @@ export function useModel() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    function wrappedHandleChunk(chunk: { idx: number; text: string }) {
-      handleChunk(chunk, params);
-    }
-
     try {
       const provider = getTranslationProvider(providerSettings.provider);
-      const finalResult = await provider.generate({
+      await provider.generate({
         ...providerSettings.settings,
         text: texts,
         translateLanguage,
-        onChunk: wrappedHandleChunk,
+        onModelResponse: (response: ModelResponse) =>
+          handleResponse(response, params),
         onProgress: handleProgress,
         signal: controller.signal,
         params: params,
       });
 
-      // If the provider does not stream, but returns the full result
-      if (finalResult) {
-        if (params.responseMode === 'arrayStream')
-          setGeneratedResponse(finalResult);
-        else setGeneratedResponse(Object.values(finalResult).join(' '));
-      }
       setStatus('success');
     } catch (e) {
       const err = e as Error;

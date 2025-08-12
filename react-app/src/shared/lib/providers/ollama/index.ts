@@ -8,7 +8,7 @@ export const ollamaProvider: TranslationProvider = {
     translateLanguage,
     model,
     url,
-    onChunk,
+    onModelResponse,
     typeUse,
     signal,
     params,
@@ -53,7 +53,8 @@ export const ollamaProvider: TranslationProvider = {
         // Сhunk processor using a functional utility
         const processChunk = createOllamaChunkProcessor(
           (chunkResponse: string) => {
-            if (onChunk) onChunk({ idx: index, text: chunkResponse });
+            if (onModelResponse)
+              onModelResponse({ idx: index, text: chunkResponse });
             fullResponse += chunkResponse;
             results[index] = fullResponse;
           },

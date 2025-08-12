@@ -1,5 +1,12 @@
 type ModelStatus = 'notDownloaded' | 'downloading' | 'downloaded' | 'error';
 
+interface Chunk {
+  idx: number;
+  text: string;
+}
+
+type ModelResponse = Chunk | string;
+
 interface Params {
   responseMode: 'arrayStream' | 'stringChunk' | 'stringStream' | string;
   instruction?: string;

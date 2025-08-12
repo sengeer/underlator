@@ -1,12 +1,10 @@
 import { TranslationProvider, GenerateOptions } from '../types';
 
-const DELIM = '␟'; // U+241F
-
 export const localProvider: TranslationProvider = {
   generate: async ({
     text,
     translateLanguage,
-    onChunk,
+    onModelResponse,
     onProgress,
   }: GenerateOptions) => {
     return new Promise((resolve, reject) => {
@@ -15,18 +13,13 @@ export const localProvider: TranslationProvider = {
           case 'progress':
             if (message.data && onProgress) onProgress(message.data);
             break;
-          case 'chunk':
-            if (
-              onChunk &&
-              message.data?.idx !== undefined &&
-              message.data?.text !== undefined
-            )
-              onChunk(message.data);
+          case 'message':
+            if (onModelResponse && message.data) onModelResponse(message.data);
             break;
           case 'complete':
             unsubscribe();
-            resolve('');
             if (onProgress) onProgress({ file: '', progress: 0 });
+            resolve({});
             break;
           case 'error':
             unsubscribe();
@@ -37,13 +30,10 @@ export const localProvider: TranslationProvider = {
 
       const unsubscribe = window.electron.onStatus(handleStatusUpdate);
 
-      const joinedText = Array.isArray(text) ? text.join(DELIM) : text;
-
       try {
         window.electron.run({
           translate: translateLanguage,
-          text: joinedText,
-          delimiter: DELIM,
+          text: text,
         });
       } catch (err) {
         unsubscribe();
