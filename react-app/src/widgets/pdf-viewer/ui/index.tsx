@@ -26,7 +26,6 @@ import {
 } from '../../../shared/lib/utils/text-node-manager';
 import {
   selectActiveProviderSettings,
-  setPrompt,
   setTypeUse,
 } from '../../../shared/models/provider-settings-slice';
 import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
@@ -198,12 +197,11 @@ function PdfViewer({ isOpened }: PdfTranslator) {
   }
 
   async function onTranslateClick() {
-    setIsTranslateButtonVisible(false);
-
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
 
+    // TODO: Add a validity to show translate button only inside a specific HTML element
     const block = findClosestElement(range.commonAncestorContainer);
     if (!block) return;
 
@@ -233,14 +231,16 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       });
 
       if (provider === 'Electron IPC')
-        generate(payloadString, { responseMode: 'stringChunk', think: false });
+        generate(payloadString, { responseMode: 'stringStream', think: false });
       else {
         setTextInfos(collectedTextInfos);
-        generate(payloadArray, { responseMode: 'arrayStream', think: false });
+        generate(payloadArray, {
+          responseMode: 'arrayStream',
+          think: false,
+          useContextualTranslation: true,
+        });
       }
     }
-
-    setIsTranslateButtonVisible(false);
   }
 
   // Processing block translation results
@@ -268,6 +268,8 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         }
       }
     }
+
+    setIsTranslateButtonVisible(false);
   }, [
     provider,
     generatedResponse,
@@ -282,17 +284,14 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       setTimeout(() => {
         const sel = window.getSelection();
         const txt = sel?.toString().trim();
+
+        // Checking for highlighted text
         if (!txt || !sel) {
           setIsTranslateButtonVisible(false);
           return;
         }
-        const ae = document.activeElement;
-        if (ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName)) {
-          setIsTranslateButtonVisible(false);
-          return;
-        }
-        const rect = sel.getRangeAt(0).getBoundingClientRect();
 
+        const rect = sel.getRangeAt(0).getBoundingClientRect();
         setIsTranslateButtonVisible(true);
 
         setPositionOfTranslateButton({
@@ -411,10 +410,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                 placeholder={t`what does this mean?`}
                 name='instruction'
                 value={values.instruction || ''}
-                onChange={(e) => {
-                  handleChange(e);
-                  dispatch(setPrompt({ provider, prompt: e.target.value }));
-                }}
+                onChange={(e) => handleChange(e)}
               />
             </div>
             {(generatedResponse || status === 'process') && (

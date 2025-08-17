@@ -12,6 +12,6 @@ export interface GenerateOptions {
 
 export interface ModelUseProvider {
   initialize?: () => Promise<void>;
-  generate: (options: GenerateOptions) => Promise<Record<number, string>>;
+  generate: (options: GenerateOptions) => void;
   abort?: () => void;
 }

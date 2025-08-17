@@ -33,12 +33,7 @@ export function useModel() {
 
   const handleResponse = useCallback(
     (response: ModelResponse, params: Params) => {
-      if (typeof response === 'string' && params.responseMode === 'stringChunk')
-        setGeneratedResponse(response);
-      else if (
-        typeof response === 'object' &&
-        params.responseMode === 'arrayStream'
-      )
+      if (typeof response === 'object' && params.responseMode === 'arrayStream')
         setGeneratedResponse((prev) => {
           if (typeof prev === 'string') return { 0: prev + response.text };
 
@@ -47,9 +42,12 @@ export function useModel() {
             [response.idx]: (prev[response.idx] || '') + response.text,
           };
         });
-      else if (typeof response === 'object')
+      else if (
+        typeof response === 'string' &&
+        params.responseMode === 'stringStream'
+      )
         setGeneratedResponse((prev) =>
-          typeof prev === 'string' ? prev + response.text : ''
+          typeof prev === 'string' ? prev + response : ''
         );
     },
     [providerSettings]

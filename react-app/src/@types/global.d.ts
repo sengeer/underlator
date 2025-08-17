@@ -8,9 +8,10 @@ interface Chunk {
 type ModelResponse = Chunk | string;
 
 interface Params {
-  responseMode: 'arrayStream' | 'stringChunk' | 'stringStream' | string;
+  responseMode: 'arrayStream' | 'stringStream' | string;
   instruction?: string;
   think?: false;
+  useContextualTranslation?: boolean;
 }
 
 interface Progress {

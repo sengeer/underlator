@@ -47,6 +47,19 @@ function TextTranslator({ isOpened }: TextTranslator) {
     setInput('');
   }
 
+  function handleTranslation() {
+    const sourceLanguage = translateLanguage.split('-')[0];
+    const targetLanguage = translateLanguage.split('-')[1];
+
+    generate(input, {
+      responseMode: 'stringStream',
+      think: false,
+      instruction: `Translate from ${sourceLanguage} to ${
+        targetLanguage
+      } the text after the colon, and return only the translated text`,
+    });
+  }
+
   const { width } = useWindowSize();
 
   const hasSizeS = width <= 768;
@@ -160,9 +173,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
             alignSelf: 'center',
           }}
           isDisabled={progressItems.file !== ''}
-          onClick={() =>
-            generate([input], { responseMode: 'stringChunk', think: false })
-          }>
+          onClick={handleTranslation}>
           {progressItems.file !== '' ? <Loader /> : <TranslateIcon />}
         </TextAndIconButton>
       )}

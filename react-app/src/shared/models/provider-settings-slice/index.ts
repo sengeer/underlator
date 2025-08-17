@@ -75,20 +75,10 @@ export const providerSettingsSlice = createSlice({
         setStorageWrite('providerSettings', JSON.stringify(state));
       }
     },
-    setPrompt(
-      state,
-      action: PayloadAction<{ provider: ProviderType; prompt: string }>
-    ) {
-      const { provider, prompt } = action.payload;
-      if (state.settings[provider]) {
-        state.settings[provider]!.prompt = prompt;
-        setStorageWrite('providerSettings', JSON.stringify(state));
-      }
-    },
   },
 });
 
-export const { setProvider, updateProviderSettings, setTypeUse, setPrompt } =
+export const { setProvider, updateProviderSettings, setTypeUse } =
   providerSettingsSlice.actions;
 
 export const selectProviderSettings = (state: State) => state.providerSettings;

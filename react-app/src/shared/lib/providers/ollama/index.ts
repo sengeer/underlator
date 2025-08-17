@@ -1,6 +1,140 @@
 import { OllamaApi } from '../../../apis/ollama';
+import {
+  getContextualTranslationConfig,
+  validateContextualTranslationParams,
+  createContextualTranslationHandler,
+} from '../../utils/contextual-translation';
+import processStream from '../../utils/process-stream';
 import { createOllamaChunkProcessor } from '../../utils/safe-json-parser';
 import { ModelUseProvider, GenerateOptions } from '../types';
+
+async function handleContextualTranslation(
+  chunks: string[],
+  translateLanguage: string,
+  ollamaApi: OllamaApi,
+  model: string,
+  params: Params,
+  signal?: AbortSignal,
+  onModelResponse?: (response: ModelResponse) => void
+): Promise<Record<number, string>> {
+  // Validate contextual translation parameters
+  const config = getContextualTranslationConfig('Ollama');
+
+  // Validation result
+  const validation = validateContextualTranslationParams(chunks, config);
+
+  if (!validation.valid) {
+    console.warn(
+      `Contextual translation validation failed: ${validation.reason}`
+    );
+    throw new Error(
+      `Contextual translation not possible: ${validation.reason}`
+    );
+  }
+
+  // Context translation handler based on HOF
+  const contextualHandler = createContextualTranslationHandler<Response>(
+    // The Ollama API call adapter
+    async (prompt: string, params: Params, signal?: AbortSignal) => {
+      const response = await ollamaApi.generatePrompt(
+        model,
+        prompt,
+        params,
+        signal
+      );
+      if (!response) {
+        throw new Error(
+          'Failed to get response from Ollama for contextual translation'
+        );
+      }
+      return response;
+    },
+
+    // The streaming response handler
+    async (
+      response: Response,
+      onChunk?: (chunk: string) => void,
+      onError?: (error: string, line?: string) => void
+    ) => {
+      // Response stream reader
+      const reader = response.body?.getReader();
+
+      // Accumulated full response
+      let fullResponse = '';
+
+      // The Ollama chunk processor
+      const processChunk = createOllamaChunkProcessor(
+        (chunkResponse: string) => {
+          fullResponse += chunkResponse;
+          // Skip onChunk during streaming to prevent duplication
+        },
+        (error: string, line: string) => {
+          onError?.(error, line);
+        }
+      );
+
+      // Stream processing execution
+      if (reader) {
+        await processStream(reader, (chunk) => {
+          processChunk(chunk);
+        });
+      }
+
+      // Final notification of the chunk with the full response
+      onChunk?.(fullResponse);
+
+      return fullResponse;
+    }
+  );
+
+  // Contextual translation execution
+  return await contextualHandler(
+    chunks,
+    translateLanguage,
+    params,
+    signal,
+    onModelResponse
+  );
+}
+
+async function handleInstruction(
+  text: string,
+  ollamaApi: OllamaApi,
+  model: string,
+  params: Params,
+  signal?: AbortSignal,
+  onModelResponse?: (response: ModelResponse) => void
+) {
+  const finalPrompt = `${params.instruction}: ${text}`;
+
+  const response = await ollamaApi.generatePrompt(
+    model,
+    finalPrompt,
+    params,
+    signal
+  );
+
+  if (!response) {
+    throw new Error(`Failed to get response`);
+  }
+
+  const reader = response.body?.getReader();
+
+  // Сhunk processor using a functional utility
+  const processChunk = createOllamaChunkProcessor(
+    (chunkResponse: string) => {
+      if (onModelResponse) onModelResponse(chunkResponse);
+    },
+    (error: string, line: string) => {
+      console.warn('Failed to parse JSON chunk:', line, error);
+    }
+  );
+
+  // Read the stream
+  await processStream(reader, (chunk) => {
+    processChunk(chunk);
+  });
+}
 
 export const ollamaProvider: ModelUseProvider = {
   generate: async ({
@@ -18,63 +152,33 @@ export const ollamaProvider: ModelUseProvider = {
     }
 
     const ollamaApi = new OllamaApi(url);
-    const texts = Array.isArray(text) ? text : [text];
-    const results: Record<number, string> = {};
 
-    await Promise.all(
-      texts.map(async (singleText, index) => {
-        let finalPrompt: string;
+    // Use contextual translation for arrays when enabled
+    if (
+      params.useContextualTranslation &&
+      Array.isArray(text) &&
+      typeUse === 'translation'
+    ) {
+      return await handleContextualTranslation(
+        text,
+        translateLanguage,
+        ollamaApi,
+        model,
+        params,
+        signal,
+        onModelResponse
+      );
+    }
 
-        if (typeUse === 'instruction' && params.instruction) {
-          finalPrompt = `${params.instruction}: ${singleText}`;
-        } else {
-          const sourceLanguage = translateLanguage.split('-')[0];
-          const targetLanguage = translateLanguage.split('-')[1];
-
-          finalPrompt = `Translate from ${sourceLanguage} to ${
-            targetLanguage
-          } the text after the colon, and return only the translated text: "${singleText}"`;
-        }
-
-        const response = await ollamaApi.generatePrompt(
-          model,
-          finalPrompt,
-          params,
-          signal
-        );
-
-        if (!response) {
-          throw new Error(`Failed to get response for text at index ${index}`);
-        }
-
-        const reader = response.body?.getReader();
-        let fullResponse = '';
-
-        // Сhunk processor using a functional utility
-        const processChunk = createOllamaChunkProcessor(
-          (chunkResponse: string) => {
-            if (onModelResponse)
-              onModelResponse({ idx: index, text: chunkResponse });
-            fullResponse += chunkResponse;
-            results[index] = fullResponse;
-          },
-          (error: string, line: string) => {
-            console.warn('Failed to parse JSON chunk:', line, error);
-          }
-        );
-
-        while (true) {
-          if (reader) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = new TextDecoder().decode(value);
-            processChunk(chunk);
-          }
-        }
-      })
-    );
-
-    return results;
+    if (params.instruction && typeof text === 'string') {
+      return await handleInstruction(
+        text,
+        ollamaApi,
+        model,
+        params,
+        signal,
+        onModelResponse
+      );
+    }
   },
 };
