@@ -19,11 +19,9 @@ import UnderlatorIcon from '../../../shared/assets/icons/underlator-icon';
 import { useCopying } from '../../../shared/lib/hooks/use-copying';
 import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
 import { useModel } from '../../../shared/lib/hooks/use-model';
+import { useTranslateButton } from '../../../shared/lib/hooks/use-translate-button';
 import stringifyGenerateResponse from '../../../shared/lib/utils/stringify-generate-response';
-import {
-  createUpdateHandler,
-  type TextInfo,
-} from '../../../shared/lib/utils/text-node-manager';
+import { createUpdateHandler } from '../../../shared/lib/utils/text-node-manager';
 import {
   selectActiveProviderSettings,
   setTypeUse,
@@ -55,22 +53,10 @@ interface PdfTranslator {
   isOpened: boolean;
 }
 
-type TranslateButtonPosition = {
-  x: number;
-  y: number;
-};
-
 function PdfViewer({ isOpened }: PdfTranslator) {
   const [file, setFile] = useState<File>();
   const [textInfos, setTextInfos] = useState<TextInfo[]>([]);
   const [numPages, setNumPages] = useState<number>();
-  const [positionOfTranslateButton, setPositionOfTranslateButton] =
-    useState<TranslateButtonPosition>({
-      x: 0,
-      y: 0,
-    });
-  const [isTranslateButtonVisible, setIsTranslateButtonVisible] =
-    useState<boolean>(false);
 
   const { provider, settings } = useSelector(selectActiveProviderSettings);
   const dispatch = useDispatch();
@@ -92,6 +78,19 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     reset: resetResponse,
     stop,
   } = useModel();
+
+  const {
+    buttonState,
+    handleTranslateClick,
+    handleStopClick,
+    hideButton,
+    isVisible: isTranslateButtonVisible,
+    position: positionOfTranslateButton,
+  } = useTranslateButton({
+    onTranslate: onTranslateClick,
+    onStop: stop,
+    isProcessing: status === 'process',
+  });
 
   const { values, handleChange, resetForm, setValues } = useFormAndValidation();
 
@@ -269,7 +268,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       }
     }
 
-    setIsTranslateButtonVisible(false);
+    hideButton();
   }, [
     provider,
     generatedResponse,
@@ -277,36 +276,8 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     translationErrors,
     settings.typeUse,
     textInfos,
+    hideButton,
   ]);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      setTimeout(() => {
-        const sel = window.getSelection();
-        const txt = sel?.toString().trim();
-
-        // Checking for highlighted text
-        if (!txt || !sel) {
-          setIsTranslateButtonVisible(false);
-          return;
-        }
-
-        const rect = sel.getRangeAt(0).getBoundingClientRect();
-        setIsTranslateButtonVisible(true);
-
-        setPositionOfTranslateButton({
-          x: rect.right + window.scrollX - 12,
-          y: rect.top + window.scrollY - 28,
-        });
-      }, 10);
-    }
-
-    document.addEventListener('click', handleClick);
-
-    return () => {
-      document.removeEventListener('click', handleClick);
-    };
-  }, []);
 
   useEffect(() => {
     resetForm();
@@ -464,7 +435,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       </div>
 
       <div className='pdf-viewer__container'>
-        {isTranslateButtonVisible && (
+        {isTranslateButtonVisible && positionOfTranslateButton && (
           <IconButton
             isActiveStyle
             style={{
@@ -475,8 +446,16 @@ function PdfViewer({ isOpened }: PdfTranslator) {
               transform: 'translate(-50%, -50%)',
               zIndex: 3,
             }}
-            onClick={() => onTranslateClick()}>
-            {settings.typeUse === 'instruction' ? (
+            onClick={
+              buttonState.type === 'stop'
+                ? handleStopClick
+                : handleTranslateClick
+            }>
+            {buttonState.type === 'stop' &&
+            provider !== 'Electron IPC' &&
+            settings.typeUse !== 'instruction' ? (
+              <StopCircleIcon />
+            ) : settings.typeUse === 'instruction' ? (
               <UnderlatorIcon />
             ) : (
               <TranslateIcon width={32} height={32} />

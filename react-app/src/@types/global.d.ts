@@ -1,5 +1,16 @@
 type ModelStatus = 'notDownloaded' | 'downloading' | 'downloaded' | 'error';
 
+interface TextInfo {
+  node: Text;
+  original: string;
+  element: HTMLElement;
+}
+
+// Algebraic type for parsing result
+type ParseResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string };
+
 interface Chunk {
   idx: number;
   text: string;

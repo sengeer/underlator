@@ -1,8 +1,8 @@
 import { OllamaApi } from '../../../apis/ollama';
+import createContextualTranslationHandler from '../../hofs/create-contextual-translation-handler';
 import {
   getContextualTranslationConfig,
   validateContextualTranslationParams,
-  createContextualTranslationHandler,
 } from '../../utils/contextual-translation';
 import processStream from '../../utils/process-stream';
 import { createOllamaChunkProcessor } from '../../utils/safe-json-parser';

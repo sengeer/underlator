@@ -1,9 +1,6 @@
-// Utility for safe JSON parsing with stream data processing
+import createJsonParser from '../hofs/create-json-parser';
 
-// Algebraic type for parsing result
-export type ParseResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+// Utility for safe JSON parsing with stream data processing
 
 // Pure function for parsing a single JSON string
 export function parseJsonLine<T = any>(line: string): ParseResult<T> {
@@ -23,19 +20,6 @@ export function parseJsonLine<T = any>(line: string): ParseResult<T> {
     };
   }
 }
-
-// HOF for creating a parser with custom error handling
-export const createJsonParser =
-  <T = any>(onError?: (error: string, line: string) => void) =>
-  (line: string): ParseResult<T> => {
-    const result = parseJsonLine<T>(line);
-
-    if (!result.success && onError) {
-      onError(result.error, line);
-    }
-
-    return result;
-  };
 
 // Function composition for processing a buffer with JSON strings
 export function processJsonBuffer<T = any>(
