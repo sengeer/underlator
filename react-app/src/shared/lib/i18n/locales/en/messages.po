@@ -38,6 +38,10 @@ msgid "background color"
 msgstr "background color"
 
 #: src/widgets/settings/ui/index.tsx
+msgid "Both models are needed to translate en to ru and ru to en."
+msgstr "Both models are needed to translate en to ru and ru to en."
+
+#: src/widgets/settings/ui/index.tsx
 msgid "color scheme"
 msgstr "color scheme"
 
@@ -59,12 +63,8 @@ msgid "download"
 msgstr "download"
 
 #: src/widgets/settings/ui/index.tsx
-msgid "Download both or one of models to enable offline translation."
-msgstr "Download both or one of models to enable offline translation."
-
-#: src/widgets/settings/ui/index.tsx
-msgid "Download translation models to use offline translation. Both models are needed to translate ru to en and en to ru."
-msgstr "Download translation models to use offline translation. Both models are needed to translate ru to en and en to ru."
+msgid "Download both or one of the models to enable offline translation."
+msgstr "Download both or one of the models to enable offline translation."
 
 #: src/widgets/settings/ui/index.tsx
 #: src/widgets/settings/ui/index.tsx
@@ -121,13 +121,13 @@ msgstr "main color"
 msgid "main settings"
 msgstr "main settings"
 
+#: src/shared/lib/hooks/use-electron-translation/index.ts
+msgid "Menu"
+msgstr "Menu"
+
 #: src/widgets/settings/ui/index.tsx
 msgid "model"
 msgstr "model"
-
-#: src/widgets/settings/ui/index.tsx
-msgid "Models are being downloaded. Please wait..."
-msgstr "Models are being downloaded. Please wait..."
 
 #: src/widgets/settings/ui/index.tsx
 #: src/widgets/settings/ui/index.tsx

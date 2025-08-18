@@ -277,7 +277,7 @@ function Settings({ isOpened }: Settings) {
         setSelectedValue={handleProviderChange}
       />
 
-      {/* Model management pop-up */}
+      {/* Models download pop-up */}
       <Popup
         isOpened={isOpenModelsManagementPopup}
         setOpened={() => dispatch(closeElement('modelsManagementPopup'))}>
@@ -285,8 +285,8 @@ function Settings({ isOpened }: Settings) {
           <div className='settings__title-wrapper'>
             <p className='settings__models-description'>
               <Trans>
-                Download translation models to use offline translation. Both
-                models are needed to translate ru to en and en to ru.
+                Download both or one of the models to enable offline
+                translation.
               </Trans>
             </p>
           </div>
@@ -452,16 +452,10 @@ function Settings({ isOpened }: Settings) {
                 <Trans>All models downloaded.</Trans>
               </p>
             )}
-            {hasDownloadingModels && (
-              <p className='settings__summary-loading'>
-                <Trans>Models are being downloaded. Please wait...</Trans>
-              </p>
-            )}
-            {!areRequiredModelsDownloaded && !hasDownloadingModels && (
-              <p className='settings__summary-warning'>
+            {!areRequiredModelsDownloaded && (
+              <p className='settings__summary-info'>
                 <Trans>
-                  Download both or one of the models to enable offline
-                  translation.
+                  Both models are needed to translate en to ru and ru to en.
                 </Trans>
               </p>
             )}

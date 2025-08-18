@@ -53,11 +53,12 @@
     "win": {
       "target": [
         "portable"
-      ]
+      ],
+      "icon": "icons/icon.ico"
     },
     "mac": {
       "category": "public.app-category.utilities",
-      "icon": "icons/mac/underlator.icns",
+      "icon": "icons/icon.icns",
       "target": "dmg"
     }
   }

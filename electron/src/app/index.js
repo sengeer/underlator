@@ -3,16 +3,17 @@ const path = require('path');
 const { Worker } = require('worker_threads');
 const ModelDownloader = require('./services/model-downloader');
 
-const isDev = process.env.NODE_ENV === 'development';
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
+const isDev = process.env.NODE_ENV === 'development';
 let worker = null;
 let mainWindow = null;
 let isHandlerRegistered = false;
+const isMac = process.platform === 'darwin';
+const isWindows = process.platform === 'win32';
 
 let translations = {};
 
@@ -22,9 +23,10 @@ ipcMain.on('update-translations', (_, newTranslations) => {
 });
 
 function buildMenu() {
+  // Cross-platform menu template
   const template = [
     {
-      label: '',
+      label: translations.menu || 'Menu',
       submenu: [
         {
           role: 'about',
@@ -42,7 +44,17 @@ function buildMenu() {
   ];
 
   const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
+
+  // Setting the menu depending on the platform
+  if (isMac) {
+    // For macOS
+    Menu.setApplicationMenu(menu);
+  } else {
+    // For Windows and other platforms
+    if (mainWindow) {
+      mainWindow.setMenu(menu);
+    }
+  }
 }
 
 function createWindow() {
@@ -54,14 +66,17 @@ function createWindow() {
     height: 350,
     minWidth: 480,
     minHeight: 350,
+    icon: path.join(
+      __dirname,
+      '../../icons',
+      isWindows ? 'icon.ico' : ''
+    ),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       enableRemoteModule: true,
     },
   });
-
-  mainWindow.setMenu(null);
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:8000');
@@ -179,7 +194,7 @@ app.on('ready', createWindow);
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  if (!isMac) {
     app.quit();
   }
 });

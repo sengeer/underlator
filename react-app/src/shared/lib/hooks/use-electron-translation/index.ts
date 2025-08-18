@@ -6,6 +6,7 @@ export function useElectronTranslation() {
   async function translateElectron() {
     try {
       await window.electron.updateTranslations({
+        menu: t`Menu`,
         about: t`About underlator`,
         undo: t`Undo`,
         redo: t`Redo`,

@@ -38,6 +38,10 @@ msgid "background color"
 msgstr "Цвет фона"
 
 #: src/widgets/settings/ui/index.tsx
+msgid "Both models are needed to translate en to ru and ru to en."
+msgstr "Обе модели необходимы для перевода с английского на русский и с русского на английский."
+
+#: src/widgets/settings/ui/index.tsx
 msgid "color scheme"
 msgstr "Цветовая схема"
 
@@ -59,12 +63,8 @@ msgid "download"
 msgstr "Загрузить"
 
 #: src/widgets/settings/ui/index.tsx
-msgid "Download both or one of models to enable offline translation."
+msgid "Download both or one of the models to enable offline translation."
 msgstr "Загрузите обе или одну из моделей, чтобы использовать автономный перевод."
-
-#: src/widgets/settings/ui/index.tsx
-msgid "Download translation models to use offline translation. Both models are needed to translate ru to en and en to ru."
-msgstr "Загрузите модели перевода, чтобы использовать автономный перевод. Обе модели необходимы для перевода с русского на английский и с английского на русский."
 
 #: src/widgets/settings/ui/index.tsx
 #: src/widgets/settings/ui/index.tsx
@@ -121,13 +121,13 @@ msgstr "Основной цвет"
 msgid "main settings"
 msgstr "Основные настройки"
 
+#: src/shared/lib/hooks/use-electron-translation/index.ts
+msgid "Menu"
+msgstr "Меню"
+
 #: src/widgets/settings/ui/index.tsx
 msgid "model"
 msgstr "Модель"
-
-#: src/widgets/settings/ui/index.tsx
-msgid "Models are being downloaded. Please wait..."
-msgstr "Модели загружаются. Пожалуйста, подождите..."
 
 #: src/widgets/settings/ui/index.tsx
 #: src/widgets/settings/ui/index.tsx
