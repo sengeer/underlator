@@ -11,6 +11,8 @@
 [![license][license-image]][license-url]
 [![release][release-image]][release-url]
 
+[English](README.md) &nbsp;&nbsp;|&nbsp;&nbsp; Русский &nbsp;&nbsp;|&nbsp;&nbsp;
+
 [license-image]: https://img.shields.io/badge/license-MIT-7D6EDE.svg
 
 [license-url]: https://github.com/Sengeer/underlator/blob/main/LICENSE
@@ -18,6 +20,8 @@
 [release-image]: https://img.shields.io/github/v/release/underlator/underlator.svg
 
 [release-url]: https://github.com/Sengeer/underlator/releases/latest
+
+</div>
 
 ## ✨ Особенности
 
@@ -45,4 +49,5 @@
 **Перевод текста Electron IPC**
 
 ![перевод_текста_electron](screenshots/перевод_текста_electron.png)
+
 </div>
