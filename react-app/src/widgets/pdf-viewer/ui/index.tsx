@@ -79,6 +79,8 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     stop,
   } = useModel();
 
+  const topBarRef = useRef(null);
+
   const {
     buttonState,
     handleTranslateClick,
@@ -90,6 +92,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     onTranslate: onTranslateClick,
     onStop: stop,
     isProcessing: status === 'process',
+    containerRef: topBarRef,
   });
 
   const { values, handleChange, resetForm, setValues } = useFormAndValidation();
@@ -289,6 +292,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
   return (
     <section className={`pdf-viewer${isOpened ? ' pdf-viewer_open' : ''}`}>
       <div
+        ref={topBarRef}
         className={`pdf-viewer__top-bar${file ? ' pdf-viewer__top-bar_show' : ''}`}>
         <div className='pdf-viewer__btns-container'>
           {provider === 'Ollama' && (

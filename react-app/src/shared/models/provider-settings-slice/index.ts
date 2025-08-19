@@ -26,7 +26,9 @@ function getInitialState(): ProviderSettingsState {
   const defaultState: ProviderSettingsState = {
     provider: 'Electron IPC',
     settings: {
-      'Electron IPC': {},
+      'Electron IPC': {
+        typeUse: 'translation',
+      },
       Ollama: {
         url: 'http://127.0.0.1:11434',
         model: 'gemma:2b',
