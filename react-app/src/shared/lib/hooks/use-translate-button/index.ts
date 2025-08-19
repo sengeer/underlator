@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, RefObject } from 'react';
 import { isValidPdfSelection } from '../../utils/pdf-container-validator';
 
 // Algebraic types for button state
@@ -18,6 +18,7 @@ interface UseTranslateButtonConfig {
   onStop?: () => void;
   isProcessing?: boolean;
   positionOffset?: { x: number; y: number };
+  containerRef?: RefObject<HTMLElement | null> | null;
 }
 
 // Default configuration following functional programming principles
@@ -25,18 +26,25 @@ const defaultConfig: Required<UseTranslateButtonConfig> = {
   onTranslate: () => {},
   onStop: () => {},
   isProcessing: false,
-  positionOffset: { x: -12, y: -28 },
+  positionOffset: { x: -32, y: 5 },
+  containerRef: null,
 };
 
 // Calculating button position
 function calculateButtonPosition(
   range: Range,
-  offset: { x: number; y: number }
+  offset: { x: number; y: number },
+  containerRef: RefObject<HTMLElement | null> | null
 ): TranslateButtonPosition {
   const rect = range.getBoundingClientRect();
+
+  const containerHeight = containerRef?.current
+    ? containerRef.current.offsetHeight
+    : 0;
+
   return {
     x: rect.right + window.scrollX + offset.x,
-    y: rect.top + window.scrollY + offset.y,
+    y: rect.top + window.scrollY - containerHeight + offset.y,
   };
 }
 
@@ -56,7 +64,8 @@ function getSelectionInfo() {
 // Custom hook for translate button management
 export function useTranslateButton(config: UseTranslateButtonConfig = {}) {
   const mergedConfig = { ...defaultConfig, ...config };
-  const { onTranslate, onStop, isProcessing, positionOffset } = mergedConfig;
+  const { onTranslate, onStop, isProcessing, positionOffset, containerRef } =
+    mergedConfig;
 
   const [buttonState, setButtonState] = useState<TranslateButtonState>({
     type: 'hidden',
@@ -79,7 +88,11 @@ export function useTranslateButton(config: UseTranslateButtonConfig = {}) {
         return;
       }
 
-      const position = calculateButtonPosition(range, positionOffset);
+      const position = calculateButtonPosition(
+        range,
+        positionOffset,
+        containerRef
+      );
 
       // Determine button state based on processing status
       if (isProcessing) {
