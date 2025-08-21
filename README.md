@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="./electron/icons/icon.png">
+    <img src="./logo.png" width="128" height="128">
 </p>
 
 <h1 align="center">Underlator</h1>

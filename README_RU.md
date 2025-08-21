@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="./electron/icons/icon.png">
+    <img src="./logo.png" width="128" height="128">
 </p>
 
 <h1 align="center">Underlator</h1>
@@ -11,7 +11,7 @@
 [![license][license-image]][license-url]
 [![release][release-image]][release-url]
 
-[English](README.md) &nbsp;&nbsp;|&nbsp;&nbsp; Русский &nbsp;&nbsp;|&nbsp;&nbsp;
+[Английский](README.md) &nbsp;&nbsp;|&nbsp;&nbsp; Русский
 
 [license-image]: https://img.shields.io/badge/license-MIT-7D6EDE.svg
 
