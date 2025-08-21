@@ -26,28 +26,27 @@ English &nbsp;&nbsp;|&nbsp;&nbsp; [Russian](README_RU.md)
 ## ✨ Features
 
 - 🦙 Ollama provider support;
-- 🕹️ Two modes for the Ollama provider: instruction mode (for custom prompting) and translation mode;
-- ⚙️ Standalone Electron IPC provider with WebML technology for text translation;
 - 🤔 Support thinking models;
-- 🔄 Text translation between English and Russian in both directions;
-- 🔐 Model requests and responses are neither stored nor transmitted anywhere;
-- 📱 Convenient, minimalist, in-house designed UI;
+- 🕹️ Document translator and interactive PDF viewer;
+- 📄 PDF viewer includes instruction mode (for custom prompting) and document translation mode;
+- 🤫 Model requests and responses are not stored anywhere except in RAM 😅;
+- 📲 Convenient, minimalist, in-house designed UI;
 - 🎨 Customizable color scheme.
 
 ## 🔍 Preview
 
 <div align="center">
 
-**Interaction with model**
-
-![interaction_with_model](screenshots/interaction_with_model.png)
-
 **Ollama text translation**
 
 ![ollama_text_translation](screenshots/ollama_text_translation.png)
 
-**Electron IPC text translation**
+**Interaction with model**
 
-![electron_text_translation](screenshots/electron_text_translation.png)
+![interaction_with_model](screenshots/interaction_with_model.png)
+
+**Ollama document translation**
+
+![ollama_document_translation](screenshots/ollama_document_translation.png)
 
 </div>
