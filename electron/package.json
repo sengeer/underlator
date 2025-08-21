@@ -40,7 +40,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@huggingface/transformers": "^3.4.1",
     "electron-squirrel-startup": "^1.0.0"
   },
   "build": {

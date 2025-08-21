@@ -24,7 +24,7 @@ interface State {
 function getInitialState(): ProviderSettingsState {
   const savedState = getStorageWrite('providerSettings');
   const defaultState: ProviderSettingsState = {
-    provider: 'Electron IPC',
+    provider: 'Ollama',
     settings: {
       'Electron IPC': {
         typeUse: 'translation',

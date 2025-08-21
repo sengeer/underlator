@@ -48,7 +48,8 @@ const LANGUAGES: PopupSelectorData = {
 };
 
 const PROVIDERS: PopupSelectorData = {
-  'Electron IPC': 'Electron IPC',
+  // NOTE: Disabling Electron IPC provider due to migration from the @huggingface/transformers library to node-llama-cpp
+  // 'Electron IPC': 'Electron IPC',
   Ollama: 'Ollama',
 };
 

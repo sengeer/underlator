@@ -20,7 +20,7 @@ function SelectorPopup({
 }: SelectorPopup) {
   return (
     <Popup
-      isOpened={isOpened}
+      isOpened={isOpened && Object.keys(data).length > 1}
       setOpened={setOpened}
       styleWrapper={{ minWidth: '30.4352%' }}>
       <div className='selector-popup'>
