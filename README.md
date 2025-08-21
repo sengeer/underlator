@@ -33,6 +33,8 @@ English &nbsp;&nbsp;|&nbsp;&nbsp; [Russian](README_RU.md)
 - 📲 Convenient, minimalist, in-house designed UI;
 - 🎨 Customizable color scheme.
 
+## 📸 Screenshots
+
 <div align="center">
 
 **Text translation**
