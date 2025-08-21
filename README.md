@@ -33,20 +33,18 @@ English &nbsp;&nbsp;|&nbsp;&nbsp; [Russian](README_RU.md)
 - 📲 Convenient, minimalist, in-house designed UI;
 - 🎨 Customizable color scheme.
 
-## 🔍 Preview
-
 <div align="center">
 
-**Ollama text translation**
+**Text translation**
 
-![ollama_text_translation](screenshots/ollama_text_translation.png)
+![text_translation](screenshots/text_translation.png)
 
 **Interaction with model**
 
 ![interaction_with_model](screenshots/interaction_with_model.png)
 
-**Ollama document translation**
+**Document translation**
 
-![ollama_document_translation](screenshots/ollama_document_translation.png)
+![document_translation](screenshots/document_translation.png)
 
 </div>
