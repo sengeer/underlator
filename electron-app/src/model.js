@@ -24,6 +24,7 @@ class TranslationPipeline {
         );
       }
 
+      // TODO: Use node-llama-cpp library instead of @huggingface/transformers
       // Dynamically import the Transformers.js library
       let { pipeline, env } = await import('@huggingface/transformers');
 

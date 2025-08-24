@@ -49,20 +49,11 @@ class ModelDownloader {
     const isDev = process.env.NODE_ENV === 'development';
 
     if (isDev) {
-      // In dev mode, use folder relative to electron/src/app
+      // In dev mode, use folder relative to electron/dist
       return path.join(__dirname, '..', 'models');
-    }
-
-    // In production mode, use resourcesPath
-    if (process.platform === 'darwin') {
-      // macOS: Underlator.app/Contents/Resources/app/src/app/models
-      return path.join(process.resourcesPath, 'app', 'src', 'app', 'models');
-    } else if (process.platform === 'win32') {
-      // Windows: resources/app/src/app/models
-      return path.join(process.resourcesPath, 'app', 'src', 'app', 'models');
     } else {
-      // Linux: resources/app/src/app/models
-      return path.join(process.resourcesPath, 'app', 'src', 'app', 'models');
+      // In production mode, use resourcesPath
+      return path.join(process.resourcesPath, 'app', 'dist', 'models');
     }
   }
 

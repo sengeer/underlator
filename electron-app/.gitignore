@@ -90,8 +90,9 @@ typings/
 
 # Electron-Forge
 out/
-/src/*
-!/src/app
 
 # Models
-/src/app/models/
+/src/models/
+
+# Builds
+/dist

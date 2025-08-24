@@ -3,13 +3,14 @@
   "productName": "underlator",
   "version": "1.0.0",
   "description": "ML translator",
-  "main": "src/app/index.js",
+  "main": "dist/electron/main.js",
   "scripts": {
     "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:8000 && npm run start:electron\"",
     "start:react": "cd ../react-app && cross-env BROWSER=none npm run start",
     "start:electron": "cross-env NODE_ENV=development electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-builder --dir",
+    "build": "webpack --config webpack.config.js",
+    "make": "npm run build && electron-builder --dir",
     "publish": "electron-forge publish",
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint --fix . --ext .js",
@@ -31,7 +32,11 @@
     "eslint": "^9.32.0",
     "eslint-plugin-n": "^17.21.3",
     "prettier": "^3.4.2",
-    "wait-on": "^8.0.2"
+    "terser-webpack-plugin": "^5.3.14",
+    "wait-on": "^8.0.2",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1",
+    "webpack-node-externals": "^3.0.0"
   },
   "keywords": [],
   "author": {
@@ -40,6 +45,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@huggingface/transformers": "^3.7.2",
     "electron-squirrel-startup": "^1.0.0"
   },
   "build": {
@@ -49,6 +55,11 @@
     "directories": {
       "output": "out"
     },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
     "win": {
       "target": [
         "portable"

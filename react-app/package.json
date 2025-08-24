@@ -38,7 +38,7 @@
     "prettier": "prettier --write .",
     "lint-staged": "lint-staged",
     "prepare": "cd ../ && husky ./react-app/.husky",
-    "electron": "npm run build && node electron-build.mjs && cd ../electron && npm run make",
+    "electron": "npm run build && node electron-build.mjs && cd ../electron-app && npm run make",
     "extract": "lingui extract",
     "compile": "lingui compile --typescript"
   },

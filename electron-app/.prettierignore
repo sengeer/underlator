@@ -1,0 +1,5 @@
+package-lock.json
+package.json
+
+# Ignore the /src/models folder
+/src/models/

@@ -66,7 +66,7 @@ function createWindow() {
     height: 350,
     minWidth: 480,
     minHeight: 350,
-    icon: path.join(__dirname, '../../icons', isWindows ? 'icon.ico' : ''),
+    icon: path.join(__dirname, '../icons', isWindows ? 'icon.ico' : ''),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -77,7 +77,7 @@ function createWindow() {
   if (isDev) {
     mainWindow.loadURL('http://localhost:8000');
   } else {
-    mainWindow.loadFile(path.join('src', 'index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../react/index.html'));
   }
 
   // Explicitly remove the handler on the closed event
