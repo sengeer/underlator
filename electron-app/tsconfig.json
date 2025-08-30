@@ -1,0 +1,78 @@
+{
+  "compilerOptions": {
+    /* Basic compiler settings */
+    "target": "ES2020",
+    "module": "CommonJS",
+    "lib": ["ES2020"],
+    "outDir": "./dist-ts",
+    "rootDir": "./src",
+
+    /* Strict TypeScript settings */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+
+    /* Additional checks */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+
+    /* Module settings */
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    /* Experimental features */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    /* Path settings */
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"],
+      "@services/*": ["services/*"],
+      "@types/*": ["types/*"]
+    },
+
+    /* Compilation settings */
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Electron settings */
+    "allowJs": true,
+    "checkJs": false,
+    "jsx": "preserve"
+  },
+
+  "include": [
+    "src/**/*",
+    "src/**/*.ts",
+    "src/**/*.js"
+  ],
+
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
+
+  "ts-node": {
+    "esm": false,
+    "experimentalSpecifierResolution": "node"
+  }
+}
