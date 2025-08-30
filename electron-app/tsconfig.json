@@ -4,60 +4,47 @@
     "target": "ES2020",
     "module": "CommonJS",
     "lib": ["ES2020"],
+    "outDir": "./dist-ts",
     "rootDir": "./src",
 
     /* Strict TypeScript settings */
     "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": false,
     "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
+    "noImplicitReturns": true,
     "noImplicitThis": true,
-    "alwaysStrict": true,
-
-    /* Additional checks */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
 
     /* Module settings */
+    "useUnknownInCatchVariables": true,
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-
-    /* Experimental features */
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-
-    /* Path settings */
-    "baseUrl": "./src",
-    "paths": {
-      "@/*": ["*"],
-      "@services/*": ["services/*"],
-      "@types/*": ["types/*"]
-    },
-
-    /* Compilation settings */
-    "declaration": false,
-    "declarationMap": false,
-    "sourceMap": false,
-    "removeComments": false,
-    "preserveConstEnums": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-
-    /* Electron settings */
-    "jsx": "preserve"
+    "types": ["node", "electron"],
+    "allowJs": true,
+    "checkJs": false
   },
-
-  "include": ["src/**/*.ts"],
-
-  "exclude": ["node_modules", "dist", "build", "**/*.test.ts", "**/*.spec.ts", "**/*.js"],
-
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
   "ts-node": {
     "esm": false,
     "experimentalSpecifierResolution": "node"

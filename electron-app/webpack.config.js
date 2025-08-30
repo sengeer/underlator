@@ -6,8 +6,8 @@ module.exports = {
   target: 'node',
   mode: 'production',
   entry: {
-    main: './src/main.js',
-    preload: './src/preload.js',
+    main: './src/main.ts',
+    preload: './src/preload.ts',
     worker: './src/worker.js',
   },
   output: {
