@@ -23,7 +23,9 @@ interface ElectronAPI {
     download: (modelName: string) => Promise<ModelOperationResult>;
     getAvailable: () => Promise<AvailableModels>;
     delete: (modelName: string) => Promise<ModelOperationResult>;
-    onDownloadProgress: (callback: (progress: ModelDownloadProgress) => void) => () => void;
+    onDownloadProgress: (
+      callback: (progress: ModelDownloadProgress) => void
+    ) => () => void;
   };
 }
 
@@ -33,10 +35,12 @@ interface ElectronAPI {
  * И также отправлять статус `transformers:status` обратно в react-app
  */
 contextBridge.exposeInMainWorld('electron', {
-  run: (text: { translate: string; text: string }) => ipcRenderer.invoke('transformers:run', text),
+  run: (text: { translate: string; text: string }) =>
+    ipcRenderer.invoke('transformers:run', text),
 
   onStatus: (callback: (message: IpcMessage) => void) => {
-    const subscription = (_event: any, message: IpcMessage) => callback(message);
+    const subscription = (_event: any, message: IpcMessage) =>
+      callback(message);
     ipcRenderer.on('transformers:status', subscription);
 
     return () => {
@@ -52,14 +56,19 @@ contextBridge.exposeInMainWorld('electron', {
   models: {
     checkAvailability: () => ipcRenderer.invoke('models:check-availability'),
 
-    download: (modelName: string) => ipcRenderer.invoke('models:download', modelName),
+    download: (modelName: string) =>
+      ipcRenderer.invoke('models:download', modelName),
 
     getAvailable: () => ipcRenderer.invoke('models:get-available'),
 
-    delete: (modelName: string) => ipcRenderer.invoke('models:delete', modelName),
+    delete: (modelName: string) =>
+      ipcRenderer.invoke('models:delete', modelName),
 
-    onDownloadProgress: (callback: (progress: ModelDownloadProgress) => void) => {
-      const subscription = (_event: any, progress: ModelDownloadProgress) => callback(progress);
+    onDownloadProgress: (
+      callback: (progress: ModelDownloadProgress) => void
+    ) => {
+      const subscription = (_event: any, progress: ModelDownloadProgress) =>
+        callback(progress);
       ipcRenderer.on('models:download-progress', subscription);
 
       return () => {

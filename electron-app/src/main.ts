@@ -28,10 +28,13 @@ let translations: MenuTranslations = {};
  * Обработчик обновления переводов меню
  * Получает новые переводы от renderer процесса и перестраивает меню
  */
-ipcMain.on('update-translations', (_event: any, newTranslations: MenuTranslations) => {
-  translations = newTranslations;
-  buildMenu();
-});
+ipcMain.on(
+  'update-translations',
+  (_event: any, newTranslations: MenuTranslations) => {
+    translations = newTranslations;
+    buildMenu();
+  }
+);
 
 /**
  * Строит кросс-платформенное меню приложения
@@ -121,83 +124,99 @@ function createWindow(): void {
 
   // Добавление обработчика для события `transformers:run`
   if (!isHandlerRegistered) {
-    ipcMain.handle('transformers:run', (_event: any, args: TransformersArgs) => {
-      return new Promise((resolve, reject) => {
-        if (isWorkerBusy) {
-          reject(new Error('Worker is busy'));
-          return;
-        }
-
-        if (!worker) {
-          worker = new Worker(path.join(__dirname, 'worker.js'));
-        }
-
-        isWorkerBusy = true;
-
-        // Удаление всех предыдущих слушателей сообщений
-        worker.removeAllListeners('message');
-
-        worker.on('message', (message: WorkerStatus) => {
-          mainWindow?.webContents.send('transformers:status', message);
-          if (message.status === 'complete') {
-            resolve(message.data);
-            isWorkerBusy = false;
-          } else if (message.status === 'error') {
-            reject(new Error(message.error));
-            isWorkerBusy = false;
+    ipcMain.handle(
+      'transformers:run',
+      (_event: any, args: TransformersArgs) => {
+        return new Promise((resolve, reject) => {
+          if (isWorkerBusy) {
+            reject(new Error('Worker is busy'));
+            return;
           }
-        });
 
-        worker.on('error', (error: Error) => {
-          reject(error);
-          isWorkerBusy = false;
-        });
+          if (!worker) {
+            worker = new Worker(path.join(__dirname, 'worker.js'));
+          }
 
-        worker.postMessage(args);
-      });
-    });
+          isWorkerBusy = true;
+
+          // Удаление всех предыдущих слушателей сообщений
+          worker.removeAllListeners('message');
+
+          worker.on('message', (message: WorkerStatus) => {
+            mainWindow?.webContents.send('transformers:status', message);
+            if (message.status === 'complete') {
+              resolve(message.data);
+              isWorkerBusy = false;
+            } else if (message.status === 'error') {
+              reject(new Error(message.error));
+              isWorkerBusy = false;
+            }
+          });
+
+          worker.on('error', (error: Error) => {
+            reject(error);
+            isWorkerBusy = false;
+          });
+
+          worker.postMessage(args);
+        });
+      }
+    );
 
     isHandlerRegistered = true;
   }
 
   // Добавление обработчиков для управления моделями
-  ipcMain.handle('models:check-availability', async (): Promise<ModelAvailability> => {
-    try {
-      return await ModelDownloader.checkAllModelsAvailability();
-    } catch (error) {
-      throw new Error(`Failed to check models: ${(error as Error).message}`);
+  ipcMain.handle(
+    'models:check-availability',
+    async (): Promise<ModelAvailability> => {
+      try {
+        return await ModelDownloader.checkAllModelsAvailability();
+      } catch (error) {
+        throw new Error(`Failed to check models: ${(error as Error).message}`);
+      }
     }
-  });
+  );
 
-  ipcMain.handle('models:download', async (_event: any, modelName: string): Promise<ModelOperationResult> => {
-    try {
-      await ModelDownloader.downloadModel(modelName, (progress: any) => {
-        mainWindow?.webContents.send('models:download-progress', progress);
-      });
-      return { success: true };
-    } catch (error) {
-      throw new Error(
-        `Failed to download model ${modelName}: ${(error as Error).message}`
-      );
+  ipcMain.handle(
+    'models:download',
+    async (_event: any, modelName: string): Promise<ModelOperationResult> => {
+      try {
+        await ModelDownloader.downloadModel(modelName, (progress: any) => {
+          mainWindow?.webContents.send('models:download-progress', progress);
+        });
+        return { success: true };
+      } catch (error) {
+        throw new Error(
+          `Failed to download model ${modelName}: ${(error as Error).message}`
+        );
+      }
     }
-  });
+  );
 
   ipcMain.handle('models:get-available', (): AvailableModels => {
     try {
       return ModelDownloader.getAvailableModels();
     } catch (error) {
-      throw new Error(`Failed to get available models: ${(error as Error).message}`);
+      throw new Error(
+        `Failed to get available models: ${(error as Error).message}`
+      );
     }
   });
 
-  ipcMain.handle('models:delete', async (_event: any, modelName: string): Promise<ModelOperationResult> => {
-    try {
-      await ModelDownloader.deleteModel(modelName);
-      return { success: true };
-    } catch (error) {
-      throw new Error(`Failed to delete model ${modelName}: ${(error as Error).message}`);
+  ipcMain.handle(
+    'models:delete',
+    async (_event: any, modelName: string): Promise<ModelOperationResult> => {
+      try {
+        await ModelDownloader.deleteModel(modelName);
+        return { success: true };
+      } catch (error) {
+        throw new Error(
+          `Failed to delete model ${modelName}: ${(error as Error).message}`
+        );
+      }
     }
-  });
+  );
 }
 
 // Этот метод будет вызван когда Electron завершит
