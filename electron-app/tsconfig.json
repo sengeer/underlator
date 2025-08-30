@@ -4,7 +4,6 @@
     "target": "ES2020",
     "module": "CommonJS",
     "lib": ["ES2020"],
-    "outDir": "./dist-ts",
     "rootDir": "./src",
 
     /* Strict TypeScript settings */
@@ -43,33 +42,21 @@
     },
 
     /* Compilation settings */
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
     "removeComments": false,
     "preserveConstEnums": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
 
     /* Electron settings */
-    "allowJs": true,
-    "checkJs": false,
     "jsx": "preserve"
   },
 
-  "include": [
-    "src/**/*",
-    "src/**/*.ts",
-    "src/**/*.js"
-  ],
+  "include": ["src/**/*.ts"],
 
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ],
+  "exclude": ["node_modules", "dist", "build", "**/*.test.ts", "**/*.spec.ts", "**/*.js"],
 
   "ts-node": {
     "esm": false,

@@ -29,12 +29,23 @@ module.exports = {
   ],
   resolve: {
     extensions: ['.ts', '.js', '.json'],
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+      '@services': path.resolve(__dirname, 'src/services'),
+      '@types': path.resolve(__dirname, 'src/types'),
+    },
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
-        use: 'ts-loader',
+        use: {
+          loader: 'ts-loader',
+          options: {
+            configFile: path.resolve(__dirname, 'tsconfig.json'),
+            transpileOnly: false,
+          },
+        },
         exclude: /node_modules/,
       },
     ],
