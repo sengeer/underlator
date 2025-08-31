@@ -232,10 +232,7 @@ export class IpcHandler {
    * @returns Обернутый streaming обработчик
    */
   static createStreamingHandlerWrapper<T>(
-    handler: (
-      request: T,
-      onProgress: (progress: any) => void
-    ) => Promise<any>,
+    handler: (request: T, onProgress: (progress: any) => void) => Promise<any>,
     operationName: string
   ) {
     return async (event: any, request: T): Promise<IpcResponse> => {
@@ -248,7 +245,10 @@ export class IpcHandler {
 
         // Создаем callback для прогресса
         const onProgress = (progress: any) => {
-          const progressMessage = this.createProgressMessage(progress, requestId);
+          const progressMessage = this.createProgressMessage(
+            progress,
+            requestId
+          );
           event.sender.send(`${operationName}:progress`, progressMessage);
         };
 

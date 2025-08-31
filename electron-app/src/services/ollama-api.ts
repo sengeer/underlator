@@ -66,59 +66,65 @@ export class OllamaApi {
   ): Promise<string> {
     const context = `generate(${request.model})`;
 
-    return withRetry(async () => {
-      // Создаем таймаут контроллер
-      const { controller: timeoutController } = createTimeoutController(
-        this.config.timeout
-      );
-
-      // Объединяем сигналы отмены
-      const abortController = new AbortController();
-      if (signal) {
-        signal.addEventListener('abort', () => abortController.abort());
-      }
-      timeoutController.signal.addEventListener('abort', () => abortController.abort());
-
-      try {
-        // Подготавливаем запрос с параметрами по умолчанию
-        const requestBody: OllamaGenerateRequest = {
-          ...OLLAMA_DEFAULT_GENERATION_PARAMS,
-          ...request,
-        };
-
-        const response = await fetchWithErrorHandling(
-          `${this.baseUrl}${OLLAMA_ENDPOINTS.GENERATE}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': OLLAMA_HEADERS.CONTENT_TYPE,
-              'Accept': OLLAMA_HEADERS.ACCEPT,
-              'User-Agent': OLLAMA_HEADERS.USER_AGENT,
-            },
-            body: JSON.stringify(requestBody),
-            signal: abortController.signal,
-          },
-          context
+    return withRetry(
+      async () => {
+        // Создаем таймаут контроллер
+        const { controller: timeoutController } = createTimeoutController(
+          this.config.timeout
         );
 
-        // Обрабатываем streaming ответ
-        return await processStreamResponse(
-          response,
-          (chunk: OllamaGenerateResponse) => {
-            onChunk?.(chunk);
-          },
-          (error: string) => {
-            console.error(`Streaming error in ${context}:`, error);
-          }
-        );
-      } catch (error) {
-        // Обрабатываем ошибки отмены
-        if (error instanceof Error && error.name === 'AbortError') {
-          throw new Error('Operation was cancelled');
+        // Объединяем сигналы отмены
+        const abortController = new AbortController();
+        if (signal) {
+          signal.addEventListener('abort', () => abortController.abort());
         }
-        throw error;
-      }
-    }, undefined, context);
+        timeoutController.signal.addEventListener('abort', () =>
+          abortController.abort()
+        );
+
+        try {
+          // Подготавливаем запрос с параметрами по умолчанию
+          const requestBody: OllamaGenerateRequest = {
+            ...OLLAMA_DEFAULT_GENERATION_PARAMS,
+            ...request,
+          };
+
+          const response = await fetchWithErrorHandling(
+            `${this.baseUrl}${OLLAMA_ENDPOINTS.GENERATE}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': OLLAMA_HEADERS.CONTENT_TYPE,
+                Accept: OLLAMA_HEADERS.ACCEPT,
+                'User-Agent': OLLAMA_HEADERS.USER_AGENT,
+              },
+              body: JSON.stringify(requestBody),
+              signal: abortController.signal,
+            },
+            context
+          );
+
+          // Обрабатываем streaming ответ
+          return await processStreamResponse(
+            response,
+            (chunk: OllamaGenerateResponse) => {
+              onChunk?.(chunk);
+            },
+            (error: string) => {
+              console.error(`Streaming error in ${context}:`, error);
+            }
+          );
+        } catch (error) {
+          // Обрабатываем ошибки отмены
+          if (error instanceof Error && error.name === 'AbortError') {
+            throw new Error('Operation was cancelled');
+          }
+          throw error;
+        }
+      },
+      undefined,
+      context
+    );
   }
 
   /**
@@ -129,22 +135,26 @@ export class OllamaApi {
   async listModels(signal?: AbortSignal): Promise<OllamaModelsResponse> {
     const context = 'listModels';
 
-    return withRetry(async () => {
-      const response = await fetchWithErrorHandling(
-        `${this.baseUrl}${OLLAMA_ENDPOINTS.LIST_MODELS}`,
-        {
-          method: 'GET',
-          headers: {
-            'Accept': OLLAMA_HEADERS.ACCEPT,
-            'User-Agent': OLLAMA_HEADERS.USER_AGENT,
+    return withRetry(
+      async () => {
+        const response = await fetchWithErrorHandling(
+          `${this.baseUrl}${OLLAMA_ENDPOINTS.LIST_MODELS}`,
+          {
+            method: 'GET',
+            headers: {
+              Accept: OLLAMA_HEADERS.ACCEPT,
+              'User-Agent': OLLAMA_HEADERS.USER_AGENT,
+            },
+            signal,
           },
-          signal,
-        },
-        context
-      );
+          context
+        );
 
-      return await response.json() as OllamaModelsResponse;
-    }, undefined, context);
+        return (await response.json()) as OllamaModelsResponse;
+      },
+      undefined,
+      context
+    );
   }
 
   /**
@@ -162,43 +172,47 @@ export class OllamaApi {
   ): Promise<OllamaOperationResult<void>> {
     const context = `installModel(${request.name})`;
 
-    return withRetry(async () => {
-      const response = await fetchWithErrorHandling(
-        `${this.baseUrl}${OLLAMA_ENDPOINTS.PULL_MODEL}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': OLLAMA_HEADERS.CONTENT_TYPE,
-            'Accept': OLLAMA_HEADERS.ACCEPT,
-            'User-Agent': OLLAMA_HEADERS.USER_AGENT,
+    return withRetry(
+      async () => {
+        const response = await fetchWithErrorHandling(
+          `${this.baseUrl}${OLLAMA_ENDPOINTS.PULL_MODEL}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': OLLAMA_HEADERS.CONTENT_TYPE,
+              Accept: OLLAMA_HEADERS.ACCEPT,
+              'User-Agent': OLLAMA_HEADERS.USER_AGENT,
+            },
+            body: JSON.stringify(request),
+            signal,
           },
-          body: JSON.stringify(request),
-          signal,
-        },
-        context
-      );
+          context
+        );
 
-      // Обрабатываем streaming прогресс установки
-      await processStreamResponse(
-        response,
-        (chunk: OllamaPullProgress) => {
-          onProgress?.(chunk);
+        // Обрабатываем streaming прогресс установки
+        await processStreamResponse(
+          response,
+          (chunk: OllamaPullProgress) => {
+            onProgress?.(chunk);
 
-          // Проверяем на ошибки установки
-          if (chunk.error) {
-            throw new Error(`Model installation failed: ${chunk.error}`);
+            // Проверяем на ошибки установки
+            if (chunk.error) {
+              throw new Error(`Model installation failed: ${chunk.error}`);
+            }
+          },
+          (error: string) => {
+            console.error(`Installation error in ${context}:`, error);
           }
-        },
-        (error: string) => {
-          console.error(`Installation error in ${context}:`, error);
-        }
-      );
+        );
 
-      return {
-        success: true,
-        status: 'success',
-      };
-    }, undefined, context);
+        return {
+          success: true,
+          status: 'success',
+        };
+      },
+      undefined,
+      context
+    );
   }
 
   /**
@@ -213,30 +227,34 @@ export class OllamaApi {
   ): Promise<OllamaOperationResult<OllamaDeleteResponse>> {
     const context = `removeModel(${request.name})`;
 
-    return withRetry(async () => {
-      const response = await fetchWithErrorHandling(
-        `${this.baseUrl}${OLLAMA_ENDPOINTS.DELETE_MODEL}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': OLLAMA_HEADERS.CONTENT_TYPE,
-            'Accept': OLLAMA_HEADERS.ACCEPT,
-            'User-Agent': OLLAMA_HEADERS.USER_AGENT,
+    return withRetry(
+      async () => {
+        const response = await fetchWithErrorHandling(
+          `${this.baseUrl}${OLLAMA_ENDPOINTS.DELETE_MODEL}`,
+          {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': OLLAMA_HEADERS.CONTENT_TYPE,
+              Accept: OLLAMA_HEADERS.ACCEPT,
+              'User-Agent': OLLAMA_HEADERS.USER_AGENT,
+            },
+            body: JSON.stringify(request),
+            signal,
           },
-          body: JSON.stringify(request),
-          signal,
-        },
-        context
-      );
+          context
+        );
 
-      const result = await response.json() as OllamaDeleteResponse;
+        const result = (await response.json()) as OllamaDeleteResponse;
 
-      return {
-        success: result.success,
-        data: result,
-        status: result.success ? 'success' : 'error',
-      };
-    }, undefined, context);
+        return {
+          success: result.success,
+          data: result,
+          status: result.success ? 'success' : 'error',
+        };
+      },
+      undefined,
+      context
+    );
   }
 
   /**
@@ -253,7 +271,7 @@ export class OllamaApi {
         {
           method: 'GET',
           headers: {
-            'Accept': OLLAMA_HEADERS.ACCEPT,
+            Accept: OLLAMA_HEADERS.ACCEPT,
             'User-Agent': OLLAMA_HEADERS.USER_AGENT,
           },
           signal,
@@ -277,24 +295,28 @@ export class OllamaApi {
   async getModelInfo(modelName: string, signal?: AbortSignal): Promise<any> {
     const context = `getModelInfo(${modelName})`;
 
-    return withRetry(async () => {
-      const response = await fetchWithErrorHandling(
-        `${this.baseUrl}${OLLAMA_ENDPOINTS.SHOW_MODEL}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': OLLAMA_HEADERS.CONTENT_TYPE,
-            'Accept': OLLAMA_HEADERS.ACCEPT,
-            'User-Agent': OLLAMA_HEADERS.USER_AGENT,
+    return withRetry(
+      async () => {
+        const response = await fetchWithErrorHandling(
+          `${this.baseUrl}${OLLAMA_ENDPOINTS.SHOW_MODEL}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': OLLAMA_HEADERS.CONTENT_TYPE,
+              Accept: OLLAMA_HEADERS.ACCEPT,
+              'User-Agent': OLLAMA_HEADERS.USER_AGENT,
+            },
+            body: JSON.stringify({ name: modelName }),
+            signal,
           },
-          body: JSON.stringify({ name: modelName }),
-          signal,
-        },
-        context
-      );
+          context
+        );
 
-      return await response.json();
-    }, undefined, context);
+        return await response.json();
+      },
+      undefined,
+      context
+    );
   }
 
   /**

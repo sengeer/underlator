@@ -137,7 +137,8 @@ export const OLLAMA_DEFAULT_GENERATION_PARAMS = {
  */
 export const OLLAMA_ERROR_MESSAGES = {
   /** Сервер недоступен */
-  SERVER_UNAVAILABLE: 'Ollama сервер недоступен. Проверьте, что Ollama запущен.',
+  SERVER_UNAVAILABLE:
+    'Ollama сервер недоступен. Проверьте, что Ollama запущен.',
   /** Модель не найдена */
   MODEL_NOT_FOUND: 'Модель не найдена. Проверьте название модели.',
   /** Недостаточно места */

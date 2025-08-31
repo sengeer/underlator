@@ -106,9 +106,7 @@ export class OllamaErrorHandler {
    * @param error - Объект ошибки
    * @returns Результат операции с информацией об ошибке
    */
-  static createErrorResult<T>(
-    error: any
-  ): OllamaOperationResult<T> {
+  static createErrorResult<T>(error: any): OllamaOperationResult<T> {
     const { message } = this.classifyError(error);
 
     return {
@@ -134,7 +132,9 @@ export class OllamaErrorHandler {
       attempt && `Attempt: ${attempt}`,
       `Message: ${message}`,
       `Original: ${error.message || error}`,
-    ].filter(Boolean).join(' | ');
+    ]
+      .filter(Boolean)
+      .join(' | ');
 
     console.error(logMessage);
   }
@@ -165,7 +165,10 @@ export async function withRetry<T>(
       OllamaErrorHandler.logError(error, context, attempt);
 
       // Проверяем, нужно ли повторить
-      if (!OllamaErrorHandler.shouldRetry(error) || attempt === config.MAX_ATTEMPTS) {
+      if (
+        !OllamaErrorHandler.shouldRetry(error) ||
+        attempt === config.MAX_ATTEMPTS
+      ) {
         break;
       }
 
@@ -176,7 +179,7 @@ export async function withRetry<T>(
       );
 
       // Ждем перед следующей попыткой
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
@@ -202,7 +205,9 @@ export async function fetchWithErrorHandling(
 
     // Проверяем статус ответа
     if (!response.ok) {
-      const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+      const error = new Error(
+        `HTTP ${response.status}: ${response.statusText}`
+      );
       (error as any).status = response.status;
       throw error;
     }
@@ -265,7 +270,7 @@ export async function processStreamResponse(
       if (done) break;
 
       const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n').filter(line => line.trim());
+      const lines = chunk.split('\n').filter((line) => line.trim());
 
       for (const line of lines) {
         try {
@@ -282,7 +287,8 @@ export async function processStreamResponse(
       }
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown streaming error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown streaming error';
     onError?.(errorMessage);
     throw error;
   } finally {

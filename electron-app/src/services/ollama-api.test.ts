@@ -55,7 +55,7 @@ export class OllamaApiTest {
       const models = await this.api.listModels();
 
       console.log(`✅ Найдено ${models.models.length} моделей:`);
-      models.models.forEach(model => {
+      models.models.forEach((model) => {
         console.log(`  - ${model.name} (${this.formatSize(model.size)})`);
       });
     } catch (error) {
@@ -118,7 +118,7 @@ export class OllamaApiTest {
           // Обрабатываем прогресс установки
           if (progress.status === 'downloading') {
             const percent = progress.total
-              ? Math.round((progress.size || 0) / progress.total * 100)
+              ? Math.round(((progress.size || 0) / progress.total) * 100)
               : 0;
             console.log(`📥 Загрузка: ${percent}%`);
           } else if (progress.status === 'verifying') {
@@ -211,17 +211,13 @@ export class OllamaApiTest {
 
       // Тест генерации (если модель доступна)
       try {
-        await this.testGeneration(
-          modelName,
-          'Привет! Как дела?'
-        );
+        await this.testGeneration(modelName, 'Привет! Как дела?');
         console.log('');
       } catch (error) {
         console.log(`⚠️ Модель ${modelName} недоступна для генерации`);
       }
 
       console.log('✅ Все тесты завершены успешно!');
-
     } catch (error) {
       console.error('❌ Ошибка в тестах:', error);
       throw error;
