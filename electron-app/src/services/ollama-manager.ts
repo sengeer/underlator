@@ -37,7 +37,7 @@ class OllamaManager {
       // Создание экземпляра ElectronOllama с базовым путем
       this.electronOllama = new ElectronOllama({
         basePath: app.getPath('userData'),
-        directory: 'ollama-binaries'
+        directory: 'ollama-binaries',
       });
 
       this.isInitialized = true;
@@ -45,7 +45,9 @@ class OllamaManager {
     } catch (error) {
       console.error('Ошибка инициализации OllamaManager:', error);
       this.isInitialized = false;
-      throw new Error(`Не удалось инициализировать OllamaManager: ${(error as Error).message}`);
+      throw new Error(
+        `Не удалось инициализировать OllamaManager: ${(error as Error).message}`
+      );
     }
   }
 
@@ -57,7 +59,9 @@ class OllamaManager {
    */
   async startOllama(): Promise<boolean> {
     if (!this.electronOllama) {
-      throw new Error('OllamaManager не инициализирован. Вызовите initialize() сначала.');
+      throw new Error(
+        'OllamaManager не инициализирован. Вызовите initialize() сначала.'
+      );
     }
 
     if (this.isStarting) {
@@ -82,15 +86,18 @@ class OllamaManager {
       // Запуск сервера с автоматической загрузкой при необходимости
       await this.electronOllama.serve(metadata.version, {
         serverLog: (message) => console.log('[Ollama Server]', message),
-        downloadLog: (percent, message) => console.log('[Ollama Download]', `${percent}%`, message),
-        timeoutSec: 30
+        downloadLog: (percent, message) =>
+          console.log('[Ollama Download]', `${percent}%`, message),
+        timeoutSec: 30,
       });
 
       console.log('Ollama сервер успешно запущен');
       return true;
     } catch (error) {
       console.error('Ошибка запуска Ollama сервера:', error);
-      throw new Error(`Не удалось запустить Ollama сервер: ${(error as Error).message}`);
+      throw new Error(
+        `Не удалось запустить Ollama сервер: ${(error as Error).message}`
+      );
     } finally {
       this.isStarting = false;
     }
@@ -134,7 +141,9 @@ class OllamaManager {
       return true;
     } catch (error) {
       console.error('Ошибка остановки Ollama сервера:', error);
-      throw new Error(`Не удалось остановить Ollama сервер: ${(error as Error).message}`);
+      throw new Error(
+        `Не удалось остановить Ollama сервер: ${(error as Error).message}`
+      );
     } finally {
       this.isStopping = false;
     }
@@ -160,8 +169,6 @@ class OllamaManager {
       return false;
     }
   }
-
-
 
   /**
    * @description Получает экземпляр ElectronOllama для прямого взаимодействия
