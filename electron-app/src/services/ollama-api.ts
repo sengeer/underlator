@@ -244,13 +244,32 @@ export class OllamaApi {
           context
         );
 
-        const result = (await response.json()) as OllamaDeleteResponse;
-
-        return {
-          success: result.success,
-          data: result,
-          status: result.success ? 'success' : 'error',
-        };
+        // Ollama API для удаления модели возвращает пустой ответ при успехе
+        // Проверяем статус ответа вместо парсинга JSON
+        if (response.ok) {
+          return {
+            success: true,
+            data: { success: true },
+            status: 'success',
+          };
+        } else {
+          // Если статус не 200, пытаемся получить JSON с ошибкой
+          try {
+            const errorResult = await response.json() as OllamaDeleteResponse;
+            return {
+              success: false,
+              data: errorResult,
+              status: 'error',
+            };
+          } catch {
+            // Если не удается парсить JSON, возвращаем ошибку по статусу
+            return {
+              success: false,
+              data: { success: false },
+              status: 'error',
+            };
+          }
+        }
       },
       undefined,
       context
@@ -267,7 +286,7 @@ export class OllamaApi {
 
     try {
       const response = await fetchWithErrorHandling(
-        `${this.baseUrl}${OLLAMA_ENDPOINTS.HEALTH}`,
+        `${this.baseUrl}${OLLAMA_ENDPOINTS.LIST_MODELS}`,
         {
           method: 'GET',
           headers: {

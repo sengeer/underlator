@@ -2,6 +2,8 @@ const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
 const { Worker } = require('worker_threads');
 const ModelDownloader = require('./services/model-downloader');
+import { ollamaManager } from './services/ollama-manager';
+import { OllamaApi } from './services/ollama-api';
 import type {
   MenuTranslations,
   TransformersArgs,
@@ -9,20 +11,65 @@ import type {
   ModelAvailability,
   ModelOperationResult,
   AvailableModels,
-} from './types/electron';
+  OllamaGenerateRequest,
+  OllamaPullRequest,
+  OllamaDeleteRequest,
+} from './types';
 
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
-const isDev: boolean = process.env['NODE_ENV'] === 'development';
+// Определяет development режим по наличию файла package.json в корне
+const isDev: boolean = require('fs').existsSync(require('path').join(__dirname, '../../package.json'));
+
+// const isDev: boolean = process.env['NODE_ENV'] === 'development';
+console.log('🔧 isDev:', isDev);
 let worker: typeof Worker | null = null;
 let mainWindow: typeof BrowserWindow | null = null;
 let isHandlerRegistered: boolean = false;
+let ollamaApi: OllamaApi | null = null;
 const isMac: boolean = process.platform === 'darwin';
 const isWindows: boolean = process.platform === 'win32';
 
 let translations: MenuTranslations = {};
+
+/**
+ * Инициализирует Ollama и создает API клиент
+ * Выполняется при старте приложения для подготовки Ollama к работе
+ */
+async function initializeOllama(): Promise<void> {
+  try {
+    console.log('Инициализация Ollama...');
+
+    // Инициализирует OllamaManager
+    await ollamaManager.initialize();
+
+    // Запускает Ollama сервер
+    const isStarted = await ollamaManager.startOllama();
+
+    if (isStarted) {
+      console.log('Ollama сервер успешно запущен');
+    } else {
+      console.log('Ollama сервер уже был запущен');
+    }
+
+    // Создает API клиент для взаимодействия с Ollama
+    ollamaApi = new OllamaApi();
+
+    // Проверяет доступность сервера
+    const isHealthy = await ollamaApi.healthCheck();
+    if (isHealthy) {
+      console.log('Ollama API доступен');
+    } else {
+      console.warn('Ollama API недоступен, но сервер запущен');
+    }
+
+  } catch (error) {
+    console.error('Ошибка инициализации Ollama:', error);
+    throw new Error(`Не удалось инициализировать Ollama: ${(error as Error).message}`);
+  }
+}
 
 /**
  * Обработчик обновления переводов меню
@@ -65,10 +112,10 @@ function buildMenu(): void {
 
   // Установка меню в зависимости от платформы
   if (isMac) {
-    // Для macOS - устанавливаем глобальное меню приложения
+    // Для macOS
     Menu.setApplicationMenu(menu);
   } else {
-    // Для Windows и других платформ - устанавливаем меню окна
+    // Для Windows и других платформ
     if (mainWindow) {
       mainWindow.setMenu(menu);
     }
@@ -97,18 +144,28 @@ function createWindow(): void {
   });
 
   if (isDev) {
+    console.log('🔧 Загружаем URL в dev режиме: http://localhost:8000');
     mainWindow.loadURL('http://localhost:8000');
   } else {
+    console.log('🔧 Загружаем файл в production режиме:', path.join(__dirname, '../react/index.html'));
     mainWindow.loadFile(path.join(__dirname, '../react/index.html'));
   }
 
   // Явное удаление обработчиков при закрытии окна
   mainWindow.on('closed', () => {
+    // Удаляет старые обработчики
     ipcMain.removeHandler('transformers:run');
     ipcMain.removeHandler('models:check-availability');
     ipcMain.removeHandler('models:download');
     ipcMain.removeHandler('models:get-available');
     ipcMain.removeHandler('models:delete');
+
+    // Удаляет новые Ollama обработчики
+    ipcMain.removeHandler('ollama:generate');
+    ipcMain.removeHandler('models:install');
+    ipcMain.removeHandler('models:remove');
+    ipcMain.removeHandler('models:list');
+
     isHandlerRegistered = false;
 
     if (worker) {
@@ -217,18 +274,154 @@ function createWindow(): void {
       }
     }
   );
+
+  // Создание IPC handlers для Ollama API
+  setupOllamaIpcHandlers();
 }
 
-// Этот метод будет вызван когда Electron завершит
-// инициализацию и будет готов создавать браузерные окна.
-// Некоторые API могут использоваться только после этого события
-app.on('ready', createWindow);
+/**
+ * Настраивает IPC обработчики для работы с Ollama API
+ * Создает обработчики для генерации, установки, удаления и получения списка моделей
+ */
+function setupOllamaIpcHandlers(): void {
+  if (!ollamaApi) {
+    console.error('OllamaApi не инициализирован');
+    return;
+  }
+
+  /**
+   * Обработчик для генерации текста через Ollama
+   * Поддерживает streaming ответы и отправляет прогресс в renderer процесс
+   */
+  ipcMain.handle(
+    'ollama:generate',
+    async (_event: any, request: OllamaGenerateRequest): Promise<string> => {
+      try {
+        if (!request.model || !request.prompt) {
+          throw new Error('Model and prompt are required');
+        }
+
+        let fullResponse = '';
+
+        await ollamaApi!.generate(
+          request,
+          (chunk) => {
+            // Отправляем streaming ответы в renderer процесс
+            mainWindow?.webContents.send('ollama:generate-progress', chunk);
+
+            if (chunk.response) {
+              fullResponse += chunk.response;
+            }
+          }
+        );
+
+        return fullResponse;
+      } catch (error) {
+        console.error('Ошибка генерации через Ollama:', error);
+        throw new Error(`Generation failed: ${(error as Error).message}`);
+      }
+    }
+  );
+
+  /**
+   * Обработчик для установки модели через Ollama
+   * Отправляет прогресс установки в renderer процесс
+   */
+  ipcMain.handle(
+    'models:install',
+    async (_event: any, request: OllamaPullRequest): Promise<{ success: boolean }> => {
+      try {
+        if (!request.name) {
+          throw new Error('Model name is required');
+        }
+
+        const result = await ollamaApi!.installModel(
+          request,
+          (progress) => {
+            // Отправляем прогресс установки в renderer процесс
+            mainWindow?.webContents.send('models:install-progress', progress);
+          }
+        );
+
+        return { success: result.success };
+      } catch (error) {
+        console.error('Ошибка установки модели:', error);
+        throw new Error(`Installation failed: ${(error as Error).message}`);
+      }
+    }
+  );
+
+  /**
+   * Обработчик для удаления модели через Ollama
+   */
+  ipcMain.handle(
+    'models:remove',
+    async (_event: any, request: OllamaDeleteRequest): Promise<{ success: boolean }> => {
+      try {
+        if (!request.name) {
+          throw new Error('Model name is required');
+        }
+
+        const result = await ollamaApi!.removeModel(request);
+        return { success: result.success };
+      } catch (error) {
+        console.error('Ошибка удаления модели:', error);
+        throw new Error(`Removal failed: ${(error as Error).message}`);
+      }
+    }
+  );
+
+  /**
+   * Обработчик для получения списка моделей через Ollama
+   */
+  ipcMain.handle(
+    'models:list',
+    async (): Promise<any> => {
+      try {
+        const models = await ollamaApi!.listModels();
+        return models;
+      } catch (error) {
+        console.error('Ошибка получения списка моделей:', error);
+        throw new Error(`Failed to list models: ${(error as Error).message}`);
+      }
+    }
+  );
+}
+
+/**
+ * Инициализирует приложение при готовности Electron
+ * Запускает Ollama и создает главное окно
+ */
+app.on('ready', async () => {
+  try {
+    // Инициализирует Ollama перед созданием окна
+    await initializeOllama();
+
+    // Создает главное окно
+    createWindow();
+
+    console.log('Приложение успешно инициализировано');
+  } catch (error) {
+    console.error('Ошибка инициализации приложения:', error);
+
+    // Создает окно даже при ошибке Ollama для отображения ошибки
+    createWindow();
+  }
+});
 
 // Выход когда все окна закрыты, кроме macOS. Там обычно
 // приложения и их панель меню остаются активными пока пользователь
 // явно не выйдет с помощью Cmd + Q
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   if (!isMac) {
+    // Останавливает Ollama при закрытии приложения
+    try {
+      await ollamaManager.stopOllama();
+      console.log('Ollama сервер остановлен');
+    } catch (error) {
+      console.error('Ошибка остановки Ollama:', error);
+    }
+
     app.quit();
   }
 });
@@ -238,6 +431,17 @@ app.on('activate', () => {
   // иконка в dock кликается и нет других открытых окон
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+  }
+});
+
+// Обработка завершения работы приложения
+app.on('before-quit', async () => {
+  // Останавливает Ollama при принудительном закрытии
+  try {
+    await ollamaManager.stopOllama();
+    console.log('Ollama сервер остановлен при закрытии приложения');
+  } catch (error) {
+    console.error('Ошибка остановки Ollama при закрытии:', error);
   }
 });
 

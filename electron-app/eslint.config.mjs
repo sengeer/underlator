@@ -3,9 +3,6 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: ['node_modules', 'out', 'src/assets'],
-  },
-  {
     files: ['**/*.js'],
     plugins: {
       n: pluginN,

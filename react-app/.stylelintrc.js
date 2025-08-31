@@ -39,5 +39,10 @@ module.exports = {
     },
     ...order.rules,
   },
-  ignoreFiles: ['src/app/styles/normalize.css', 'build/**/*', 'docs/**/*'],
+  ignoreFiles: [
+    'src/app/styles/normalize.css',
+    'build/**/*',
+    'docs/**/*',
+    'dist/**/*',
+  ],
 };

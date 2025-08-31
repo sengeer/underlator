@@ -8,6 +8,7 @@ import DownloadIcon from '../../../shared/assets/icons/download-icon';
 import HttpIcon from '../../../shared/assets/icons/http-icon';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
 import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
+import { OLLAMA_TEST_MODEL } from '../../../shared/lib/constants';
 import { useElectronModelsManagement } from '../../../shared/lib/hooks/use-electron-models-management';
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
@@ -35,6 +36,13 @@ import Popup from '../../../shared/ui/popup';
 import SelectorPopup from '../../../shared/ui/selector-popup';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import TextButton from '../../../shared/ui/text-button/text-button';
+import {
+  testListModels,
+  testDownloadModel,
+  testGenerateText,
+  testRemoveModel,
+  runFullTest,
+} from '../tests/ipc-tester';
 
 const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE;
 
@@ -144,6 +152,51 @@ function Settings({ isOpened }: Settings) {
 
   return (
     <section className={`settings${isOpened ? ' settings_open' : ''}`}>
+      {/* IPC API Testing Section */}
+      {import.meta.env.DEV && (
+        <div className='settings__container'>
+          <div className='settings__column'>
+            <h2 className='settings__title'>
+              <Trans>IPC API Testing</Trans>
+            </h2>
+            <div className='settings__btns-group'>
+              <TextButton
+                onClick={testListModels}
+                className='settings__button'
+                style={{ marginBottom: '0.5rem' }}>
+                📋 List Models
+              </TextButton>
+              <TextButton
+                onClick={testDownloadModel}
+                className='settings__button'
+                style={{ marginBottom: '0.5rem' }}>
+                📥 Download {OLLAMA_TEST_MODEL}
+              </TextButton>
+              <TextButton
+                onClick={testGenerateText}
+                className='settings__button'
+                style={{ marginBottom: '0.5rem' }}>
+                🤖 Generate Text
+              </TextButton>
+              <TextButton
+                onClick={testRemoveModel}
+                className='settings__button'
+                style={{ marginBottom: '0.5rem' }}>
+                🗑️ Remove {OLLAMA_TEST_MODEL}
+              </TextButton>
+              <TextButton onClick={runFullTest} className='settings__button'>
+                🚀 Run Full Test
+              </TextButton>
+            </div>
+            <p className='settings__models-description'>
+              <Trans>
+                Test buttons for new Ollama IPC API. Check console for results.
+              </Trans>
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className='settings__container'>
         <div className='settings__column'>
           <h2 className='settings__title'>
@@ -356,12 +409,12 @@ function Settings({ isOpened }: Settings) {
                   !isModelDownloading('opus-mt-en-ru') && (
                     <TextButton
                       onClick={() => downloadModel('opus-mt-en-ru')}
-                      className='settings__download-btn'>
+                      className='settings__button'>
                       <Trans>download</Trans>
                     </TextButton>
                   )}
                 {isModelDownloading('opus-mt-en-ru') && (
-                  <TextButton isDisabled className='settings__download-btn'>
+                  <TextButton isDisabled className='settings__button'>
                     <Trans>downloading...</Trans>
                   </TextButton>
                 )}
@@ -432,12 +485,12 @@ function Settings({ isOpened }: Settings) {
                   !isModelDownloading('opus-mt-ru-en') && (
                     <TextButton
                       onClick={() => downloadModel('opus-mt-ru-en')}
-                      className='settings__download-btn'>
+                      className='settings__button'>
                       <Trans>download</Trans>
                     </TextButton>
                   )}
                 {isModelDownloading('opus-mt-ru-en') && (
-                  <TextButton isDisabled className='settings__download-btn'>
+                  <TextButton isDisabled className='settings__button'>
                     <Trans>downloading...</Trans>
                   </TextButton>
                 )}

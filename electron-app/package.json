@@ -12,8 +12,8 @@
     "build": "npm run build:ts && webpack --config webpack.config.js",
     "build:ts": "tsc",
     "make": "npm run build && electron-builder --dir",
-    "lint": "eslint . --ext .js, .ts",
-    "lint:fix": "eslint --fix . --ext .js, .ts",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint --fix . --ext .js,.ts",
     "format": "prettier . --write",
     "type-check": "tsc --noEmit"
   },

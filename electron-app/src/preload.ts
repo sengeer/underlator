@@ -8,7 +8,12 @@ import type {
   ModelAvailability,
   ModelOperationResult,
   AvailableModels,
-} from './types/electron';
+  OllamaGenerateRequest,
+  OllamaGenerateResponse,
+  OllamaPullRequest,
+  OllamaPullProgress,
+  OllamaDeleteRequest,
+} from './types';
 
 /**
  * Интерфейс для API Electron, доступного в renderer процессе
@@ -18,6 +23,12 @@ interface ElectronAPI {
   run: (text: { translate: string; text: string }) => Promise<any>;
   onStatus: (callback: (message: IpcMessage) => void) => () => void;
   updateTranslations: (translations: any) => void;
+  ollama: {
+    generate: (request: OllamaGenerateRequest) => Promise<string>;
+    onGenerateProgress: (
+      callback: (progress: OllamaGenerateResponse) => void
+    ) => () => void;
+  };
   models: {
     checkAvailability: () => Promise<ModelAvailability>;
     download: (modelName: string) => Promise<ModelOperationResult>;
@@ -25,6 +36,12 @@ interface ElectronAPI {
     delete: (modelName: string) => Promise<ModelOperationResult>;
     onDownloadProgress: (
       callback: (progress: ModelDownloadProgress) => void
+    ) => () => void;
+    install: (request: OllamaPullRequest) => Promise<{ success: boolean }>;
+    remove: (request: OllamaDeleteRequest) => Promise<{ success: boolean }>;
+    list: () => Promise<any>;
+    onInstallProgress: (
+      callback: (progress: OllamaPullProgress) => void
     ) => () => void;
   };
 }
@@ -52,6 +69,24 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.send('update-translations', translations);
   },
 
+  // API для Ollama генерации
+  ollama: {
+    generate: (request: OllamaGenerateRequest) =>
+      ipcRenderer.invoke('ollama:generate', request),
+
+    onGenerateProgress: (
+      callback: (progress: OllamaGenerateResponse) => void
+    ) => {
+      const subscription = (_event: any, progress: OllamaGenerateResponse) =>
+        callback(progress);
+      ipcRenderer.on('ollama:generate-progress', subscription);
+
+      return () => {
+        ipcRenderer.removeListener('ollama:generate-progress', subscription);
+      };
+    },
+  },
+
   // API для управления моделями
   models: {
     checkAvailability: () => ipcRenderer.invoke('models:check-availability'),
@@ -73,6 +108,27 @@ contextBridge.exposeInMainWorld('electron', {
 
       return () => {
         ipcRenderer.removeListener('models:download-progress', subscription);
+      };
+    },
+
+    // Новые методы для Ollama моделей
+    install: (request: OllamaPullRequest) =>
+      ipcRenderer.invoke('models:install', request),
+
+    remove: (request: OllamaDeleteRequest) =>
+      ipcRenderer.invoke('models:remove', request),
+
+    list: () => ipcRenderer.invoke('models:list'),
+
+    onInstallProgress: (
+      callback: (progress: OllamaPullProgress) => void
+    ) => {
+      const subscription = (_event: any, progress: OllamaPullProgress) =>
+        callback(progress);
+      ipcRenderer.on('models:install-progress', subscription);
+
+      return () => {
+        ipcRenderer.removeListener('models:install-progress', subscription);
       };
     },
   },

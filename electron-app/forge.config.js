@@ -36,7 +36,6 @@ module.exports = {
     },
   ],
   rebuildConfig: {},
-  makers: [],
   plugins: [
     {
       name: '@electron-forge/plugin-auto-unpack-natives',

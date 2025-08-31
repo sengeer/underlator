@@ -10,15 +10,15 @@
  */
 export const OLLAMA_DEFAULT_CONFIG = {
   /** Базовый URL для Ollama API по умолчанию */
-  BASE_URL: 'http://127.0.0.1:11434',
+  baseUrl: 'http://127.0.0.1:11434',
   /** Таймаут для HTTP запросов в миллисекундах */
-  TIMEOUT: 30000,
+  timeout: 30000,
   /** Количество попыток при ошибках сети */
-  RETRY_ATTEMPTS: 3,
+  retryAttempts: 3,
   /** Задержка между попытками в миллисекундах */
-  RETRY_DELAY: 1000,
+  retryDelay: 1000,
   /** Максимальное время ожидания для streaming ответов */
-  STREAM_TIMEOUT: 60000,
+  streamTimeout: 60000,
 } as const;
 
 /**
