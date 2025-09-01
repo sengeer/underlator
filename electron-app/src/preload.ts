@@ -120,9 +120,7 @@ contextBridge.exposeInMainWorld('electron', {
 
     list: () => ipcRenderer.invoke('models:list'),
 
-    onInstallProgress: (
-      callback: (progress: OllamaPullProgress) => void
-    ) => {
+    onInstallProgress: (callback: (progress: OllamaPullProgress) => void) => {
       const subscription = (_event: any, progress: OllamaPullProgress) =>
         callback(progress);
       ipcRenderer.on('models:install-progress', subscription);

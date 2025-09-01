@@ -255,7 +255,7 @@ export class OllamaApi {
         } else {
           // Если статус не 200, пытаемся получить JSON с ошибкой
           try {
-            const errorResult = await response.json() as OllamaDeleteResponse;
+            const errorResult = (await response.json()) as OllamaDeleteResponse;
             return {
               success: false,
               data: errorResult,

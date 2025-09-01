@@ -20,11 +20,13 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
-// Определяет development режим по наличию файла package.json в корне
-const isDev: boolean = require('fs').existsSync(require('path').join(__dirname, '../../package.json'));
+/**
+ * Определяет development режим
+ * В Electron Forge с webpack NODE_ENV корректно передается через cross-env
+ */
+const isDev: boolean = process.env['NODE_ENV'] === 'development';
+console.log('🔧 NODE_ENV:', process.env['NODE_ENV']);
 
-// const isDev: boolean = process.env['NODE_ENV'] === 'development';
-console.log('🔧 isDev:', isDev);
 let worker: typeof Worker | null = null;
 let mainWindow: typeof BrowserWindow | null = null;
 let isHandlerRegistered: boolean = false;
@@ -64,10 +66,11 @@ async function initializeOllama(): Promise<void> {
     } else {
       console.warn('Ollama API недоступен, но сервер запущен');
     }
-
   } catch (error) {
     console.error('Ошибка инициализации Ollama:', error);
-    throw new Error(`Не удалось инициализировать Ollama: ${(error as Error).message}`);
+    throw new Error(
+      `Не удалось инициализировать Ollama: ${(error as Error).message}`
+    );
   }
 }
 
@@ -147,7 +150,10 @@ function createWindow(): void {
     console.log('🔧 Загружаем URL в dev режиме: http://localhost:8000');
     mainWindow.loadURL('http://localhost:8000');
   } else {
-    console.log('🔧 Загружаем файл в production режиме:', path.join(__dirname, '../react/index.html'));
+    console.log(
+      '🔧 Загружаем файл в production режиме:',
+      path.join(__dirname, '../react/index.html')
+    );
     mainWindow.loadFile(path.join(__dirname, '../react/index.html'));
   }
 
@@ -303,17 +309,14 @@ function setupOllamaIpcHandlers(): void {
 
         let fullResponse = '';
 
-        await ollamaApi!.generate(
-          request,
-          (chunk) => {
-            // Отправляем streaming ответы в renderer процесс
-            mainWindow?.webContents.send('ollama:generate-progress', chunk);
+        await ollamaApi!.generate(request, chunk => {
+          // Отправляем streaming ответы в renderer процесс
+          mainWindow?.webContents.send('ollama:generate-progress', chunk);
 
-            if (chunk.response) {
-              fullResponse += chunk.response;
-            }
+          if (chunk.response) {
+            fullResponse += chunk.response;
           }
-        );
+        });
 
         return fullResponse;
       } catch (error) {
@@ -329,19 +332,19 @@ function setupOllamaIpcHandlers(): void {
    */
   ipcMain.handle(
     'models:install',
-    async (_event: any, request: OllamaPullRequest): Promise<{ success: boolean }> => {
+    async (
+      _event: any,
+      request: OllamaPullRequest
+    ): Promise<{ success: boolean }> => {
       try {
         if (!request.name) {
           throw new Error('Model name is required');
         }
 
-        const result = await ollamaApi!.installModel(
-          request,
-          (progress) => {
-            // Отправляем прогресс установки в renderer процесс
-            mainWindow?.webContents.send('models:install-progress', progress);
-          }
-        );
+        const result = await ollamaApi!.installModel(request, progress => {
+          // Отправляем прогресс установки в renderer процесс
+          mainWindow?.webContents.send('models:install-progress', progress);
+        });
 
         return { success: result.success };
       } catch (error) {
@@ -356,7 +359,10 @@ function setupOllamaIpcHandlers(): void {
    */
   ipcMain.handle(
     'models:remove',
-    async (_event: any, request: OllamaDeleteRequest): Promise<{ success: boolean }> => {
+    async (
+      _event: any,
+      request: OllamaDeleteRequest
+    ): Promise<{ success: boolean }> => {
       try {
         if (!request.name) {
           throw new Error('Model name is required');
@@ -374,18 +380,15 @@ function setupOllamaIpcHandlers(): void {
   /**
    * Обработчик для получения списка моделей через Ollama
    */
-  ipcMain.handle(
-    'models:list',
-    async (): Promise<any> => {
-      try {
-        const models = await ollamaApi!.listModels();
-        return models;
-      } catch (error) {
-        console.error('Ошибка получения списка моделей:', error);
-        throw new Error(`Failed to list models: ${(error as Error).message}`);
-      }
+  ipcMain.handle('models:list', async (): Promise<any> => {
+    try {
+      const models = await ollamaApi!.listModels();
+      return models;
+    } catch (error) {
+      console.error('Ошибка получения списка моделей:', error);
+      throw new Error(`Failed to list models: ${(error as Error).message}`);
     }
-  );
+  });
 }
 
 /**

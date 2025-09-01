@@ -4,4 +4,4 @@ cd ./react-app
 npx lint-staged
 
 cd ../electron-app
-npm run format
+npx lint-staged

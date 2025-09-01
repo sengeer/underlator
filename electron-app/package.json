@@ -3,13 +3,13 @@
   "productName": "underlator",
   "version": "1.0.0",
   "description": "ML translator",
-  "main": "dist/electron/main.js",
+  "main": ".webpack/main",
   "scripts": {
     "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:8000 && npm run start:electron\"",
     "start:react": "cd ../react-app && cross-env BROWSER=none npm run start",
     "start:electron": "cross-env NODE_ENV=development electron-forge start",
     "package": "electron-forge package",
-    "build": "npm run build:ts && webpack --config webpack.config.js",
+    "build": "npm run build:ts",
     "build:ts": "tsc",
     "make": "npm run build && electron-builder --dir",
     "lint": "eslint . --ext .js,.ts",
@@ -25,17 +25,24 @@
     "@electron-forge/maker-zip": "^7.3.0",
     "@electron-forge/plugin-auto-unpack-natives": "^7.3.0",
     "@electron-forge/plugin-fuses": "^7.3.0",
+    "@electron-forge/plugin-webpack": "^7.8.3",
     "@types/electron": "^1.4.38",
     "@types/node": "^24.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "@vercel/webpack-asset-relocator-loader": "^1.10.0",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "electron": "29.1.0",
     "electron-builder": "^24.13.3",
     "eslint": "^9.32.0",
     "eslint-plugin-n": "^17.21.3",
+    "fork-ts-checker-webpack-plugin": "^9.1.0",
+    "lint-staged": "^16.1.5",
     "prettier": "^3.4.2",
     "terser-webpack-plugin": "^5.3.14",
     "ts-loader": "^9.5.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
     "wait-on": "^8.0.2",
     "webpack": "^5.101.3",
@@ -52,6 +59,15 @@
     "@huggingface/transformers": "^3.7.2",
     "electron-ollama": "^0.1.25",
     "electron-squirrel-startup": "^1.0.0"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   },
   "build": {
     "asar": false,

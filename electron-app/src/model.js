@@ -1,4 +1,3 @@
-const path = require('path');
 const ModelDownloader = require('./services/model-downloader');
 
 class TranslationPipeline {

@@ -179,7 +179,7 @@ export async function withRetry<T>(
       );
 
       // Ждем перед следующей попыткой
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
 
@@ -270,7 +270,7 @@ export async function processStreamResponse(
       if (done) break;
 
       const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n').filter((line) => line.trim());
+      const lines = chunk.split('\n').filter(line => line.trim());
 
       for (const line of lines) {
         try {
@@ -280,7 +280,7 @@ export async function processStreamResponse(
           if (data.response) {
             fullResponse += data.response;
           }
-        } catch (parseError) {
+        } catch {
           // Игнорируем ошибки парсинга отдельных строк
           console.warn('Failed to parse streaming chunk:', line);
         }

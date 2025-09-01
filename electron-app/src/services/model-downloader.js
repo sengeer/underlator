@@ -83,7 +83,7 @@ class ModelDownloader {
       }
 
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -114,7 +114,7 @@ class ModelDownloader {
   static async downloadFile(url, filePath, onProgress) {
     return new Promise((resolve, reject) => {
       // HTTP request processing
-      const request = https.get(url, (response) => {
+      const request = https.get(url, response => {
         // Recursively call itself with a new URL from Location header
         if (response.statusCode === 302 || response.statusCode === 301) {
           return this.downloadFile(
@@ -146,7 +146,7 @@ class ModelDownloader {
             const fileStream = require('fs').createWriteStream(filePath);
 
             // Update downloaded byte counter and call onProgress by transmitting current data
-            response.on('data', (chunk) => {
+            response.on('data', chunk => {
               downloadedSize += chunk.length;
               if (onProgress && totalSize) {
                 onProgress({
@@ -166,7 +166,7 @@ class ModelDownloader {
               resolve();
             });
 
-            fileStream.on('error', (error) => {
+            fileStream.on('error', error => {
               // Delete a partially uploaded file
               fs.unlink(filePath).catch(() => {}); // Hide deletion errors
               reject(error);
@@ -235,7 +235,7 @@ class ModelDownloader {
 
       // Calculating progress
       try {
-        await this.downloadFile(fileUrl, filePath, (fileProgress) => {
+        await this.downloadFile(fileUrl, filePath, fileProgress => {
           const previousFilesSize =
             totalDownloadedSize - (fileProgress.downloadedSize || 0);
           const overallDownloaded =
@@ -302,7 +302,7 @@ class ModelDownloader {
       const request = httpModule.request(
         url,
         { method: 'HEAD' }, // Metadata only
-        (response) => {
+        response => {
           // Recursively calls itself for a new URL from Location
           if (response.statusCode === 302 || response.statusCode === 301) {
             return this.getFileSize(response.headers.location)
