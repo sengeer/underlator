@@ -2,7 +2,7 @@
   "name": "underlator",
   "productName": "underlator",
   "version": "1.0.0",
-  "description": "ML translator",
+  "description": "Confidential translator and interactive assistant for document analysis using local LLMs — as a desktop application.",
   "main": ".webpack/main",
   "scripts": {
     "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:8000 && npm run start:electron\"",
@@ -14,7 +14,8 @@
     "make": "npm run build && electron-builder --dir",
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "eslint --fix . --ext .js,.ts",
-    "format": "prettier . --write",
+    "prettier": "prettier . --write",
+    "lint-staged": "lint-staged",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {

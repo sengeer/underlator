@@ -132,6 +132,13 @@ function buildMenu(): void {
 function createWindow(): void {
   buildMenu();
 
+  /**
+   * Определяет путь к preload скрипту
+   */
+  const preloadPath = isDev
+    ? path.join(__dirname, '../renderer/main_window/index.js')
+    : path.join(__dirname, 'preload.js');
+
   // Создание браузерного окна
   mainWindow = new BrowserWindow({
     width: 480,
@@ -140,7 +147,7 @@ function createWindow(): void {
     minHeight: 350,
     icon: path.join(__dirname, '../icons', isWindows ? 'icon.ico' : ''),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
     },

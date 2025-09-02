@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url';
 
 /**
  * Получает __dirname для ES модулей
- * В ES модулях __dirname не определен, поэтому используем fileURLToPath
+ * В ES модулях __dirname не определен, поэтому fileURLToPath
  */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,7 +77,7 @@ const mainConfig: Configuration = {
 
   /**
    * Настройка externals для исключения Node.js модулей из bundle
-   * Это необходимо для корректной работы с Electron API
+   * Необходимо для корректной работы с Electron API
    */
   externals: {
     electron: 'commonjs electron',
@@ -198,9 +198,13 @@ const config: ForgeConfig = {
             /**
              * Точка входа для preload скрипта
              * Обеспечивает безопасное взаимодействие между процессами
+             * Имя 'main_window' соответствует переменной MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY
              */
             js: './src/preload.ts',
-            name: 'preload',
+            name: 'main_window',
+            preload: {
+              js: './src/preload.ts',
+            },
           },
         ],
       },
