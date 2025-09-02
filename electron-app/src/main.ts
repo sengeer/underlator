@@ -4,6 +4,7 @@ const { Worker } = require('worker_threads');
 const ModelDownloader = require('./services/model-downloader');
 import { ollamaManager } from './services/ollama-manager';
 import { OllamaApi } from './services/ollama-api';
+import { IpcHandler } from './utils/ipc-handlers';
 import type {
   MenuTranslations,
   TransformersArgs,
@@ -295,6 +296,7 @@ function createWindow(): void {
 /**
  * Настраивает IPC обработчики для работы с Ollama API
  * Создает обработчики для генерации, установки, удаления и получения списка моделей
+ * Использует централизованные утилиты для валидации, логирования и обработки ошибок
  */
 function setupOllamaIpcHandlers(): void {
   if (!ollamaApi) {
@@ -305,19 +307,25 @@ function setupOllamaIpcHandlers(): void {
   /**
    * Обработчик для генерации текста через Ollama
    * Поддерживает streaming ответы и отправляет прогресс в renderer процесс
+   * Использует wrapper для автоматического логирования и обработки ошибок
    */
   ipcMain.handle(
     'ollama:generate',
-    async (_event: any, request: OllamaGenerateRequest): Promise<string> => {
-      try {
-        if (!request.model || !request.prompt) {
-          throw new Error('Model and prompt are required');
+    IpcHandler.createHandlerWrapper(
+      async (request: OllamaGenerateRequest): Promise<string> => {
+        // Валидация входящего запроса
+        const validation = IpcHandler.validateRequest(request, [
+          'model',
+          'prompt',
+        ]);
+        if (!validation.valid) {
+          throw new Error(validation.error);
         }
 
         let fullResponse = '';
 
         await ollamaApi!.generate(request, chunk => {
-          // Отправляем streaming ответы в renderer процесс
+          // Отправка streaming ответов в renderer процесс
           mainWindow?.webContents.send('ollama:generate-progress', chunk);
 
           if (chunk.response) {
@@ -326,76 +334,74 @@ function setupOllamaIpcHandlers(): void {
         });
 
         return fullResponse;
-      } catch (error) {
-        console.error('Ошибка генерации через Ollama:', error);
-        throw new Error(`Generation failed: ${(error as Error).message}`);
-      }
-    }
+      },
+      'ollama:generate'
+    )
   );
 
   /**
    * Обработчик для установки модели через Ollama
    * Отправляет прогресс установки в renderer процесс
+   * Использует streaming wrapper для обработки прогресса
    */
   ipcMain.handle(
     'models:install',
-    async (
-      _event: any,
-      request: OllamaPullRequest
-    ): Promise<{ success: boolean }> => {
-      try {
-        if (!request.name) {
-          throw new Error('Model name is required');
+    IpcHandler.createStreamingHandlerWrapper(
+      async (
+        request: OllamaPullRequest,
+        onProgress: (progress: any) => void
+      ): Promise<{ success: boolean }> => {
+        // Валидация входящего запроса
+        const validation = IpcHandler.validateRequest(request, ['name']);
+        if (!validation.valid) {
+          throw new Error(validation.error);
         }
 
         const result = await ollamaApi!.installModel(request, progress => {
           // Отправляем прогресс установки в renderer процесс
           mainWindow?.webContents.send('models:install-progress', progress);
+          // Вызываем callback для логирования прогресса
+          onProgress(progress);
         });
 
         return { success: result.success };
-      } catch (error) {
-        console.error('Ошибка установки модели:', error);
-        throw new Error(`Installation failed: ${(error as Error).message}`);
-      }
-    }
+      },
+      'models:install'
+    )
   );
 
   /**
    * Обработчик для удаления модели через Ollama
+   * Использует wrapper для автоматического логирования и обработки ошибок
    */
   ipcMain.handle(
     'models:remove',
-    async (
-      _event: any,
-      request: OllamaDeleteRequest
-    ): Promise<{ success: boolean }> => {
-      try {
-        if (!request.name) {
-          throw new Error('Model name is required');
+    IpcHandler.createHandlerWrapper(
+      async (request: OllamaDeleteRequest): Promise<{ success: boolean }> => {
+        // Валидация входящего запроса
+        const validation = IpcHandler.validateRequest(request, ['name']);
+        if (!validation.valid) {
+          throw new Error(validation.error);
         }
 
         const result = await ollamaApi!.removeModel(request);
         return { success: result.success };
-      } catch (error) {
-        console.error('Ошибка удаления модели:', error);
-        throw new Error(`Removal failed: ${(error as Error).message}`);
-      }
-    }
+      },
+      'models:remove'
+    )
   );
 
   /**
    * Обработчик для получения списка моделей через Ollama
+   * Использует wrapper для автоматического логирования и обработки ошибок
    */
-  ipcMain.handle('models:list', async (): Promise<any> => {
-    try {
+  ipcMain.handle(
+    'models:list',
+    IpcHandler.createHandlerWrapper(async (): Promise<any> => {
       const models = await ollamaApi!.listModels();
       return models;
-    } catch (error) {
-      console.error('Ошибка получения списка моделей:', error);
-      throw new Error(`Failed to list models: ${(error as Error).message}`);
-    }
-  });
+    }, 'models:list')
+  );
 }
 
 /**
