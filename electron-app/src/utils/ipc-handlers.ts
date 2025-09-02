@@ -113,13 +113,9 @@ export class IpcHandler {
       return { valid: false, error: 'Invalid request format' };
     }
 
-    if (!request.type || typeof request.type !== 'string') {
-      return { valid: false, error: 'Missing or invalid request type' };
-    }
-
-    // Проверяем обязательные поля
+    // Проверка обязательных полей
     for (const field of requiredFields) {
-      if (!(field in request.params)) {
+      if (!(field in request)) {
         return { valid: false, error: `Missing required field: ${field}` };
       }
     }

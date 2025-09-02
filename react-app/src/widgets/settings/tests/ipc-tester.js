@@ -1,4 +1,7 @@
-import { OLLAMA_TEST_MODEL } from '../../../shared/lib/constants';
+import {
+  OLLAMA_TEST_MODEL,
+  OLLAMA_TEST_PROMPT,
+} from '../../../shared/lib/constants';
 
 /**
  * @module ManualIpcTesting
@@ -15,22 +18,26 @@ export async function testListModels() {
   try {
     console.log('🧪 Тестирование получения списка моделей...');
 
-    const models = await window.electron.models.list();
+    const response = await window.electron.models.list();
 
-    console.log('✅ Список моделей получен:', models);
+    console.log('✅ Список моделей получен:', response);
 
-    if (models.models && models.models.length > 0) {
-      console.log(`📋 Найдено ${models.models.length} моделей:`);
-      models.models.forEach((model, index) => {
+    if (response.success && response.data && response.data.models) {
+      const models = response.data.models;
+      console.log(`📋 Найдено ${models.length} моделей:`);
+      models.forEach((model, index) => {
         console.log(
           `  ${index + 1}. ${model.name} (${formatSize(model.size)})`
         );
       });
     } else {
       console.log('📋 Модели не найдены');
+      if (response.error) {
+        console.log('❌ Ошибка:', response.error);
+      }
     }
 
-    return models;
+    return response;
   } catch (error) {
     console.error('❌ Ошибка получения списка моделей:', error);
     throw error;
@@ -46,7 +53,7 @@ export async function testDownloadModel() {
   try {
     console.log(`🧪 Тестирование скачивания модели ${OLLAMA_TEST_MODEL}...`);
 
-    // Подписываемся на прогресс загрузки
+    // Подписывание на прогресс загрузки
     const unsubscribeProgress = window.electron.models.onInstallProgress(
       (progress) => {
         console.log('📥 Прогресс загрузки:', progress);
@@ -68,21 +75,24 @@ export async function testDownloadModel() {
       }
     );
 
-    const result = await window.electron.models.install({
+    const response = await window.electron.models.install({
       name: OLLAMA_TEST_MODEL,
     });
 
     unsubscribeProgress();
 
-    console.log('✅ Результат загрузки:', result);
+    console.log('✅ Результат загрузки:', response);
 
-    if (result.success) {
+    if (response.success) {
       console.log(`✅ Модель ${OLLAMA_TEST_MODEL} успешно загружена!`);
     } else {
       console.log('❌ Ошибка загрузки модели');
+      if (response.error) {
+        console.log('❌ Детали ошибки:', response.error);
+      }
     }
 
-    return result;
+    return response;
   } catch (error) {
     console.error('❌ Ошибка скачивания модели:', error);
     throw error;
@@ -122,20 +132,29 @@ export async function testGenerateText() {
       }
     );
 
-    // Запускаем генерацию
+    // Запуск генерации
     const response = await window.electron.ollama.generate({
       model: OLLAMA_TEST_MODEL,
-      prompt: 'Сгенерируй стихотворенье про AI',
+      prompt: OLLAMA_TEST_PROMPT,
       temperature: 0.7,
       max_tokens: 200,
       num_predict: 1,
     });
 
-    // Отписываемся от прогресса
+    // Отписывание от прогресса
     unsubscribeProgress();
 
     console.log('✅ Генерация завершена');
     console.log('📝 Финальный ответ:', response);
+
+    if (response.success && response.data) {
+      console.log('✅ Генерация успешна, получен текст:', response.data);
+    } else {
+      console.log('❌ Ошибка генерации');
+      if (response.error) {
+        console.log('❌ Детали ошибки:', response.error);
+      }
+    }
 
     return response;
   } catch (error) {
@@ -153,19 +172,22 @@ export async function testRemoveModel() {
   try {
     console.log(`🧪 Тестирование удаления модели ${OLLAMA_TEST_MODEL}...`);
 
-    const result = await window.electron.models.remove({
+    const response = await window.electron.models.remove({
       name: OLLAMA_TEST_MODEL,
     });
 
-    console.log('✅ Результат удаления:', result);
+    console.log('✅ Результат удаления:', response);
 
-    if (result.success) {
+    if (response.success) {
       console.log(`✅ Модель ${OLLAMA_TEST_MODEL} успешно удалена!`);
     } else {
       console.log('❌ Ошибка удаления модели');
+      if (response.error) {
+        console.log('❌ Детали ошибки:', response.error);
+      }
     }
 
-    return result;
+    return response;
   } catch (error) {
     console.error('❌ Ошибка удаления модели:', error);
     throw error;

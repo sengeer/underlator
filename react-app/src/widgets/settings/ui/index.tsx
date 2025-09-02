@@ -8,7 +8,10 @@ import DownloadIcon from '../../../shared/assets/icons/download-icon';
 import HttpIcon from '../../../shared/assets/icons/http-icon';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
 import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
-import { OLLAMA_TEST_MODEL } from '../../../shared/lib/constants';
+import {
+  OLLAMA_TEST_MODEL,
+  OLLAMA_TEST_PROMPT,
+} from '../../../shared/lib/constants';
 import { useElectronModelsManagement } from '../../../shared/lib/hooks/use-electron-models-management';
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
@@ -176,7 +179,7 @@ function Settings({ isOpened }: Settings) {
                 onClick={testGenerateText}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
-                🤖 Generate Text
+                🤖 Generate {OLLAMA_TEST_PROMPT}
               </TextButton>
               <TextButton
                 onClick={testRemoveModel}

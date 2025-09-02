@@ -5,3 +5,6 @@ export const CHUNK_DELIMITER = '\u001E';
 
 // Model for testing IPC API
 export const OLLAMA_TEST_MODEL = 'qwen3:0.6b';
+
+// Prompt for testing IPC API
+export const OLLAMA_TEST_PROMPT = 'Сколько будет 2 + 2?';
