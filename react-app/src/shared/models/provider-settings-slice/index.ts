@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ProviderType } from '../../lib/providers';
 import {
   getStorageWrite,
   setStorageWrite,
 } from '../../lib/utils/control-local-storage';
+import { ProviderType } from '../../providers/types';
 
 interface ProviderSettings {
   [key: string]: any;

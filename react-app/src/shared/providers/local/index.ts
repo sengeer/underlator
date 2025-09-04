@@ -1,4 +1,4 @@
-import { ModelUseProvider, GenerateOptions } from '../types';
+import { GenerateOptions } from './types';
 
 export const localProvider: ModelUseProvider = {
   generate: async ({

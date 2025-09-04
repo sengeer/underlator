@@ -1,12 +1,12 @@
-import { OllamaApi } from '../../../apis/ollama';
-import createContextualTranslationHandler from '../../hofs/create-contextual-translation-handler';
+import createContextualTranslationHandler from '../../lib/hofs/create-contextual-translation-handler';
 import {
   getContextualTranslationConfig,
   validateContextualTranslationParams,
-} from '../../utils/contextual-translation';
-import processStream from '../../utils/process-stream';
-import { createOllamaChunkProcessor } from '../../utils/safe-json-parser';
-import { ModelUseProvider, GenerateOptions } from '../types';
+} from '../../lib/utils/contextual-translation';
+import processStream from '../../lib/utils/process-stream';
+import { createOllamaChunkProcessor } from '../../lib/utils/safe-json-parser';
+import { OllamaApi } from './api';
+import { GenerateOptions } from './types';
 
 async function handleContextualTranslation(
   chunks: string[],

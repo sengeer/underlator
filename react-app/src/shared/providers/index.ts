@@ -1,9 +1,6 @@
 import { localProvider } from './local';
 import { ollamaProvider } from './ollama';
-import { ModelUseProvider } from './types';
-
-// export type ProviderType = 'Electron IPC' | 'Ollama' | 'openrouter';
-export type ProviderType = 'Electron IPC' | 'Ollama';
+import { ProviderType } from './types';
 
 const providers: Record<ProviderType, ModelUseProvider> = {
   'Electron IPC': localProvider,

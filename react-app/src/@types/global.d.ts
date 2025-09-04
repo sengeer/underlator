@@ -1,5 +1,11 @@
 type ModelStatus = 'notDownloaded' | 'downloading' | 'downloaded' | 'error';
 
+interface ModelUseProvider {
+  initialize?: () => Promise<void>;
+  generate: (options: GenerateOptions) => void;
+  abort?: () => void;
+}
+
 interface TextInfo {
   node: Text;
   original: string;

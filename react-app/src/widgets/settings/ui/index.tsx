@@ -16,7 +16,6 @@ import { useElectronModelsManagement } from '../../../shared/lib/hooks/use-elect
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
 import { loadCatalog } from '../../../shared/lib/i18n';
-import { ProviderType } from '../../../shared/lib/providers';
 import {
   getStorageWrite,
   setStorageWrite,
@@ -32,6 +31,7 @@ import {
   updateProviderSettings,
   setTypeUse,
 } from '../../../shared/models/provider-settings-slice';
+import { ProviderType } from '../../../shared/providers/types';
 import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background';
 import ColorPicker from '../../../shared/ui/color-picker';
 import Loader from '../../../shared/ui/loader';

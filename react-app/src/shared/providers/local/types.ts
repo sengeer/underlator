@@ -9,9 +9,3 @@ export interface GenerateOptions {
   signal?: AbortSignal;
   params: Params;
 }
-
-export interface ModelUseProvider {
-  initialize?: () => Promise<void>;
-  generate: (options: GenerateOptions) => void;
-  abort?: () => void;
-}

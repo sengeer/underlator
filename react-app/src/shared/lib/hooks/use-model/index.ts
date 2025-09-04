@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
-import { getModelUseProvider } from '../../providers';
+import { getModelUseProvider } from '../../../providers';
 
 type Status = 'idle' | 'process' | 'success' | 'error';
 
