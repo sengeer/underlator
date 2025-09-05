@@ -3,11 +3,11 @@ const { parentPort } = require('worker_threads');
 const TranslationPipeline = require('./model');
 
 // Message handler for workflow
-parentPort.on('message', async (event) => {
+parentPort.on('message', async event => {
   try {
     let translator = await TranslationPipeline.getInstance(
       event.translate,
-      (x) => {
+      x => {
         parentPort.postMessage({ status: 'progress', data: x });
       }
     );

@@ -6,6 +6,18 @@ interface ModelUseProvider {
   abort?: () => void;
 }
 
+interface GenerateOptions {
+  text: string | string[];
+  translateLanguage: 'en-ru' | 'ru-en';
+  model?: string;
+  url?: string;
+  typeUse?: 'instruction' | 'translation';
+  onModelResponse?: (response: ModelResponse) => void;
+  onProgress?: (progress: Progress) => void;
+  signal?: AbortSignal;
+  params: Params;
+}
+
 interface TextInfo {
   node: Text;
   original: string;
@@ -27,8 +39,10 @@ type ModelResponse = Chunk | string;
 interface Params {
   responseMode: 'arrayStream' | 'stringStream' | string;
   instruction?: string;
-  think?: false;
+  think?: boolean;
   useContextualTranslation?: boolean;
+  temperature?: number;
+  maxTokens?: number;
 }
 
 interface Progress {
@@ -66,6 +80,10 @@ interface Window {
     onStatus: (callback: (message: Message) => void) => () => void;
     run: (message: any) => void;
     updateTranslations: (message: any) => void;
+    ollama: {
+      generate: (request: any) => Promise<string>;
+      onGenerateProgress: (callback: (progress: any) => void) => () => void;
+    };
     models: {
       checkAvailability: () => Promise<Record<string, boolean>>;
       download: (modelName: string) => Promise<{ success: boolean }>;
@@ -74,6 +92,10 @@ interface Window {
       onDownloadProgress: (
         callback: (progress: ModelDownloadProgress) => void
       ) => () => void;
+      install: (request: any) => Promise<{ success: boolean }>;
+      remove: (request: any) => Promise<{ success: boolean }>;
+      list: () => Promise<any>;
+      onInstallProgress: (callback: (progress: any) => void) => () => void;
     };
   };
 }

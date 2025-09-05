@@ -35,6 +35,11 @@ function getInitialState(): ProviderSettingsState {
         typeUse: 'instruction',
         prompt: '',
       },
+      'Embedded Ollama': {
+        typeUse: 'instruction',
+        model: 'qwen3:4b',
+        prompt: '',
+      },
     },
   };
 

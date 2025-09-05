@@ -4,127 +4,112 @@
  * Определяет интерфейсы для работы с Ollama через Electron IPC
  */
 
-import type { ModelUseProvider, GenerateOptions } from '../types';
-
 /**
- * @description Конфигурация embedded-ollama провайдера
- * Настройки для работы с Ollama через Electron IPC
+ * @description Интерфейс провайдера Embedded Ollama
+ * Реализует ModelUseProvider для работы через Electron IPC
  */
-export interface EmbeddedOllamaConfig {
-  /** Базовый URL для Ollama API (используется только для fallback) */
-  baseUrl?: string;
-  /** Таймаут для операций в миллисекундах */
-  timeout?: number;
-  /** Максимальное количество попыток при ошибках */
-  maxRetries?: number;
-  /** Задержка между попытками в миллисекундах */
-  retryDelay?: number;
+export interface EmbeddedOllamaProvider {
+  /**
+   * @description Генерирует текст через Ollama API
+   * Поддерживает как строки, так и массивы строк
+   * Обрабатывает контекстный перевод и инструкции
+   */
+  generate: (options: GenerateOptions) => Promise<void>;
 }
 
 /**
- * @description Параметры генерации для embedded-ollama
- * Расширяет базовые параметры специфичными для Ollama настройками
- */
-export interface EmbeddedOllamaGenerateParams {
-  /** Название модели для использования */
-  model: string;
-  /** Температура генерации (0.0 - 1.0) */
-  temperature?: number;
-  /** Максимальное количество токенов в ответе */
-  maxTokens?: number;
-  /** Количество вариантов ответа */
-  numPredict?: number;
-  /** Включить режим "думания" модели */
-  think?: boolean;
-  /** Системный промпт для настройки поведения модели */
-  system?: string;
-  /** Дополнительные параметры модели */
-  options?: Record<string, any>;
-}
-
-/**
- * @description Опции генерации для embedded-ollama провайдера
- * Объединяет базовые опции с специфичными для Ollama параметрами
+ * @description Опции генерации для Embedded Ollama
+ * Расширяет базовые опции специфичными для Ollama параметрами
  */
 export interface EmbeddedOllamaGenerateOptions extends GenerateOptions {
-  /** Параметры генерации для Ollama */
-  ollamaParams?: EmbeddedOllamaGenerateParams;
-  /** Конфигурация провайдера */
-  config?: EmbeddedOllamaConfig;
+  /** Модель Ollama для использования */
+  model?: string;
+  /** URL сервера Ollama (не используется в embedded режиме) */
+  url?: string;
+  /** Тип использования: перевод или инструкция */
+  typeUse?: 'instruction' | 'translation';
+  /** Параметры генерации */
+  params: EmbeddedOllamaParams;
 }
 
 /**
- * @description Статусы операций embedded-ollama
- * Отслеживает состояние различных операций с Ollama
+ * @description Параметры для Embedded Ollama
+ * Специфичные параметры для работы с Ollama через Electron IPC
  */
-export type EmbeddedOllamaStatus =
-  | 'idle'
-  | 'connecting'
-  | 'generating'
-  | 'installing'
-  | 'removing'
-  | 'listing'
-  | 'error'
-  | 'success';
+export interface EmbeddedOllamaParams extends Params {
+  /** Температура генерации */
+  temperature?: number;
+  /** Максимальное количество токенов */
+  maxTokens?: number;
+  /** Использовать контекстный перевод */
+  useContextualTranslation?: boolean;
+  /** Инструкция для модели */
+  instruction?: string;
+  /** Режим ответа */
+  responseMode: 'arrayStream' | 'stringStream';
+}
 
 /**
- * @description Результат операции embedded-ollama
- * Универсальный тип для результатов всех операций
+ * @description Ответ от Ollama через Electron IPC
+ * Структура данных, получаемых от IPC
  */
-export interface EmbeddedOllamaResult<T = any> {
-  /** Успешность операции */
-  success: boolean;
-  /** Результат операции */
-  data?: T;
-  /** Ошибка при выполнении */
+export interface OllamaIpcResponse {
+  /** Текст ответа */
+  response?: string;
+  /** Завершена ли генерация */
+  done?: boolean;
+  /** Ошибка при генерации */
   error?: string;
+  /** Метаданные ответа */
+  metadata?: Record<string, any>;
+}
+
+/**
+ * @description Прогресс установки модели через Electron IPC
+ * Информация о процессе загрузки модели
+ */
+export interface OllamaInstallProgress {
   /** Статус операции */
-  status: EmbeddedOllamaStatus;
+  status: 'downloading' | 'verifying' | 'writing' | 'complete' | 'error';
+  /** Размер загруженных данных */
+  size?: number;
+  /** Общий размер */
+  total?: number;
+  /** Название модели */
+  name?: string;
+  /** Ошибка при установке */
+  error?: string;
 }
 
 /**
- * @description Callback для обработки прогресса генерации
- * Используется для отслеживания процесса генерации текста
+ * @description Конфигурация для Embedded Ollama
+ * Настройки по умолчанию для провайдера
  */
-export type EmbeddedOllamaProgressCallback = (progress: {
-  /** Текущий токен */
-  token?: string;
-  /** Прогресс в процентах */
-  progress?: number;
-  /** Общее количество токенов */
-  totalTokens?: number;
-  /** Время начала */
-  startTime?: string;
-  /** Оценка времени завершения */
-  estimatedTime?: string;
-}) => void;
-
-/**
- * @description Callback для обработки ошибок
- * Используется для централизованной обработки ошибок
- */
-export type EmbeddedOllamaErrorCallback = (
-  error: Error,
-  context?: string
-) => void;
-
-/**
- * @description Интерфейс embedded-ollama провайдера
- * Расширяет базовый ModelUseProvider специфичными для Ollama методами
- */
-export interface EmbeddedOllamaProvider extends ModelUseProvider {
-  /** Инициализация провайдера */
-  initialize?: (config?: EmbeddedOllamaConfig) => Promise<void>;
-  /** Генерация текста через Ollama */
-  generate: (options: EmbeddedOllamaGenerateOptions) => Promise<void>;
-  /** Отмена текущей операции */
-  abort?: () => void;
-  /** Получение списка доступных моделей */
-  listModels?: () => Promise<EmbeddedOllamaResult<any>>;
-  /** Установка модели */
-  installModel?: (modelName: string) => Promise<EmbeddedOllamaResult<void>>;
-  /** Удаление модели */
-  removeModel?: (modelName: string) => Promise<EmbeddedOllamaResult<void>>;
-  /** Проверка статуса Ollama сервера */
-  healthCheck?: () => Promise<EmbeddedOllamaResult<boolean>>;
+export interface EmbeddedOllamaConfig {
+  /** Температура по умолчанию */
+  defaultTemperature: number;
+  /** Максимальное количество токенов по умолчанию */
+  defaultMaxTokens: number;
+  /** Максимальное количество чанков для контекстного перевода */
+  maxChunksPerRequest: number;
+  /** Таймаут для IPC операций */
+  ipcTimeout: number;
 }
+
+/**
+ * @description Результат контекстного перевода
+ * Маппинг индексов на переведенные тексты
+ */
+export type ContextualTranslationResult = Record<number, string>;
+
+/**
+ * @description Callback для обработки ответов Ollama
+ * Функция для обработки streaming ответов через IPC
+ */
+export type OllamaResponseCallback = (response: OllamaIpcResponse) => void;
+
+/**
+ * @description Callback для обработки прогресса установки
+ * Функция для обработки прогресса загрузки моделей
+ */
+export type OllamaProgressCallback = (progress: OllamaInstallProgress) => void;

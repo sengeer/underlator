@@ -61,6 +61,7 @@ const LANGUAGES: PopupSelectorData = {
 const PROVIDERS: PopupSelectorData = {
   'Electron IPC': 'Electron IPC',
   Ollama: 'Ollama',
+  'Embedded Ollama': 'Embedded Ollama',
 };
 
 interface Settings {

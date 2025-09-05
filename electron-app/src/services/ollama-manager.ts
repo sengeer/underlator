@@ -85,7 +85,7 @@ class OllamaManager {
 
       // Запуск сервера с автоматической загрузкой при необходимости
       await this.electronOllama.serve(metadata.version, {
-        serverLog: (message) => console.log('[Ollama Server]', message),
+        serverLog: message => console.log('[Ollama Server]', message),
         downloadLog: (percent, message) =>
           console.log('[Ollama Download]', `${percent}%`, message),
         timeoutSec: 30,

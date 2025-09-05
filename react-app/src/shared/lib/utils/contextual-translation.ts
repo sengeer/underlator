@@ -53,6 +53,10 @@ export const getContextualTranslationConfig = (
     'Electron IPC': {
       enabled: false,
     },
+    'Embedded Ollama': {
+      enabled: true,
+      maxChunksPerRequest: 50,
+    },
   };
 
   return (

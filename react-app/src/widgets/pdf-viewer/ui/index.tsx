@@ -295,7 +295,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         ref={topBarRef}
         className={`pdf-viewer__top-bar${file ? ' pdf-viewer__top-bar_show' : ''}`}>
         <div className='pdf-viewer__btns-container'>
-          {provider === 'Ollama' && (
+          {provider !== 'Electron IPC' && (
             <div className='pdf-viewer__switch-wrapper'>
               <DecorativeTextAndIconButton text={t`translation`} />
               <Switch
@@ -375,7 +375,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
               </IconButton>
             </div>
           )}
-        {provider === 'Ollama' && settings.typeUse === 'instruction' && (
+        {provider !== 'Electron IPC' && settings.typeUse === 'instruction' && (
           <>
             <div className='pdf-viewer__text-wrapper'>
               <input

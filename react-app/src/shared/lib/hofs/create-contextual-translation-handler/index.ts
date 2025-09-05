@@ -79,7 +79,6 @@ const createContextualTranslationHandler = <TApiResponse>(
       console.warn(
         `Contextual translation processing failed: ${finalResult.error}`
       );
-      // Fallback: map original texts or use final response
       return texts.reduce(
         (acc, text, index) => {
           acc[index] = finalResponse || text;
