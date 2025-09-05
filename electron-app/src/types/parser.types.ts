@@ -13,7 +13,7 @@ export interface ParsedModel {
   name: string;
   /** Описание модели */
   description?: string;
-  /** Теги модели */
+  /** Теги модели (включая квантизации) */
   tags: string[];
   /** Размер модели в байтах (приблизительный) */
   size?: number;
@@ -23,6 +23,35 @@ export interface ParsedModel {
   lastUpdated?: string;
   /** Категория модели */
   category?: string;
+  /** Базовое название модели без тега */
+  baseName?: string;
+  /** Тег модели (квантизация) */
+  tag?: string;
+}
+
+/**
+ * @description Интерфейс для квантизированной модели
+ * Отдельная запись для каждой квантизации модели
+ */
+export interface QuantizedModel {
+  /** Полное название модели с тегом */
+  fullName: string;
+  /** Базовое название модели */
+  baseName: string;
+  /** Тег квантизации */
+  tag: string;
+  /** Описание модели */
+  description?: string;
+  /** Размер модели в байтах */
+  size?: number;
+  /** Количество скачиваний */
+  downloads?: number;
+  /** Дата последнего обновления */
+  lastUpdated?: string;
+  /** Категория модели */
+  category?: string;
+  /** Теги модели */
+  tags: string[];
 }
 
 /**
@@ -34,6 +63,8 @@ export interface ParseResult {
   success: boolean;
   /** Извлеченные модели */
   models?: ParsedModel[];
+  /** Квантизированные модели */
+  quantizedModels?: QuantizedModel[];
   /** Ошибка при парсинге */
   error?: string;
 }

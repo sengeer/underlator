@@ -5,7 +5,7 @@
  */
 
 import { fetchWithErrorHandling } from './error-handler';
-import type { ParsedModel, ParseResult } from '../types';
+import type { ParsedModel, ParseResult, QuantizedModel } from '../types';
 
 /**
  * @description Класс для парсинга HTML страниц Ollama Library
@@ -16,10 +16,14 @@ export class OllamaHtmlParser {
   private readonly libraryUrl = `${this.baseUrl}/library`;
   private readonly tagsUrl = `${this.baseUrl}/library`;
 
+  // Кэш для тегов моделей
+  private tagsCache = new Map<string, string[]>();
+  private cacheTimeout = 5 * 60 * 1000; // 5 минут
+  private cacheTimestamps = new Map<string, number>();
+
   /**
-   * @description Получает список всех доступных моделей
-   * Парсит главную страницу библиотеки Ollama
-   * @returns Promise со списком моделей
+   * @description Получает список всех доступных моделей со всеми квантизациями
+   * @returns Promise со списком моделей включая все квантизации
    */
   async getAvailableModels(): Promise<ParseResult> {
     try {
@@ -35,13 +39,105 @@ export class OllamaHtmlParser {
       });
 
       const html = await response.text();
-      const models = this.parseModelsFromHtml(html);
+      const baseModels = this.parseModelsFromHtml(html);
 
-      console.log(`Найдено ${models.length} моделей в библиотеке Ollama`);
+      console.log(
+        `Найдено ${baseModels.length} базовых моделей в библиотеке Ollama`
+      );
+
+      // Ограничивает количество моделей для парсинга тегов (первые 20 самых популярных)
+      const modelsToProcess = baseModels
+        .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
+        .slice(0, 20);
+
+      console.log(
+        `Обрабатываем теги для ${modelsToProcess.length} самых популярных моделей`
+      );
+
+      // Параллельно получает теги для всех моделей (сложность O(1))
+      const tagPromises = modelsToProcess.map(async baseModel => {
+        try {
+          const tags = await this.getModelTags(baseModel.name);
+          return { baseModel, tags, success: true };
+        } catch (error) {
+          console.warn(
+            `Не удалось получить теги для модели ${baseModel.name}:`,
+            error
+          );
+          return { baseModel, tags: [], success: false };
+        }
+      });
+
+      const tagResults = await Promise.all(tagPromises);
+
+      // Создает квантизированные модели
+      const quantizedModels: QuantizedModel[] = [];
+
+      for (const { baseModel, tags, success } of tagResults) {
+        if (success && tags.length > 0) {
+          // Создает отдельную запись для каждой квантизации
+          for (const tag of tags) {
+            // Исправляет формат названия - убирает дублирование baseName
+            const fullName = tag.includes(':')
+              ? tag
+              : `${baseModel.name}:${tag}`;
+
+            quantizedModels.push({
+              fullName,
+              baseName: baseModel.name,
+              tag,
+              description: baseModel.description,
+              size: this.estimateQuantizedSize(baseModel.size, tag),
+              downloads: baseModel.downloads,
+              lastUpdated: baseModel.lastUpdated,
+              category: baseModel.category,
+              tags: [...baseModel.tags, tag],
+            });
+          }
+        } else {
+          // Добавляет базовую модель без тегов
+          quantizedModels.push({
+            fullName: baseModel.name,
+            baseName: baseModel.name,
+            tag: 'latest',
+            description: baseModel.description,
+            size: baseModel.size,
+            downloads: baseModel.downloads,
+            lastUpdated: baseModel.lastUpdated,
+            category: baseModel.category,
+            tags: [...baseModel.tags, 'latest'],
+          });
+        }
+      }
+
+      // Добавляет остальные модели без тегов (для полноты каталога)
+      const processedModelNames = new Set(modelsToProcess.map(m => m.name));
+      const remainingModels = baseModels.filter(
+        m => !processedModelNames.has(m.name)
+      );
+
+      for (const baseModel of remainingModels) {
+        quantizedModels.push({
+          fullName: baseModel.name,
+          baseName: baseModel.name,
+          tag: 'latest',
+          description: baseModel.description,
+          size: baseModel.size,
+          downloads: baseModel.downloads,
+          lastUpdated: baseModel.lastUpdated,
+          category: baseModel.category,
+          tags: [...baseModel.tags, 'latest'],
+        });
+      }
+
+      console.log(
+        `Создано ${quantizedModels.length} записей моделей с квантизациями`
+      );
 
       return {
         success: true,
-        models,
+        models: baseModels,
+        quantizedModels,
       };
     } catch (error) {
       console.error('Ошибка парсинга списка моделей:', error);
@@ -53,12 +149,18 @@ export class OllamaHtmlParser {
   }
 
   /**
-   * @description Получает теги для конкретной модели
-   * Парсит страницу тегов модели
+   * @description Получает теги для конкретной модели с кэшированием
+   * Использует кэш для избежания повторных HTTP запросов
    * @param modelName - Название модели
    * @returns Promise со списком тегов
    */
   async getModelTags(modelName: string): Promise<string[]> {
+    // Проверяет кэш
+    const cachedTags = this.getCachedTags(modelName);
+    if (cachedTags) {
+      return cachedTags;
+    }
+
     try {
       const url = `${this.tagsUrl}/${modelName}/tags`;
       const response = await fetchWithErrorHandling(url, {
@@ -71,11 +173,40 @@ export class OllamaHtmlParser {
       });
 
       const html = await response.text();
-      return this.parseTagsFromHtml(html, modelName);
+      const tags = this.parseTagsFromHtml(html, modelName);
+
+      // Сохраняет в кэш
+      this.setCachedTags(modelName, tags);
+
+      return tags;
     } catch (error) {
       console.warn(`Не удалось получить теги для модели ${modelName}:`, error);
       return [];
     }
+  }
+
+  /**
+   * @description Получает теги из кэша если они еще актуальны
+   * @param modelName - Название модели
+   * @returns Кэшированные теги или null
+   */
+  private getCachedTags(modelName: string): string[] | null {
+    const timestamp = this.cacheTimestamps.get(modelName);
+    if (!timestamp || Date.now() - timestamp > this.cacheTimeout) {
+      return null;
+    }
+
+    return this.tagsCache.get(modelName) || null;
+  }
+
+  /**
+   * @description Сохраняет теги в кэш
+   * @param modelName - Название модели
+   * @param tags - Список тегов
+   */
+  private setCachedTags(modelName: string, tags: string[]): void {
+    this.tagsCache.set(modelName, tags);
+    this.cacheTimestamps.set(modelName, Date.now());
   }
 
   /**
@@ -94,7 +225,7 @@ export class OllamaHtmlParser {
     while ((match = modelLinkRegex.exec(html)) !== null) {
       const modelName = match[1];
 
-      // Проверяем, что modelName существует и не является служебной ссылкой
+      // Проверяет, что modelName существует и не является служебной ссылкой
       if (!modelName || modelName.includes('/') || modelName === '') {
         continue;
       }
@@ -113,7 +244,7 @@ export class OllamaHtmlParser {
       });
     }
 
-    // Убираем дубликаты
+    // Убирает дубликаты
     const uniqueModels = models.filter(
       (model, index, self) =>
         index === self.findIndex(m => m.name === model.name)
@@ -124,7 +255,7 @@ export class OllamaHtmlParser {
 
   /**
    * @description Парсит HTML страницы тегов модели
-   * Извлекает все доступные теги для модели
+   * Оптимизированная версия для извлечения всех доступных тегов
    * @param html - HTML содержимое страницы тегов
    * @param modelName - Название модели
    * @returns Список тегов
@@ -132,25 +263,47 @@ export class OllamaHtmlParser {
   private parseTagsFromHtml(html: string, modelName: string): string[] {
     const tags: string[] = [];
 
-    // Регулярное выражение для поиска тегов модели
+    // Ищет все теги модели в формате "model:tag"
     const tagRegex = new RegExp(
-      `${modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:[^"\\s<>]+`,
+      `\\b${modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:([^"\\s<>,\\]]+)`,
       'g'
     );
+
     let match;
-
     while ((match = tagRegex.exec(html)) !== null) {
-      const tag = match[0];
+      const tag = match[1];
 
-      // Очищаем тег от HTML тегов
-      const cleanTag = tag.replace(/<[^>]*>/g, '');
+      // Очищает тег от HTML тегов и лишних символов
+      const cleanTag = tag?.replace(/<[^>]*>/g, '').trim();
 
-      if (cleanTag && !tags.includes(cleanTag)) {
+      // Проверяет что тег валидный (не пустой, не содержит служебные символы)
+      if (
+        cleanTag &&
+        cleanTag.length > 0 &&
+        cleanTag.length < 50 && // разумная длина тега
+        !cleanTag.includes('http') && // не URL
+        !cleanTag.includes('www') && // не URL
+        !tags.includes(cleanTag)
+      ) {
         tags.push(cleanTag);
       }
     }
 
-    return tags;
+    // Если не найдены теги в формате "model:tag", ищет альтернативные форматы
+    if (tags.length === 0) {
+      // Ищет теги в других форматах
+      const alternativeRegex = /<[^>]*>([^<]*:\d+(?:\.\d+)?[^<]*)</g;
+      let altMatch;
+      while ((altMatch = alternativeRegex.exec(html)) !== null) {
+        const tag = altMatch[1]?.trim();
+        if (tag && !tags.includes(tag)) {
+          tags.push(tag);
+        }
+      }
+    }
+
+    // Убирает дубликаты и сортирует
+    return [...new Set(tags)].sort();
   }
 
   /**
@@ -170,7 +323,7 @@ export class OllamaHtmlParser {
     lastUpdated?: string;
     category?: string;
   } {
-    // Ищем блок с информацией о модели
+    // Ищет блок с информацией о модели
     const modelBlockRegex = new RegExp(
       `href="/library/${modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>([\\s\\S]*?)</a>`,
       'i'
@@ -183,11 +336,11 @@ export class OllamaHtmlParser {
 
     const modelBlock = match[1];
 
-    // Извлекаем описание
+    // Извлекает описание
     const descriptionMatch = modelBlock.match(/>([^<]+)</);
     const description = descriptionMatch?.[1]?.trim();
 
-    // Извлекаем размер (ищем паттерны типа "2.5B", "7B", "70B")
+    // Извлекает размер (ищет паттерны типа "2.5B", "7B", "70B")
     const sizeMatch = modelBlock.match(/(\d+(?:\.\d+)?)([BMK])/i);
     let size: number | undefined;
     if (sizeMatch && sizeMatch[1] && sizeMatch[2]) {
@@ -206,7 +359,7 @@ export class OllamaHtmlParser {
       }
     }
 
-    // Извлекаем количество скачиваний
+    // Извлекает количество загрузок
     const downloadsMatch = modelBlock.match(/(\d+(?:\.\d+)?)([MK]?)\s*Pulls/i);
     let downloads: number | undefined;
     if (downloadsMatch && downloadsMatch[1]) {
@@ -225,7 +378,7 @@ export class OllamaHtmlParser {
       }
     }
 
-    // Определяем категорию по тегам
+    // Определяет категорию по тегам
     let category: string | undefined;
     if (modelBlock.includes('vision')) category = 'vision';
     else if (modelBlock.includes('embedding')) category = 'embedding';
@@ -242,6 +395,45 @@ export class OllamaHtmlParser {
   }
 
   /**
+   * @description Оценивает размер квантизированной модели
+   * Рассчитывает приблизительный размер на основе уровня квантизации
+   * @param baseSize - Базовый размер модели
+   * @param tag - Тег квантизации
+   * @returns Оцененный размер квантизированной модели
+   */
+  private estimateQuantizedSize(
+    baseSize?: number,
+    tag?: string
+  ): number | undefined {
+    if (!baseSize || !tag) {
+      return baseSize;
+    }
+
+    // Извлекаем уровень квантизации из тега
+    const quantMatch = tag.match(/q(\d+)_(\d+)/i);
+    if (!quantMatch || !quantMatch[1]) {
+      return baseSize;
+    }
+
+    const quantLevel = parseInt(quantMatch[1], 10);
+
+    // Коэффициенты сжатия для разных уровней квантизации
+    const compressionRatios: { [key: number]: number } = {
+      1: 0.5, // Q1 - очень высокая компрессия
+      2: 0.6, // Q2
+      3: 0.7, // Q3
+      4: 0.8, // Q4 - популярная квантизация
+      5: 0.85, // Q5
+      6: 0.9, // Q6
+      7: 0.95, // Q7
+      8: 1.0, // Q8 - минимальная компрессия
+    };
+
+    const compressionRatio = compressionRatios[quantLevel] || 0.8;
+    return Math.round(baseSize * compressionRatio);
+  }
+
+  /**
    * @description Получает полную информацию о модели с тегами
    * Объединяет базовую информацию с тегами
    * @param modelName - Название модели
@@ -249,7 +441,7 @@ export class OllamaHtmlParser {
    */
   async getFullModelInfo(modelName: string): Promise<ParsedModel | null> {
     try {
-      // Сначала получаем базовую информацию
+      // Получает базовую информацию
       const modelsResult = await this.getAvailableModels();
       if (!modelsResult.success || !modelsResult.models) {
         return null;
@@ -260,7 +452,7 @@ export class OllamaHtmlParser {
         return null;
       }
 
-      // Получаем теги
+      // Получает теги
       const tags = await this.getModelTags(modelName);
 
       return {

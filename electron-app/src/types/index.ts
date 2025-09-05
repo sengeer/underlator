@@ -33,7 +33,7 @@ export type {
 } from './models.types';
 
 // Экспорт типов парсера
-export type { ParsedModel, ParseResult } from './parser.types';
+export type { ParsedModel, ParseResult, QuantizedModel } from './parser.types';
 
 // Экспорт типов каталога моделей
 export type {

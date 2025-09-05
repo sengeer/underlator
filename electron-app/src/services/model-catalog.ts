@@ -292,35 +292,72 @@ export class ModelCatalogService {
 
   /**
    * @description Получает модели из Ollama Library через HTML парсинг
+   * Использует квантизированные модели для получения полного каталога
    * @returns Promise со списком библиотечных моделей
    */
   private async getLibraryModels(): Promise<OllamaModelInfo[]> {
     try {
       const parseResult = await this.htmlParser.getAvailableModels();
 
-      if (!parseResult.success || !parseResult.models) {
+      if (!parseResult.success) {
         console.warn(
           'Не удалось получить модели из Ollama Library, используем статический список'
         );
         return this.getStaticModels();
       }
 
-      // Преобразует парсированные модели в формат OllamaModelInfo
-      return parseResult.models.map((model, index) => ({
-        id: `library-${model.name}-${index}`,
-        name: model.name,
-        displayName: model.name,
-        description: model.description || `Модель ${model.name} из Ollama`,
-        version: 'latest',
-        size: model.size || 0,
-        createdAt: new Date().toISOString(),
-        modifiedAt: new Date().toISOString(),
-        type: 'ollama' as const,
-        format: 'gguf',
-        parameterSize: this.extractParameterSize(model.name),
-        quantizationLevel: this.extractQuantizationLevel(model.name),
-        tags: model.tags || ['library'],
-      }));
+      // Используем квантизированные модели если они доступны
+      if (
+        parseResult.quantizedModels &&
+        parseResult.quantizedModels.length > 0
+      ) {
+        console.log(
+          `Используем ${parseResult.quantizedModels.length} квантизированных моделей`
+        );
+
+        return parseResult.quantizedModels.map((model, index) => ({
+          id: `library-${model.fullName}-${index}`,
+          name: model.fullName,
+          displayName: model.fullName,
+          description:
+            model.description || `Модель ${model.fullName} из Ollama`,
+          version: model.tag,
+          size: model.size || 0,
+          createdAt: new Date().toISOString(),
+          modifiedAt: new Date().toISOString(),
+          type: 'ollama' as const,
+          format: 'gguf',
+          parameterSize: this.extractParameterSize(model.baseName),
+          quantizationLevel: this.extractQuantizationLevel(model.tag),
+          tags: model.tags || ['library'],
+        }));
+      }
+
+      // Fallback на базовые модели если квантизированные недоступны
+      if (parseResult.models && parseResult.models.length > 0) {
+        console.log(`Используем ${parseResult.models.length} базовых моделей`);
+
+        return parseResult.models.map((model, index) => ({
+          id: `library-${model.name}-${index}`,
+          name: model.name,
+          displayName: model.name,
+          description: model.description || `Модель ${model.name} из Ollama`,
+          version: 'latest',
+          size: model.size || 0,
+          createdAt: new Date().toISOString(),
+          modifiedAt: new Date().toISOString(),
+          type: 'ollama' as const,
+          format: 'gguf',
+          parameterSize: this.extractParameterSize(model.name),
+          quantizationLevel: this.extractQuantizationLevel(model.name),
+          tags: model.tags || ['library'],
+        }));
+      }
+
+      console.warn(
+        'Нет доступных моделей из Ollama Library, используем статический список'
+      );
+      return this.getStaticModels();
     } catch (error) {
       console.warn(
         'Ошибка получения моделей из Ollama Library, используем статический список:',
@@ -392,16 +429,30 @@ export class ModelCatalogService {
   }
 
   /**
-   * @description Извлекает уровень квантизации из названия модели
-   * @param modelName - Название модели
+   * @description Извлекает уровень квантизации из названия модели или тега
+   * @param modelNameOrTag - Название модели или тег квантизации
    * @returns Уровень квантизации
    */
-  private extractQuantizationLevel(modelName: string): string {
-    // Извлечение квантизации из названия модели (например, q4_0, q8_0)
-    const quantMatch = modelName.match(/q(\d+)_(\d+)/i);
+  private extractQuantizationLevel(modelNameOrTag: string): string {
+    // Извлечение квантизации из названия модели или тега (например, q4_0, q8_0)
+    const quantMatch = modelNameOrTag.match(/q(\d+)_(\d+)/i);
     if (quantMatch) {
       return `Q${quantMatch[1]}_${quantMatch[2]}`;
     }
+
+    // Проверяем другие форматы квантизации
+    if (modelNameOrTag.includes('latest')) {
+      return 'Latest';
+    }
+
+    if (modelNameOrTag.includes('fp16')) {
+      return 'FP16';
+    }
+
+    if (modelNameOrTag.includes('fp32')) {
+      return 'FP32';
+    }
+
     return 'Unknown';
   }
 
