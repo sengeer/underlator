@@ -47,27 +47,6 @@ export interface OllamaModelInfo extends BaseModel {
 }
 
 /**
- * @description Модель HuggingFace
- * Специфичная информация для моделей HuggingFace
- */
-export interface HuggingFaceModelInfo extends BaseModel {
-  /** Тип модели */
-  type: 'huggingface';
-  /** Репозиторий на HuggingFace */
-  repository: string;
-  /** Список файлов модели */
-  files: string[];
-  /** Задача модели */
-  task: string;
-}
-
-/**
- * @description Универсальный тип модели
- * Объединяет все типы моделей
- */
-export type ModelInfo = OllamaModelInfo | HuggingFaceModelInfo;
-
-/**
  * @description Статус модели в системе
  * Отслеживает состояние модели
  */
@@ -103,29 +82,12 @@ export interface ModelDownloadProgress {
 }
 
 /**
- * @description Информация о модели с статусом
- * Объединяет информацию о модели и её статус
- */
-export interface ModelWithStatus {
-  /** Информация о модели */
-  model: ModelInfo;
-  /** Статус модели */
-  status: ModelStatus;
-  /** Прогресс загрузки */
-  progress?: ModelDownloadProgress;
-  /** Ошибка при загрузке */
-  error?: string;
-}
-
-/**
  * @description Каталог моделей
  * Список доступных моделей
  */
 export interface ModelCatalog {
   /** Модели Ollama */
   ollama: OllamaModelInfo[];
-  /** Модели HuggingFace */
-  huggingface: HuggingFaceModelInfo[];
   /** Общее количество моделей */
   totalCount: number;
   /** Время последнего обновления */
@@ -137,8 +99,6 @@ export interface ModelCatalog {
  * Параметры фильтрации каталога
  */
 export interface ModelFilters {
-  /** Тип модели */
-  type?: 'ollama' | 'huggingface';
   /** Поисковый запрос */
   search?: string;
   /** Минимальный размер */
@@ -164,37 +124,4 @@ export interface ModelOperationResult<T = any> {
   error?: string;
   /** Время выполнения */
   duration?: number;
-}
-
-/**
- * @description Параметры установки модели
- * Настройки для установки модели
- */
-export interface ModelInstallParams {
-  /** Название модели */
-  name: string;
-  /** Источник модели */
-  source: 'ollama' | 'huggingface';
-  /** Дополнительные параметры */
-  options?: {
-    /** Принудительная переустановка */
-    force?: boolean;
-    /** Параллельная загрузка */
-    parallel?: boolean;
-    /** Callback для прогресса */
-    onProgress?: (progress: ModelDownloadProgress) => void;
-  };
-}
-
-/**
- * @description Параметры удаления модели
- * Настройки для удаления модели
- */
-export interface ModelRemoveParams {
-  /** Название модели */
-  name: string;
-  /** Удалить файлы */
-  removeFiles?: boolean;
-  /** Удалить метаданные */
-  removeMetadata?: boolean;
 }

@@ -4,7 +4,7 @@
  * Предоставляет функции для валидации, логирования и форматирования IPC операций
  */
 
-import type { OllamaOperationResult } from '../types/ollama.types';
+import type { OllamaOperationResult } from '../types';
 
 /**
  * @description Интерфейс для IPC сообщений
@@ -271,57 +271,4 @@ export class IpcHandler {
       }
     };
   }
-}
-
-/**
- * @description Утилита для создания уникального ID сообщения
- * @returns Уникальный ID
- */
-export function generateMessageId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
-
-/**
- * @description Утилита для проверки типа IPC сообщения
- * @param message - Объект сообщения
- * @param expectedType - Ожидаемый тип
- * @returns true если тип соответствует ожидаемому
- */
-export function isMessageType(message: any, expectedType: string): boolean {
-  return message && message.type === expectedType;
-}
-
-/**
- * @description Утилита для извлечения параметров из IPC запроса
- * @param request - Объект запроса
- * @returns Параметры запроса или пустой объект
- */
-export function extractRequestParams(request: any): any {
-  return request?.params || {};
-}
-
-/**
- * @description Утилита для создания стандартного IPC обработчика
- * @param operation - Название операции
- * @param handler - Функция обработчика
- * @returns Готовый IPC обработчик
- */
-export function createStandardIpcHandler<T, R>(
-  operation: string,
-  handler: (params: T) => Promise<R>
-) {
-  return IpcHandler.createHandlerWrapper(handler, operation);
-}
-
-/**
- * @description Утилита для создания streaming IPC обработчика
- * @param operation - Название операции
- * @param handler - Функция обработчика с callback
- * @returns Готовый streaming IPC обработчик
- */
-export function createStreamingIpcHandler<T>(
-  operation: string,
-  handler: (params: T, onProgress: (progress: any) => void) => Promise<any>
-) {
-  return IpcHandler.createStreamingHandlerWrapper(handler, operation);
 }

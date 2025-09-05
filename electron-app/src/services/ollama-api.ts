@@ -28,7 +28,7 @@ import type {
   OllamaStreamCallback,
   OllamaProgressCallback,
   OllamaOperationResult,
-} from '../types/ollama.types';
+} from '../types';
 
 /**
  * @class OllamaApi
@@ -379,20 +379,3 @@ export class OllamaApi {
 export function createOllamaApi(config?: Partial<OllamaApiConfig>): OllamaApi {
   return new OllamaApi(config);
 }
-
-/**
- * @description Экспорт типов для использования в других модулях
- */
-export type {
-  OllamaApiConfig,
-  OllamaGenerateRequest,
-  OllamaGenerateResponse,
-  OllamaModelsResponse,
-  OllamaPullRequest,
-  OllamaPullProgress,
-  OllamaDeleteRequest,
-  OllamaDeleteResponse,
-  OllamaStreamCallback,
-  OllamaProgressCallback,
-  OllamaOperationResult,
-};

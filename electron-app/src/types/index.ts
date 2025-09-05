@@ -4,6 +4,9 @@
  * Централизованный экспорт для удобства импорта в других модулях
  */
 
+// Экспорт типов preload
+export type { ElectronAPI } from './preload.types';
+
 // Экспорт типов Ollama
 export type {
   OllamaGenerateRequest,
@@ -16,46 +19,28 @@ export type {
   OllamaApiConfig,
   OllamaStreamCallback,
   OllamaProgressCallback,
-  OllamaErrorCallback,
-  OllamaOperationStatus,
   OllamaOperationResult,
 } from './ollama.types';
 
 // Экспорт типов моделей
 export type {
-  BaseModel,
   OllamaModelInfo,
-  HuggingFaceModelInfo,
-  ModelInfo,
   ModelStatus,
   ModelDownloadProgress,
-  ModelWithStatus,
   ModelCatalog,
   ModelFilters,
   ModelOperationResult,
-  ModelInstallParams,
-  ModelRemoveParams,
 } from './models.types';
 
-// Экспорт типов генерации
+// Экспорт типов парсера
+export type { ParsedModel, ParseResult } from './parser.types';
+
+// Экспорт типов каталога моделей
 export type {
-  GenerationParams,
-  ResponseMode,
-  UsageType,
-  TranslationDirection,
-  ContextualTranslationParams,
-  FullGenerationParams,
-  ModelResponse,
-  GenerationProgress,
-  GenerationStatus,
-  GenerationResult,
-  ResponseCallback,
-  ProgressCallback,
-  ErrorCallback,
-  GenerationConfig,
-  GenerationContext,
-  FullGenerationContext,
-} from './generation.types';
+  CatalogFilters,
+  ModelCatalogConfig,
+  CachedCatalog,
+} from './catalog.types';
 
 // Экспорт типов Electron
 export type {
@@ -63,10 +48,8 @@ export type {
   ModelDownloadProgress as ElectronModelDownloadProgress,
   ModelAvailability,
   ModelOperationResult as ElectronModelOperationResult,
-  ModelConfig,
   AvailableModels,
   MenuTranslations,
   TransformersArgs,
   WorkerStatus,
-  TransformersProgress,
 } from './electron';

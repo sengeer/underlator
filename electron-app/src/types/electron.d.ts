@@ -24,6 +24,11 @@ declare global {
         list: () => Promise<any>;
         onInstallProgress: (callback: (progress: any) => void) => () => void;
       };
+      catalog: {
+        get: (params?: { forceRefresh?: boolean }) => Promise<any>;
+        search: (filters: any) => Promise<any>;
+        getModelInfo: (params: { modelName: string }) => Promise<any>;
+      };
     };
   }
 }
@@ -69,20 +74,10 @@ export interface ModelOperationResult {
 }
 
 /**
- * Типы для конфигурации модели
- */
-export interface ModelConfig {
-  name: string;
-  displayName: string;
-  huggingfaceRepo: string;
-  files: string[];
-}
-
-/**
  * Типы для доступных моделей
  */
 export interface AvailableModels {
-  [modelName: string]: ModelConfig;
+  [modelName: string]: any;
 }
 
 /**
@@ -114,12 +109,4 @@ export interface WorkerStatus {
   status: 'progress' | 'message' | 'complete' | 'error';
   data?: any;
   error?: string;
-}
-
-/**
- * Типы для прогресса трансформеров
- */
-export interface TransformersProgress {
-  file: string;
-  progress: number;
 }

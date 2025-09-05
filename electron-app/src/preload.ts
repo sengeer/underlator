@@ -5,51 +5,17 @@ const { contextBridge, ipcRenderer } = require('electron');
 import type {
   IpcMessage,
   ModelDownloadProgress,
-  ModelAvailability,
-  ModelOperationResult,
-  AvailableModels,
   OllamaGenerateRequest,
   OllamaGenerateResponse,
   OllamaPullRequest,
   OllamaPullProgress,
   OllamaDeleteRequest,
+  CatalogFilters,
+  ElectronAPI,
 } from './types';
 
 /**
- * Интерфейс для API Electron, доступного в renderer процессе
- * Обеспечивает безопасное взаимодействие между main и renderer процессами
- */
-interface ElectronAPI {
-  run: (text: { translate: string; text: string }) => Promise<any>;
-  onStatus: (callback: (message: IpcMessage) => void) => () => void;
-  updateTranslations: (translations: any) => void;
-  ollama: {
-    generate: (request: OllamaGenerateRequest) => Promise<string>;
-    onGenerateProgress: (
-      callback: (progress: OllamaGenerateResponse) => void
-    ) => () => void;
-  };
-  models: {
-    checkAvailability: () => Promise<ModelAvailability>;
-    download: (modelName: string) => Promise<ModelOperationResult>;
-    getAvailable: () => Promise<AvailableModels>;
-    delete: (modelName: string) => Promise<ModelOperationResult>;
-    onDownloadProgress: (
-      callback: (progress: ModelDownloadProgress) => void
-    ) => () => void;
-    install: (request: OllamaPullRequest) => Promise<{ success: boolean }>;
-    remove: (request: OllamaDeleteRequest) => Promise<{ success: boolean }>;
-    list: () => Promise<any>;
-    onInstallProgress: (
-      callback: (progress: OllamaPullProgress) => void
-    ) => () => void;
-  };
-}
-
-/**
  * Здесь используется API `contextBridge` для экспозиции кастомного API в renderer процесс
- * Этот API позволяет renderer процессу вызывать событие `transformers:run` в main процессе
- * И также отправлять статус `transformers:status` обратно в react-app
  */
 contextBridge.exposeInMainWorld('electron', {
   run: (text: { translate: string; text: string }) =>
@@ -130,7 +96,16 @@ contextBridge.exposeInMainWorld('electron', {
       };
     },
   },
-} as ElectronAPI);
 
-// Экспорт типов для использования в других модулях
-export type { ElectronAPI };
+  // API для каталога моделей
+  catalog: {
+    get: (params?: { forceRefresh?: boolean }) =>
+      ipcRenderer.invoke('catalog:get', params || {}),
+
+    search: (filters: CatalogFilters) =>
+      ipcRenderer.invoke('catalog:search', filters),
+
+    getModelInfo: (params: { modelName: string }) =>
+      ipcRenderer.invoke('catalog:get-model-info', params),
+  },
+} as ElectronAPI);

@@ -10,6 +10,12 @@ export { OllamaApi, createOllamaApi } from './ollama-api';
 // Экспорт Ollama Manager
 export { ollamaManager as OllamaManager } from './ollama-manager';
 
+// Экспорт Model Catalog Service
+export {
+  ModelCatalogService,
+  createModelCatalogService,
+} from './model-catalog';
+
 // Экспорт типов
 export type {
   OllamaApiConfig,
@@ -25,7 +31,10 @@ export type {
   OllamaOperationResult,
 } from '../types/ollama.types';
 
-// Экспорт констант
+// Экспорт типов каталога моделей
+export type { CatalogFilters } from '../types/catalog.types';
+
+// Экспорт констант Ollama
 export {
   OLLAMA_DEFAULT_CONFIG,
   OLLAMA_ENDPOINTS,
@@ -47,14 +56,7 @@ export {
   processStreamResponse,
 } from '../utils/error-handler';
 
-export {
-  IpcHandler,
-  generateMessageId,
-  isMessageType,
-  extractRequestParams,
-  createStandardIpcHandler,
-  createStreamingIpcHandler,
-} from '../utils/ipc-handlers';
+export { IpcHandler } from '../utils/ipc-handlers';
 
 export type {
   IpcMessage,

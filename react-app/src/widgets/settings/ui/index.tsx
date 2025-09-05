@@ -44,8 +44,12 @@ import {
   testDownloadModel,
   testGenerateText,
   testRemoveModel,
+  testGetCatalog,
+  testGetCatalogForceRefresh,
+  testSearchModels,
+  testGetModelInfo,
   runFullTest,
-} from '../tests/ipc-tester';
+} from '../tests';
 
 const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE;
 
@@ -171,6 +175,30 @@ function Settings({ isOpened }: Settings) {
                 📋 List Models
               </TextButton>
               <TextButton
+                onClick={testGetCatalog}
+                className='settings__button'
+                style={{ marginBottom: '0.5rem' }}>
+                📚 Get Catalog
+              </TextButton>
+              <TextButton
+                onClick={testGetCatalogForceRefresh}
+                className='settings__button'
+                style={{ marginBottom: '0.5rem' }}>
+                🔄 Refresh Catalog
+              </TextButton>
+              <TextButton
+                onClick={testSearchModels}
+                className='settings__button'
+                style={{ marginBottom: '0.5rem' }}>
+                🔍 Search Models
+              </TextButton>
+              <TextButton
+                onClick={testGetModelInfo}
+                className='settings__button'
+                style={{ marginBottom: '0.5rem' }}>
+                ℹ️ Get Model Info
+              </TextButton>
+              <TextButton
                 onClick={testDownloadModel}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
@@ -194,7 +222,8 @@ function Settings({ isOpened }: Settings) {
             </div>
             <p className='settings__models-description'>
               <Trans>
-                Test buttons for new Ollama IPC API. Check console for results.
+                Test buttons for Ollama IPC API and Model Catalog. Check console
+                for results.
               </Trans>
             </p>
           </div>

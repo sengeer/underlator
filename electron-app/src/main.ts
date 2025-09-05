@@ -2,9 +2,12 @@ const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
 const { Worker } = require('worker_threads');
 const ModelDownloader = require('./services/model-downloader');
-import { ollamaManager } from './services/ollama-manager';
-import { OllamaApi } from './services/ollama-api';
-import { IpcHandler } from './utils/ipc-handlers';
+import {
+  OllamaManager,
+  OllamaApi,
+  ModelCatalogService,
+  IpcHandler,
+} from './services';
 import type {
   MenuTranslations,
   TransformersArgs,
@@ -15,6 +18,9 @@ import type {
   OllamaGenerateRequest,
   OllamaPullRequest,
   OllamaDeleteRequest,
+  ModelCatalog,
+  OllamaModelInfo,
+  CatalogFilters,
 } from './types';
 
 if (require('electron-squirrel-startup')) {
@@ -32,6 +38,7 @@ let worker: typeof Worker | null = null;
 let mainWindow: typeof BrowserWindow | null = null;
 let isHandlerRegistered: boolean = false;
 let ollamaApi: OllamaApi | null = null;
+let modelCatalogService: ModelCatalogService | null = null;
 const isMac: boolean = process.platform === 'darwin';
 const isWindows: boolean = process.platform === 'win32';
 
@@ -46,10 +53,10 @@ async function initializeOllama(): Promise<void> {
     console.log('Инициализация Ollama...');
 
     // Инициализирует OllamaManager
-    await ollamaManager.initialize();
+    await OllamaManager.initialize();
 
     // Запускает Ollama сервер
-    const isStarted = await ollamaManager.startOllama();
+    const isStarted = await OllamaManager.startOllama();
 
     if (isStarted) {
       console.log('Ollama сервер успешно запущен');
@@ -59,6 +66,9 @@ async function initializeOllama(): Promise<void> {
 
     // Создает API клиент для взаимодействия с Ollama
     ollamaApi = new OllamaApi();
+
+    // Создает сервис каталога моделей
+    modelCatalogService = new ModelCatalogService();
 
     // Проверяет доступность сервера
     const isHealthy = await ollamaApi.healthCheck();
@@ -180,6 +190,11 @@ function createWindow(): void {
     ipcMain.removeHandler('models:remove');
     ipcMain.removeHandler('models:list');
 
+    // Удаляет обработчики каталога моделей
+    ipcMain.removeHandler('catalog:get');
+    ipcMain.removeHandler('catalog:search');
+    ipcMain.removeHandler('catalog:get-model-info');
+
     isHandlerRegistered = false;
 
     if (worker) {
@@ -291,6 +306,9 @@ function createWindow(): void {
 
   // Создание IPC handlers для Ollama API
   setupOllamaIpcHandlers();
+
+  // Создание IPC handlers для каталога моделей
+  setupCatalogIpcHandlers();
 }
 
 /**
@@ -405,6 +423,101 @@ function setupOllamaIpcHandlers(): void {
 }
 
 /**
+ * Настраивает IPC обработчики для работы с каталогом моделей
+ * Создает обработчики для получения каталога, поиска и информации о моделях
+ * Использует централизованные утилиты для валидации, логирования и обработки ошибок
+ */
+function setupCatalogIpcHandlers(): void {
+  if (!modelCatalogService) {
+    console.error('ModelCatalogService не инициализирован');
+    return;
+  }
+
+  /**
+   * Обработчик для получения полного каталога моделей
+   * Поддерживает принудительное обновление кэша
+   * Использует wrapper для автоматического логирования и обработки ошибок
+   */
+  ipcMain.handle(
+    'catalog:get',
+    IpcHandler.createHandlerWrapper(
+      async (
+        params: { forceRefresh?: boolean } = {}
+      ): Promise<ModelCatalog> => {
+        const result = await modelCatalogService!.getAvailableModels(
+          params.forceRefresh || false
+        );
+
+        if (!result.success || !result.data) {
+          throw new Error(result.error || 'Failed to get catalog');
+        }
+
+        return result.data;
+      },
+      'catalog:get'
+    )
+  );
+
+  /**
+   * Обработчик для поиска моделей по фильтрам
+   * Поддерживает различные параметры фильтрации и поиска
+   * Использует wrapper для автоматического логирования и обработки ошибок
+   */
+  ipcMain.handle(
+    'catalog:search',
+    IpcHandler.createHandlerWrapper(
+      async (filters: CatalogFilters): Promise<ModelCatalog> => {
+        // Валидация входящих фильтров
+        const validation = IpcHandler.validateRequest(filters, []);
+        if (!validation.valid) {
+          throw new Error(validation.error);
+        }
+
+        const result = await modelCatalogService!.searchModels(filters);
+
+        if (!result.success || !result.data) {
+          throw new Error(result.error || 'Failed to search models');
+        }
+
+        return result.data;
+      },
+      'catalog:search'
+    )
+  );
+
+  /**
+   * Обработчик для получения информации о конкретной модели
+   * Возвращает детальную информацию о модели из каталога
+   * Использует wrapper для автоматического логирования и обработки ошибок
+   */
+  ipcMain.handle(
+    'catalog:get-model-info',
+    IpcHandler.createHandlerWrapper(
+      async (params: {
+        modelName: string;
+      }): Promise<OllamaModelInfo | null> => {
+        // Валидация входящего запроса
+        const validation = IpcHandler.validateRequest(params, ['modelName']);
+        if (!validation.valid) {
+          throw new Error(validation.error);
+        }
+
+        const result = await modelCatalogService!.getModelInfo(
+          params.modelName
+        );
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to get model info');
+        }
+
+        return result.data || null;
+      },
+      'catalog:get-model-info'
+    )
+  );
+}
+
+/**
  * Инициализирует приложение при готовности Electron
  * Запускает Ollama и создает главное окно
  */
@@ -432,7 +545,7 @@ app.on('window-all-closed', async () => {
   if (!isMac) {
     // Останавливает Ollama при закрытии приложения
     try {
-      await ollamaManager.stopOllama();
+      await OllamaManager.stopOllama();
       console.log('Ollama сервер остановлен');
     } catch (error) {
       console.error('Ошибка остановки Ollama:', error);
@@ -454,7 +567,7 @@ app.on('activate', () => {
 app.on('before-quit', async () => {
   // Останавливает Ollama при принудительном закрытии
   try {
-    await ollamaManager.stopOllama();
+    await OllamaManager.stopOllama();
     console.log('Ollama сервер остановлен при закрытии приложения');
   } catch (error) {
     console.error('Ошибка остановки Ollama при закрытии:', error);
