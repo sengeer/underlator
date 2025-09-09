@@ -1,5 +1,5 @@
 import Popup from '../popup';
-import TextButton from '../text-button/text-button';
+import SelectorOption from '../selector-option/';
 
 interface SelectorPopup {
   data: Object;
@@ -25,16 +25,16 @@ function SelectorPopup({
       styleWrapper={{ minWidth: '30.4352%' }}>
       <div className='selector-popup'>
         {Object.entries(data).map(([key, value]) => (
-          <TextButton
+          <SelectorOption
             key={value}
+            state='available'
             text={key}
-            style={{ margin: '0.5rem 0' }}
+            isActive={selectedValue === value}
             onClick={() => {
               setSelectedKey(key);
               setSelectedValue(value);
               setOpened(false);
             }}
-            isActiveStyle={selectedValue === value}
           />
         ))}
       </div>

@@ -1,8 +1,3 @@
-/**
- * @file index.scss
- * @description Стили для компонента Search
- */
-
 /* Анимация пульсации для индикатора debounce */
 @keyframes search-debounce-pulse {
   0%,
@@ -28,13 +23,13 @@
   padding: 1rem;
   transition: all 0.2s ease-in-out;
 
-  /* Состояние фокуса */
-  // &_focused {
-  // }
+  &_focused {
+    /* Cтили фокуса */
+  }
 
-  /* Состояние отключения */
-  // &_disabled {
-  // }
+  &_disabled {
+    /* Cтили отключения */
+  }
 
   /* Индикатор debounce */
   &__debounce-indicator {
