@@ -8,6 +8,7 @@ import { SelectorOptionProps, SelectorOptionState } from './types';
  * @description Минималистичный компонент пункта списка
  * @description Состояния: available, loading, installed
  * В зависимости от состояния используется сложный или простой режим
+ *
  * @example
  * Простой режим
  * <SelectorOption
@@ -15,6 +16,8 @@ import { SelectorOptionProps, SelectorOptionState } from './types';
     text='Model 1'
     onClick={() => {}}
   />
+ *
+ * @example
  * Сложный режим с прогресс-баром
  * <SelectorOption
     state='loading'
@@ -26,6 +29,8 @@ import { SelectorOptionProps, SelectorOptionState } from './types';
       totalSize: 4.7 * 1024 * 1024 * 1024,
     }}
   />
+ *
+ * @example
  * Сложный режим с кнопками действий
  * <SelectorOption
     state='installed'

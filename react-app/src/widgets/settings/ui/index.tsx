@@ -16,6 +16,7 @@ import { useElectronModelsManagement } from '../../../shared/lib/hooks/use-elect
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
 import { loadCatalog } from '../../../shared/lib/i18n';
+import MODELS from '../../../shared/lib/mocks/jsons/model-list.json';
 import {
   getStorageWrite,
   setStorageWrite,
@@ -36,7 +37,7 @@ import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-
 import ColorPicker from '../../../shared/ui/color-picker';
 import Loader from '../../../shared/ui/loader';
 import Popup from '../../../shared/ui/popup';
-import SelectorPopup from '../../../shared/ui/selector-popup';
+import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import TextButton from '../../../shared/ui/text-button/text-button';
 import {
@@ -125,6 +126,10 @@ function Settings({ isOpened }: Settings) {
 
   const isOpenModelsManagementPopup = useSelector((state) =>
     isElementOpen(state, 'modelsManagementPopup')
+  );
+
+  const isOpenTestListModelsPopup = useSelector((state) =>
+    isElementOpen(state, 'testListModelsPopup')
   );
 
   const handleLanguageChange = useCallback(
@@ -218,6 +223,11 @@ function Settings({ isOpened }: Settings) {
               </TextButton>
               <TextButton onClick={runFullTest} className='settings__button'>
                 🚀 Run Full Test
+              </TextButton>
+              <TextButton
+                onClick={() => dispatch(openElement('testListModelsPopup'))}
+                className='settings__button'>
+                📋 Test list of models
               </TextButton>
             </div>
             <p className='settings__models-description'>
@@ -346,22 +356,67 @@ function Settings({ isOpened }: Settings) {
           </div>
         </div>
       </div>
-      <SelectorPopup
-        data={LANGUAGES}
-        isOpened={isOpenLanguageSelectorPopup}
+      <Popup
+        isOpened={
+          isOpenLanguageSelectorPopup && Object.keys(LANGUAGES).length > 1
+        }
         setOpened={() => dispatch(closeElement('languageSelectorPopup'))}
-        setSelectedKey={setLanguageKey}
-        selectedValue={language}
-        setSelectedValue={handleLanguageChange}
-      />
-      <SelectorPopup
-        data={PROVIDERS}
-        isOpened={isOpenProviderSelectorPopup}
+        styleWrapper={{ minWidth: '30.4352%' }}>
+        {Object.entries(LANGUAGES).map(([key, value]) => (
+          <SelectorOption
+            key={value}
+            state='available'
+            text={key}
+            isActive={language === value}
+            onClick={() => {
+              setLanguageKey(key);
+              handleLanguageChange(value);
+              dispatch(closeElement('languageSelectorPopup'));
+            }}
+          />
+        ))}
+      </Popup>
+      <Popup
+        isOpened={
+          isOpenProviderSelectorPopup && Object.keys(PROVIDERS).length > 1
+        }
         setOpened={() => dispatch(closeElement('providerSelectorPopup'))}
-        setSelectedKey={() => {}}
-        selectedValue={provider}
-        setSelectedValue={handleProviderChange}
-      />
+        styleWrapper={{ minWidth: '30.4352%' }}>
+        {Object.entries(PROVIDERS).map(([key, value]) => (
+          <SelectorOption
+            key={value}
+            state='available'
+            text={key}
+            isActive={provider === value}
+            onClick={() => {
+              handleProviderChange(value);
+              dispatch(closeElement('providerSelectorPopup'));
+            }}
+          />
+        ))}
+      </Popup>
+      <Popup
+        isOpened={isOpenTestListModelsPopup && Object.keys(MODELS).length > 1}
+        setOpened={() => dispatch(closeElement('testListModelsPopup'))}
+        styleWrapper={{ minWidth: '30.4352%' }}
+        enableLazyLoading
+        lazyLoadingThreshold={20}
+        lazyLoadingMargin='100px'
+        enableAnimation
+        animationDuration={80}
+        animationDelay={40}
+        animationType='scaleIn'>
+        {MODELS.data.ollama.map(({ name }) => (
+          <SelectorOption
+            key={name}
+            state='available'
+            text={name}
+            onClick={() => {
+              dispatch(closeElement('testListModelsPopup'));
+            }}
+          />
+        ))}
+      </Popup>
 
       {/* Models download pop-up */}
       <Popup
