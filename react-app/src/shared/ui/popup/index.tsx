@@ -65,6 +65,7 @@ import { PopupProps } from './types';
 
 function Popup({
   children,
+  searchComponent,
   isOpened,
   setOpened,
   styleWrapper,
@@ -195,6 +196,7 @@ function Popup({
       onMouseDown={handleOverlay}
       ref={popupRef}>
       <div className='popup__wrapper' style={styleWrapper}>
+        {searchComponent}
         <div className='popup__content'>{renderContent()}</div>
       </div>
     </div>

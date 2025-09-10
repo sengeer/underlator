@@ -37,6 +37,7 @@ import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-
 import ColorPicker from '../../../shared/ui/color-picker';
 import Loader from '../../../shared/ui/loader';
 import Popup from '../../../shared/ui/popup';
+import PopupWithSearch from '../../../shared/ui/popup-with-search';
 import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import TextButton from '../../../shared/ui/text-button/text-button';
@@ -75,6 +76,7 @@ interface Settings {
 
 function Settings({ isOpened }: Settings) {
   const { values, handleChange, resetForm, setValues } = useFormAndValidation();
+  const [searchValue, setSearchValue] = useState('');
 
   const dispatch = useDispatch();
   const { provider, settings } = useSelector(selectProviderSettings);
@@ -395,7 +397,7 @@ function Settings({ isOpened }: Settings) {
           />
         ))}
       </Popup>
-      <Popup
+      <PopupWithSearch
         isOpened={isOpenTestListModelsPopup && Object.keys(MODELS).length > 1}
         setOpened={() => dispatch(closeElement('testListModelsPopup'))}
         styleWrapper={{ minWidth: '30.4352%' }}
@@ -405,7 +407,11 @@ function Settings({ isOpened }: Settings) {
         enableAnimation
         animationDuration={80}
         animationDelay={40}
-        animationType='scaleIn'>
+        animationType='scaleIn'
+        searchPlaceholder='Модель...'
+        searchDebounceMs={300}
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}>
         {MODELS.data.ollama.map(({ name }) => (
           <SelectorOption
             key={name}
@@ -416,7 +422,7 @@ function Settings({ isOpened }: Settings) {
             }}
           />
         ))}
-      </Popup>
+      </PopupWithSearch>
 
       {/* Models download pop-up */}
       <Popup

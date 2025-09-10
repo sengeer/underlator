@@ -77,6 +77,7 @@ const Search = forwardRef<SearchRef, SearchProps>(
     // Refs для управления DOM элементами
     const inputRef = useRef<HTMLInputElement>(null);
     const debounceTimeoutRef = useRef<number | null>(null);
+    const prevValueRef = useRef(value);
 
     /**
      * @function parseHotkey
@@ -249,10 +250,12 @@ const Search = forwardRef<SearchRef, SearchProps>(
 
     // Синхронизация внешнего value с внутренним состоянием
     useEffect(() => {
-      if (value !== state.inputValue) {
+      // Обновляет только если внешнее значение действительно изменилось
+      if (value !== prevValueRef.current) {
+        prevValueRef.current = value;
         setState((prev) => ({ ...prev, inputValue: value }));
       }
-    }, [value, state.inputValue]);
+    }, [value]);
 
     // Установка автофокуса
     useEffect(() => {

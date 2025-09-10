@@ -142,6 +142,12 @@ export interface PopupProps {
   children?: React.ReactNode;
 
   /**
+   * @description Компонент для отображения поиска
+   * @example <Search />
+   */
+  searchComponent?: React.ReactNode;
+
+  /**
    * @description Состояние открытия попапа
    * @example true - попап открыт
    */
