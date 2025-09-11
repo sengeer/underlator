@@ -62,7 +62,6 @@ import { PopupProps } from './types';
  *   ))}
  * </Popup>
  */
-
 function Popup({
   children,
   searchComponent,

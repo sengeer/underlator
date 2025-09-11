@@ -26,7 +26,7 @@ import { LazyListItemProps, LazyListOptions } from './types';
  * </LazyListItem>
  *
  * @example
- * // С кастомным placeholder
+ * С кастомным placeholder
  * <LazyListItem
  *   placeholder={
  *     <div className='loading-skeleton'>
@@ -38,7 +38,7 @@ import { LazyListItemProps, LazyListOptions } from './types';
  * </LazyListItem>
  *
  * @example
- * // С обработчиками событий
+ * С обработчиками событий
  * <LazyListItem
  *   onVisible={(entry) => analytics.track('model_viewed', { model: entry.target.id })}>
  *   <ModelCard id='model-1' />
@@ -77,7 +77,6 @@ import { LazyListItemProps, LazyListOptions } from './types';
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API} Intersection Observer API
  * @see {@link ../hooks/use-intersection-observer} useIntersectionObserver hook
  */
-
 export function LazyListItem({
   children,
   placeholder = <div style={{ height: '40px' }} />,
@@ -249,7 +248,6 @@ export function LazyListItem({
  *   );
  * }
  */
-
 export function useLazyList<T>(
   items: T[],
   options: LazyListOptions = {}

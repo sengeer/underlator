@@ -1,10 +1,4 @@
 /**
- * @module SearchTypes
- * @description Типы и интерфейсы для компонента Search
- * Определяет контракты для поискового компонента с поддержкой debounce, стилей и горячих клавиш
- */
-
-/**
  * @interface SearchProps
  * @description Основные пропсы для компонента Search
  * @property {string} [placeholder] - Текст placeholder для поля ввода
@@ -55,19 +49,6 @@ export interface SearchState {
 }
 
 /**
- * @interface DebounceConfig
- * @description Конфигурация для debounce функциональности
- * @property {number} delay - Задержка в миллисекундах
- * @property {boolean} leading - Выполнять функцию в начале интервала
- * @property {boolean} trailing - Выполнять функцию в конце интервала
- */
-export interface DebounceConfig {
-  delay: number;
-  leading?: boolean;
-  trailing?: boolean;
-}
-
-/**
  * @interface HotkeyConfig
  * @description Конфигурация для горячих клавиш
  * @property {string} key - Клавиша (например, 'k')
@@ -96,15 +77,3 @@ export interface SearchRef {
   getValue: () => string;
   setValue: (value: string) => void;
 }
-
-/**
- * @type SearchSize
- * @description Размеры компонента Search
- */
-export type SearchSize = 'small' | 'medium' | 'large';
-
-/**
- * @type SearchVariant
- * @description Варианты стилизации компонента Search
- */
-export type SearchVariant = 'default' | 'minimal' | 'outlined';

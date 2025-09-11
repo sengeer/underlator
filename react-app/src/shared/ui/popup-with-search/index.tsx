@@ -29,7 +29,7 @@ import { PopupWithSearchProps, PopupWithSearchRef } from './types';
  * @returns {JSX.Element} React элемент модального окна с поиском
  *
  * @example
- * // Базовое использование
+ * Базовое использование
  * <PopupWithSearch
  *   isOpened={isOpen}
  *   setOpened={setOpen}
@@ -40,7 +40,7 @@ import { PopupWithSearchProps, PopupWithSearchRef } from './types';
  * </PopupWithSearch>
  *
  * @example
- * // С ленивой загрузкой и анимациями
+ * С ленивой загрузкой и анимациями
  * <PopupWithSearch
  *   isOpened={isOpen}
  *   setOpened={setOpen}
@@ -59,7 +59,7 @@ import { PopupWithSearchProps, PopupWithSearchRef } from './types';
  * </PopupWithSearch>
  *
  * @example
- * // С программным управлением через ref
+ * С программным управлением через ref
  * const popupRef = useRef<PopupWithSearchRef>(null);
  *
  * <PopupWithSearch
@@ -72,11 +72,10 @@ import { PopupWithSearchProps, PopupWithSearchRef } from './types';
  *   <div>Контент</div>
  * </PopupWithSearch>
  *
- * // Программное управление
+ * Программное управление
  * popupRef.current?.focusSearch();
  * popupRef.current?.clearSearch();
  */
-
 const PopupWithSearch = forwardRef<PopupWithSearchRef, PopupWithSearchProps>(
   (
     {

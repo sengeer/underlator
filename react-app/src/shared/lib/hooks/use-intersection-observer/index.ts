@@ -15,7 +15,7 @@ import {
  * @returns Объект с ref, состояниями видимости и информацией о пересечении
  *
  * @example
- * // Базовое использование
+ * Базовое использование
  * function LazyComponent() {
  *   const { ref, isVisible, hasBeenVisible } = useIntersectionObserver({
  *     threshold: 0.1,
@@ -30,7 +30,7 @@ import {
  * }
  *
  * @example
- * // С анимацией появления
+ * С анимацией появления
  * function AnimatedElement() {
  *   const { ref, isVisible } = useIntersectionObserver({
  *     threshold: 0.5,
@@ -47,7 +47,7 @@ import {
  * }
  *
  * @example
- * // С обработчиками событий
+ * С обработчиками событий
  * function InfiniteScrollItem() {
  *   const { ref, isVisible, intersectionEntry } = useIntersectionObserver({
  *     rootMargin: '100px',
@@ -66,7 +66,6 @@ import {
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API} Intersection Observer API
  * @see {@link https://reactjs.org/docs/hooks-intro.html} React Hooks
  */
-
 function useIntersectionObserver(
   config: IntersectionObserverConfig = {}
 ): IntersectionObserverResult {

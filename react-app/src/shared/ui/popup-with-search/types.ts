@@ -1,50 +1,59 @@
 import { PopupProps } from '../popup/types';
 
+/**
+ * @interface PopupWithSearchProps
+ * @description Основные пропсы для компонента PopupWithSearch
+ * @property {React.ReactNode} [children] - Контент для отображения в попапе
+ * @property {string} [searchPlaceholder] - Placeholder для поля поиска
+ * @property {string} [searchValue] - Текущее значение поиска
+ * @property {(value: string) => void} [onSearchChange] - Обработчик изменения значения поиска
+ * @property {number} [searchDebounceMs] - Задержка debounce для поиска в миллисекундах
+ * @property {string} [searchHotkey] - Горячая клавиша для фокуса на поиске
+ * @property {boolean} [showSearchIcon] - Показывать иконку поиска
+ * @property {boolean} [searchAutoFocus] - Автофокус на поле поиска при открытии
+ * @property {string} [searchClassName] - Дополнительные CSS классы для поиска
+ * @property {React.CSSProperties} [searchStyle] - Инлайн стили для поиска
+ * @property {boolean} [searchDisabled] - Состояние отключения поиска
+ * @property {string} [searchId] - HTML id атрибут для поиска
+ * @property {string} [searchName] - HTML name атрибут для поиска
+ * @property {string} [searchAriaLabel] - ARIA метка для доступности поиска
+ * @property {string} [searchAriaPlaceholder] - ARIA placeholder для скринридеров
+ * @property {boolean} [showClearButton] - Показывать кнопку очистки поиска
+ * @property {React.ReactNode} [searchContent] - Контент для отображения под поиском
+ * @property {string} [searchWrapperClassName] - CSS классы для обертки поиска
+ * @property {React.CSSProperties} [searchWrapperStyle] - Стили для обертки поиска
+ */
 export interface PopupWithSearchProps extends Omit<PopupProps, 'children'> {
-  /** Контент для отображения в попапе */
   children?: React.ReactNode;
 
   // Свойства поиска
-  /** Placeholder для поля поиска */
   searchPlaceholder?: string;
-  /** Текущее значение поиска */
   searchValue?: string;
-  /** Обработчик изменения значения поиска */
   onSearchChange?: (value: string) => void;
-  /** Задержка debounce для поиска в миллисекундах */
   searchDebounceMs?: number;
-  /** Горячая клавиша для фокуса на поиске */
   searchHotkey?: string;
-  /** Показывать иконку поиска */
   showSearchIcon?: boolean;
-  /** Автофокус на поле поиска при открытии */
   searchAutoFocus?: boolean;
-  /** Дополнительные CSS классы для поиска */
   searchClassName?: string;
-  /** Инлайн стили для поиска */
   searchStyle?: React.CSSProperties;
-  /** Состояние отключения поиска */
   searchDisabled?: boolean;
-  /** HTML id атрибут для поиска */
   searchId?: string;
-  /** HTML name атрибут для поиска */
   searchName?: string;
-  /** ARIA метка для доступности поиска */
   searchAriaLabel?: string;
-  /** ARIA placeholder для скринридеров */
   searchAriaPlaceholder?: string;
-  /** Показывать кнопку очистки поиска */
   showClearButton?: boolean;
 
   // Контент под поиском
-  /** Контент для отображения под поиском */
   searchContent?: React.ReactNode;
-  /** CSS классы для обертки поиска */
   searchWrapperClassName?: string;
-  /** Стили для обертки поиска */
   searchWrapperStyle?: React.CSSProperties;
 }
 
+/**
+ * @interface PopupWithSearchRef
+ * @description Ref компонента Search
+ * @property {() => void} focusSearch - Фокусирует на поле поиска
+ */
 export interface PopupWithSearchRef {
   focusSearch: () => void;
 }

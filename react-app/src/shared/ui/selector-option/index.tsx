@@ -4,6 +4,15 @@ import SimpleMode from './simple-mode';
 import { SelectorOptionProps, SelectorOptionState } from './types';
 
 /**
+ * @description Определяет нужен ли сложный режим на основе состояния
+ * @param state - Состояние компонента
+ * @returns true если нужен complex режим
+ */
+function defineNeedsComplexMode(state: SelectorOptionState): boolean {
+  return state === 'loading' || state === 'installed';
+}
+
+/**
  * @module SelectorOption
  * @description Минималистичный компонент пункта списка
  * @description Состояния: available, loading, installed
@@ -42,16 +51,6 @@ import { SelectorOptionProps, SelectorOptionState } from './types';
     }}
   />
  */
-
-/**
- * @description Определяет нужен ли сложный режим на основе состояния
- * @param state - Состояние компонента
- * @returns true если нужен complex режим
- */
-function defineNeedsComplexMode(state: SelectorOptionState): boolean {
-  return state === 'loading' || state === 'installed';
-}
-
 function SelectorOption(props: SelectorOptionProps) {
   const { state } = props;
 

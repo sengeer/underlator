@@ -8,13 +8,7 @@ import React, {
 } from 'react';
 import SearchIcon from '../../assets/icons/search-icon';
 import IconButton from '../icon-button';
-import {
-  SearchProps,
-  SearchRef,
-  SearchState,
-  DebounceConfig,
-  HotkeyConfig,
-} from './types';
+import { SearchProps, SearchRef, SearchState, HotkeyConfig } from './types';
 import './index.scss';
 
 /**
@@ -32,14 +26,14 @@ import './index.scss';
  * @returns {JSX.Element} React элемент компонента поиска
  *
  * @example
- * // Базовое использование
+ * Базовое использование
  * <Search
  *   placeholder="Поиск моделей..."
  *   onChange={(value) => console.log(value)}
  * />
  *
  * @example
- * // С debounce и горячей клавишей
+ * С debounce и горячей клавишей
  * <Search
  *   placeholder="Поиск..."
  *   debounceMs={300}

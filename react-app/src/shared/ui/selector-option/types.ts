@@ -1,9 +1,4 @@
 /**
- * @module SelectorOptionTypes
- * @description Типы для компонента SelectorOption
- */
-
-/**
  * @description Состояния компонента SelectorOption
  * Определяет визуальное представление и доступные действия
  */
@@ -13,48 +8,51 @@ export type SelectorOptionState =
   | 'installed'; // Установлено и доступно
 
 /**
+ * @interface ProgressInfo
  * @description Информация о прогрессе загрузки
  * Используется только для состояния loading
+ * @property {number} percentage - Текущий прогресс в процентах (0-100)
+ * @property {number} currentSize - Текущий размер загруженных данных в байтах
+ * @property {number} totalSize - Общий размер для загрузки в байтах
  */
 export interface ProgressInfo {
-  /** Текущий прогресс в процентах (0-100) */
   percentage: number;
-  /** Текущий размер загруженных данных в байтах */
   currentSize: number;
-  /** Общий размер для загрузки в байтах */
   totalSize: number;
 }
 
 /**
+ * @interface ActionHandlers
  * @description Обработчики событий для действий с моделью
+ * @property {() => void} onInstall - Обработчик загрузки модели
+ * @property {() => void} onRemove - Обработчик удаления модели
  */
 export interface ActionHandlers {
-  /** Обработчик загрузки модели */
   onInstall?: () => void;
-  /** Обработчик удаления модели */
   onRemove?: () => void;
 }
 
 /**
+ * @interface SelectorOptionProps
  * @description Основные пропсы компонента SelectorOption
+ * @property {string} text - Основной текст элемента
+ * @property {SelectorOptionState} state - Состояние компонента
+ * @property {string} className - Дополнительные CSS классы
+ * @property {React.CSSProperties} style - Инлайн стили
+ * @property {() => void} onClick - Обработчик клика по элементу
+ * @property {boolean} isActive - Активен ли элемент (выбран)
+ * @property {ProgressInfo} progressInfo - Информация о прогрессе загрузки
+ * @property {ActionHandlers} actionHandlers - Обработчики действий
  */
 export interface SelectorOptionProps {
-  /** Основной текст элемента */
   text: string;
-  /** Состояние компонента */
   state: SelectorOptionState;
-  /** Дополнительные CSS классы */
   className?: string;
-  /** Инлайн стили */
   style?: React.CSSProperties;
-  /** Обработчик клика по элементу */
   onClick?: () => void;
-  /** Активен ли элемент (выбран) */
   isActive?: boolean;
 
   // Данные для состояния loading
-  /** Информация о прогрессе загрузки */
   progressInfo?: ProgressInfo;
-  /** Обработчики действий */
   actionHandlers?: ActionHandlers;
 }
