@@ -22,6 +22,7 @@ import { PopupProps } from '../popup/types';
  * @property {React.ReactNode} [searchContent] - Контент для отображения под поиском
  * @property {string} [searchWrapperClassName] - CSS классы для обертки поиска
  * @property {React.CSSProperties} [searchWrapperStyle] - Стили для обертки поиска
+ * @property {boolean} [isLoading] - Состояние загрузки
  */
 export interface PopupWithSearchProps extends Omit<PopupProps, 'children'> {
   children?: React.ReactNode;
@@ -42,11 +43,7 @@ export interface PopupWithSearchProps extends Omit<PopupProps, 'children'> {
   searchAriaLabel?: string;
   searchAriaPlaceholder?: string;
   showClearButton?: boolean;
-
-  // Контент под поиском
-  searchContent?: React.ReactNode;
-  searchWrapperClassName?: string;
-  searchWrapperStyle?: React.CSSProperties;
+  isLoading?: boolean;
 }
 
 /**

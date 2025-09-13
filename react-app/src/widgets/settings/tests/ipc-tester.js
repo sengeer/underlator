@@ -1,7 +1,5 @@
-import {
-  OLLAMA_TEST_MODEL,
-  OLLAMA_TEST_PROMPT,
-} from '../../../shared/lib/constants';
+import { embeddedOllamaElectronApi } from '../apis/embedded-ollama-electron-api';
+import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from './constants';
 
 /**
  * @module ManualIpcTesting
@@ -13,101 +11,30 @@ import {
  * @description Получает список доступных моделей Ollama
  * Тестирует IPC endpoint models:list
  */
-
 export async function testListModels() {
-  try {
-    console.log('🧪 Тестирование получения списка моделей...');
-
-    const response = await window.electron.models.list();
-
-    console.log('✅ Список моделей получен:', response);
-
-    if (response.success && response.data && response.data.models) {
-      const models = response.data.models;
-      console.log(`📋 Найдено ${models.length} моделей:`);
-      models.forEach((model, index) => {
-        console.log(
-          `  ${index + 1}. ${model.name} (${formatSize(model.size)})`
-        );
-      });
-    } else {
-      console.log('📋 Модели не найдены');
-      if (response.error) {
-        console.log('❌ Ошибка:', response.error);
-      }
-    }
-
-    return response;
-  } catch (error) {
-    console.error('❌ Ошибка получения списка моделей:', error);
-    throw error;
-  }
+  console.log('🧪 Тестирование API получения списка установленных моделей...');
+  await embeddedOllamaElectronApi.listInstalledModels();
 }
 
 /**
- * @description Скачивает OLLAMA_TEST_MODEL с выводом прогресса
+ * @description Устанавливает OLLAMA_TEST_MODEL с выводом прогресса
  * Тестирует IPC endpoint models:install с streaming прогрессом
  */
-
-export async function testDownloadModel() {
-  try {
-    console.log(`🧪 Тестирование скачивания модели ${OLLAMA_TEST_MODEL}...`);
-
-    // Подписывание на прогресс загрузки
-    const unsubscribeProgress = window.electron.models.onInstallProgress(
-      (progress) => {
-        console.log('📥 Прогресс загрузки:', progress);
-
-        if (progress.status === 'downloading' && progress.total) {
-          const percent = Math.round(
-            ((progress.size || 0) / progress.total) * 100
-          );
-          console.log(
-            `📥 Загрузка: ${percent}% (${progress.size}/${progress.total} байт)`
-          );
-        } else if (progress.status === 'verifying') {
-          console.log('🔍 Проверка модели...');
-        } else if (progress.status === 'writing') {
-          console.log('💾 Запись модели...');
-        } else if (progress.status === 'complete') {
-          console.log('✅ Загрузка завершена!');
-        }
-      }
-    );
-
-    const response = await window.electron.models.install({
-      name: OLLAMA_TEST_MODEL,
-    });
-
-    unsubscribeProgress();
-
-    console.log('✅ Результат загрузки:', response);
-
-    if (response.success) {
-      console.log(`✅ Модель ${OLLAMA_TEST_MODEL} успешно загружена!`);
-    } else {
-      console.log('❌ Ошибка загрузки модели');
-      if (response.error) {
-        console.log('❌ Детали ошибки:', response.error);
-      }
-    }
-
-    return response;
-  } catch (error) {
-    console.error('❌ Ошибка скачивания модели:', error);
-    throw error;
-  }
+export async function testInstallModel() {
+  console.log('🧪 Тестирование API установки модели...');
+  await embeddedOllamaElectronApi.installModel({
+    name: OLLAMA_TEST_MODEL,
+  });
 }
 
 /**
  * @description Генерирует текст модели OLLAMA_TEST_MODEL
  * Тестирует IPC endpoint ollama:generate с streaming ответом
  */
-
 export async function testGenerateText() {
   try {
     console.log(
-      `🧪 Тестирование генерации текста с моделью ${OLLAMA_TEST_MODEL}...`
+      `🧪 Тестирование API генерации текста с моделью ${OLLAMA_TEST_MODEL}...`
     );
 
     let fullResponse = '';
@@ -168,33 +95,8 @@ export async function testGenerateText() {
  * Тестирует IPC endpoint catalog:get
  */
 export async function testGetCatalog() {
-  try {
-    console.log('🧪 Тестирование получения каталога моделей...');
-
-    const response = await window.electron.catalog.get();
-
-    console.log('✅ Каталог моделей получен:', response);
-
-    if (response && response.ollama) {
-      const models = response.ollama;
-      console.log(`📋 Найдено ${models.length} моделей в каталоге:`);
-      models.slice(0, 10).forEach((model, index) => {
-        console.log(
-          `  ${index + 1}. ${model.name} (${formatSize(model.size)})`
-        );
-      });
-      if (models.length > 10) {
-        console.log(`  ... и еще ${models.length - 10} моделей`);
-      }
-    } else {
-      console.log('📋 Каталог пуст или недоступен');
-    }
-
-    return response;
-  } catch (error) {
-    console.error('❌ Ошибка получения каталога:', error);
-    throw error;
-  }
+  console.log('🧪 Тестирование API получения каталога моделей...');
+  await embeddedOllamaElectronApi.getCatalog({ forceRefresh: false });
 }
 
 /**
@@ -202,28 +104,10 @@ export async function testGetCatalog() {
  * Тестирует IPC endpoint catalog:get с параметром forceRefresh
  */
 export async function testGetCatalogForceRefresh() {
-  try {
-    console.log(
-      '🧪 Тестирование получения каталога с принудительным обновлением...'
-    );
-
-    const response = await window.electron.catalog.get({ forceRefresh: true });
-
-    console.log(
-      '✅ Каталог моделей получен (принудительное обновление):',
-      response
-    );
-
-    if (response && response.ollama) {
-      const models = response.ollama;
-      console.log(`📋 Найдено ${models.length} моделей в обновленном каталоге`);
-    }
-
-    return response;
-  } catch (error) {
-    console.error('❌ Ошибка получения каталога с обновлением:', error);
-    throw error;
-  }
+  console.log(
+    '🧪 Тестирование API получения каталога моделей с принудительным обновлением...'
+  );
+  await embeddedOllamaElectronApi.getCatalog({ forceRefresh: true });
 }
 
 /**
@@ -232,66 +116,66 @@ export async function testGetCatalogForceRefresh() {
  */
 export async function testSearchModels() {
   try {
-    console.log('🧪 Тестирование поиска моделей...');
+    console.log('🧪 Тестирование API поиска моделей...');
 
     // Тест 1: Поиск по названию
     console.log('🔍 Поиск моделей с "llama" в названии...');
-    const searchResponse1 = await window.electron.catalog.search({
+    const nameSearchResponse = await embeddedOllamaElectronApi.searchModels({
       search: 'llama',
       type: 'ollama',
     });
 
-    console.log('✅ Результат поиска "llama":', searchResponse1);
+    console.log('✅ Результат поиска "llama":', nameSearchResponse);
     if (
-      searchResponse1 &&
-      searchResponse1.data &&
-      searchResponse1.data.ollama
+      nameSearchResponse &&
+      nameSearchResponse.data &&
+      nameSearchResponse.data.ollama
     ) {
       console.log(
-        `📋 Найдено ${searchResponse1.data.ollama.length} моделей с "llama"`
+        `📋 Найдено ${nameSearchResponse.data.ollama.length} моделей с "llama"`
       );
     }
 
     // Тест 2: Поиск по размеру
     console.log('🔍 Поиск моделей размером менее 1GB...');
-    const searchResponse2 = await window.electron.catalog.search({
+    const sizeSearchResponse = await embeddedOllamaElectronApi.searchModels({
       maxSize: 1024 * 1024 * 1024, // 1GB
       type: 'ollama',
     });
 
-    console.log('✅ Результат поиска по размеру:', searchResponse2);
+    console.log('✅ Результат поиска по размеру:', sizeSearchResponse);
     if (
-      searchResponse2 &&
-      searchResponse2.data &&
-      searchResponse2.data.ollama
+      sizeSearchResponse &&
+      sizeSearchResponse.data &&
+      sizeSearchResponse.data.ollama
     ) {
       console.log(
-        `📋 Найдено ${searchResponse2.data.ollama.length} моделей менее 1GB`
+        `📋 Найдено ${sizeSearchResponse.data.ollama.length} моделей менее 1GB`
       );
     }
 
     // Тест 3: Поиск по тегам
     console.log('🔍 Поиск моделей с тегом "chat"...');
-    const searchResponse3 = await window.electron.catalog.search({
+    const tagsSearchResponse = await embeddedOllamaElectronApi.searchModels({
       tags: ['chat'],
       type: 'ollama',
     });
 
-    console.log('✅ Результат поиска по тегам:', searchResponse3);
+    console.log('✅ Результат поиска по тегам:', tagsSearchResponse);
     if (
-      searchResponse3 &&
-      searchResponse3.data &&
-      searchResponse3.data.ollama
+      tagsSearchResponse &&
+      tagsSearchResponse.data &&
+      tagsSearchResponse.data.ollama
     ) {
       console.log(
-        `📋 Найдено ${searchResponse3.data.ollama.length} моделей с тегом "chat"`
+        `📋 Найдено ${tagsSearchResponse.data.ollama.length} моделей с тегом "chat"`
       );
     }
 
     return {
-      searchByName: searchResponse1,
-      searchBySize: searchResponse2,
-      searchByTags: searchResponse3,
+      searchByName: nameSearchResponse,
+      searchBySize: sizeSearchResponse,
+      searchByTags: tagsSearchResponse,
     };
   } catch (error) {
     console.error('❌ Ошибка поиска моделей:', error);
@@ -300,93 +184,31 @@ export async function testSearchModels() {
 }
 
 /**
- * @description Получает информацию о конкретной модели
+ * @description Получает информацию детальную информацию о конкретной модели
  * Тестирует IPC endpoint catalog:get-model-info
  */
 export async function testGetModelInfo() {
-  try {
-    console.log('🧪 Тестирование получения информации о модели...');
-
-    // Сначала получаем каталог, чтобы найти доступную модель
-    const catalogResponse = await window.electron.catalog.get();
-
-    if (
-      !catalogResponse ||
-      !catalogResponse.data ||
-      !catalogResponse.data.ollama ||
-      catalogResponse.data.ollama.length === 0
-    ) {
-      console.log(
-        '❌ Каталог пуст, невозможно протестировать получение информации о модели'
-      );
-      return null;
-    }
-
-    const testModelName = catalogResponse.data.ollama[0].name;
-    console.log(`🔍 Получение информации о модели: ${testModelName}`);
-
-    const response = await window.electron.catalog.getModelInfo({
-      modelName: testModelName,
-    });
-
-    console.log('✅ Информация о модели получена:', response);
-
-    if (response && response.data) {
-      console.log(`📋 Модель: ${response.data.name}`);
-      console.log(`📋 Размер: ${formatSize(response.data.size)}`);
-      console.log(
-        `📋 Описание: ${response.data.description || 'Нет описания'}`
-      );
-      console.log(
-        `📋 Теги: ${response.data.tags ? response.data.tags.join(', ') : 'Нет тегов'}`
-      );
-    } else {
-      console.log('❌ Модель не найдена');
-    }
-
-    return response;
-  } catch (error) {
-    console.error('❌ Ошибка получения информации о модели:', error);
-    throw error;
-  }
+  console.log('🧪 Тестирование API получения детальной информации о модели...');
+  await embeddedOllamaElectronApi.getModelInfo({
+    modelName: OLLAMA_TEST_MODEL,
+  });
 }
 
 /**
  * @description Удаляет модель
  * Тестирует IPC endpoint models:remove
  */
-
 export async function testRemoveModel() {
-  try {
-    console.log(`🧪 Тестирование удаления модели ${OLLAMA_TEST_MODEL}...`);
-
-    const response = await window.electron.models.remove({
-      name: OLLAMA_TEST_MODEL,
-    });
-
-    console.log('✅ Результат удаления:', response);
-
-    if (response.success) {
-      console.log(`✅ Модель ${OLLAMA_TEST_MODEL} успешно удалена!`);
-    } else {
-      console.log('❌ Ошибка удаления модели');
-      if (response.error) {
-        console.log('❌ Детали ошибки:', response.error);
-      }
-    }
-
-    return response;
-  } catch (error) {
-    console.error('❌ Ошибка удаления модели:', error);
-    throw error;
-  }
+  console.log(`🧪 Тестирование API удаления модели ${OLLAMA_TEST_MODEL}...`);
+  await embeddedOllamaElectronApi.removeModel({
+    name: OLLAMA_TEST_MODEL,
+  });
 }
 
 /**
  * @description Запускает полный цикл тестирования
  * Выполняет все тесты по порядку
  */
-
 export async function runFullTest() {
   console.log('🚀 Запуск полного цикла тестирования IPC API...\n');
 
@@ -408,7 +230,7 @@ export async function runFullTest() {
     console.log('');
 
     console.log('=== ТЕСТ 5: Скачивание модели ===');
-    await testDownloadModel();
+    await testInstallModel();
     console.log('');
 
     console.log('=== ТЕСТ 6: Генерация текста ===');
@@ -426,24 +248,10 @@ export async function runFullTest() {
   }
 }
 
-/**
- * @description Форматирует размер в байтах в читаемый вид
- * @param {number} bytes - Размер в байтах
- * @returns {string} Отформатированный размер
- */
-
-function formatSize(bytes) {
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  if (bytes === 0) return '0 B';
-
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
-}
-
-// Экспорт для использования в других модулях
+// Экспорты для использования в других модулях
 export default {
   testListModels,
-  testDownloadModel,
+  testInstallModel,
   testGenerateText,
   testRemoveModel,
   testGetCatalog,

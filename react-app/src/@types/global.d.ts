@@ -97,5 +97,10 @@ interface Window {
       list: () => Promise<any>;
       onInstallProgress: (callback: (progress: any) => void) => () => void;
     };
+    catalog: {
+      get: (params?: { forceRefresh?: boolean }) => Promise<any>;
+      search: (filters: any) => Promise<any>;
+      getModelInfo: (params: { modelName: string }) => Promise<any>;
+    };
   };
 }

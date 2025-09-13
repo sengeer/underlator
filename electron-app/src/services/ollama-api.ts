@@ -193,7 +193,7 @@ export class OllamaApi {
         await processStreamResponse(
           response,
           (chunk: OllamaPullProgress) => {
-            onProgress?.(chunk);
+            onProgress?.({ ...chunk, name: request.name });
 
             // Проверяем на ошибки установки
             if (chunk.error) {

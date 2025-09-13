@@ -1,10 +1,14 @@
+/**
+ * @module Constants
+ * @description Общие константы для приложения
+ */
+
+/**
+ * @description Базовый URL для Ollama API
+ */
 export const OLLAMA_API_BASE_URL = 'http://192.168.1.175:11434';
 
-// Delimiter for contextual translation chunk processing
+/**
+ * @description Delimiter для обработки чанков контекстного перевода
+ */
 export const CHUNK_DELIMITER = '\u001E';
-
-// Model for testing IPC API
-export const OLLAMA_TEST_MODEL = 'qwen3:0.6b';
-
-// Prompt for testing IPC API
-export const OLLAMA_TEST_PROMPT = 'Сколько будет 2 + 2?';

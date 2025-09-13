@@ -9,7 +9,7 @@ import { SelectorOptionProps, SelectorOptionState } from './types';
  * @returns true если нужен complex режим
  */
 function defineNeedsComplexMode(state: SelectorOptionState): boolean {
-  return state === 'loading' || state === 'installed';
+  return state === 'loading' || state === 'installed' || state === 'available';
 }
 
 /**
@@ -31,7 +31,6 @@ function defineNeedsComplexMode(state: SelectorOptionState): boolean {
  * <SelectorOption
     state='loading'
     text='qwen2.5:7b'
-    value='qwen2.5:7b'
     progressInfo={{
       percentage: 65,
       currentSize: 3.1 * 1024 * 1024 * 1024,
@@ -44,7 +43,6 @@ function defineNeedsComplexMode(state: SelectorOptionState): boolean {
  * <SelectorOption
     state='installed'
     text='llama3.1:8b'
-    value='llama3.1:8b'
     isActive={true}
     actionHandlers={{
       onRemove: () => {},
@@ -55,10 +53,10 @@ function SelectorOption(props: SelectorOptionProps) {
   const { state } = props;
 
   // Определяет нужен ли сложный режим
-  const useComplexMode = defineNeedsComplexMode(state);
+  const isComplexMode = defineNeedsComplexMode(state);
 
   // Выбирает компонент для рендеринга
-  const Component = useComplexMode ? ComplexMode : SimpleMode;
+  const Component = isComplexMode ? ComplexMode : SimpleMode;
 
   return <Component {...props} />;
 }

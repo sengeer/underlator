@@ -5,10 +5,12 @@ import {
   forwardRef,
   useImperativeHandle,
 } from 'react';
+import Loader from '../loader';
 import Popup from '../popup';
 import Search from '../search';
 import type { SearchRef } from '../search/types';
 import { PopupWithSearchProps, PopupWithSearchRef } from './types';
+import './index.scss';
 
 /**
  * @component PopupWithSearch
@@ -96,10 +98,7 @@ const PopupWithSearch = forwardRef<PopupWithSearchRef, PopupWithSearchProps>(
       searchAriaLabel,
       searchAriaPlaceholder,
       showClearButton = true,
-      // Контент под поиском
-      searchContent,
-      searchWrapperClassName = '',
-      searchWrapperStyle,
+      isLoading = false,
       // Остальные пропсы
       ...popupProps
     },
@@ -140,26 +139,34 @@ const PopupWithSearch = forwardRef<PopupWithSearchRef, PopupWithSearchProps>(
     return (
       <Popup
         searchComponent={
-          <Search
-            ref={searchRef}
-            placeholder={searchPlaceholder}
-            value={searchValue}
-            onChange={onSearchChange}
-            className={searchClassName}
-            style={searchStyle}
-            disabled={searchDisabled}
-            debounceMs={searchDebounceMs}
-            hotkey={searchHotkey}
-            showSearchIcon={showSearchIcon}
-            showClearButton={showClearButton}
-            id={searchId}
-            name={searchName}
-            ariaLabel={searchAriaLabel}
-            ariaPlaceholder={searchAriaPlaceholder}
-          />
+          !isLoading && (
+            <Search
+              ref={searchRef}
+              placeholder={searchPlaceholder}
+              value={searchValue}
+              onChange={onSearchChange}
+              className={searchClassName}
+              style={searchStyle}
+              disabled={searchDisabled}
+              debounceMs={searchDebounceMs}
+              hotkey={searchHotkey}
+              showSearchIcon={showSearchIcon}
+              showClearButton={showClearButton}
+              id={searchId}
+              name={searchName}
+              ariaLabel={searchAriaLabel}
+              ariaPlaceholder={searchAriaPlaceholder}
+            />
+          )
         }
         {...popupProps}>
-        {children}
+        {isLoading ? (
+          <div className='popup-with-search__loader'>
+            <Loader />
+          </div>
+        ) : (
+          children
+        )}
       </Popup>
     );
   }

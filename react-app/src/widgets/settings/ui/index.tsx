@@ -8,10 +8,6 @@ import DownloadIcon from '../../../shared/assets/icons/download-icon';
 import HttpIcon from '../../../shared/assets/icons/http-icon';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
 import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
-import {
-  OLLAMA_TEST_MODEL,
-  OLLAMA_TEST_PROMPT,
-} from '../../../shared/lib/constants';
 import { useElectronModelsManagement } from '../../../shared/lib/hooks/use-electron-models-management';
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
@@ -43,7 +39,7 @@ import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import TextButton from '../../../shared/ui/text-button/text-button';
 import {
   testListModels,
-  testDownloadModel,
+  testInstallModel,
   testGenerateText,
   testRemoveModel,
   testGetCatalog,
@@ -52,6 +48,8 @@ import {
   testGetModelInfo,
   runFullTest,
 } from '../tests';
+import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../tests';
+import ManageModels from './manage-embedded-ollama';
 
 const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE;
 
@@ -134,6 +132,10 @@ function Settings({ isOpened }: Settings) {
     isElementOpen(state, 'testListModelsPopup')
   );
 
+  const isOpenManageModelsPopup = useSelector((state) =>
+    isElementOpen(state, 'manageModelsPopup')
+  );
+
   const handleLanguageChange = useCallback(
     (lang: string) => {
       setLanguage(lang);
@@ -179,7 +181,7 @@ function Settings({ isOpened }: Settings) {
                 onClick={testListModels}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
-                📋 List Models
+                📋 List Installed Models
               </TextButton>
               <TextButton
                 onClick={testGetCatalog}
@@ -206,10 +208,10 @@ function Settings({ isOpened }: Settings) {
                 ℹ️ Get Model Info
               </TextButton>
               <TextButton
-                onClick={testDownloadModel}
+                onClick={testInstallModel}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
-                📥 Download {OLLAMA_TEST_MODEL}
+                📥 Install {OLLAMA_TEST_MODEL}
               </TextButton>
               <TextButton
                 onClick={testGenerateText}
@@ -329,6 +331,23 @@ function Settings({ isOpened }: Settings) {
               </ButtonWrapperWithBackground>
             </>
           )}
+          {provider === 'Embedded Ollama' && (
+            <>
+              <ButtonWrapperWithBackground
+                onClick={() => dispatch(openElement('manageModelsPopup'))}>
+                <TextAndIconButton
+                  className='text-and-icon-button'
+                  text={t`manage models`}
+                  style={{ marginLeft: '1rem' }}
+                  isDisabled>
+                  <DownloadIcon />
+                </TextAndIconButton>
+                <p className='settings__text'>
+                  {settings[provider]?.model || t`no model selected`}
+                </p>
+              </ButtonWrapperWithBackground>
+            </>
+          )}
         </div>
         <div className='settings__column'>
           <h2 className='settings__title'>
@@ -367,7 +386,7 @@ function Settings({ isOpened }: Settings) {
         {Object.entries(LANGUAGES).map(([key, value]) => (
           <SelectorOption
             key={value}
-            state='available'
+            state='simple'
             text={key}
             isActive={language === value}
             onClick={() => {
@@ -387,7 +406,7 @@ function Settings({ isOpened }: Settings) {
         {Object.entries(PROVIDERS).map(([key, value]) => (
           <SelectorOption
             key={value}
-            state='available'
+            state='simple'
             text={key}
             isActive={provider === value}
             onClick={() => {
@@ -609,6 +628,13 @@ function Settings({ isOpened }: Settings) {
           </div>
         </div>
       </Popup>
+
+      {/* ManageModels popup для Embedded Ollama */}
+      {isOpenManageModelsPopup && (
+        <ManageModels
+          onClose={() => dispatch(closeElement('manageModelsPopup'))}
+        />
+      )}
     </section>
   );
 }

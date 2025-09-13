@@ -5,7 +5,8 @@
 export type SelectorOptionState =
   | 'available' // Доступно для загрузки
   | 'loading' // В процессе загрузки
-  | 'installed'; // Установлено и доступно
+  | 'installed' // Установлено и доступно
+  | 'simple'; // Простой режим
 
 /**
  * @interface ProgressInfo
