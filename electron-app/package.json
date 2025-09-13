@@ -3,7 +3,7 @@
   "productName": "underlator",
   "version": "1.0.0",
   "description": "Confidential translator and interactive assistant for document analysis using local LLMs — as a desktop application.",
-  "main": ".webpack/main",
+  "main": "dist/electron/main.js",
   "scripts": {
     "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:8000 && npm run start:electron\"",
     "start:react": "cd ../react-app && cross-env BROWSER=none npm run start",
@@ -71,7 +71,7 @@
     ]
   },
   "build": {
-    "asar": false,
+    "asar": true,
     "appId": "com.example.underlator",
     "productName": "Underlator",
     "directories": {

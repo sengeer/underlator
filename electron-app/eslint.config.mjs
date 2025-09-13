@@ -7,7 +7,6 @@ export default [
   {
     ignores: [
       'dist/**/*',
-      'dist-ts/**/*',
       'out/**/*',
       'node_modules/**/*',
       '*.js',
