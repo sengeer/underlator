@@ -146,9 +146,7 @@ function createWindow(): void {
   /**
    * Определяет путь к preload скрипту
    */
-  const preloadPath = isDev
-    ? path.join(__dirname, '../renderer/main_window/index.js')
-    : path.join(__dirname, 'preload.js');
+  const preloadPath = path.join(__dirname, 'preload.js');
 
   // Создание браузерного окна
   mainWindow = new BrowserWindow({

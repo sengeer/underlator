@@ -29,7 +29,15 @@ export class EmbeddedOllamaElectronApi {
 
   constructor(config?: Partial<SettingsApiConfig>) {
     this.config = { ...DEFAULT_CONFIG, ...config };
-    this.setupProgressListeners();
+
+    // Проверяет доступность Electron API
+    if (typeof window !== 'undefined' && window.electron) {
+      this.setupProgressListeners();
+    } else {
+      console.warn(
+        'Electron API недоступен, некоторые функции могут не работать'
+      );
+    }
   }
 
   /**
@@ -44,7 +52,11 @@ export class EmbeddedOllamaElectronApi {
     try {
       this.log('Получение каталога моделей', params);
 
-      const response = await (window.electron as any).catalog.get({
+      if (!window.electron?.catalog) {
+        throw new Error('Electron API недоступен');
+      }
+
+      const response = await window.electron.catalog.get({
         forceRefresh: params.forceRefresh,
       });
 
@@ -75,7 +87,11 @@ export class EmbeddedOllamaElectronApi {
     try {
       this.log('Поиск моделей', filters);
 
-      const response = await (window.electron as any).catalog.search(filters);
+      if (!window.electron?.catalog) {
+        throw new Error('Electron API недоступен');
+      }
+
+      const response = await window.electron.catalog.search(filters);
 
       this.log('Результаты поиска', response);
 
@@ -104,7 +120,11 @@ export class EmbeddedOllamaElectronApi {
     try {
       this.log('Получение информации о модели', params);
 
-      const response = await (window.electron as any).catalog.getModelInfo({
+      if (!window.electron?.catalog) {
+        throw new Error('Electron API недоступен');
+      }
+
+      const response = await window.electron.catalog.getModelInfo({
         modelName: params.modelName,
       });
 
@@ -145,6 +165,10 @@ export class EmbeddedOllamaElectronApi {
       }
       if (onError) {
         this.errorCallbacks.set(params.name, onError);
+      }
+
+      if (!window.electron?.models) {
+        throw new Error('Electron API недоступен');
       }
 
       const response = await window.electron.models.install({
@@ -191,6 +215,10 @@ export class EmbeddedOllamaElectronApi {
     try {
       this.log('Удаление модели', params);
 
+      if (!window.electron?.models) {
+        throw new Error('Electron API недоступен');
+      }
+
       const response = await window.electron.models.remove({
         name: params.name,
       });
@@ -219,6 +247,10 @@ export class EmbeddedOllamaElectronApi {
     try {
       this.log('Получение списка установленных моделей');
 
+      if (!window.electron?.models) {
+        throw new Error('Electron API недоступен');
+      }
+
       const response = await window.electron.models.list();
 
       this.log('Список моделей получен', response);
@@ -241,6 +273,14 @@ export class EmbeddedOllamaElectronApi {
    * Подписывается на события прогресса от Electron IPC
    */
   private setupProgressListeners(): void {
+    // Проверяем доступность Electron API
+    if (!window.electron?.models) {
+      console.warn(
+        'Electron API недоступен для настройки слушателей прогресса'
+      );
+      return;
+    }
+
     // Подписывается на прогресс установки моделей
     window.electron.models.onInstallProgress(
       (progress: ModelInstallProgress) => {

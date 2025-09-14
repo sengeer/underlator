@@ -8,6 +8,7 @@ import DownloadIcon from '../../../shared/assets/icons/download-icon';
 import HttpIcon from '../../../shared/assets/icons/http-icon';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
 import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
+import { DEFAULT_LOCALE } from '../../../shared/lib/constants';
 import { useElectronModelsManagement } from '../../../shared/lib/hooks/use-electron-models-management';
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
@@ -50,8 +51,6 @@ import {
 } from '../tests';
 import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../tests';
 import ManageModels from './manage-embedded-ollama';
-
-const defaultLocale = import.meta.env.VITE_DEFAULT_LOCALE;
 
 export interface PopupSelectorData {
   [key: string]: string;
@@ -98,7 +97,7 @@ function Settings({ isOpened }: Settings) {
       );
     } else {
       const entry = Object.entries(LANGUAGES).find(
-        ([key, val]) => val === defaultLocale
+        ([key, val]) => val === DEFAULT_LOCALE
       );
 
       return entry ? entry[0] : '';
@@ -110,7 +109,7 @@ function Settings({ isOpened }: Settings) {
 
     return typeof localeFromStorage === 'string' && localeFromStorage !== ''
       ? localeFromStorage
-      : defaultLocale;
+      : DEFAULT_LOCALE;
   });
 
   const { t } = useLingui();
