@@ -5,7 +5,7 @@
   "description": "Confidential translator and interactive assistant for document analysis using local LLMs — as a desktop application.",
   "main": "dist/electron/main.js",
   "scripts": {
-    "start": "concurrently \"npm run start:react\" \"wait-on http://localhost:8000 && npm run start:electron\"",
+    "start": "npm run build && concurrently \"npm run start:react\" \"wait-on http://localhost:8000 && npm run start:electron\"",
     "start:react": "cd ../react-app && cross-env BROWSER=none npm run start",
     "start:electron": "cross-env NODE_ENV=development electron-forge start",
     "package": "electron-forge package",

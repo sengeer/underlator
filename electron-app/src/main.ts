@@ -2,12 +2,8 @@ const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
 const { Worker } = require('worker_threads');
 const ModelDownloader = require('./services/model-downloader');
-import {
-  OllamaManager,
-  OllamaApi,
-  ModelCatalogService,
-  IpcHandler,
-} from './services';
+import { OllamaManager, OllamaApi, ModelCatalogService } from './services';
+import { IpcHandler } from './presentation/ipc/ipc-handlers';
 import type {
   MenuTranslations,
   TransformersArgs,

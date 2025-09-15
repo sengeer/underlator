@@ -4,7 +4,7 @@
  * Предоставляет функции для валидации, логирования и форматирования IPC операций
  */
 
-import type { OllamaOperationResult } from '../types';
+import type { OllamaOperationResult } from '../../types';
 
 /**
  * @description Интерфейс для IPC сообщений

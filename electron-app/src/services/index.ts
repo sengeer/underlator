@@ -55,11 +55,3 @@ export {
   createTimeoutController,
   processStreamResponse,
 } from '../utils/error-handler';
-
-export { IpcHandler } from '../utils/ipc-handlers';
-
-export type {
-  IpcMessage,
-  IpcRequest,
-  IpcResponse,
-} from '../utils/ipc-handlers';
