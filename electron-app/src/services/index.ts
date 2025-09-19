@@ -16,6 +16,9 @@ export {
   createModelCatalogService,
 } from './model-catalog';
 
+// Экспорт Splash Manager
+export { SplashManager } from './splash-manager';
+
 // Экспорт типов
 export type {
   OllamaApiConfig,

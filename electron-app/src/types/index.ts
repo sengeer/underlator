@@ -42,6 +42,20 @@ export type {
   CachedCatalog,
 } from './catalog.types';
 
+// Экспорт типов splash screen
+export type {
+  SplashStatus,
+  SplashMessages,
+  SplashConfig,
+  SplashEventType,
+  SplashIpcMessage,
+  SplashOperationResult,
+  SplashStatusCallback,
+  SplashProgressCallback,
+  SplashCompleteCallback,
+  SplashErrorCallback,
+} from './splash.types';
+
 // Экспорт типов Electron
 export type {
   IpcMessage,

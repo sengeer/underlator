@@ -108,4 +108,30 @@ contextBridge.exposeInMainWorld('electron', {
     getModelInfo: (params: { modelName: string }) =>
       ipcRenderer.invoke('catalog:get-model-info', params),
   },
+
+  // API для splash screen
+  splash: {
+    updateStatus: (status: any) =>
+      ipcRenderer.invoke('splash:update-status', status),
+
+    setProgress: (progress: number) =>
+      ipcRenderer.invoke('splash:set-progress', { progress }),
+
+    complete: () => ipcRenderer.invoke('splash:complete', {}),
+
+    error: (error: string) => ipcRenderer.invoke('splash:error', { error }),
+
+    getStatus: () => ipcRenderer.invoke('splash:get-status', {}),
+
+    hide: () => ipcRenderer.invoke('splash:hide', {}),
+
+    on: (channel: string, callback: (message: any) => void) => {
+      const subscription = (_event: any, message: any) => callback(message);
+      ipcRenderer.on(channel, subscription);
+
+      return () => {
+        ipcRenderer.removeListener(channel, subscription);
+      };
+    },
+  },
 } as ElectronAPI);

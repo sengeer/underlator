@@ -1,0 +1,164 @@
+/* Анимация пульсации логотипа */
+@keyframes ripple {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+/* Основной контейнер splash screen */
+.splash-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #282a36;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Скрытое состояние splash screen */
+.splash-container.splash-container_state_hidden {
+  opacity: 0.5;
+}
+
+/* Переходное состояние */
+.splash-container.splash-container_state_transitioning {
+  opacity: 0;
+}
+
+/* Контейнер логотипа */
+.splash-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+/* Логотип с анимацией пульсации */
+.splash-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: ripple 2s ease-in-out infinite alternate;
+}
+
+/* Контейнер статуса */
+.splash-status-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 400px;
+  margin-bottom: 1rem;
+}
+
+/* Основной текст статуса */
+.splash-status-text {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #6272a4;
+  transition: color 0.2s ease-in-out;
+}
+
+/* Дополнительный текст деталей */
+/* .splash-details-text {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #6272a4;
+  line-height: 1.3;
+  opacity: 0.8;
+  transition: opacity 0.2s ease-in-out;
+} */
+
+/* Контейнер прогресса */
+.splash-progress-container {
+  width: 100%;
+  max-width: 14rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Полоса прогресса */
+.splash-progress-bar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: rgba(0 0 0 / 20%);
+  border-radius: 0.25rem;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+/* Заполнение прогресса */
+.splash-progress-fill {
+  height: 100%;
+  background-color: #50fa7b;
+  border-radius: 0.25rem;
+  width: 0%;
+  transition: width 0.3s ease-in-out;
+  box-shadow: 0 0 8px rgba(80, 250, 123, 0.4);
+}
+
+/* Текст прогресса */
+.splash-progress-text {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #6272a4;
+}
+
+/* Состояния для различных статусов */
+.splash-container[data-status='initializing'] .splash-status-text {
+  color: #6272a4;
+}
+
+.splash-container[data-status='checking_ollama'] .splash-status-text {
+  color: #6272a4;
+}
+
+.splash-container[data-status='starting_ollama'] .splash-status-text {
+  color: #6272a4;
+}
+
+.splash-container[data-status='waiting_for_server'] .splash-status-text {
+  color: #6272a4;
+}
+
+.splash-container[data-status='health_check'] .splash-status-text {
+  color: #6272a4;
+}
+
+.splash-container[data-status='creating_api'] .splash-status-text {
+  color: #6272a4;
+}
+
+.splash-container[data-status='creating_catalog'] .splash-status-text {
+  color: #6272a4;
+}
+
+.splash-container[data-status='ready'] .splash-status-text {
+  color: #50fa7b;
+}
+
+.splash-container[data-status='error'] .splash-status-text {
+  color: #ff5555;
+}
+
+/* Темная тема (уже применена, но для ясности) */
+@media (prefers-color-scheme: dark) {
+  .splash-container {
+    background-color: #282a36;
+  }
+}

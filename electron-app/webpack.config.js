@@ -1,197 +1,187 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
-const nodeExternals = require('webpack-node-externals');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 /**
- * Webpack конфигурация для Electron backend
+ * Webpack конфигурация для создания минифицированных файлов в dist/electron
  *
- * @description Настраивает сборку TypeScript файлов для Electron main процесса
- * с поддержкой Node.js окружения и оптимизацией для production.
+ * @description Настраивает сборку TypeScript файлов с минификацией
+ * и выводом результата в папку dist/electron для корректной работы приложения.
+ * Также копирует статические файлы splash screen.
  *
  * Документация: https://webpack.js.org/configuration/
  */
-module.exports = {
+
+module.exports = (env, argv) => {
   /**
-   * Целевая платформа для сборки
+   * Определение режима сборки
    *
-   * @description Указывает целевую платформу для webpack сборки.
-   * node означает, что код будет выполняться в Node.js окружении.
+   * @description Определяет режим сборки на основе переменной окружения NODE_ENV
+   * или аргумента командной строки --mode. Поддерживает как development, так и production режимы.
    *
-   * Обоснование: Electron main процесс работает в Node.js окружении,
-   * поэтому target должен быть установлен в 'node'.
-   *
-   * Документация: https://webpack.js.org/configuration/target/
+   * Обоснование: Динамическое определение режима позволяет использовать
+   * одну конфигурацию для разных сценариев сборки.
    */
-  target: 'node',
+  const isProduction =
+    process.env.NODE_ENV === 'production' || argv.mode === 'production';
 
-  /**
-   * Режим сборки
-   *
-   * @description Определяет режим сборки webpack.
-   * production включает оптимизации для уменьшения размера файлов.
-   *
-   * Обоснование: Production режим оптимизирует код для production
-   * использования, уменьшая размер bundle и улучшая производительность.
-   *
-   * Документация: https://webpack.js.org/configuration/mode/
-   */
-  mode: 'production',
-
-  /**
-   * Точки входа для сборки
-   *
-   * @description Определяет точки входа для webpack сборки.
-   * Каждый ключ создает отдельный bundle файл.
-   *
-   * Обоснование: Electron приложения требуют отдельные точки входа
-   * для main процесса, preload скрипта и worker процессов.
-   *
-   * Документация: https://webpack.js.org/configuration/entry-context/#entry
-   */
-  entry: {
+  return {
     /**
-     * Точка входа для main процесса Electron
+     * Режим сборки Webpack
      *
-     * @description Главный файл приложения, который создает BrowserWindow
-     * и настраивает IPC handlers.
+     * @description Определяет режим сборки Webpack на основе переменной isProduction.
+     * В production режиме включаются оптимизации, в development - отладочная информация.
      *
-     * Обоснование: Main процесс - это точка входа Electron приложения,
-     * которая инициализирует приложение и создает окна.
+     * Обоснование: Разные режимы требуют разных настроек:
+     * development - скорость сборки и отладка,
+     * production - размер и производительность.
+     *
+     * Документация: https://webpack.js.org/configuration/mode/
      */
-    main: './src/main.ts',
+    mode: isProduction ? 'production' : 'development',
 
     /**
-     * Точка входа для preload скрипта
+     * Точки входа для сборки
      *
-     * @description Preload скрипт для безопасного взаимодействия
-     * между renderer и main процессами.
+     * @description Определяет основные файлы, которые будут собраны в отдельные bundle.
+     * main - главный процесс Electron, preload - скрипт для безопасного взаимодействия.
      *
-     * Обоснование: Preload скрипт необходим для безопасного
-     * взаимодействия между процессами Electron.
+     * Обоснование: Electron требует отдельной сборки для main и preload процессов,
+     * так как они выполняются в разных контекстах с разными возможностями.
+     *
+     * Документация: https://webpack.js.org/configuration/entry-context/#entry
      */
-    preload: './src/preload.ts',
+    entry: {
+      main: './src/main.ts',
+      preload: './src/preload.ts',
+    },
 
     /**
-     * Точка входа для worker процесса
+     * Настройка модулей для обработки файлов
      *
-     * @description Worker процесс для выполнения тяжелых вычислений
-     * в отдельном потоке.
+     * @description Определяет правила обработки различных типов файлов в процессе сборки.
+     * Использует ts-loader для TypeScript и JavaScript файлов.
      *
-     * Обоснование: Worker процессы позволяют выполнять тяжелые операции
-     * без блокировки основного потока приложения.
+     * Обоснование: TypeScript файлы должны быть транспилированы в JavaScript
+     * для выполнения в Electron окружении. Исключение node_modules ускоряет сборку.
+     *
+     * Документация: https://webpack.js.org/configuration/module/
      */
-    worker: './src/worker.js',
-  },
+    module: {
+      rules: [
+        {
+          /**
+           * Правило для обработки TypeScript файлов
+           *
+           * @description Использует ts-loader для транспиляции .ts файлов в JavaScript.
+           * Исключает node_modules для ускорения сборки.
+           *
+           * Обоснование: TypeScript файлы должны быть транспилированы в JavaScript
+           * для выполнения в Node.js окружении Electron.
+           *
+           * Документация: https://github.com/TypeStrong/ts-loader
+           */
+          test: /\.ts$/,
+          exclude: /node_modules/,
+          use: {
+            loader: 'ts-loader',
+            options: {
+              /**
+               * Ускоряет сборку в development режиме
+               *
+               * @description Отключает проверку типов во время сборки,
+               * позволяя TypeScript компилятору работать быстрее.
+               *
+               * Обоснование: В development режиме важна скорость сборки,
+               * а проверка типов может выполняться асинхронно.
+               */
+              transpileOnly: true,
 
-  /**
-   * Настройки выходных файлов
-   *
-   * @description Определяет где и как создавать выходные файлы
-   * webpack сборки.
-   *
-   * Обоснование: Настройки output определяют структуру
-   * и формат выходных файлов для Electron.
-   *
-   * Документация: https://webpack.js.org/configuration/output/
-   */
-  output: {
-    /**
-     * Директория для выходных файлов
-     *
-     * @description Указывает абсолютный путь к директории,
-     * где будут созданы выходные файлы.
-     *
-     * Обоснование: Отдельная директория для выходных файлов
-     * упрощает сборку и предотвращает конфликты с исходным кодом.
-     *
-     * Документация: https://webpack.js.org/configuration/output/#outputpath
-     */
-    path: path.resolve(__dirname, 'dist/electron'),
+              /**
+               * Путь к tsconfig.json
+               *
+               * @description Указывает путь к файлу конфигурации TypeScript.
+               *
+               * Обоснование: ts-loader должен знать о настройках TypeScript
+               * проекта для правильной транспиляции.
+               */
+              configFile: path.resolve(__dirname, 'tsconfig.json'),
+            },
+          },
+        },
+        {
+          /**
+           * Правило для обработки JavaScript файлов
+           *
+           * @description Обрабатывает .js файлы через ts-loader для совместимости
+           * с TypeScript проектом и единообразной обработки.
+           *
+           * Обоснование: В TypeScript проекте могут быть JavaScript файлы,
+           * которые должны обрабатываться единообразно.
+           */
+          test: /\.js$/,
+          exclude: /node_modules/,
+          use: {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+            },
+          },
+        },
+      ],
+    },
 
     /**
-     * Шаблон имени выходных файлов
+     * Настройка разрешения модулей
      *
-     * @description Определяет шаблон имени для выходных файлов.
-     * [name] заменяется на ключ из entry объекта.
+     * @description Определяет как Webpack разрешает модули и их расширения.
+     * Поддерживает TypeScript, JavaScript и JSON файлы. Создает алиасы для упрощения импортов.
      *
-     * Обоснование: Динамические имена файлов позволяют создавать
-     * отдельные файлы для каждой точки входа.
+     * Обоснование: Алиасы упрощают импорты и делают код более читаемым,
+     * особенно в больших проектах с глубокой структурой папок.
      *
-     * Документация: https://webpack.js.org/configuration/output/#outputfilename
+     * Документация: https://webpack.js.org/configuration/resolve/
      */
-    filename: '[name].js',
-
-    /**
-     * Формат экспорта библиотеки
-     *
-     * @description Определяет формат экспорта для библиотеки.
-     * commonjs2 совместим с Node.js модульной системой.
-     *
-     * Обоснование: commonjs2 формат обеспечивает совместимость
-     * с Node.js и Electron модульной системой.
-     *
-     * Документация: https://webpack.js.org/configuration/output/#outputlibrarytarget
-     */
-    libraryTarget: 'commonjs2',
-  },
-
-  /**
-   * Модули для исключения из bundle
-   *
-   * @description Определяет модули, которые не должны включаться
-   * в bundle, а должны быть доступны во время выполнения.
-   *
-   * Обоснование: Node.js модули и Electron API должны быть доступны
-   * во время выполнения, а не включаться в bundle.
-   *
-   * Документация: https://webpack.js.org/configuration/externals/
-   */
-  externals: [
-    /**
-     * Автоматическое исключение Node.js модулей
-     *
-     * @description Автоматически исключает все модули из node_modules,
-     * кроме указанных в allowlist.
-     *
-     * Обоснование: Большинство Node.js модулей не должны включаться
-     * в bundle, так как они доступны в runtime.
-     *
-     * Документация: https://github.com/liady/webpack-node-externals
-     */
-    nodeExternals({
+    resolve: {
       /**
-       * Модули для включения в bundle
+       * Массив расширений файлов для автоматического разрешения
        *
-       * @description Список модулей, которые должны быть включены
-       * в bundle, несмотря на то, что они находятся в node_modules.
+       * @description Webpack будет искать файлы с указанными расширениями
+       * при импорте модулей без указания расширения.
        *
-       * Обоснование: webpack/hot/poll необходим для hot reload
-       * в development режиме.
+       * Обоснование: Позволяет импортировать модули без указания расширения,
+       * что упрощает код и соответствует стандартам TypeScript/JavaScript.
        */
-      allowlist: ['webpack/hot/poll?100'],
+      extensions: ['.ts', '.js', '.json'],
 
       /**
-       * Директории с модулями
+       * Алиасы для путей модулей
        *
-       * @description Указывает директории, которые содержат модули
-       * для исключения из bundle.
+       * @description Создает короткие пути для импорта модулей,
+       * упрощая структуру импортов в коде.
        *
-       * Обоснование: node_modules - стандартная директория
-       * для Node.js модулей.
+       * Обоснование: Алиасы упрощают импорты и делают код более читаемым,
+       * особенно в больших проектах с глубокой структурой папок.
        */
-      modulesDirs: ['node_modules'],
-    }),
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
+        '@services': path.resolve(__dirname, 'src/services'),
+        '@types': path.resolve(__dirname, 'src/types'),
+      },
+    },
 
     /**
-     * Ручное исключение критических модулей
+     * Настройка externals для исключения модулей из bundle
      *
-     * @description Явно исключает критические модули Node.js
-     * и Electron API из bundle.
+     * @description Исключает указанные модули из сборки, оставляя их
+     * как внешние зависимости. Необходимо для корректной работы с Electron API.
      *
-     * Обоснование: Эти модули должны быть доступны во время выполнения
-     * и не должны включаться в bundle.
+     * Обоснование: Electron API и Node.js модули должны быть доступны
+     * во время выполнения, а не включаться в bundle.
+     *
+     * Документация: https://webpack.js.org/configuration/externals/
      */
-    {
+    externals: {
       /**
        * Исключает Electron API из bundle
        *
@@ -199,7 +189,7 @@ module.exports = {
        * поэтому исключается из сборки.
        *
        * Обоснование: Electron предоставляет API через глобальные объекты,
-       * которые должны быть доступны в runtime.
+       * которые должны быть доступны в runtime, а не в bundle.
        */
       electron: 'commonjs electron',
 
@@ -209,7 +199,8 @@ module.exports = {
        * @description Node.js модуль fs должен быть доступен во время выполнения
        * для работы с файловой системой.
        *
-       * Обоснование: fs - стандартный Node.js модуль, доступный глобально.
+       * Обоснование: Electron main процесс работает в Node.js окружении,
+       * где fs доступен глобально.
        */
       fs: 'commonjs fs',
 
@@ -234,210 +225,227 @@ module.exports = {
        */
       worker_threads: 'commonjs worker_threads',
     },
-  ],
-
-  /**
-   * Настройки разрешения модулей
-   *
-   * @description Определяет как webpack разрешает модули и их расширения.
-   * Поддерживает TypeScript, JavaScript и JSON файлы.
-   *
-   * Обоснование: Electron приложения используют различные типы файлов,
-   * поэтому необходимо указать поддерживаемые расширения и алиасы.
-   *
-   * Документация: https://webpack.js.org/configuration/resolve/
-   */
-  resolve: {
-    /**
-     * Массив расширений файлов для автоматического разрешения
-     *
-     * @description Webpack будет искать файлы с указанными расширениями
-     * при импорте модулей без указания расширения.
-     *
-     * Обоснование: Позволяет импортировать модули без указания расширения,
-     * что упрощает код и соответствует стандартам TypeScript/JavaScript.
-     *
-     * Документация: https://webpack.js.org/configuration/resolve/#resolveextensions
-     */
-    extensions: ['.ts', '.js', '.json'],
 
     /**
-     * Алиасы для путей модулей
+     * Настройка плагинов Webpack
      *
-     * @description Создает короткие пути для импорта модулей,
-     * упрощая структуру импортов в коде.
+     * @description Определяет плагины, которые расширяют функциональность Webpack.
+     * Включает CopyWebpackPlugin для копирования статических файлов splash экрана.
      *
-     * Обоснование: Алиасы упрощают импорты и делают код более читаемым,
-     * особенно в больших проектах с глубокой структурой папок.
+     * Обоснование: Плагины необходимы для копирования статических ресурсов
+     * и других задач, которые не могут быть выполнены стандартными loaders.
      *
-     * Документация: https://webpack.js.org/configuration/resolve/#resolvealias
+     * Документация: https://webpack.js.org/configuration/plugins/
      */
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-      '@services': path.resolve(__dirname, 'src/services'),
-      '@types': path.resolve(__dirname, 'src/types'),
-    },
-  },
-
-  /**
-   * Настройки обработки модулей
-   *
-   * @description Определяет правила обработки различных типов файлов
-   * в процессе сборки webpack.
-   *
-   * Обоснование: Electron приложения используют TypeScript файлы,
-   * которые должны быть транспилированы в JavaScript.
-   *
-   * Документация: https://webpack.js.org/configuration/module/
-   */
-  module: {
-    /**
-     * Правила обработки файлов
-     *
-     * @description Массив правил, которые определяют как обрабатывать
-     * различные типы файлов в процессе сборки.
-     *
-     * Обоснование: Разные типы файлов требуют разных обработчиков
-     * для корректной сборки.
-     *
-     * Документация: https://webpack.js.org/configuration/module/#modulerules
-     */
-    rules: [
-      {
-        /**
-         * Правило для обработки TypeScript файлов
-         *
-         * @description Использует ts-loader для транспиляции .ts файлов в JavaScript.
-         * Исключает node_modules для ускорения сборки.
-         *
-         * Обоснование: TypeScript файлы должны быть транспилированы в JavaScript
-         * для выполнения в Node.js окружении Electron.
-         *
-         * Документация: https://github.com/TypeStrong/ts-loader
-         */
-        test: /\.ts$/,
-        use: {
-          loader: 'ts-loader',
-          options: {
-            /**
-             * Путь к tsconfig.json
-             *
-             * @description Указывает путь к файлу конфигурации TypeScript.
-             * Необходимо для корректной работы ts-loader с настройками проекта.
-             *
-             * Обоснование: ts-loader должен знать о настройках TypeScript
-             * проекта для правильной транспиляции.
-             *
-             * Документация: https://github.com/TypeStrong/ts-loader#configfile
-             */
-            configFile: path.resolve(__dirname, 'tsconfig.json'),
-
-            /**
-             * Отключает проверку типов во время сборки
-             *
-             * @description Отключает проверку типов во время сборки,
-             * позволяя TypeScript компилятору работать быстрее.
-             * Проверка типов выполняется отдельно через tsc.
-             *
-             * Обоснование: В production режиме важна скорость сборки,
-             * а проверка типов может выполняться отдельно.
-             *
-             * Документация: https://github.com/TypeStrong/ts-loader#transpileonly
-             */
-            transpileOnly: false,
+    plugins: [
+      /**
+       * Плагин для копирования статических файлов splash экрана
+       *
+       * @description Копирует файлы splash экрана из src/presentation/splash
+       * в dist/electron/presentation/splash для корректной работы приложения.
+       *
+       * Обоснование: Статические файлы (HTML, CSS, изображения) должны быть
+       * доступны в финальной сборке для отображения splash экрана.
+       *
+       * Документация: https://webpack.js.org/plugins/copy-webpack-plugin/
+       */
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: path.resolve(__dirname, 'src/presentation/splash'),
+            to: path.resolve(__dirname, 'dist/electron/presentation/splash'),
+            globOptions: {
+              ignore: ['**/.DS_Store', '**/Thumbs.db'],
+            },
+            noErrorOnMissing: true,
           },
-        },
-        exclude: /node_modules/,
-      },
-    ],
-  },
-
-  /**
-   * Настройки оптимизации сборки
-   *
-   * @description Определяет оптимизации для webpack сборки,
-   * включая минификацию и разделение кода.
-   *
-   * Обоснование: Оптимизации улучшают производительность
-   * и уменьшают размер выходных файлов.
-   *
-   * Документация: https://webpack.js.org/configuration/optimization/
-   */
-  optimization: {
-    /**
-     * Включает минификацию кода
-     *
-     * @description Включает минификацию JavaScript кода
-     * для уменьшения размера файлов.
-     *
-     * Обоснование: Минификация уменьшает размер файлов
-     * и улучшает производительность загрузки.
-     *
-     * Документация: https://webpack.js.org/configuration/optimization/#optimizationminimize
-     */
-    minimize: true,
-
-    /**
-     * Настройки минификатора
-     *
-     * @description Определяет какие минификаторы использовать
-     * для оптимизации кода.
-     *
-     * Обоснование: TerserPlugin обеспечивает эффективную минификацию
-     * JavaScript кода с сохранением функциональности.
-     *
-     * Документация: https://webpack.js.org/configuration/optimization/#optimizationminimizer
-     */
-    minimizer: [
-      new TerserPlugin({
-        /**
-         * Опции для Terser минификатора
-         *
-         * @description Настраивает параметры Terser минификатора
-         * для оптимизации JavaScript кода.
-         *
-         * Обоснование: Настройки Terser обеспечивают баланс
-         * между минификацией и сохранением функциональности.
-         *
-         * Документация: https://github.com/webpack-contrib/terser-webpack-plugin
-         */
-        terserOptions: {
-          /**
-           * Сохраняет имена классов
-           *
-           * @description Сохраняет оригинальные имена классов
-           * в минифицированном коде.
-           *
-           * Обоснование: Сохранение имен классов необходимо
-           * для корректной работы с Electron API и декораторами.
-           */
-          keep_classnames: true,
-
-          /**
-           * Сохраняет имена функций
-           *
-           * @description Сохраняет оригинальные имена функций
-           * в минифицированном коде.
-           *
-           * Обоснование: Сохранение имен функций необходимо
-           * для корректной работы с Electron API и отладки.
-           */
-          keep_fnames: true,
-        },
+        ],
       }),
     ],
-  },
 
-  /**
-   * Настройки source maps
-   *
-   * @description Определяет как генерировать source maps
-   * для связи скомпилированного кода с исходным.
-   *
-   * Обоснование: Source maps необходимы для отладки TypeScript кода,
-   * но отключены в production для уменьшения размера файлов.
-   *
-   * Документация: https://webpack.js.org/configuration/devtool/
-   */
-  devtool: false,
+    /**
+     * Настройка оптимизации с минификацией (только в production)
+     *
+     * @description Включает минификацию кода только в production режиме.
+     * Использует TerserPlugin для сжатия и оптимизации JavaScript кода.
+     *
+     * Обоснование: Минификация уменьшает размер bundle и улучшает производительность,
+     * но замедляет сборку, поэтому применяется только в production.
+     *
+     * Документация: https://webpack.js.org/configuration/optimization/
+     */
+    optimization: isProduction
+      ? {
+          /**
+           * Включает минификацию кода
+           *
+           * @description Активирует минификацию для уменьшения размера bundle.
+           *
+           * Обоснование: Минификация критически важна для production сборки
+           * для уменьшения размера файлов и улучшения производительности.
+           */
+          minimize: true,
+
+          /**
+           * Настройка минификаторов
+           *
+           * @description Определяет плагины для минификации кода.
+           * Использует TerserPlugin с настройками для Electron приложений.
+           *
+           * Обоснование: TerserPlugin - стандартный и эффективный минификатор
+           * для JavaScript кода с поддержкой современных возможностей.
+           */
+          minimizer: [
+            new TerserPlugin({
+              /**
+               * Параллельная обработка для ускорения сборки
+               *
+               * @description Использует все доступные CPU ядра для минификации.
+               *
+               * Обоснование: Параллельная обработка значительно ускоряет
+               * процесс минификации, особенно для больших проектов.
+               */
+              parallel: true,
+
+              /**
+               * Настройки Terser для минификации
+               *
+               * @description Конфигурирует поведение Terser для оптимальной минификации
+               * с сохранением совместимости с Electron API.
+               *
+               * Обоснование: Специальные настройки необходимы для корректной работы
+               * минифицированного кода в Electron окружении.
+               */
+              terserOptions: {
+                /**
+                 * Настройки форматирования вывода
+                 *
+                 * @description Сохраняет важные комментарии (лицензии, авторские права).
+                 *
+                 * Обоснование: Лицензионные комментарии должны сохраняться
+                 * для соответствия требованиям лицензий используемых библиотек.
+                 */
+                format: {
+                  comments: /@license|@preserve|@copyright/i,
+                },
+
+                /**
+                 * Настройки сжатия кода
+                 *
+                 * @description Удаляет console.log, debugger и другие отладочные конструкции.
+                 *
+                 * Обоснование: Отладочный код не нужен в production сборке
+                 * и его удаление уменьшает размер и улучшает производительность.
+                 */
+                compress: {
+                  drop_console: true,
+                  drop_debugger: true,
+                  pure_funcs: ['console.log', 'console.info', 'console.debug'],
+                },
+
+                /**
+                 * Настройки переименования переменных
+                 *
+                 * @description Сохраняет имена важных Electron API от переименования.
+                 *
+                 * Обоснование: Electron API должны сохранять свои имена
+                 * для корректной работы в runtime окружении.
+                 */
+                mangle: {
+                  reserved: [
+                    'BrowserWindow',
+                    'app',
+                    'ipcMain',
+                    'ipcRenderer',
+                    'contextBridge',
+                  ],
+                },
+              },
+
+              /**
+               * Извлечение комментариев в отдельный файл
+               *
+               * @description Создает файл licenses.txt с лицензионной информацией.
+               *
+               * Обоснование: Отдельный файл с лицензиями упрощает соответствие
+               * требованиям лицензий используемых библиотек.
+               */
+              extractComments: {
+                filename: 'licenses.txt',
+                banner: 'Licenses:\n',
+              },
+            }),
+          ],
+        }
+      : {},
+
+    /**
+     * Настройка вывода файлов сборки
+     *
+     * @description Определяет где и как будут созданы файлы сборки.
+     * Выводит файлы в папку dist/electron с очисткой предыдущих сборок.
+     *
+     * Обоснование: Папка dist/electron используется для production сборки,
+     * которая затем копируется в .webpack для совместимости с Electron Forge.
+     *
+     * Документация: https://webpack.js.org/configuration/output/
+     */
+    output: {
+      /**
+       * Путь для выходных файлов
+       *
+       * @description Указывает директорию, в которую будут записаны файлы сборки.
+       *
+       * Обоснование: dist/electron - стандартная папка для production сборки
+       * Electron приложений, отделенная от dev сборки.
+       */
+      path: path.resolve(__dirname, 'dist/electron'),
+
+      /**
+       * Шаблон имени файлов
+       *
+       * @description Определяет имена выходных файлов на основе точек входа.
+       *
+       * Обоснование: [name] заменяется на имя точки входа (main, preload),
+       * что создает понятные имена файлов.
+       */
+      filename: '[name].js',
+
+      /**
+       * Очистка выходной директории
+       *
+       * @description Удаляет все файлы из выходной директории перед сборкой.
+       *
+       * Обоснование: Очистка предотвращает накопление устаревших файлов
+       * и обеспечивает чистую сборку.
+       */
+      clean: true,
+    },
+
+    /**
+     * Настройка source maps для отладки
+     *
+     * @description Включает source maps в development режиме для отладки
+     * TypeScript кода. Отключает в production для оптимизации размера.
+     *
+     * Обоснование: Source maps необходимы для отладки TypeScript кода,
+     * но увеличивают размер bundle в production.
+     *
+     * Документация: https://webpack.js.org/configuration/devtool/
+     */
+    devtool: isProduction ? false : 'source-map',
+
+    /**
+     * Настройка target для Node.js окружения
+     *
+     * @description Указывает Webpack, что код будет выполняться в Node.js окружении
+     * Electron main процесса, а не в браузере.
+     *
+     * Обоснование: Electron main процесс работает в Node.js окружении,
+     * поэтому необходимо указать правильный target для корректной сборки.
+     *
+     * Документация: https://webpack.js.org/configuration/target/
+     */
+    target: 'electron-main',
+  };
 };

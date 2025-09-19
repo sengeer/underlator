@@ -193,6 +193,11 @@ export class IpcHandler {
       const startTime = Date.now();
       const requestId = Math.random().toString(36).substr(2, 9);
 
+      console.log(`🔧 IPC Handler вызван: ${operationName}`, {
+        requestId,
+        request,
+      });
+
       try {
         // Логируем входящий запрос
         this.logOperation(operationName, request, undefined, undefined);
@@ -207,6 +212,10 @@ export class IpcHandler {
         // Логируем успешный ответ
         this.logOperation(operationName, request, response, duration);
 
+        console.log(`✅ IPC Handler успешно выполнен: ${operationName}`, {
+          requestId,
+          duration,
+        });
         return response;
       } catch (error) {
         const duration = Date.now() - startTime;
@@ -216,6 +225,11 @@ export class IpcHandler {
         // Логируем ошибку
         this.logOperation(operationName, request, response, duration);
 
+        console.error(`❌ IPC Handler ошибка: ${operationName}`, {
+          requestId,
+          error,
+          duration,
+        });
         return response;
       }
     };

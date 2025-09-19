@@ -1,0 +1,41 @@
+@import url('./vendor/normalize.css');
+
+/* Подключение шрифта Roboto Mono */
+@import url('./assets/fonts/index.css');
+
+/* Адаптивность шрифта */
+* {
+  @media (width <= 1600px) {
+    font-size: 15px;
+  }
+}
+
+* {
+  @media (width <= 1440px) {
+    font-size: 14px;
+  }
+}
+
+* {
+  @media (width <= 1366px) {
+    font-size: 13px;
+  }
+}
+
+* {
+  @media (width <= 1280px) {
+    font-size: 12px;
+  }
+}
+
+* {
+  @media (width <= 1024px) {
+    font-size: 11px;
+  }
+}
+
+* {
+  @media (width <= 768px) {
+    font-size: 10px;
+  }
+}
