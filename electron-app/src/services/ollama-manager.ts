@@ -7,6 +7,7 @@
 
 import { ElectronOllama } from 'electron-ollama';
 import { app } from 'electron';
+import { mainWindow } from '../main';
 
 /**
  * @class OllamaManager
@@ -27,12 +28,12 @@ class OllamaManager {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      console.log('OllamaManager уже инициализирован');
+      console.log('✅ OllamaManager has already been initialized');
       return;
     }
 
     try {
-      console.log('Инициализация OllamaManager...');
+      console.log('🔄 Initialization of the OllamaManager...');
 
       // Создание экземпляра ElectronOllama с базовым путем
       this.electronOllama = new ElectronOllama({
@@ -41,12 +42,12 @@ class OllamaManager {
       });
 
       this.isInitialized = true;
-      console.log('OllamaManager успешно инициализирован');
+      console.log('✅ OllamaManager initialized successfully');
     } catch (error) {
-      console.error('Ошибка инициализации OllamaManager:', error);
+      console.error('❌ Error initializing the OllamaManager:', error);
       this.isInitialized = false;
       throw new Error(
-        `Не удалось инициализировать OllamaManager: ${(error as Error).message}`
+        `❌ Failed to initialize the OllamaManager: ${(error as Error).message}`
       );
     }
   }
@@ -60,23 +61,23 @@ class OllamaManager {
   async startOllama(): Promise<boolean> {
     if (!this.electronOllama) {
       throw new Error(
-        'OllamaManager не инициализирован. Вызовите initialize() сначала.'
+        '❌ OllamaManager is not initialized. Call initialize() first.'
       );
     }
 
     if (this.isStarting) {
-      console.log('Ollama уже запускается...');
+      console.log('🔄 Ollama is already starting...');
       return false;
     }
 
     try {
       this.isStarting = true;
-      console.log('Запуск Ollama сервера...');
+      console.log('🔄 Starting the Ollama server...');
 
       // Проверка текущего статуса сервера
       const isRunning = await this.isOllamaRunning();
       if (isRunning) {
-        console.log('Ollama сервер уже запущен');
+        console.log('✅ Ollama server is already running');
         return false;
       }
 
@@ -86,17 +87,21 @@ class OllamaManager {
       // Запуск сервера с автоматической загрузкой при необходимости
       await this.electronOllama.serve(metadata.version, {
         serverLog: message => console.log('[Ollama Server]', message),
-        downloadLog: (percent, message) =>
-          console.log('[Ollama Download]', `${percent}%`, message),
-        timeoutSec: 30,
+        downloadLog: percent =>
+          mainWindow.webContents.send('splash:status-update', {
+            status: 'downloading-ollama',
+            message: 'Downloading Ollama...',
+            progress: percent,
+          }),
+        timeoutSec: 1,
       });
 
-      console.log('Ollama сервер успешно запущен');
+      console.log('✅ Ollama server started successfully');
       return true;
     } catch (error) {
-      console.error('Ошибка запуска Ollama сервера:', error);
+      console.error('❌ Error starting the Ollama server:', error);
       throw new Error(
-        `Не удалось запустить Ollama сервер: ${(error as Error).message}`
+        `❌ Failed to start the Ollama server: ${(error as Error).message}`
       );
     } finally {
       this.isStarting = false;
@@ -111,23 +116,23 @@ class OllamaManager {
    */
   async stopOllama(): Promise<boolean> {
     if (!this.electronOllama) {
-      console.log('OllamaManager не инициализирован');
+      console.log('❌ OllamaManager is not initialized');
       return false;
     }
 
     if (this.isStopping) {
-      console.log('Ollama уже останавливается...');
+      console.log('🔄 Ollama is already stopping...');
       return false;
     }
 
     try {
       this.isStopping = true;
-      console.log('Остановка Ollama сервера...');
+      console.log('🔄 Stopping the Ollama server...');
 
       // Проверка текущего статуса сервера
       const isRunning = await this.isOllamaRunning();
       if (!isRunning) {
-        console.log('Ollama сервер уже остановлен');
+        console.log('✅ Ollama server is already stopped');
         return false;
       }
 
@@ -137,12 +142,12 @@ class OllamaManager {
         await server.stop();
       }
 
-      console.log('Ollama сервер успешно остановлен');
+      console.log('✅ Ollama server stopped successfully');
       return true;
     } catch (error) {
-      console.error('Ошибка остановки Ollama сервера:', error);
+      console.error('❌ Error stopping the Ollama server:', error);
       throw new Error(
-        `Не удалось остановить Ollama сервер: ${(error as Error).message}`
+        `❌ Failed to stop the Ollama server: ${(error as Error).message}`
       );
     } finally {
       this.isStopping = false;
@@ -165,7 +170,7 @@ class OllamaManager {
       const isRunning = await this.electronOllama.isRunning();
       return isRunning;
     } catch (error) {
-      console.warn('Ошибка проверки статуса Ollama сервера:', error);
+      console.warn('❌ Error checking the Ollama server status:', error);
       return false;
     }
   }
@@ -198,9 +203,9 @@ class OllamaManager {
         this.electronOllama = null;
       }
       this.isInitialized = false;
-      console.log('OllamaManager ресурсы очищены');
+      console.log('✅ OllamaManager resources cleaned up');
     } catch (error) {
-      console.error('Ошибка очистки ресурсов OllamaManager:', error);
+      console.error('❌ Error cleaning up the OllamaManager resources:', error);
     }
   }
 }

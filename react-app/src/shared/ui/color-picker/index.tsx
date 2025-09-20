@@ -26,20 +26,20 @@ function ColorPicker({ text, variable, color }: ColorPicker) {
     }
   }, []);
 
-  const updateColorVariable = (color: string) => {
+  function updateColorVariable(color: string) {
     document.documentElement.style.setProperty(variable, color);
-  };
+  }
 
-  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  function handleColorChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newColor = e.target.value;
     updateColorVariable(newColor);
     setSelectedColor(newColor);
     setStorageWrite(variable, newColor);
-  };
+  }
 
   function handleButtonClick() {
     if (colorInputRef.current) {
-      colorInputRef.current.click(); // Программно вызываем клик по input
+      colorInputRef.current.click(); // Программно вызывает клик по input
     }
   }
 

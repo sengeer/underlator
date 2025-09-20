@@ -6,6 +6,8 @@ import PdfViewer from '../../../widgets/pdf-viewer/ui';
 import Settings from '../../../widgets/settings/ui';
 import SideNavigate from '../../../widgets/side-navigate/ui';
 import TextTranslator from '../../../widgets/text-translator/ui';
+import { selectSplashVisible } from '../models/splash-screen-slice';
+import SplashScreen from './splash-screen';
 import './index.scss';
 
 function Main() {
@@ -21,6 +23,8 @@ function Main() {
     isElementOpen(state, 'settingsSection')
   );
 
+  const isSplashVisible = useSelector(selectSplashVisible);
+
   const { translateElectron } = useElectronTranslation();
 
   useEffect(() => {
@@ -29,10 +33,15 @@ function Main() {
 
   return (
     <main className='main'>
-      <SideNavigate />
-      <TextTranslator isOpened={isOpenTextTranslationSection} />
-      <PdfViewer isOpened={isOpenPdfTranslationSection} />
-      <Settings isOpened={isOpenSettingsSection} />
+      <SplashScreen />
+      {!isSplashVisible && (
+        <>
+          <SideNavigate />
+          <TextTranslator isOpened={isOpenTextTranslationSection} />
+          <PdfViewer isOpened={isOpenPdfTranslationSection} />
+          <Settings isOpened={isOpenSettingsSection} />
+        </>
+      )}
     </main>
   );
 }

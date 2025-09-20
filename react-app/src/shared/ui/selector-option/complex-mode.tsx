@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ProgressBar from '../progress-bar';
 import TextButton from '../text-button/text-button';
 import { SelectorOptionProps, SelectorOptionState } from './types';
 
@@ -33,12 +34,8 @@ function renderProgressBar(progressInfo: any) {
       <span className='selector-option__progress-percentage'>
         {Math.round(percentage)}%
       </span>
-      <div className='selector-option__progress-bar'>
-        <div
-          className='selector-option__progress-fill'
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
+      <ProgressBar percentage={percentage} style={{ flex: 1 }} />
+
       <span className='selector-option__progress-size'>
         {formatFileSize(currentSize)} / {formatFileSize(totalSize)}
       </span>

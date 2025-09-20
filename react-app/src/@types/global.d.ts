@@ -102,5 +102,12 @@ interface Window {
       search: (filters: any) => Promise<any>;
       getModelInfo: (params: { modelName: string }) => Promise<any>;
     };
+    splash: {
+      getStatus: () => Promise<any>;
+      onStatusUpdate: (callback: (status: any) => void) => () => void;
+      onProgressUpdate: (callback: (progress: any) => void) => () => void;
+      onComplete: (callback: () => void) => () => void;
+      onError: (callback: (error: any) => void) => () => void;
+    };
   };
 }

@@ -661,9 +661,6 @@ const config: ForgeConfig = {
          */
         entryPoints: [
           {
-            html: './src/presentation/splash/index.html',
-            js: './src/presentation/splash/index.js',
-
             /**
              * Имя окна для идентификации
              *

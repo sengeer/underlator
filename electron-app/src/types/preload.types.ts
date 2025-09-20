@@ -18,6 +18,7 @@ import type {
   ModelCatalog,
   OllamaModelInfo,
   CatalogFilters,
+  SplashMessages,
 } from './index';
 
 /**
@@ -55,5 +56,12 @@ export interface ElectronAPI {
     getModelInfo: (params: {
       modelName: string;
     }) => Promise<OllamaModelInfo | null>;
+  };
+  splash: {
+    getStatus: () => Promise<SplashMessages>;
+    onStatusUpdate: (callback: (status: SplashMessages) => void) => () => void;
+    onProgressUpdate: (callback: (progress: number) => void) => () => void;
+    onComplete: (callback: () => void) => () => void;
+    onError: (callback: (error: string) => void) => () => void;
   };
 }

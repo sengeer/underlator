@@ -1,0 +1,35 @@
+/* Полоса прогресса */
+.progress-bar {
+  position: relative;
+  overflow: hidden;
+  min-width: 8rem;
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--black-20);
+
+  /* Заполнение прогресса */
+  &__fill {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    border-radius: 0.25rem;
+    background: var(--accent);
+    transition: width 0.3s ease-in-out;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgb(255 255 255 / 30%),
+        transparent
+      );
+      animation: progress-shimmer 1.5s ease-in-out infinite;
+    }
+  }
+}

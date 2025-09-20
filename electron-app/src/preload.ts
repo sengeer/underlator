@@ -12,6 +12,7 @@ import type {
   OllamaDeleteRequest,
   CatalogFilters,
   ElectronAPI,
+  SplashMessages,
 } from './types';
 
 /**
@@ -111,26 +112,43 @@ contextBridge.exposeInMainWorld('electron', {
 
   // API для splash screen
   splash: {
-    updateStatus: (status: any) =>
-      ipcRenderer.invoke('splash:update-status', status),
-
-    setProgress: (progress: number) =>
-      ipcRenderer.invoke('splash:set-progress', { progress }),
-
-    complete: () => ipcRenderer.invoke('splash:complete', {}),
-
-    error: (error: string) => ipcRenderer.invoke('splash:error', { error }),
-
     getStatus: () => ipcRenderer.invoke('splash:get-status', {}),
 
-    hide: () => ipcRenderer.invoke('splash:hide', {}),
-
-    on: (channel: string, callback: (message: any) => void) => {
-      const subscription = (_event: any, message: any) => callback(message);
-      ipcRenderer.on(channel, subscription);
+    onStatusUpdate: (callback: (status: SplashMessages) => void) => {
+      const subscription = (_event: any, status: SplashMessages) =>
+        callback(status);
+      ipcRenderer.on('splash:status-update', subscription);
 
       return () => {
-        ipcRenderer.removeListener(channel, subscription);
+        ipcRenderer.removeListener('splash:status-update', subscription);
+      };
+    },
+
+    onProgressUpdate: (callback: (progress: number) => void) => {
+      const subscription = (_event: any, progress: number) =>
+        callback(progress);
+      ipcRenderer.on('splash:progress-update', subscription);
+
+      return () => {
+        ipcRenderer.removeListener('splash:progress-update', subscription);
+      };
+    },
+
+    onComplete: (callback: () => void) => {
+      const subscription = (_event: any) => callback();
+      ipcRenderer.on('splash:complete', subscription);
+
+      return () => {
+        ipcRenderer.removeListener('splash:complete', subscription);
+      };
+    },
+
+    onError: (callback: (error: string) => void) => {
+      const subscription = (_event: any, error: string) => callback(error);
+      ipcRenderer.on('splash:error', subscription);
+
+      return () => {
+        ipcRenderer.removeListener('splash:error', subscription);
       };
     },
   },

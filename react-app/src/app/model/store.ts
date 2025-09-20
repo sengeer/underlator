@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import splashScreenReducer from '../../pages/main/models/splash-screen-slice';
 import elementStateSlice from '../../shared/models/element-state-slice';
 import modelsManagementSlice from '../../shared/models/models-management-slice';
 import providerSettingsSlice from '../../shared/models/provider-settings-slice';
@@ -10,6 +11,7 @@ const store = configureStore({
     providerSettings: providerSettingsSlice,
     modelsManagement: modelsManagementSlice,
     manageModels: manageEmbeddedOllamaSlice,
+    splashScreen: splashScreenReducer,
   },
 });
 

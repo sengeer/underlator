@@ -1,13 +1,11 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 /**
  * Webpack конфигурация для создания минифицированных файлов в dist/electron
  *
  * @description Настраивает сборку TypeScript файлов с минификацией
  * и выводом результата в папку dist/electron для корректной работы приложения.
- * Также копирует статические файлы splash screen.
  *
  * Документация: https://webpack.js.org/configuration/
  */
@@ -230,38 +228,13 @@ module.exports = (env, argv) => {
      * Настройка плагинов Webpack
      *
      * @description Определяет плагины, которые расширяют функциональность Webpack.
-     * Включает CopyWebpackPlugin для копирования статических файлов splash экрана.
      *
-     * Обоснование: Плагины необходимы для копирования статических ресурсов
-     * и других задач, которые не могут быть выполнены стандартными loaders.
+     * Обоснование: Плагины необходимы для различных задач сборки
+     * и других операций, которые не могут быть выполнены стандартными loaders.
      *
      * Документация: https://webpack.js.org/configuration/plugins/
      */
-    plugins: [
-      /**
-       * Плагин для копирования статических файлов splash экрана
-       *
-       * @description Копирует файлы splash экрана из src/presentation/splash
-       * в dist/electron/presentation/splash для корректной работы приложения.
-       *
-       * Обоснование: Статические файлы (HTML, CSS, изображения) должны быть
-       * доступны в финальной сборке для отображения splash экрана.
-       *
-       * Документация: https://webpack.js.org/plugins/copy-webpack-plugin/
-       */
-      new CopyWebpackPlugin({
-        patterns: [
-          {
-            from: path.resolve(__dirname, 'src/presentation/splash'),
-            to: path.resolve(__dirname, 'dist/electron/presentation/splash'),
-            globOptions: {
-              ignore: ['**/.DS_Store', '**/Thumbs.db'],
-            },
-            noErrorOnMissing: true,
-          },
-        ],
-      }),
-    ],
+    plugins: [],
 
     /**
      * Настройка оптимизации с минификацией (только в production)

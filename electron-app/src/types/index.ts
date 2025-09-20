@@ -42,14 +42,10 @@ export type {
   CachedCatalog,
 } from './catalog.types';
 
-// Экспорт типов splash screen
+// Экспорт типов splash screen (React архитектура)
 export type {
   SplashStatus,
   SplashMessages,
-  SplashConfig,
-  SplashEventType,
-  SplashIpcMessage,
-  SplashOperationResult,
   SplashStatusCallback,
   SplashProgressCallback,
   SplashCompleteCallback,
