@@ -92,6 +92,7 @@ export interface MenuTranslations {
   copy?: string;
   paste?: string;
   selectAll?: string;
+  quit?: string;
 }
 
 /**

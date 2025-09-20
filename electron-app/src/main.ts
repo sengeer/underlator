@@ -40,6 +40,46 @@ const isMac: boolean = process.platform === 'darwin';
 const isWindows: boolean = process.platform === 'win32';
 
 let translations: MenuTranslations = {};
+let isQuitting: boolean = false; // Флаг для отслеживания намерения завершить приложение
+
+/**
+ * Очищает ресурсы при закрытии приложения
+ * Удаляет все IPC обработчики и завершает worker процессы
+ */
+function cleanupResources(): void {
+  console.log('🧹 Очистка ресурсов приложения...');
+
+  // Удаляет старые обработчики
+  ipcMain.removeHandler('transformers:run');
+  ipcMain.removeHandler('models:check-availability');
+  ipcMain.removeHandler('models:download');
+  ipcMain.removeHandler('models:get-available');
+  ipcMain.removeHandler('models:delete');
+
+  // Удаляет новые Ollama обработчики
+  ipcMain.removeHandler('ollama:generate');
+  ipcMain.removeHandler('models:install');
+  ipcMain.removeHandler('models:remove');
+  ipcMain.removeHandler('models:list');
+
+  // Удаляет обработчики каталога моделей
+  ipcMain.removeHandler('catalog:get');
+  ipcMain.removeHandler('catalog:search');
+  ipcMain.removeHandler('catalog:get-model-info');
+
+  // Удаляет обработчики splash screen
+  ipcMain.removeHandler('splash:get-status');
+
+  isHandlerRegistered = false;
+
+  if (worker) {
+    worker.terminate();
+    worker = null;
+  }
+
+  mainWindow = null;
+  console.log('✅ Ресурсы очищены');
+}
 
 /**
  * Отправляет статус splash screen в React приложение
@@ -210,6 +250,16 @@ function buildMenu(): void {
         { role: 'copy', label: translations.copy || 'Copy' },
         { role: 'paste', label: translations.paste || 'Paste' },
         { role: 'selectall', label: translations.selectAll || 'Select All' },
+        {
+          role: 'quit',
+          label: translations.quit || 'Quit',
+          click: () => {
+            // Устанавливает флаг завершения и корректно выходит из приложения
+            isQuitting = true;
+            cleanupResources();
+            app.quit();
+          },
+        },
         { role: 'toggleDevTools', visible: isDev },
       ],
     },
@@ -261,37 +311,29 @@ function createWindow(): void {
   console.log('🌐 Загружаем React приложение...');
   loadReactApp();
 
-  // Явное удаление обработчиков при закрытии окна
-  mainWindow.on('closed', () => {
-    // Удаляет старые обработчики
-    ipcMain.removeHandler('transformers:run');
-    ipcMain.removeHandler('models:check-availability');
-    ipcMain.removeHandler('models:download');
-    ipcMain.removeHandler('models:get-available');
-    ipcMain.removeHandler('models:delete');
-
-    // Удаляет новые Ollama обработчики
-    ipcMain.removeHandler('ollama:generate');
-    ipcMain.removeHandler('models:install');
-    ipcMain.removeHandler('models:remove');
-    ipcMain.removeHandler('models:list');
-
-    // Удаляет обработчики каталога моделей
-    ipcMain.removeHandler('catalog:get');
-    ipcMain.removeHandler('catalog:search');
-    ipcMain.removeHandler('catalog:get-model-info');
-
-    // Удаляет обработчики splash screen
-    ipcMain.removeHandler('splash:get-status');
-
-    isHandlerRegistered = false;
-
-    if (worker) {
-      worker.terminate();
-      worker = null;
+  /**
+   * Обработчик закрытия окна
+   * На macOS скрывает окно только при сворачивании, но позволяет завершение при намеренном выходе
+   * На других платформах закрывает окно полностью
+   */
+  mainWindow.on('close', (event: Electron.Event) => {
+    if (isMac && !isQuitting) {
+      // На macOS предотвращает закрытие только если пользователь не намеревается завершить приложение
+      // Это позволяет корректно сворачивать в dock, но завершать при явном выходе
+      event.preventDefault();
+      mainWindow?.hide();
+    } else {
+      // На других платформах или при намеренном завершении закрывает окно полностью
+      cleanupResources();
     }
+  });
 
-    mainWindow = null;
+  /**
+   * Обработчик полного закрытия окна
+   * Вызывается только когда окно действительно закрывается
+   */
+  mainWindow.on('closed', () => {
+    cleanupResources();
   });
 
   // Проверка на повторный вызов воркера
@@ -701,18 +743,39 @@ app.on('window-all-closed', async () => {
 
     app.quit();
   }
+  // На macOS не выходим из приложения, даже если все окна закрыты
+  // Пользователь должен явно выйти через Cmd + Q или меню
 });
 
 app.on('activate', () => {
-  // На OS X обычно пересоздается окно в приложении когда
-  // иконка в dock кликается и нет других открытых окон
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+  // На macOS восстанавливает окно при клике на иконку в dock
+  if (isMac) {
+    if (mainWindow) {
+      // Если окно существует, но скрыто - показываем его
+      if (mainWindow.isMinimized()) {
+        mainWindow.restore();
+      }
+      mainWindow.show();
+      mainWindow.focus();
+    } else {
+      // Если окно не существует - создаем новое
+      createWindow();
+    }
+  } else {
+    // На других платформах пересоздаем окно если его нет
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
   }
 });
 
 // Обработка завершения работы приложения
 app.on('before-quit', async () => {
+  console.log('🚪 Приложение завершает работу...');
+
+  // Устанавливает флаг завершения для корректной обработки закрытия окна
+  isQuitting = true;
+
   // Останавливает Ollama при принудительном закрытии
   try {
     await OllamaManager.stopOllama();
@@ -720,6 +783,17 @@ app.on('before-quit', async () => {
   } catch (error) {
     console.error('Ошибка остановки Ollama при закрытии:', error);
   }
+
+  // Очищает все ресурсы приложения
+  cleanupResources();
+});
+
+// Обработка системных команд завершения (например, через ПКМ на иконке в dock)
+app.on('will-quit', () => {
+  console.log('🚪 Системная команда завершения приложения...');
+
+  // Устанавливает флаг завершения для корректной обработки закрытия окна
+  isQuitting = true;
 });
 
 // В этом файле можно включить остальной специфичный для приложения
