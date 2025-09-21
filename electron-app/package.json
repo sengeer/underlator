@@ -1,6 +1,6 @@
 {
-  "name": "underlator",
-  "productName": "underlator",
+  "name": "Underlator",
+  "productName": "Underlator",
   "version": "1.0.0",
   "description": "Confidential translator and interactive assistant for document analysis using local LLMs — as a desktop application.",
   "main": "dist/electron/main.js",
