@@ -9,11 +9,6 @@ import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import type { Configuration } from 'webpack';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-// __dirname для ES модулей
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
  * Webpack конфигурация для main процесса Electron
@@ -231,7 +226,7 @@ const mainConfig: Configuration = {
    *
    * Документация: https://webpack.js.org/configuration/devtool/
    */
-  devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false,
+  devtool: process.env['NODE_ENV'] === 'development' ? 'source-map' : false,
 
   /**
    * Настройка режима сборки
@@ -245,7 +240,8 @@ const mainConfig: Configuration = {
    *
    * Документация: https://webpack.js.org/configuration/mode/
    */
-  mode: process.env.NODE_ENV === 'development' ? 'development' : 'production',
+  mode:
+    process.env['NODE_ENV'] === 'development' ? 'development' : 'production',
 };
 
 /**
@@ -410,7 +406,7 @@ const preloadConfig: Configuration = {
    *
    * Документация: https://webpack.js.org/configuration/devtool/
    */
-  devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false,
+  devtool: process.env['NODE_ENV'] === 'development' ? 'source-map' : false,
 
   /**
    * Настройка режима сборки для preload
@@ -424,7 +420,8 @@ const preloadConfig: Configuration = {
    *
    * Документация: https://webpack.js.org/configuration/mode/
    */
-  mode: process.env.NODE_ENV === 'development' ? 'development' : 'production',
+  mode:
+    process.env['NODE_ENV'] === 'development' ? 'development' : 'production',
 };
 
 /**
