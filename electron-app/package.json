@@ -58,7 +58,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@huggingface/transformers": "^3.7.2",
     "electron-ollama": "^0.1.25",
     "electron-squirrel-startup": "^1.0.0"
   },

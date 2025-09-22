@@ -50,9 +50,6 @@ export const getContextualTranslationConfig = (
       enabled: true,
       maxChunksPerRequest: 100,
     },
-    'Electron IPC': {
-      enabled: false,
-    },
     'Embedded Ollama': {
       enabled: true,
       maxChunksPerRequest: 50,

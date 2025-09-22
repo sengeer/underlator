@@ -1,1 +1,1 @@
-export type ProviderType = 'Electron IPC' | 'Ollama' | 'Embedded Ollama';
+export type ProviderType = 'Ollama' | 'Embedded Ollama';

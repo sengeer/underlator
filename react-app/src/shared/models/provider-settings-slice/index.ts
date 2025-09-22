@@ -24,11 +24,8 @@ interface State {
 function getInitialState(): ProviderSettingsState {
   const savedState = getStorageWrite('providerSettings');
   const defaultState: ProviderSettingsState = {
-    provider: 'Ollama',
+    provider: 'Embedded Ollama',
     settings: {
-      'Electron IPC': {
-        typeUse: 'translation',
-      },
       Ollama: {
         url: 'http://127.0.0.1:11434',
         model: 'gemma:2b',

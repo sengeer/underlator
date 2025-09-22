@@ -1,10 +1,8 @@
 import { embeddedOllamaProvider } from './embedded-ollama';
-import { localProvider } from './local';
 import { ollamaProvider } from './ollama';
 import { ProviderType } from './types';
 
 const providers: Record<ProviderType, ModelUseProvider> = {
-  'Electron IPC': localProvider,
   Ollama: ollamaProvider,
   'Embedded Ollama': embeddedOllamaProvider,
   // openrouter: openrouterProvider,

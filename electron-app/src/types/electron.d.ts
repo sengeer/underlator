@@ -36,15 +36,6 @@ declare global {
 export {};
 
 /**
- * Типы для IPC сообщений
- */
-export interface IpcMessage {
-  status: 'progress' | 'message' | 'complete' | 'error';
-  data?: any;
-  error?: string;
-}
-
-/**
  * Типы для прогресса загрузки моделей
  */
 export interface ModelDownloadProgress {
@@ -56,28 +47,6 @@ export interface ModelDownloadProgress {
   totalFiles: number;
   downloadedSize: number;
   totalSize: number;
-}
-
-/**
- * Типы для доступности моделей
- */
-export interface ModelAvailability {
-  [modelName: string]: boolean;
-}
-
-/**
- * Типы для результата операций с моделями
- */
-export interface ModelOperationResult {
-  success: boolean;
-  error?: string;
-}
-
-/**
- * Типы для доступных моделей
- */
-export interface AvailableModels {
-  [modelName: string]: any;
 }
 
 /**
@@ -93,21 +62,4 @@ export interface MenuTranslations {
   paste?: string;
   selectAll?: string;
   quit?: string;
-}
-
-/**
- * Типы для аргументов трансформеров
- */
-export interface TransformersArgs {
-  translate: string;
-  text: string;
-}
-
-/**
- * Типы для статуса воркера
- */
-export interface WorkerStatus {
-  status: 'progress' | 'message' | 'complete' | 'error';
-  data?: any;
-  error?: string;
 }

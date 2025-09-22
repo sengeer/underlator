@@ -9,7 +9,6 @@ import HttpIcon from '../../../shared/assets/icons/http-icon';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
 import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
 import { DEFAULT_LOCALE } from '../../../shared/lib/constants';
-import { useElectronModelsManagement } from '../../../shared/lib/hooks/use-electron-models-management';
 import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import { useFormAndValidation } from '../../../shared/lib/hooks/use-form-and-validation';
 import { loadCatalog } from '../../../shared/lib/i18n';
@@ -32,7 +31,6 @@ import {
 import { ProviderType } from '../../../shared/providers/types';
 import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background';
 import ColorPicker from '../../../shared/ui/color-picker';
-import Loader from '../../../shared/ui/loader';
 import Popup from '../../../shared/ui/popup';
 import PopupWithSearch from '../../../shared/ui/popup-with-search';
 import SelectorOption from '../../../shared/ui/selector-option/';
@@ -62,7 +60,6 @@ const LANGUAGES: PopupSelectorData = {
 };
 
 const PROVIDERS: PopupSelectorData = {
-  'Electron IPC': 'Electron IPC',
   Ollama: 'Ollama',
   'Embedded Ollama': 'Embedded Ollama',
 };
@@ -77,16 +74,6 @@ function Settings({ isOpened }: Settings) {
 
   const dispatch = useDispatch();
   const { provider, settings } = useSelector(selectProviderSettings);
-
-  const {
-    areRequiredModelsDownloaded,
-    hasDownloadingModels,
-    downloadModel,
-    formatFileSize,
-    getModelProgress,
-    isModelDownloaded,
-    isModelDownloading,
-  } = useElectronModelsManagement();
 
   const [languageKey, setLanguageKey] = useState(() => {
     const localeFromStorage = getStorageWrite('locale');
@@ -121,10 +108,6 @@ function Settings({ isOpened }: Settings) {
 
   const isOpenProviderSelectorPopup = useSelector((state) =>
     isElementOpen(state, 'providerSelectorPopup')
-  );
-
-  const isOpenModelsManagementPopup = useSelector((state) =>
-    isElementOpen(state, 'modelsManagementPopup')
   );
 
   const isOpenTestListModelsPopup = useSelector((state) =>
@@ -233,7 +216,7 @@ function Settings({ isOpened }: Settings) {
                 📋 Test list of models
               </TextButton>
             </div>
-            <p className='settings__models-description'>
+            <p className='settings__description'>
               <Trans>
                 Test buttons for Ollama IPC API and Model Catalog. Check console
                 for results.
@@ -310,23 +293,6 @@ function Settings({ isOpened }: Settings) {
                   value={values.model || ''}
                   onChange={handleChange}
                 />
-              </ButtonWrapperWithBackground>
-            </>
-          )}
-          {provider === 'Electron IPC' && (
-            <>
-              <ButtonWrapperWithBackground
-                onClick={() => dispatch(openElement('modelsManagementPopup'))}>
-                <TextAndIconButton
-                  className='text-and-icon-button'
-                  text={t`downloading models`}
-                  style={{ marginLeft: '1rem' }}
-                  isDisabled>
-                  <DownloadIcon />
-                </TextAndIconButton>
-                <p className='settings__text'>
-                  {areRequiredModelsDownloaded ? t`done` : t`there downloads`}
-                </p>
               </ButtonWrapperWithBackground>
             </>
           )}
@@ -441,192 +407,6 @@ function Settings({ isOpened }: Settings) {
           />
         ))}
       </PopupWithSearch>
-
-      {/* Models download pop-up */}
-      <Popup
-        isOpened={isOpenModelsManagementPopup}
-        setOpened={() => dispatch(closeElement('modelsManagementPopup'))}>
-        <div className='settings__models-management'>
-          <div className='settings__title-wrapper'>
-            <p className='settings__models-description'>
-              <Trans>
-                Download both or one of the models to enable offline
-                translation.
-              </Trans>
-            </p>
-          </div>
-
-          <div className='settings__models-list'>
-            {/* EN-RU model */}
-            <div className='settings__model-item'>
-              <div className='settings__model-item-row'>
-                <h4 className='settings__model-name'>
-                  <Trans>english → russian</Trans>
-                </h4>
-                <p className='settings__model-description'>opus-mt-en-ru</p>
-              </div>
-
-              {/* Download progress */}
-              {isModelDownloading('opus-mt-en-ru') && (
-                <div className='settings__model-progress'>
-                  {(() => {
-                    const progress = getModelProgress('opus-mt-en-ru');
-                    if (progress) {
-                      return (
-                        <>
-                          <div className='settings__progress-bar'>
-                            <div
-                              className='settings__progress-fill'
-                              style={{ width: `${progress.overallProgress}%` }}
-                            />
-                          </div>
-                          <div className='settings__progress-info'>
-                            <span>{Math.round(progress.overallProgress)}%</span>
-                            <span>
-                              {formatFileSize(progress.downloadedSize)} /{' '}
-                              {formatFileSize(progress.totalSize)}
-                            </span>
-                          </div>
-                          <p className='settings__progress-file'>
-                            {progress.currentFile} ({progress.completedFiles}/
-                            {progress.totalFiles})
-                          </p>
-                        </>
-                      );
-                    }
-                    return <Loader />;
-                  })()}
-                </div>
-              )}
-
-              {/* Action button */}
-              <div className='settings__model-item-row'>
-                {isModelDownloaded('opus-mt-en-ru') && (
-                  <p className='settings__model-status settings__model-status_success'>
-                    <Trans>downloaded</Trans>
-                  </p>
-                )}
-                {isModelDownloading('opus-mt-en-ru') && (
-                  <p className='settings__model-status settings__model-status_loading'>
-                    <Trans>downloading...</Trans>
-                  </p>
-                )}
-                {!isModelDownloaded('opus-mt-en-ru') &&
-                  !isModelDownloading('opus-mt-en-ru') && (
-                    <p className='settings__model-status settings__model-status_error'>
-                      <Trans>not downloaded</Trans>
-                    </p>
-                  )}
-                {!isModelDownloaded('opus-mt-en-ru') &&
-                  !isModelDownloading('opus-mt-en-ru') && (
-                    <TextButton
-                      onClick={() => downloadModel('opus-mt-en-ru')}
-                      className='settings__button'>
-                      <Trans>download</Trans>
-                    </TextButton>
-                  )}
-                {isModelDownloading('opus-mt-en-ru') && (
-                  <TextButton isDisabled className='settings__button'>
-                    <Trans>downloading...</Trans>
-                  </TextButton>
-                )}
-              </div>
-            </div>
-
-            {/* RU-EN model */}
-            <div className='settings__model-item'>
-              <div className='settings__model-item-row'>
-                <h4 className='settings__model-name'>
-                  <Trans>russian → english</Trans>
-                </h4>
-                <p className='settings__model-description'>opus-mt-ru-en</p>
-              </div>
-
-              {/* Download progress */}
-              {isModelDownloading('opus-mt-ru-en') && (
-                <div className='settings__model-progress'>
-                  {(() => {
-                    const progress = getModelProgress('opus-mt-ru-en');
-                    if (progress) {
-                      return (
-                        <>
-                          <div className='settings__progress-bar'>
-                            <div
-                              className='settings__progress-fill'
-                              style={{ width: `${progress.overallProgress}%` }}
-                            />
-                          </div>
-                          <div className='settings__progress-info'>
-                            <span>{Math.round(progress.overallProgress)}%</span>
-                            <span>
-                              {formatFileSize(progress.downloadedSize)} /{' '}
-                              {formatFileSize(progress.totalSize)}
-                            </span>
-                          </div>
-                          <p className='settings__progress-file'>
-                            {progress.currentFile} ({progress.completedFiles}/
-                            {progress.totalFiles})
-                          </p>
-                        </>
-                      );
-                    }
-                    return <Loader />;
-                  })()}
-                </div>
-              )}
-
-              {/* Action button */}
-              <div className='settings__model-item-row'>
-                {isModelDownloaded('opus-mt-ru-en') && (
-                  <p className='settings__model-status settings__model-status_success'>
-                    <Trans>downloaded</Trans>
-                  </p>
-                )}
-                {isModelDownloading('opus-mt-ru-en') && (
-                  <p className='settings__model-status settings__model-status_loading'>
-                    <Trans>downloading...</Trans>
-                  </p>
-                )}
-                {!isModelDownloaded('opus-mt-ru-en') &&
-                  !isModelDownloading('opus-mt-ru-en') && (
-                    <p className='settings__model-status settings__model-status_error'>
-                      <Trans>not downloaded</Trans>
-                    </p>
-                  )}
-                {!isModelDownloaded('opus-mt-ru-en') &&
-                  !isModelDownloading('opus-mt-ru-en') && (
-                    <TextButton
-                      onClick={() => downloadModel('opus-mt-ru-en')}
-                      className='settings__button'>
-                      <Trans>download</Trans>
-                    </TextButton>
-                  )}
-                {isModelDownloading('opus-mt-ru-en') && (
-                  <TextButton isDisabled className='settings__button'>
-                    <Trans>downloading...</Trans>
-                  </TextButton>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* General status: Download translation models to use offline translation. Both models are required for bidirectional translation. */}
-          <div className='settings__models-summary'>
-            {areRequiredModelsDownloaded && (
-              <p className='settings__summary-success'>
-                <Trans>All models downloaded.</Trans>
-              </p>
-            )}
-            {!areRequiredModelsDownloaded && (
-              <p className='settings__summary-info'>
-                <Trans>
-                  Both models are needed to translate en to ru and ru to en.
-                </Trans>
-              </p>
-            )}
-          </div>
-        </div>
-      </Popup>
 
       {/* ManageModels popup для Embedded Ollama */}
       {isOpenManageModelsPopup && (

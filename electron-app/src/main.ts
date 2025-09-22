@@ -1,16 +1,9 @@
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
-const { Worker } = require('worker_threads');
-const ModelDownloader = require('./services/model-downloader');
 import { OllamaManager, OllamaApi, ModelCatalogService } from './services';
 import { IpcHandler } from './presentation/ipc/ipc-handlers';
 import type {
   MenuTranslations,
-  TransformersArgs,
-  WorkerStatus,
-  ModelAvailability,
-  ModelOperationResult,
-  AvailableModels,
   OllamaGenerateRequest,
   OllamaPullRequest,
   OllamaDeleteRequest,
@@ -31,9 +24,7 @@ if (require('electron-squirrel-startup')) {
 const isDev: boolean = process.env['NODE_ENV'] === 'development';
 console.log('🔧 NODE_ENV:', process.env['NODE_ENV']);
 
-let worker: typeof Worker | null = null;
 export let mainWindow: typeof BrowserWindow | null = null;
-let isHandlerRegistered: boolean = false;
 let ollamaApi: OllamaApi | null = null;
 let modelCatalogService: ModelCatalogService | null = null;
 const isMac: boolean = process.platform === 'darwin';
@@ -49,14 +40,7 @@ let isQuitting: boolean = false; // Флаг для отслеживания н�
 function cleanupResources(): void {
   console.log('🧹 Очистка ресурсов приложения...');
 
-  // Удаляет старые обработчики
-  ipcMain.removeHandler('transformers:run');
-  ipcMain.removeHandler('models:check-availability');
-  ipcMain.removeHandler('models:download');
-  ipcMain.removeHandler('models:get-available');
-  ipcMain.removeHandler('models:delete');
-
-  // Удаляет новые Ollama обработчики
+  // Удаляет Ollama обработчики
   ipcMain.removeHandler('ollama:generate');
   ipcMain.removeHandler('models:install');
   ipcMain.removeHandler('models:remove');
@@ -69,13 +53,6 @@ function cleanupResources(): void {
 
   // Удаляет обработчики splash screen
   ipcMain.removeHandler('splash:get-status');
-
-  isHandlerRegistered = false;
-
-  if (worker) {
-    worker.terminate();
-    worker = null;
-  }
 
   mainWindow = null;
   console.log('✅ Ресурсы очищены');
@@ -335,105 +312,6 @@ function createWindow(): void {
   mainWindow.on('closed', () => {
     cleanupResources();
   });
-
-  // Проверка на повторный вызов воркера
-  let isWorkerBusy: boolean = false;
-
-  // Добавление обработчика для события `transformers:run`
-  if (!isHandlerRegistered) {
-    ipcMain.handle(
-      'transformers:run',
-      (_event: any, args: TransformersArgs) => {
-        return new Promise((resolve, reject) => {
-          if (isWorkerBusy) {
-            reject(new Error('Worker is busy'));
-            return;
-          }
-
-          if (!worker) {
-            worker = new Worker(path.join(__dirname, 'worker.js'));
-          }
-
-          isWorkerBusy = true;
-
-          // Удаление всех предыдущих слушателей сообщений
-          worker.removeAllListeners('message');
-
-          worker.on('message', (message: WorkerStatus) => {
-            mainWindow?.webContents.send('transformers:status', message);
-            if (message.status === 'complete') {
-              resolve(message.data);
-              isWorkerBusy = false;
-            } else if (message.status === 'error') {
-              reject(new Error(message.error));
-              isWorkerBusy = false;
-            }
-          });
-
-          worker.on('error', (error: Error) => {
-            reject(error);
-            isWorkerBusy = false;
-          });
-
-          worker.postMessage(args);
-        });
-      }
-    );
-
-    isHandlerRegistered = true;
-  }
-
-  // Добавление обработчиков для управления моделями
-  ipcMain.handle(
-    'models:check-availability',
-    async (): Promise<ModelAvailability> => {
-      try {
-        return await ModelDownloader.checkAllModelsAvailability();
-      } catch (error) {
-        throw new Error(`Failed to check models: ${(error as Error).message}`);
-      }
-    }
-  );
-
-  ipcMain.handle(
-    'models:download',
-    async (_event: any, modelName: string): Promise<ModelOperationResult> => {
-      try {
-        await ModelDownloader.downloadModel(modelName, (progress: any) => {
-          mainWindow?.webContents.send('models:download-progress', progress);
-        });
-        return { success: true };
-      } catch (error) {
-        throw new Error(
-          `Failed to download model ${modelName}: ${(error as Error).message}`
-        );
-      }
-    }
-  );
-
-  ipcMain.handle('models:get-available', (): AvailableModels => {
-    try {
-      return ModelDownloader.getAvailableModels();
-    } catch (error) {
-      throw new Error(
-        `Failed to get available models: ${(error as Error).message}`
-      );
-    }
-  });
-
-  ipcMain.handle(
-    'models:delete',
-    async (_event: any, modelName: string): Promise<ModelOperationResult> => {
-      try {
-        await ModelDownloader.deleteModel(modelName);
-        return { success: true };
-      } catch (error) {
-        throw new Error(
-          `Failed to delete model ${modelName}: ${(error as Error).message}`
-        );
-      }
-    }
-  );
 
   // Регистрирует splash screen handlers
   setupSplashIpcHandlers();

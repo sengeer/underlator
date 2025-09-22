@@ -54,12 +54,6 @@ export type {
 
 // Экспорт типов Electron
 export type {
-  IpcMessage,
   ModelDownloadProgress as ElectronModelDownloadProgress,
-  ModelAvailability,
-  ModelOperationResult as ElectronModelOperationResult,
-  AvailableModels,
   MenuTranslations,
-  TransformersArgs,
-  WorkerStatus,
 } from './electron';

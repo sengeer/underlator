@@ -3,7 +3,6 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 import type {
-  IpcMessage,
   ModelDownloadProgress,
   OllamaGenerateRequest,
   OllamaGenerateResponse,
@@ -19,19 +18,7 @@ import type {
  * Здесь используется API `contextBridge` для экспозиции кастомного API в renderer процесс
  */
 contextBridge.exposeInMainWorld('electron', {
-  run: (text: { translate: string; text: string }) =>
-    ipcRenderer.invoke('transformers:run', text),
-
-  onStatus: (callback: (message: IpcMessage) => void) => {
-    const subscription = (_event: any, message: IpcMessage) =>
-      callback(message);
-    ipcRenderer.on('transformers:status', subscription);
-
-    return () => {
-      ipcRenderer.removeListener('transformers:status', subscription);
-    };
-  },
-
+  // API для i18n локализации Electron
   updateTranslations: (translations: any) => {
     ipcRenderer.send('update-translations', translations);
   },
@@ -56,16 +43,6 @@ contextBridge.exposeInMainWorld('electron', {
 
   // API для управления моделями
   models: {
-    checkAvailability: () => ipcRenderer.invoke('models:check-availability'),
-
-    download: (modelName: string) =>
-      ipcRenderer.invoke('models:download', modelName),
-
-    getAvailable: () => ipcRenderer.invoke('models:get-available'),
-
-    delete: (modelName: string) =>
-      ipcRenderer.invoke('models:delete', modelName),
-
     onDownloadProgress: (
       callback: (progress: ModelDownloadProgress) => void
     ) => {

@@ -232,42 +232,36 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         element.style.color = 'var(--foreground)';
       });
 
-      if (provider === 'Electron IPC')
-        generate(payloadString, { responseMode: 'stringStream', think: false });
-      else {
-        setTextInfos(collectedTextInfos);
-        generate(payloadArray, {
-          responseMode: 'arrayStream',
-          think: false,
-          useContextualTranslation: true,
-        });
-      }
+      setTextInfos(collectedTextInfos);
+      generate(payloadArray, {
+        responseMode: 'arrayStream',
+        think: false,
+        useContextualTranslation: true,
+      });
     }
   }
 
   // Processing block translation results
   useEffect(() => {
-    if (provider !== 'Electron IPC') {
-      if (Object.keys(generatedResponse).length === 0) return;
+    if (Object.keys(generatedResponse).length === 0) return;
 
-      // Functional utility for updating text nodes
-      const shouldLogErrors =
-        (status === 'success' || status === 'error') && textInfos.length > 0;
-      const updateHandler = createUpdateHandler(textInfos, shouldLogErrors);
+    // Functional utility for updating text nodes
+    const shouldLogErrors =
+      (status === 'success' || status === 'error') && textInfos.length > 0;
+    const updateHandler = createUpdateHandler(textInfos, shouldLogErrors);
 
-      updateHandler(generatedResponse as Record<number, string>);
+    updateHandler(generatedResponse as Record<number, string>);
 
-      if (status === 'success' || status === 'error') {
-        if (status === 'error' && translationErrors) {
-          const span = document.createElement('span');
-          span.style.color = 'red';
-          span.textContent = `Ошибка перевода: ${translationErrors}`;
-        }
+    if (status === 'success' || status === 'error') {
+      if (status === 'error' && translationErrors) {
+        const span = document.createElement('span');
+        span.style.color = 'red';
+        span.textContent = `Ошибка перевода: ${translationErrors}`;
+      }
 
-        if (settings.typeUse !== 'instruction') {
-          setTextInfos([]);
-          resetResponse();
-        }
+      if (settings.typeUse !== 'instruction') {
+        setTextInfos([]);
+        resetResponse();
       }
     }
 
@@ -295,26 +289,24 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         ref={topBarRef}
         className={`pdf-viewer__top-bar${file ? ' pdf-viewer__top-bar_show' : ''}`}>
         <div className='pdf-viewer__btns-container'>
-          {provider !== 'Electron IPC' && (
-            <div className='pdf-viewer__switch-wrapper'>
-              <DecorativeTextAndIconButton text={t`translation`} />
-              <Switch
-                checked={settings.typeUse === 'instruction'}
-                onChange={() =>
-                  dispatch(
-                    setTypeUse({
-                      provider,
-                      typeUse:
-                        settings.typeUse === 'instruction'
-                          ? 'translation'
-                          : 'instruction',
-                    })
-                  )
-                }
-              />
-              <DecorativeTextAndIconButton text={t`instruction`} />
-            </div>
-          )}
+          <div className='pdf-viewer__switch-wrapper'>
+            <DecorativeTextAndIconButton text={t`translation`} />
+            <Switch
+              checked={settings.typeUse === 'instruction'}
+              onChange={() =>
+                dispatch(
+                  setTypeUse({
+                    provider,
+                    typeUse:
+                      settings.typeUse === 'instruction'
+                        ? 'translation'
+                        : 'instruction',
+                  })
+                )
+              }
+            />
+            <DecorativeTextAndIconButton text={t`instruction`} />
+          </div>
           <div className='pdf-viewer__translate-btns'>
             {settings.typeUse === 'translation' && (
               <>
@@ -357,25 +349,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
             <CloseIcon />
           </IconButton>
         </div>
-        {generatedResponse &&
-          provider === 'Electron IPC' &&
-          settings.typeUse === 'translation' && (
-            <div className='pdf-viewer__output-wrapper'>
-              <p className='pdf-viewer__output'>
-                {stringifyGenerateResponse(generatedResponse)}
-              </p>
-              <IconButton
-                style={{
-                  position: 'absolute',
-                  right: '1rem',
-                  top: 0,
-                }}
-                onClick={resetResponse}>
-                <BackspaceIcon />
-              </IconButton>
-            </div>
-          )}
-        {provider !== 'Electron IPC' && settings.typeUse === 'instruction' && (
+        {settings.typeUse === 'instruction' && (
           <>
             <div className='pdf-viewer__text-wrapper'>
               <input
@@ -456,7 +430,6 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                 : handleTranslateClick
             }>
             {buttonState.type === 'stop' &&
-            provider !== 'Electron IPC' &&
             settings.typeUse !== 'instruction' ? (
               <StopCircleIcon />
             ) : settings.typeUse === 'instruction' ? (
