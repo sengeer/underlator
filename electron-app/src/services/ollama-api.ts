@@ -61,29 +61,26 @@ export class OllamaApi {
    */
   async generate(
     request: OllamaGenerateRequest,
-    onChunk?: OllamaStreamCallback,
-    signal?: AbortSignal
+    onChunk?: OllamaStreamCallback
   ): Promise<string> {
     const context = `generate(${request.model})`;
 
     return withRetry(
       async () => {
-        // Создаем таймаут контроллер
+        // Создает таймаут контроллер
         const { controller: timeoutController } = createTimeoutController(
           this.config.timeout
         );
 
-        // Объединяем сигналы отмены
+        // Объединяет сигналы отмены
         const abortController = new AbortController();
-        if (signal) {
-          signal.addEventListener('abort', () => abortController.abort());
-        }
+
         timeoutController.signal.addEventListener('abort', () =>
           abortController.abort()
         );
 
         try {
-          // Подготавливаем запрос с параметрами по умолчанию
+          // Подготавливает запрос с параметрами по умолчанию
           const requestBody: OllamaGenerateRequest = {
             ...OLLAMA_DEFAULT_GENERATION_PARAMS,
             ...request,
@@ -104,7 +101,7 @@ export class OllamaApi {
             context
           );
 
-          // Обрабатываем streaming ответ
+          // Обрабатывает streaming ответ
           return await processStreamResponse(
             response,
             (chunk: OllamaGenerateResponse) => {
@@ -115,7 +112,7 @@ export class OllamaApi {
             }
           );
         } catch (error) {
-          // Обрабатываем ошибки отмены
+          // Обрабатывает ошибки отмены
           if (error instanceof Error && error.name === 'AbortError') {
             throw new Error('Operation was cancelled');
           }
@@ -189,13 +186,13 @@ export class OllamaApi {
           context
         );
 
-        // Обрабатываем streaming прогресс установки
+        // Обрабатывает streaming прогресс установки
         await processStreamResponse(
           response,
           (chunk: OllamaPullProgress) => {
             onProgress?.({ ...chunk, name: request.name });
 
-            // Проверяем на ошибки установки
+            // Проверяет на ошибки установки
             if (chunk.error) {
               throw new Error(`Model installation failed: ${chunk.error}`);
             }
@@ -245,7 +242,7 @@ export class OllamaApi {
         );
 
         // Ollama API для удаления модели возвращает пустой ответ при успехе
-        // Проверяем статус ответа вместо парсинга JSON
+        // Проверяет статус ответа вместо парсинга JSON
         if (response.ok) {
           return {
             success: true,
@@ -253,7 +250,7 @@ export class OllamaApi {
             status: 'success',
           };
         } else {
-          // Если статус не 200, пытаемся получить JSON с ошибкой
+          // Если статус не 200, пытается получить JSON с ошибкой
           try {
             const errorResult = (await response.json()) as OllamaDeleteResponse;
             return {
@@ -262,7 +259,7 @@ export class OllamaApi {
               status: 'error',
             };
           } catch {
-            // Если не удается парсить JSON, возвращаем ошибку по статусу
+            // Если не удается парсить JSON, возвращает ошибку по статусу
             return {
               success: false,
               data: { success: false },

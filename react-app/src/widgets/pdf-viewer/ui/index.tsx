@@ -69,7 +69,6 @@ function PdfViewer({ isOpened }: PdfTranslator) {
 
   const {
     status,
-    progressItems,
     generatedResponse,
     error: translationErrors,
     generate,
@@ -319,13 +318,9 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                     <GlobeUkIcon />
                   </DecorativeTextAndIconButton>
                 )}
-                {progressItems.file !== '' ? (
-                  <Loader />
-                ) : (
-                  <IconButton onClick={toggleTranslateLanguage}>
-                    <SyncIcon color='var(--main)' />
-                  </IconButton>
-                )}
+                <IconButton onClick={toggleTranslateLanguage}>
+                  <SyncIcon color='var(--main)' />
+                </IconButton>
                 {'ru-en' === translateLanguage ? (
                   <DecorativeTextAndIconButton text={t`english`}>
                     <GlobeIcon />

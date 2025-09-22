@@ -6,19 +6,12 @@
 declare global {
   interface Window {
     electron: {
-      run: (data: { translate: string; text: string }) => Promise<any>;
-      onStatus: (callback: (message: any) => void) => () => void;
-      updateTranslations: (translations: any) => void;
       ollama: {
         generate: (request: any) => Promise<string>;
+        stop: () => Promise<void>;
         onGenerateProgress: (callback: (progress: any) => void) => () => void;
       };
       models: {
-        checkAvailability: () => Promise<any>;
-        download: (modelName: string) => Promise<any>;
-        getAvailable: () => Promise<any>;
-        delete: (modelName: string) => Promise<any>;
-        onDownloadProgress: (callback: (progress: any) => void) => () => void;
         install: (request: any) => Promise<{ success: boolean }>;
         remove: (request: any) => Promise<{ success: boolean }>;
         list: () => Promise<any>;

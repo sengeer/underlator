@@ -27,6 +27,7 @@ console.log('🔧 NODE_ENV:', process.env['NODE_ENV']);
 export let mainWindow: typeof BrowserWindow | null = null;
 let ollamaApi: OllamaApi | null = null;
 let modelCatalogService: ModelCatalogService | null = null;
+let currentAbortController: AbortController | null = null;
 const isMac: boolean = process.platform === 'darwin';
 const isWindows: boolean = process.platform === 'win32';
 
@@ -364,6 +365,9 @@ function setupOllamaIpcHandlers(): void {
     'ollama:generate',
     IpcHandler.createHandlerWrapper(
       async (request: OllamaGenerateRequest): Promise<string> => {
+        // Создает новый AbortController для этой операции
+        currentAbortController = new AbortController();
+
         // Валидация входящего запроса
         const validation = IpcHandler.validateRequest(request, [
           'model',
@@ -375,16 +379,25 @@ function setupOllamaIpcHandlers(): void {
 
         let fullResponse = '';
 
-        await ollamaApi!.generate(request, chunk => {
-          // Отправка streaming ответов в renderer процесс
-          mainWindow?.webContents.send('ollama:generate-progress', chunk);
+        try {
+          await ollamaApi!.generate(
+            request,
+            chunk => {
+              // Отправка streaming ответов в renderer процесс
+              mainWindow?.webContents.send('ollama:generate-progress', chunk);
 
-          if (chunk.response) {
-            fullResponse += chunk.response;
-          }
-        });
+              if (chunk.response) {
+                fullResponse += chunk.response;
+              }
+            },
+            currentAbortController.signal
+          );
 
-        return fullResponse;
+          return fullResponse;
+        } finally {
+          // Очищает AbortController после завершения
+          currentAbortController = null;
+        }
       },
       'ollama:generate'
     )
@@ -452,6 +465,23 @@ function setupOllamaIpcHandlers(): void {
       const models = await ollamaApi!.listModels();
       return models;
     }, 'models:list')
+  );
+
+  /**
+   * Обработчик для остановки генерации через Ollama
+   * Прерывает текущую операцию генерации
+   */
+  ipcMain.handle(
+    'ollama:stop',
+    IpcHandler.createHandlerWrapper(async (): Promise<void> => {
+      if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+        console.log('✅ Генерация остановлена');
+      } else {
+        console.log('⚠️ Нет активной генерации для остановки');
+      }
+    }, 'ollama:stop')
   );
 }
 

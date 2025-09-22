@@ -27,12 +27,12 @@ interface TextTranslator {
 
 function TextTranslator({ isOpened }: TextTranslator) {
   const {
-    progressItems,
+    status,
     generatedResponse,
     generate,
     translateLanguage,
     toggleTranslateLanguage,
-    status,
+    stop,
   } = useModel();
 
   const { isCopied, handleCopy } = useCopying();
@@ -155,7 +155,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
           </AnimatingWrapper>
         </IconButton>
       </div>
-      {provider === 'Ollama' && status === 'process' ? (
+      {status === 'process' ? (
         <TextAndIconButton
           text={t`stop`}
           style={{
@@ -166,15 +166,12 @@ function TextTranslator({ isOpened }: TextTranslator) {
         </TextAndIconButton>
       ) : (
         <TextAndIconButton
-          text={progressItems.file === '' ? t`translate` : progressItems.file}
+          text={t`translate`}
           style={{
             margin: '0 auto 1rem',
-            width: 'min-content',
-            alignSelf: 'center',
           }}
-          isDisabled={progressItems.file !== ''}
           onClick={handleTranslation}>
-          {progressItems.file !== '' ? <Loader /> : <TranslateIcon />}
+          <TranslateIcon />
         </TextAndIconButton>
       )}
     </section>

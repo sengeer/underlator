@@ -77,21 +77,13 @@ interface ModelDownloadProgress {
 
 interface Window {
   electron: {
-    onStatus: (callback: (message: Message) => void) => () => void;
-    run: (message: any) => void;
     updateTranslations: (message: any) => void;
     ollama: {
       generate: (request: any) => Promise<string>;
+      stop: () => Promise<void>;
       onGenerateProgress: (callback: (progress: any) => void) => () => void;
     };
     models: {
-      checkAvailability: () => Promise<Record<string, boolean>>;
-      download: (modelName: string) => Promise<{ success: boolean }>;
-      getAvailable: () => Promise<Record<string, any>>;
-      delete: (modelName: string) => Promise<{ success: boolean }>;
-      onDownloadProgress: (
-        callback: (progress: ModelDownloadProgress) => void
-      ) => () => void;
       install: (request: any) => Promise<{ success: boolean }>;
       remove: (request: any) => Promise<{ success: boolean }>;
       list: () => Promise<any>;

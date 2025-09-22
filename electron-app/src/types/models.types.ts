@@ -59,29 +59,6 @@ export type ModelStatus =
   | 'corrupted';
 
 /**
- * @description Прогресс загрузки модели
- * Информация о процессе загрузки
- */
-export interface ModelDownloadProgress {
-  /** Название модели */
-  modelName: string;
-  /** Текущий файл */
-  currentFile: string;
-  /** Прогресс текущего файла */
-  fileProgress: number;
-  /** Общий прогресс */
-  overallProgress: number;
-  /** Количество завершенных файлов */
-  completedFiles: number;
-  /** Общее количество файлов */
-  totalFiles: number;
-  /** Загруженный размер */
-  downloadedSize: number;
-  /** Общий размер */
-  totalSize: number;
-}
-
-/**
  * @description Каталог моделей
  * Список доступных моделей
  */
@@ -109,19 +86,4 @@ export interface ModelFilters {
   status?: ModelStatus;
   /** Теги */
   tags?: string[];
-}
-
-/**
- * @description Результат операции с моделью
- * Универсальный тип для результатов операций
- */
-export interface ModelOperationResult<T = any> {
-  /** Успешность операции */
-  success: boolean;
-  /** Результат операции */
-  data?: T;
-  /** Ошибка при выполнении */
-  error?: string;
-  /** Время выполнения */
-  duration?: number;
 }

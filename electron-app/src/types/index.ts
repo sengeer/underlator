@@ -26,10 +26,8 @@ export type {
 export type {
   OllamaModelInfo,
   ModelStatus,
-  ModelDownloadProgress,
   ModelCatalog,
   ModelFilters,
-  ModelOperationResult,
 } from './models.types';
 
 // Экспорт типов парсера

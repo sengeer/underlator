@@ -5,11 +5,6 @@
  */
 
 import type {
-  IpcMessage,
-  ModelDownloadProgress,
-  ModelAvailability,
-  ModelOperationResult,
-  AvailableModels,
   OllamaGenerateRequest,
   OllamaGenerateResponse,
   OllamaPullRequest,
@@ -26,23 +21,15 @@ import type {
  * Обеспечивает безопасное взаимодействие между main и renderer процессами
  */
 export interface ElectronAPI {
-  run: (text: { translate: string; text: string }) => Promise<any>;
-  onStatus: (callback: (message: IpcMessage) => void) => () => void;
   updateTranslations: (translations: any) => void;
   ollama: {
     generate: (request: OllamaGenerateRequest) => Promise<string>;
+    stop: () => Promise<void>;
     onGenerateProgress: (
       callback: (progress: OllamaGenerateResponse) => void
     ) => () => void;
   };
   models: {
-    checkAvailability: () => Promise<ModelAvailability>;
-    download: (modelName: string) => Promise<ModelOperationResult>;
-    getAvailable: () => Promise<AvailableModels>;
-    delete: (modelName: string) => Promise<ModelOperationResult>;
-    onDownloadProgress: (
-      callback: (progress: ModelDownloadProgress) => void
-    ) => () => void;
     install: (request: OllamaPullRequest) => Promise<{ success: boolean }>;
     remove: (request: OllamaDeleteRequest) => Promise<{ success: boolean }>;
     list: () => Promise<any>;

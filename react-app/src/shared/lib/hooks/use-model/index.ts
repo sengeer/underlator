@@ -12,10 +12,6 @@ const defaultParams = {
 export function useModel() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const [progressItems, setProgressItems] = useState<Progress>({
-    file: '',
-    progress: 0,
-  });
   const [status, setStatus] = useState<Status>('idle');
   const [generatedResponse, setGeneratedResponse] = useState<
     string | Record<number, string>
@@ -53,10 +49,6 @@ export function useModel() {
     [providerSettings]
   );
 
-  const handleProgress = useCallback((progress: Progress) => {
-    setProgressItems(progress);
-  }, []);
-
   async function generate(
     texts: string[] | string,
     params: Params = defaultParams
@@ -76,7 +68,6 @@ export function useModel() {
         translateLanguage,
         onModelResponse: (response: ModelResponse) =>
           handleResponse(response, params),
-        onProgress: handleProgress,
         signal: controller.signal,
         params: params,
       });
@@ -101,12 +92,18 @@ export function useModel() {
   function stop() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
+
+      // Дополнительно вызываем IPC остановку для Embedded Ollama
+      if (providerSettings.provider === 'Embedded Ollama') {
+        window.electron.ollama.stop().catch((error: Error) => {
+          console.error('Failed to stop generation via IPC:', error);
+        });
+      }
     }
   }
 
   return {
     status,
-    progressItems,
     generatedResponse,
     translateLanguage,
     toggleTranslateLanguage,

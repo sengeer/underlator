@@ -3,7 +3,6 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 import type {
-  ModelDownloadProgress,
   OllamaGenerateRequest,
   OllamaGenerateResponse,
   OllamaPullRequest,
@@ -28,6 +27,8 @@ contextBridge.exposeInMainWorld('electron', {
     generate: (request: OllamaGenerateRequest) =>
       ipcRenderer.invoke('ollama:generate', request),
 
+    stop: () => ipcRenderer.invoke('ollama:stop'),
+
     onGenerateProgress: (
       callback: (progress: OllamaGenerateResponse) => void
     ) => {
@@ -43,18 +44,6 @@ contextBridge.exposeInMainWorld('electron', {
 
   // API для управления моделями
   models: {
-    onDownloadProgress: (
-      callback: (progress: ModelDownloadProgress) => void
-    ) => {
-      const subscription = (_event: any, progress: ModelDownloadProgress) =>
-        callback(progress);
-      ipcRenderer.on('models:download-progress', subscription);
-
-      return () => {
-        ipcRenderer.removeListener('models:download-progress', subscription);
-      };
-    },
-
     // Новые методы для Ollama моделей
     install: (request: OllamaPullRequest) =>
       ipcRenderer.invoke('models:install', request),
