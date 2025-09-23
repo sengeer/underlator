@@ -116,8 +116,8 @@ export function processContextualResponse(
   // Handle extra chunks (model might have added extra delimiters)
   if (chunks.length > originalChunksCount) {
     console.warn(
-      `Expected ${originalChunksCount} chunks, but got ${chunks.length}. ` +
-        'Combining extra chunks into the last one.'
+      `⚠️ Expected ${originalChunksCount} chunks, but got ${chunks.length}. ` +
+        'Combining extra chunks into the last one'
     );
 
     // Combine extra chunks into the last expected chunk

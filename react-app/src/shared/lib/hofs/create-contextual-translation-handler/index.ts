@@ -35,7 +35,7 @@ const createContextualTranslationHandler = <TApiResponse>(
 
     if (!preparation.success) {
       throw new Error(
-        `Failed to prepare contextual translation: ${preparation.error}`
+        `❌ Failed to prepare contextual translation: ${preparation.error}`
       );
     }
 
@@ -44,7 +44,7 @@ const createContextualTranslationHandler = <TApiResponse>(
     // Make API call
     const response = await apiCall(prompt, params, signal);
     if (!response) {
-      throw new Error('Failed to get response for contextual translation');
+      throw new Error('❌ Failed to get response for contextual translation');
     }
 
     let fullResponse = '';
@@ -68,7 +68,7 @@ const createContextualTranslationHandler = <TApiResponse>(
         }
       },
       (error: string, line?: string) => {
-        console.warn('Failed to parse chunk:', error, line);
+        console.error('❌ Failed to parse chunk:', error, line);
       }
     );
 
@@ -76,8 +76,8 @@ const createContextualTranslationHandler = <TApiResponse>(
     const finalResult = processContextualResponse(finalResponse, texts.length);
 
     if (!finalResult.success) {
-      console.warn(
-        `Contextual translation processing failed: ${finalResult.error}`
+      console.error(
+        `❌ Contextual translation processing failed: ${finalResult.error}`
       );
       return texts.reduce(
         (acc, text, index) => {

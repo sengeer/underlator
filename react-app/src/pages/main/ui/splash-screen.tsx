@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '../../../app/';
 import logo from '../../../shared/assets/images/logo.svg';
+import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
 import ProgressBar from '../../../shared/ui/progress-bar';
 import { splashScreenApi } from '../apis/splash-screen-api';
 import {
@@ -34,6 +35,8 @@ import './splash-screen.scss';
 const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
   const dispatch = useAppDispatch();
   const splashState = useSelector(selectSplashScreenState);
+
+  const { translations } = useElectronTranslation();
 
   /**
    * @description Обработчик обновления статуса
@@ -138,12 +141,12 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
       {/* Логотип с анимацией */}
       <img src={logo} alt='Underlator' className='splash-screen__logo' />
 
-      {/* Cтатус если доступен */}
-      {splashState.status?.message && (
-        <div className='splash-screen__text splash-screen__text_color_foreground'>
-          {splashState.status?.message}
-        </div>
-      )}
+      {/* Cтатус */}
+      <div className='splash-screen__text splash-screen__text_color_foreground'>
+        {splashState.status?.message
+          ? splashState.status?.message
+          : translations.DOWNLOADING_APP}
+      </div>
 
       {/* Дополнительная информация если доступна */}
       {splashState.status?.details && (

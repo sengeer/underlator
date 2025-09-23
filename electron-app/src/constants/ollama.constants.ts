@@ -138,19 +138,19 @@ export const OLLAMA_DEFAULT_GENERATION_PARAMS = {
 export const OLLAMA_ERROR_MESSAGES = {
   /** Сервер недоступен */
   SERVER_UNAVAILABLE:
-    'Ollama сервер недоступен. Проверьте, что Ollama запущен.',
+    '❌ The Ollama server is unavailable. Check that Ollama is running.',
   /** Модель не найдена */
-  MODEL_NOT_FOUND: 'Модель не найдена. Проверьте название модели.',
+  MODEL_NOT_FOUND: '❌ The model was not found. Check the model name.',
   /** Недостаточно места */
-  INSUFFICIENT_SPACE: 'Недостаточно места на диске для установки модели.',
+  INSUFFICIENT_SPACE: '❌ There is not enough disk space to install the model.',
   /** Ошибка сети */
-  NETWORK_ERROR: 'Ошибка сети при подключении к Ollama серверу.',
+  NETWORK_ERROR: '❌ Network error when connecting to the Ollama server.',
   /** Таймаут операции */
-  TIMEOUT_ERROR: 'Операция превысила время ожидания.',
+  TIMEOUT_ERROR: '❌ The operation exceeded the waiting time.',
   /** Неверные параметры */
-  INVALID_PARAMS: 'Неверные параметры запроса.',
+  INVALID_PARAMS: '❌ Invalid request parameters.',
   /** Неизвестная ошибка */
-  UNKNOWN_ERROR: 'Произошла неизвестная ошибка.',
+  UNKNOWN_ERROR: '❌ An unknown error has occurred.',
 } as const;
 
 /**

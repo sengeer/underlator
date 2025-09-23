@@ -25,10 +25,10 @@ async function handleContextualTranslation(
 
   if (!validation.valid) {
     console.warn(
-      `Contextual translation validation failed: ${validation.reason}`
+      `⚠️ Contextual translation validation failed: ${validation.reason}`
     );
     throw new Error(
-      `Contextual translation not possible: ${validation.reason}`
+      `❌ Contextual translation not possible: ${validation.reason}`
     );
   }
 
@@ -44,7 +44,7 @@ async function handleContextualTranslation(
       );
       if (!response) {
         throw new Error(
-          'Failed to get response from Ollama for contextual translation'
+          '❌ Failed to get response from Ollama for contextual translation'
         );
       }
       return response;
@@ -115,7 +115,7 @@ async function handleInstruction(
   );
 
   if (!response) {
-    throw new Error(`Failed to get response`);
+    throw new Error(`❌ Failed to get response`);
   }
 
   const reader = response.body?.getReader();
@@ -126,7 +126,7 @@ async function handleInstruction(
       if (onModelResponse) onModelResponse(chunkResponse);
     },
     (error: string, line: string) => {
-      console.warn('Failed to parse JSON chunk:', line, error);
+      console.warn('⚠️ Failed to parse JSON chunk:', line, error);
     }
   );
 
@@ -148,7 +148,7 @@ export const ollamaProvider: ModelUseProvider = {
     params,
   }: GenerateOptions) => {
     if (!model) {
-      throw new Error('Ollama model is not specified');
+      throw new Error('❌ Ollama model is not specified');
     }
 
     const ollamaApi = new OllamaApi(url);

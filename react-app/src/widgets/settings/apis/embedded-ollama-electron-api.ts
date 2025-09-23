@@ -35,7 +35,7 @@ export class EmbeddedOllamaElectronApi {
       this.setupProgressListeners();
     } else {
       console.warn(
-        'Electron API недоступен, некоторые функции могут не работать'
+        '⚠️ Electron API is unavailable, and some functions may not work'
       );
     }
   }
@@ -50,23 +50,18 @@ export class EmbeddedOllamaElectronApi {
     params: GetCatalogParams = {}
   ): Promise<ModelOperationResult> {
     try {
-      this.log('Получение каталога моделей', params);
-
       if (!window.electron?.catalog) {
-        throw new Error('Electron API недоступен');
+        throw new Error('❌ Electron API is unavailable');
       }
 
       const response = await window.electron.catalog.get({
         forceRefresh: params.forceRefresh,
       });
 
-      this.log('Каталог получен', response);
-
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
-      this.log('Ошибка получения каталога', errorMessage);
+        error instanceof Error ? error.message : '❌ Unknown error';
 
       return {
         success: false,
@@ -85,21 +80,16 @@ export class EmbeddedOllamaElectronApi {
     filters: ModelSearchFilters
   ): Promise<ModelOperationResult> {
     try {
-      this.log('Поиск моделей', filters);
-
       if (!window.electron?.catalog) {
-        throw new Error('Electron API недоступен');
+        throw new Error('❌ Electron API is unavailable');
       }
 
       const response = await window.electron.catalog.search(filters);
 
-      this.log('Результаты поиска', response);
-
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
-      this.log('Ошибка поиска моделей', errorMessage);
+        error instanceof Error ? error.message : '❌ Unknown error';
 
       return {
         success: false,
@@ -118,23 +108,18 @@ export class EmbeddedOllamaElectronApi {
     params: GetModelInfoParams
   ): Promise<ModelOperationResult> {
     try {
-      this.log('Получение информации о модели', params);
-
       if (!window.electron?.catalog) {
-        throw new Error('Electron API недоступен');
+        throw new Error('❌ Electron API is unavailable');
       }
 
       const response = await window.electron.catalog.getModelInfo({
         modelName: params.modelName,
       });
 
-      this.log('Информация о модели получена', response);
-
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
-      this.log('Ошибка получения информации о модели', errorMessage);
+        error instanceof Error ? error.message : '❌ Unknown error';
 
       return {
         success: false,
@@ -157,8 +142,6 @@ export class EmbeddedOllamaElectronApi {
     onError?: ModelErrorCallback
   ): Promise<ModelOperationResult> {
     try {
-      this.log('Установка модели', params);
-
       // Callbacks для прогресса и ошибок установки модели
       if (onProgress) {
         this.progressCallbacks.set(params.name, onProgress);
@@ -168,15 +151,13 @@ export class EmbeddedOllamaElectronApi {
       }
 
       if (!window.electron?.models) {
-        throw new Error('Electron API недоступен');
+        throw new Error('❌ Electron API is unavailable');
       }
 
       const response = await window.electron.models.install({
         name: params.name,
         tag: params.tag,
       });
-
-      this.log('Модель установлена', response);
 
       // Очищает callbacks
       this.progressCallbacks.delete(params.name);
@@ -185,8 +166,7 @@ export class EmbeddedOllamaElectronApi {
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
-      this.log('Ошибка установки модели', errorMessage);
+        error instanceof Error ? error.message : '❌ Unknown error';
 
       // Вызывает callback ошибки, если есть
       const errorCallback = this.errorCallbacks.get(params.name);
@@ -213,23 +193,18 @@ export class EmbeddedOllamaElectronApi {
    */
   async removeModel(params: RemoveModelParams): Promise<ModelOperationResult> {
     try {
-      this.log('Удаление модели', params);
-
       if (!window.electron?.models) {
-        throw new Error('Electron API недоступен');
+        throw new Error('❌ Electron API is unavailable');
       }
 
       const response = await window.electron.models.remove({
         name: params.name,
       });
 
-      this.log('Модель удалена', response);
-
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
-      this.log('Ошибка удаления модели', errorMessage);
+        error instanceof Error ? error.message : '❌ Unknown error';
 
       return {
         success: false,
@@ -245,21 +220,16 @@ export class EmbeddedOllamaElectronApi {
    */
   async listInstalledModels(): Promise<ModelOperationResult> {
     try {
-      this.log('Получение списка установленных моделей');
-
       if (!window.electron?.models) {
-        throw new Error('Electron API недоступен');
+        throw new Error('❌ Electron API is unavailable');
       }
 
       const response = await window.electron.models.list();
 
-      this.log('Список моделей получен', response);
-
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
-      this.log('Ошибка получения списка моделей', errorMessage);
+        error instanceof Error ? error.message : '❌ Unknown error';
 
       return {
         success: false,
@@ -276,7 +246,7 @@ export class EmbeddedOllamaElectronApi {
     // Проверяем доступность Electron API
     if (!window.electron?.models) {
       console.warn(
-        'Electron API недоступен для настройки слушателей прогресса'
+        '⚠️ Electron API is not available for configuring progress listeners'
       );
       return;
     }
@@ -304,18 +274,6 @@ export class EmbeddedOllamaElectronApi {
         }
       }
     );
-  }
-
-  /**
-   * @description Логирует операции если включено логирование
-   * Используется для отладки и мониторинга
-   * @param message - Сообщение для логирования
-   * @param data - Дополнительные данные
-   */
-  private log(message: string, data?: any): void {
-    if (this.config.enableLogging) {
-      console.log(`🔌 EmbeddedOllamaApi: ${message}`, data || '');
-    }
   }
 
   /**

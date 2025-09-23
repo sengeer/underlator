@@ -270,7 +270,7 @@ function ManageModels({ onClose }: ManageModelsProps) {
       animationDuration={80}
       animationDelay={40}
       animationType='scaleIn'
-      searchPlaceholder={t`Поиск моделей...`}
+      searchPlaceholder={t`Model...`}
       searchDebounceMs={300}
       searchValue={searchQuery}
       onSearchChange={handleSearchChange}
@@ -283,7 +283,7 @@ function ManageModels({ onClose }: ManageModelsProps) {
             textAlign: 'center',
             color: 'var(--foreground)',
           }}>
-          <Trans>Модели не найдены</Trans>
+          <Trans>Мodels not found</Trans>
         </div>
       ) : (
         displayModels.map(({ model, displayState }) => (

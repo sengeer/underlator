@@ -1,13 +1,14 @@
+import { ElectronOllama } from 'electron-ollama';
+import { app } from 'electron';
+import { mainWindow } from '../main';
+import { translations } from '../main';
+
 /**
  * @module OllamaManager
  * @description Сервис для управления Ollama через electron-ollama библиотеку
  * Обеспечивает автоматическую установку, запуск и остановку Ollama сервера
  * Реализует fallback логику для обработки ошибок и восстановления работоспособности
  */
-
-import { ElectronOllama } from 'electron-ollama';
-import { app } from 'electron';
-import { mainWindow } from '../main';
 
 /**
  * @class OllamaManager
@@ -86,11 +87,11 @@ class OllamaManager {
 
       // Запуск сервера с автоматической загрузкой при необходимости
       await this.electronOllama.serve(metadata.version, {
-        serverLog: message => console.log('[Ollama Server]', message),
+        serverLog: message => console.log('🔌 [Ollama Server]', message),
         downloadLog: percent =>
           mainWindow.webContents.send('splash:status-update', {
             status: 'downloading-ollama',
-            message: 'Downloading Ollama...',
+            message: translations.DOWNLOADING_OLLAMA || 'Downloading Ollama...',
             progress: percent,
           }),
         timeoutSec: 1,
@@ -170,7 +171,7 @@ class OllamaManager {
       const isRunning = await this.electronOllama.isRunning();
       return isRunning;
     } catch (error) {
-      console.warn('❌ Error checking the Ollama server status:', error);
+      console.error('❌ Error checking the Ollama server status:', error);
       return false;
     }
   }

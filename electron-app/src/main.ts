@@ -31,7 +31,7 @@ let currentAbortController: AbortController | null = null;
 const isMac: boolean = process.platform === 'darwin';
 const isWindows: boolean = process.platform === 'win32';
 
-let translations: MenuTranslations = {};
+export let translations: MenuTranslations = {};
 let isQuitting: boolean = false; // Флаг для отслеживания намерения завершить приложение
 
 /**
@@ -39,7 +39,7 @@ let isQuitting: boolean = false; // Флаг для отслеживания н�
  * Удаляет все IPC обработчики и завершает worker процессы
  */
 function cleanupResources(): void {
-  console.log('🧹 Очистка ресурсов приложения...');
+  console.log('🧹 Cleaning up application resources...');
 
   // Удаляет Ollama обработчики
   ipcMain.removeHandler('ollama:generate');
@@ -56,7 +56,7 @@ function cleanupResources(): void {
   ipcMain.removeHandler('splash:get-status');
 
   mainWindow = null;
-  console.log('✅ Ресурсы очищены');
+  console.log('✅ Resources have been cleared');
 }
 
 /**
@@ -65,12 +65,12 @@ function cleanupResources(): void {
  * @param status - Статус для отправки в React splash screen
  */
 function sendSplashStatus(status: SplashMessages): void {
-  console.log('📤 Отправка статуса splash screen:', status);
+  console.log('📤 Sending the splash screen status:', status);
   if (mainWindow) {
     mainWindow.webContents.send('splash:status-update', status);
-    console.log('✅ Статус отправлен в React приложение');
+    console.log('✅ The status has been sent to the React app');
   } else {
-    console.error('❌ Main window не доступен для отправки статуса');
+    console.error('❌ The main window is not available for sending the status');
   }
 }
 
@@ -102,11 +102,15 @@ function sendSplashError(error: string): void {
  */
 async function initializeOllama(): Promise<void> {
   try {
-    console.log('🚀 Начинаем инициализацию Ollama...');
+    console.log('🚀 Starting initialization of Ollama...');
+
+    const downloadMessage =
+      translations.DOWNLOADING_APP || 'Downloading App...';
 
     // Отправляет статус проверки Ollama в React splash screen
     sendSplashStatus({
       status: 'checking-ollama',
+      message: downloadMessage,
       progress: 10,
     });
 
@@ -116,6 +120,7 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус запуска Ollama в React splash screen
     sendSplashStatus({
       status: 'starting-ollama',
+      message: downloadMessage,
       progress: 25,
     });
 
@@ -123,14 +128,15 @@ async function initializeOllama(): Promise<void> {
     const isStarted = await OllamaManager.startOllama();
 
     if (isStarted) {
-      console.log('Ollama сервер успешно запущен');
+      console.log('✅ Ollama server is running successfully');
     } else {
-      console.log('Ollama сервер уже был запущен');
+      console.log('🔄 The Ollama server has already been started');
     }
 
     // Отправляет статус ожидания сервера в React splash screen
     sendSplashStatus({
       status: 'waiting-for-server',
+      message: downloadMessage,
       progress: 40,
     });
 
@@ -140,20 +146,24 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус проверки здоровья в React splash screen
     sendSplashStatus({
       status: 'health-check',
+      message: downloadMessage,
       progress: 60,
     });
 
     // Проверяет доступность сервера
     const isHealthy = await ollamaApi.healthCheck();
     if (isHealthy) {
-      console.log('Ollama API доступен');
+      console.log('✅ The Ollama API is available');
     } else {
-      console.warn('Ollama API недоступен, но сервер запущен');
+      console.warn(
+        '⚠️ The Ollama API is unavailable, but the server is running'
+      );
     }
 
     // Отправляет статус создания API в React splash screen
     sendSplashStatus({
       status: 'creating-api',
+      message: downloadMessage,
       progress: 75,
     });
 
@@ -163,35 +173,37 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус создания каталога в React splash screen
     sendSplashStatus({
       status: 'creating-catalog',
+      message: downloadMessage,
       progress: 90,
     });
 
     // Регистрирует IPC handlers после создания всех сервисов
-    console.log('🔧 Регистрация IPC handlers...');
+    console.log('🔧 IPC handlers registration...');
     setupOllamaIpcHandlers();
     setupCatalogIpcHandlers();
-    console.log('✅ IPC handlers зарегистрированы');
+    console.log('✅ IPC handlers are registered');
 
     // Отправляет статус готовности в React splash screen
     sendSplashStatus({
       status: 'ready',
+      message: downloadMessage,
       progress: 100,
     });
 
-    console.log('Ollama успешно инициализирован');
+    console.log('✅ Ollama initialized successfully');
 
     // Отправляет сигнал завершения инициализации в React splash screen
     sendSplashComplete();
   } catch (error) {
-    console.error('Ошибка инициализации Ollama:', error);
+    console.error('❌ Ollama initialization error:', error);
 
     // Отправляет ошибку в React splash screen
     sendSplashError(
-      `Не удалось инициализировать Ollama: ${(error as Error).message}`
+      `❌ Failed to initialize Ollama: ${(error as Error).message}`
     );
 
     throw new Error(
-      `Не удалось инициализировать Ollama: ${(error as Error).message}`
+      `❌ Failed to initialize Ollama: ${(error as Error).message}`
     );
   }
 }
@@ -216,21 +228,21 @@ function buildMenu(): void {
   // Шаблон кросс-платформенного меню
   const template: any[] = [
     {
-      label: translations.menu || 'Menu',
+      label: translations.MENU || 'Menu',
       submenu: [
         {
           role: 'about',
-          label: translations.about || 'About',
+          label: translations.ABOUT || 'About',
         },
-        { role: 'undo', label: translations.undo || 'Undo' },
-        { role: 'redo', label: translations.redo || 'Redo' },
-        { role: 'cut', label: translations.cut || 'Cut' },
-        { role: 'copy', label: translations.copy || 'Copy' },
-        { role: 'paste', label: translations.paste || 'Paste' },
-        { role: 'selectall', label: translations.selectAll || 'Select All' },
+        { role: 'undo', label: translations.UNDO || 'Undo' },
+        { role: 'redo', label: translations.REDO || 'Redo' },
+        { role: 'cut', label: translations.CUT || 'Cut' },
+        { role: 'copy', label: translations.COPY || 'Copy' },
+        { role: 'paste', label: translations.PASTE || 'Paste' },
+        { role: 'selectall', label: translations.SELECT_ALL || 'Select All' },
         {
           role: 'quit',
-          label: translations.quit || 'Quit',
+          label: translations.QUIT || 'Quit',
           click: () => {
             // Устанавливает флаг завершения и корректно выходит из приложения
             isQuitting = true;
@@ -263,7 +275,7 @@ function buildMenu(): void {
  * Загружает React приложение сразу после создания окна
  */
 function createWindow(): void {
-  console.log('🏗️ Создание главного окна...');
+  console.log('🏗️ Creating the main window...');
   buildMenu();
 
   /**
@@ -286,7 +298,7 @@ function createWindow(): void {
   });
 
   // Загружает React приложение сразу после создания окна
-  console.log('🌐 Загружаем React приложение...');
+  console.log('🌐 Uploading the React app...');
   loadReactApp();
 
   /**
@@ -327,16 +339,16 @@ function createWindow(): void {
  */
 function loadReactApp(): void {
   if (!mainWindow) {
-    console.error('Main window not available');
+    console.error('❌ Main window not available');
     return;
   }
 
   if (isDev) {
-    console.log('🔧 Загружаем URL в dev режиме: http://localhost:8000');
+    console.log('🔧 Uploading the URL in dev mode: http://localhost:8000');
     mainWindow.loadURL('http://localhost:8000');
   } else {
     console.log(
-      '🔧 Загружаем файл в production режиме:',
+      '🔧 Uploading the file in production mode:',
       path.join(__dirname, '../react/index.html')
     );
     mainWindow.loadFile(path.join(__dirname, '../react/index.html'));
@@ -349,12 +361,12 @@ function loadReactApp(): void {
  * Использует централизованные утилиты для валидации, логирования и обработки ошибок
  */
 function setupOllamaIpcHandlers(): void {
-  console.log('🔧 Настройка Ollama IPC handlers...');
+  console.log('🔧 Setting up Ollama IPC handlers...');
   if (!ollamaApi) {
-    console.error('❌ OllamaApi не инициализирован');
+    console.error('❌ OllamaApi is not initialized');
     return;
   }
-  console.log('✅ OllamaApi доступен, регистрируем handlers...');
+  console.log('✅ OllamaApi is available, register handlers...');
 
   /**
    * Обработчик для генерации текста через Ollama
@@ -477,9 +489,9 @@ function setupOllamaIpcHandlers(): void {
       if (currentAbortController) {
         currentAbortController.abort();
         currentAbortController = null;
-        console.log('✅ Генерация остановлена');
+        console.log('✅ Generation stopped');
       } else {
-        console.log('⚠️ Нет активной генерации для остановки');
+        console.log('⚠️ There is no active generation to stop');
       }
     }, 'ollama:stop')
   );
@@ -491,12 +503,12 @@ function setupOllamaIpcHandlers(): void {
  * Использует централизованные утилиты для валидации, логирования и обработки ошибок
  */
 function setupCatalogIpcHandlers(): void {
-  console.log('🔧 Настройка Catalog IPC handlers...');
+  console.log('🔧 Setting up Catalog IPC handlers...');
   if (!modelCatalogService) {
-    console.error('❌ ModelCatalogService не инициализирован');
+    console.error('❌ ModelCatalogService is not initialized');
     return;
   }
-  console.log('✅ ModelCatalogService доступен, регистрируем handlers...');
+  console.log('✅ ModelCatalogService is available, register handlers...');
 
   /**
    * Обработчик для получения полного каталога моделей
@@ -541,7 +553,7 @@ function setupCatalogIpcHandlers(): void {
         const result = await modelCatalogService!.searchModels(filters);
 
         if (!result.success || !result.data) {
-          throw new Error(result.error || 'Failed to search models');
+          throw new Error(result.error || '❌ Failed to search models');
         }
 
         return result.data;
@@ -572,7 +584,7 @@ function setupCatalogIpcHandlers(): void {
         );
 
         if (!result.success) {
-          throw new Error(result.error || 'Failed to get model info');
+          throw new Error(result.error || '❌ Failed to get model info');
         }
 
         return result.data || null;
@@ -587,7 +599,7 @@ function setupCatalogIpcHandlers(): void {
  * Предоставляет React приложению возможность получить текущий статус
  */
 function setupSplashIpcHandlers(): void {
-  console.log('🔧 Настройка Splash IPC handlers...');
+  console.log('🔧 Configuring Splash IPC handlers...');
 
   /**
    * Обработчик для получения текущего статуса splash screen
@@ -601,7 +613,7 @@ function setupSplashIpcHandlers(): void {
     };
   });
 
-  console.log('✅ Splash IPC handlers настроены');
+  console.log('✅ Splash IPC handlers are configured');
 }
 
 /**
@@ -610,26 +622,26 @@ function setupSplashIpcHandlers(): void {
  */
 app.on('ready', async () => {
   try {
-    console.log('🚀 Electron app ready - начинаем инициализацию');
+    console.log('🚀 Electron app ready - starting initialization');
 
     // Создает главное окно с React приложением
-    console.log('📱 Создаем главное окно...');
+    console.log('📱 Creating the main window...');
     createWindow();
 
-    console.log('⏳ Запускаем асинхронную инициализацию Ollama...');
+    console.log('⏳ Starting asynchronous initialization of Ollama...');
     // Инициализирует Ollama асинхронно после создания окна
     // Это не блокирует загрузку React приложения
     // Добавляем небольшую задержку, чтобы React приложение успело загрузиться
     setTimeout(() => {
       initializeOllama().catch(error => {
-        console.error('Ошибка инициализации Ollama:', error);
-        sendSplashError(`Ошибка инициализации Ollama: ${error.message}`);
+        console.error('❌ Ollama initialization error:', error);
+        sendSplashError(`❌ Ollama initialization error: ${error.message}`);
       });
     }, 2000); // 2 секунды задержки
 
-    console.log('✅ Приложение успешно инициализировано');
+    console.log('✅ The application has been successfully initialized');
   } catch (error) {
-    console.error('Ошибка инициализации приложения:', error);
+    console.error('❌ Application initialization error:', error);
 
     // Создает окно даже при ошибке для отображения ошибки
     createWindow();
@@ -644,9 +656,9 @@ app.on('window-all-closed', async () => {
     // Останавливает Ollama при закрытии приложения
     try {
       await OllamaManager.stopOllama();
-      console.log('Ollama сервер остановлен');
+      console.log('✅ Ollama server is stopped');
     } catch (error) {
-      console.error('Ошибка остановки Ollama:', error);
+      console.error('❌ Error stopping Ollama:', error);
     }
 
     app.quit();
@@ -679,7 +691,7 @@ app.on('activate', () => {
 
 // Обработка завершения работы приложения
 app.on('before-quit', async () => {
-  console.log('🚪 Приложение завершает работу...');
+  console.log('🚪 The application is shutting down...');
 
   // Устанавливает флаг завершения для корректной обработки закрытия окна
   isQuitting = true;
@@ -687,9 +699,9 @@ app.on('before-quit', async () => {
   // Останавливает Ollama при принудительном закрытии
   try {
     await OllamaManager.stopOllama();
-    console.log('Ollama сервер остановлен при закрытии приложения');
+    console.log('✅️ Ollama server is stopped when the application is closed');
   } catch (error) {
-    console.error('Ошибка остановки Ollama при закрытии:', error);
+    console.error('❌ Error stopping Ollama when closing:', error);
   }
 
   // Очищает все ресурсы приложения
@@ -698,7 +710,7 @@ app.on('before-quit', async () => {
 
 // Обработка системных команд завершения (например, через ПКМ на иконке в dock)
 app.on('will-quit', () => {
-  console.log('🚪 Системная команда завершения приложения...');
+  console.log('🚪 The system command to terminate the application...');
 
   // Устанавливает флаг завершения для корректной обработки закрытия окна
   isQuitting = true;

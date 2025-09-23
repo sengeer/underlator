@@ -155,72 +155,67 @@ function Settings({ isOpened }: Settings) {
       {import.meta.env.DEV && (
         <div className='settings__container'>
           <div className='settings__column'>
-            <h2 className='settings__title'>
-              <Trans>IPC API Testing</Trans>
-            </h2>
+            <h2 className='settings__title'>{'Тестирование IPC API'}</h2>
             <div className='settings__btns-group'>
               <TextButton
                 onClick={testListModels}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
-                📋 List Installed Models
+                {'📋 Список установленных моделей'}
               </TextButton>
               <TextButton
                 onClick={testGetCatalog}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
-                📚 Get Catalog
+                {'📚 Получить каталог'}
               </TextButton>
               <TextButton
                 onClick={testGetCatalogForceRefresh}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
-                🔄 Refresh Catalog
+                {'🔄 Обновить каталог'}
               </TextButton>
               <TextButton
                 onClick={testSearchModels}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
-                🔍 Search Models
+                {'🔍 Поиск моделей'}
               </TextButton>
               <TextButton
                 onClick={testGetModelInfo}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
-                ℹ️ Get Model Info
+                {'ℹ️ Получить информацию о модели'}
               </TextButton>
               <TextButton
                 onClick={testInstallModel}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
-                📥 Install {OLLAMA_TEST_MODEL}
+                {'📥 Установить ' + OLLAMA_TEST_MODEL}
               </TextButton>
               <TextButton
                 onClick={testGenerateText}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
-                🤖 Generate {OLLAMA_TEST_PROMPT}
+                {'🤖 Генерация ' + OLLAMA_TEST_PROMPT}
               </TextButton>
               <TextButton
                 onClick={testRemoveModel}
                 className='settings__button'
                 style={{ marginBottom: '0.5rem' }}>
-                🗑️ Remove {OLLAMA_TEST_MODEL}
-              </TextButton>
-              <TextButton onClick={runFullTest} className='settings__button'>
-                🚀 Run Full Test
+                {'🗑️ Удалить ' + OLLAMA_TEST_MODEL}
               </TextButton>
               <TextButton
                 onClick={() => dispatch(openElement('testListModelsPopup'))}
                 className='settings__button'>
-                📋 Test list of models
+                {'📋 Тестирование списка моделей'}
+              </TextButton>
+              <TextButton onClick={runFullTest} className='settings__button'>
+                {'🚀 Запуск полного тестирования'}
               </TextButton>
             </div>
             <p className='settings__description'>
-              <Trans>
-                Test buttons for Ollama IPC API and Model Catalog. Check console
-                for results.
-              </Trans>
+              {'Тестирование Ollama IPC API. Проверьте результаты в консоли.'}
             </p>
           </div>
         </div>
@@ -392,7 +387,7 @@ function Settings({ isOpened }: Settings) {
         animationDuration={80}
         animationDelay={40}
         animationType='scaleIn'
-        searchPlaceholder='Модель...'
+        searchPlaceholder='Model...'
         searchDebounceMs={300}
         searchValue={searchValue}
         onSearchChange={setSearchValue}>

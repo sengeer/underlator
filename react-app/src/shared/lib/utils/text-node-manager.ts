@@ -45,7 +45,7 @@ export function createUpdateHandler(
 ) {
   const errorHandler = shouldLogErrors
     ? (index: number, error: string) =>
-        console.warn(`Node at index ${index} not found in textInfos.`)
+        console.warn(`⚠️ Node at index ${index} not found in textInfos`)
     : undefined;
 
   return (updates: Record<number, string>) =>

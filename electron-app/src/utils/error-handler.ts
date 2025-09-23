@@ -136,7 +136,7 @@ export class OllamaErrorHandler {
       .filter(Boolean)
       .join(' | ');
 
-    console.error(logMessage);
+    console.error(`❌ Error: ${logMessage}`);
   }
 }
 
@@ -235,7 +235,7 @@ export function createTimeoutController(timeout: number): {
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => {
       controller.abort();
-      reject(new Error('Operation timeout'));
+      reject(new Error('❌ Operation timeout'));
     }, timeout);
   });
 
@@ -256,7 +256,7 @@ export async function processStreamResponse(
   onError?: (error: string) => void
 ): Promise<string> {
   if (!response.body) {
-    throw new Error('Response body is null');
+    throw new Error('❌ Response body is null');
   }
 
   const reader = response.body.getReader();
@@ -282,13 +282,13 @@ export async function processStreamResponse(
           }
         } catch {
           // Игнорируем ошибки парсинга отдельных строк
-          console.warn('Failed to parse streaming chunk:', line);
+          console.warn('⚠️ Failed to parse streaming chunk:', line);
         }
       }
     }
   } catch (error) {
     const errorMessage =
-      error instanceof Error ? error.message : 'Unknown streaming error';
+      error instanceof Error ? error.message : '❌ Unknown streaming error';
     onError?.(errorMessage);
     throw error;
   } finally {

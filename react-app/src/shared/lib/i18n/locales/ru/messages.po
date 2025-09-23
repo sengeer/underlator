@@ -26,20 +26,12 @@ msgid "accent color"
 msgstr "Акцентный цвет"
 
 #: src/widgets/settings/ui/index.tsx
-msgid "All models downloaded."
-msgstr "Модели загружены."
-
-#: src/widgets/settings/ui/index.tsx
 msgid "api configuration"
 msgstr "Конфигурация API"
 
 #: src/widgets/settings/ui/index.tsx
 msgid "background color"
 msgstr "Цвет фона"
-
-#: src/widgets/settings/ui/index.tsx
-msgid "Both models are needed to translate en to ru and ru to en."
-msgstr "Обе модели необходимы для перевода с английского на русский и с русского на английский."
 
 #: src/widgets/settings/ui/index.tsx
 msgid "color scheme"
@@ -53,33 +45,20 @@ msgstr "Копировать"
 msgid "Cut"
 msgstr "Вырезать"
 
-#: src/widgets/settings/ui/index.tsx
-msgid "done"
-msgstr "модели загружены"
-
-#: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-msgid "download"
+#: src/shared/ui/selector-option/complex-mode.tsx
+msgid "Download"
 msgstr "Загрузить"
 
-#: src/widgets/settings/ui/index.tsx
-msgid "Download both or one of the models to enable offline translation."
-msgstr "Загрузите обе или одну из моделей, чтобы использовать автономный перевод."
+#: src/shared/lib/hooks/use-electron-translation/index.ts
+msgid "Downloading App..."
+msgstr "Загрузка приложения..."
 
-#: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-msgid "downloaded"
-msgstr "Загружена"
+#: src/shared/lib/hooks/use-electron-translation/index.ts
+msgid "Downloading Ollama..."
+msgstr "Загрузка Ollama..."
 
-#: src/widgets/settings/ui/index.tsx
-msgid "downloading models"
-msgstr "Загрузка моделей"
-
-#: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-msgid "downloading..."
+#: src/shared/ui/selector-option/complex-mode.tsx
+msgid "Downloading..."
 msgstr "Загрузка..."
 
 #: src/shared/ui/file-upload/index.tsx
@@ -92,10 +71,6 @@ msgstr "Перетащите"
 #: src/widgets/pdf-viewer/ui/index.tsx
 msgid "english"
 msgstr "английский"
-
-#: src/widgets/settings/ui/index.tsx
-msgid "english → russian"
-msgstr "английский → русский"
 
 #: src/widgets/pdf-viewer/ui/custom-error-message/index.tsx
 msgid "failed to load PDF file"
@@ -121,6 +96,10 @@ msgstr "Основной цвет"
 msgid "main settings"
 msgstr "Основные настройки"
 
+#: src/widgets/settings/ui/index.tsx
+msgid "manage models"
+msgstr "Управление моделями"
+
 #: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Menu"
 msgstr "Меню"
@@ -129,10 +108,13 @@ msgstr "Меню"
 msgid "model"
 msgstr "Модель"
 
+#: src/widgets/settings/ui/manage-embedded-ollama.tsx
+msgid "Model..."
+msgstr "Модель..."
+
 #: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-msgid "not downloaded"
-msgstr "Не загружена"
+msgid "no model selected"
+msgstr "Модель не выбрана"
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "or click"
@@ -147,8 +129,16 @@ msgid "provider"
 msgstr "Провайдер"
 
 #: src/shared/lib/hooks/use-electron-translation/index.ts
+msgid "Quit"
+msgstr "Закрыть Underlator"
+
+#: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Redo"
 msgstr "Повторить"
+
+#: src/shared/ui/selector-option/complex-mode.tsx
+msgid "Remove"
+msgstr "Удалить"
 
 #: src/widgets/text-translator/ui/index.tsx
 #: src/widgets/text-translator/ui/index.tsx
@@ -157,10 +147,6 @@ msgstr "Повторить"
 msgid "russian"
 msgstr "русский"
 
-#: src/widgets/settings/ui/index.tsx
-msgid "russian → english"
-msgstr "русский → английский"
-
 #: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Select All"
 msgstr "Выбрать все"
@@ -168,10 +154,6 @@ msgstr "Выбрать все"
 #: src/widgets/text-translator/ui/index.tsx
 msgid "stop"
 msgstr "Стоп"
-
-#: src/widgets/settings/ui/index.tsx
-msgid "there downloads"
-msgstr "есть загрузки"
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "to select a file!"
@@ -193,3 +175,7 @@ msgstr "Отменить"
 #: src/widgets/pdf-viewer/ui/index.tsx
 msgid "what does this mean?"
 msgstr "Что это значит?"
+
+#: src/widgets/settings/ui/manage-embedded-ollama.tsx
+msgid "Мodels not found"
+msgstr "Модели не найдены"

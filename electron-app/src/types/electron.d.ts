@@ -46,13 +46,15 @@ export interface ModelDownloadProgress {
  * Типы для переводов меню
  */
 export interface MenuTranslations {
-  menu?: string;
-  about?: string;
-  undo?: string;
-  redo?: string;
-  cut?: string;
-  copy?: string;
-  paste?: string;
-  selectAll?: string;
-  quit?: string;
+  MENU?: string;
+  ABOUT?: string;
+  UNDO?: string;
+  REDO?: string;
+  CUT?: string;
+  COPY?: string;
+  PASTE?: string;
+  SELECT_ALL?: string;
+  QUIT?: string;
+  DOWNLOADING_OLLAMA?: string;
+  DOWNLOADING_APP?: string;
 }

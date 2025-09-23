@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 import ProgressBar from '../progress-bar';
 import TextButton from '../text-button/text-button';
@@ -50,25 +51,27 @@ function renderProgressBar(progressInfo: any) {
  * @returns JSX элемент с кнопками действий
  */
 function renderActionButtons(state: SelectorOptionState, actionHandlers: any) {
+  const { t } = useLingui();
+
   switch (state) {
     case 'available':
       return (
         <div className='selector-option__actions'>
-          <TextButton text='Загрузить' onClick={actionHandlers?.onInstall} />
+          <TextButton text={t`Download`} onClick={actionHandlers?.onInstall} />
         </div>
       );
 
     case 'loading':
       return (
         <div className='selector-option__actions'>
-          <TextButton text='Загрузка...' isDisabled />
+          <TextButton text={t`Downloading...`} isDisabled />
         </div>
       );
 
     case 'installed':
       return (
         <div className='selector-option__actions'>
-          <TextButton text='Удалить' onClick={actionHandlers?.onRemove} />
+          <TextButton text={t`Remove`} onClick={actionHandlers?.onRemove} />
         </div>
       );
 

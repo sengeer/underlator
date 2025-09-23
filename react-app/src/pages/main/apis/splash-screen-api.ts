@@ -33,7 +33,7 @@ export class SplashScreenApi {
       this.setupEventListeners();
     } else {
       console.warn(
-        'Electron API недоступен, splash screen может не работать корректно'
+        '⚠️ Electron API is unavailable, splash screen may not work correctly'
       );
     }
   }
@@ -45,21 +45,17 @@ export class SplashScreenApi {
    */
   async getStatus(): Promise<SplashStatusData | null> {
     try {
-      this.log('Получение статуса splash screen');
-
       if (!window.electron?.splash) {
-        throw new Error('Electron API недоступен');
+        throw new Error('❌ The Electron API is unavailable');
       }
 
       const status = await window.electron.splash.getStatus();
-      this.log('Статус получен', status);
 
       return status;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Неизвестная ошибка';
-      console.error('❌ Ошибка получения статуса splash screen:', errorMessage);
-      this.log('Ошибка получения статуса', errorMessage);
+      console.error('❌ Error getting the splash screen status:', errorMessage);
 
       return null;
     }
@@ -145,46 +141,30 @@ export class SplashScreenApi {
     // Проверяем доступность Electron API
     if (!window.electron?.splash) {
       console.warn(
-        'Electron API недоступен для настройки слушателей splash screen'
+        '⚠️ Electron API is not available for configuring splash screen listeners'
       );
       return;
     }
 
     // Подписывается на обновления статуса
     window.electron.splash.onStatusUpdate((status: SplashStatusData) => {
-      this.log('Получено обновление статуса', status);
       this.statusCallbacks.forEach((callback) => callback(status));
     });
 
     // Подписывается на обновления прогресса
     window.electron.splash.onProgressUpdate((progress: number) => {
-      this.log('Получено обновление прогресса', progress);
       this.progressCallbacks.forEach((callback) => callback(progress));
     });
 
     // Подписывается на завершение инициализации
     window.electron.splash.onComplete(() => {
-      this.log('Получен сигнал завершения инициализации');
       this.completeCallbacks.forEach((callback) => callback());
     });
 
     // Подписывается на ошибки
     window.electron.splash.onError((error: string) => {
-      this.log('Получена ошибка', error);
       this.errorCallbacks.forEach((callback) => callback(error));
     });
-  }
-
-  /**
-   * @description Логирует операции если включено логирование
-   * Используется для отладки и мониторинга
-   * @param message - Сообщение для логирования
-   * @param data - Дополнительные данные
-   */
-  private log(message: string, data?: any): void {
-    if (this.config.enableLogging) {
-      console.log(`🔄 SplashScreenApi: ${message}`, data || '');
-    }
   }
 
   /**

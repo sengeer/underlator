@@ -110,13 +110,13 @@ export class IpcHandler {
     requiredFields: string[] = []
   ): { valid: boolean; error?: string } {
     if (!request || typeof request !== 'object') {
-      return { valid: false, error: 'Invalid request format' };
+      return { valid: false, error: '❌ Invalid request format' };
     }
 
     // Проверка обязательных полей
     for (const field of requiredFields) {
       if (!(field in request)) {
-        return { valid: false, error: `Missing required field: ${field}` };
+        return { valid: false, error: `❌ Missing required field: ${field}` };
       }
     }
 
@@ -144,7 +144,7 @@ export class IpcHandler {
       duration: duration ? `${duration}ms` : undefined,
     };
 
-    console.log(`[IPC] ${operation}:`, logData);
+    console.log(`🔌 [IPC] ${operation}:`, logData);
   }
 
   /**
@@ -157,7 +157,7 @@ export class IpcHandler {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const fullMessage = context ? `${context}: ${errorMessage}` : errorMessage;
 
-    console.error(`[IPC Error] ${fullMessage}`, error);
+    console.error(`❌ [IPC Error] ${fullMessage}`, error);
 
     return fullMessage;
   }
@@ -175,7 +175,7 @@ export class IpcHandler {
     if (result.success) {
       return this.createSuccessResponse(result.data, id);
     } else {
-      return this.createErrorResponse(result.error || 'Unknown error', id);
+      return this.createErrorResponse(result.error || '❌ Unknown error', id);
     }
   }
 
@@ -193,7 +193,7 @@ export class IpcHandler {
       const startTime = Date.now();
       const requestId = Math.random().toString(36).substr(2, 9);
 
-      console.log(`🔧 IPC Handler вызван: ${operationName}`, {
+      console.log(`🔧 IPC Handler is called: ${operationName}`, {
         requestId,
         request,
       });
@@ -212,7 +212,7 @@ export class IpcHandler {
         // Логируем успешный ответ
         this.logOperation(operationName, request, response, duration);
 
-        console.log(`✅ IPC Handler успешно выполнен: ${operationName}`, {
+        console.log(`✅ IPC Handler completed successfully: ${operationName}`, {
           requestId,
           duration,
         });
@@ -225,7 +225,7 @@ export class IpcHandler {
         // Логируем ошибку
         this.logOperation(operationName, request, response, duration);
 
-        console.error(`❌ IPC Handler ошибка: ${operationName}`, {
+        console.error(`❌ IPC Handler error: ${operationName}`, {
           requestId,
           error,
           duration,

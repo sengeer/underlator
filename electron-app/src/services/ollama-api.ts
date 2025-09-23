@@ -61,7 +61,8 @@ export class OllamaApi {
    */
   async generate(
     request: OllamaGenerateRequest,
-    onChunk?: OllamaStreamCallback
+    onChunk?: OllamaStreamCallback,
+    signal?: AbortSignal
   ): Promise<string> {
     const context = `generate(${request.model})`;
 
@@ -74,6 +75,9 @@ export class OllamaApi {
 
         // Объединяет сигналы отмены
         const abortController = new AbortController();
+        if (signal) {
+          signal.addEventListener('abort', () => abortController.abort());
+        }
 
         timeoutController.signal.addEventListener('abort', () =>
           abortController.abort()
@@ -108,13 +112,13 @@ export class OllamaApi {
               onChunk?.(chunk);
             },
             (error: string) => {
-              console.error(`Streaming error in ${context}:`, error);
+              console.error(`❌ Streaming error in ${context}:`, error);
             }
           );
         } catch (error) {
           // Обрабатывает ошибки отмены
           if (error instanceof Error && error.name === 'AbortError') {
-            throw new Error('Operation was cancelled');
+            throw new Error('❌ Operation was cancelled');
           }
           throw error;
         }
@@ -194,11 +198,11 @@ export class OllamaApi {
 
             // Проверяет на ошибки установки
             if (chunk.error) {
-              throw new Error(`Model installation failed: ${chunk.error}`);
+              throw new Error(`❌ Model installation failed: ${chunk.error}`);
             }
           },
           (error: string) => {
-            console.error(`Installation error in ${context}:`, error);
+            console.error(`❌ Installation error in ${context}:`, error);
           }
         );
 
@@ -297,7 +301,7 @@ export class OllamaApi {
 
       return response.ok;
     } catch (error) {
-      console.warn(`Health check failed: ${error}`);
+      console.error(`❌ Health check failed: ${error}`);
       return false;
     }
   }

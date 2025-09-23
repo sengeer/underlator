@@ -9,7 +9,7 @@ export function useCopying() {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 1500);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error('❌ Failed to copy text: ', err);
     }
   }
 

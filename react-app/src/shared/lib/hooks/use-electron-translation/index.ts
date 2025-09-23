@@ -3,18 +3,23 @@ import { useLingui } from '@lingui/react/macro';
 export function useElectronTranslation() {
   const { t } = useLingui();
 
+  const translations = {
+    MENU: t`Menu`,
+    ABOUT: t`About underlator`,
+    UNDO: t`Undo`,
+    REDO: t`Redo`,
+    CUT: t`Cut`,
+    COPY: t`Copy`,
+    PASTE: t`Paste`,
+    SELECT_ALL: t`Select All`,
+    QUIT: t`Quit`,
+    DOWNLOADING_OLLAMA: t`Downloading Ollama...`,
+    DOWNLOADING_APP: t`Downloading App...`,
+  };
+
   async function translateElectron() {
     try {
-      await window.electron.updateTranslations({
-        menu: t`Menu`,
-        about: t`About underlator`,
-        undo: t`Undo`,
-        redo: t`Redo`,
-        cut: t`Cut`,
-        copy: t`Copy`,
-        paste: t`Paste`,
-        selectAll: t`Select All`,
-      });
+      await window.electron.updateTranslations(translations);
     } catch (error) {
       console.error((error as Error).message);
     }
@@ -22,5 +27,6 @@ export function useElectronTranslation() {
 
   return {
     translateElectron,
+    translations,
   };
 }

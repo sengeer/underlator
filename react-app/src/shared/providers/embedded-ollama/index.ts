@@ -45,10 +45,10 @@ async function handleContextualTranslation(
 
   if (!validation.valid) {
     console.warn(
-      `Contextual translation validation failed: ${validation.reason}`
+      `⚠️ Contextual translation validation failed: ${validation.reason}`
     );
     throw new Error(
-      `Contextual translation not possible: ${validation.reason}`
+      `❌ Contextual translation not possible: ${validation.reason}`
     );
   }
 
@@ -64,7 +64,7 @@ async function handleContextualTranslation(
 
   if (!preparation.success) {
     throw new Error(
-      `Failed to prepare contextual translation: ${preparation.error}`
+      `❌ Failed to prepare contextual translation: ${preparation.error}`
     );
   }
 
@@ -80,7 +80,7 @@ async function handleContextualTranslation(
       }
 
       if (chunk.error) {
-        throw new Error(`Contextual translation failed: ${chunk.error}`);
+        throw new Error(`❌ Contextual translation failed: ${chunk.error}`);
       }
     }
   );
@@ -99,7 +99,7 @@ async function handleContextualTranslation(
 
     if (!finalResult.success) {
       console.warn(
-        `Contextual translation processing failed: ${finalResult.error}`
+        `⚠️ Contextual translation processing failed: ${finalResult.error}`
       );
       return chunks.reduce(
         (acc, text, index) => {
@@ -148,7 +148,7 @@ async function handleInstruction(
       }
 
       if (chunk.error) {
-        throw new Error(`Instruction generation failed: ${chunk.error}`);
+        throw new Error(`❌ Instruction generation failed: ${chunk.error}`);
       }
     }
   );
@@ -198,7 +198,7 @@ async function handleSimpleTranslation(
       }
 
       if (chunk.error) {
-        throw new Error(`Translation failed: ${chunk.error}`);
+        throw new Error(`❌ Translation failed: ${chunk.error}`);
       }
     }
   );
@@ -237,7 +237,7 @@ export const embeddedOllamaProvider: ModelUseProvider = {
     params,
   }: GenerateOptions) => {
     if (!model) {
-      throw new Error('Ollama model is not specified');
+      throw new Error('❌ Ollama model is not specified');
     }
 
     // Обработка контекстного перевода для массивов

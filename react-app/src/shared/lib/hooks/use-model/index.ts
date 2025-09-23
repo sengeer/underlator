@@ -96,7 +96,7 @@ export function useModel() {
       // Дополнительно вызываем IPC остановку для Embedded Ollama
       if (providerSettings.provider === 'Embedded Ollama') {
         window.electron.ollama.stop().catch((error: Error) => {
-          console.error('Failed to stop generation via IPC:', error);
+          console.error('❌ Failed to stop generation via IPC:', error);
         });
       }
     }

@@ -27,8 +27,6 @@ export class OllamaHtmlParser {
    */
   async getAvailableModels(): Promise<ParseResult> {
     try {
-      console.log('Парсинг списка моделей с Ollama Library...');
-
       const response = await fetchWithErrorHandling(this.libraryUrl, {
         method: 'GET',
         headers: {
@@ -41,18 +39,10 @@ export class OllamaHtmlParser {
       const html = await response.text();
       const baseModels = this.parseModelsFromHtml(html);
 
-      console.log(
-        `Найдено ${baseModels.length} базовых моделей в библиотеке Ollama`
-      );
-
       // Ограничивает количество моделей для парсинга тегов (первые 20 самых популярных)
       const modelsToProcess = baseModels
         .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
         .slice(0, 20);
-
-      console.log(
-        `Обрабатываем теги для ${modelsToProcess.length} самых популярных моделей`
-      );
 
       // Параллельно получает теги для всех моделей (сложность O(1))
       const tagPromises = modelsToProcess.map(async baseModel => {
@@ -60,8 +50,8 @@ export class OllamaHtmlParser {
           const tags = await this.getModelTags(baseModel.name);
           return { baseModel, tags, success: true };
         } catch (error) {
-          console.warn(
-            `Не удалось получить теги для модели ${baseModel.name}:`,
+          console.error(
+            `❌ Couldn't get tags for the model ${baseModel.name}:`,
             error
           );
           return { baseModel, tags: [], success: false };
@@ -130,20 +120,16 @@ export class OllamaHtmlParser {
         });
       }
 
-      console.log(
-        `Создано ${quantizedModels.length} записей моделей с квантизациями`
-      );
-
       return {
         success: true,
         models: baseModels,
         quantizedModels,
       };
     } catch (error) {
-      console.error('Ошибка парсинга списка моделей:', error);
+      console.error('❌ Model list parsing error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : '❌ Unknown error',
       };
     }
   }
@@ -180,7 +166,7 @@ export class OllamaHtmlParser {
 
       return tags;
     } catch (error) {
-      console.warn(`Не удалось получить теги для модели ${modelName}:`, error);
+      console.error(`❌ Couldn't get tags for the model ${modelName}:`, error);
       return [];
     }
   }
@@ -461,7 +447,7 @@ export class OllamaHtmlParser {
       };
     } catch (error) {
       console.error(
-        `Ошибка получения полной информации о модели ${modelName}:`,
+        `❌ Error getting full information about the model: ${modelName}:`,
         error
       );
       return null;

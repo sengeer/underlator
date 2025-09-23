@@ -79,10 +79,10 @@ export class ModelCatalogService {
         status: 'success',
       };
     } catch (error) {
-      console.error('Ошибка получения каталога моделей:', error);
+      console.error('❌ Error getting the model catalog:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : '❌ Unknown error',
         status: 'error',
       };
     }
@@ -102,7 +102,7 @@ export class ModelCatalogService {
       if (!catalogResult.success || !catalogResult.data) {
         return {
           success: false,
-          error: 'Failed to get catalog',
+          error: '❌ Failed to get catalog',
           status: 'error',
         };
       }
@@ -127,12 +127,12 @@ export class ModelCatalogService {
       };
     } catch (error) {
       console.error(
-        `Ошибка получения информации о модели ${modelName}:`,
+        `❌ Error getting information about the model: ${modelName}:`,
         error
       );
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : '❌ Unknown error',
         status: 'error',
       };
     }
@@ -152,7 +152,7 @@ export class ModelCatalogService {
       if (!catalogResult.success || !catalogResult.data) {
         return {
           success: false,
-          error: 'Failed to get catalog',
+          error: '❌ Failed to get catalog',
           status: 'error',
         };
       }
@@ -216,10 +216,10 @@ export class ModelCatalogService {
         status: 'success',
       };
     } catch (error) {
-      console.error('Ошибка поиска моделей:', error);
+      console.error('❌ Model search error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : '❌ Unknown error',
         status: 'error',
       };
     }
@@ -285,7 +285,7 @@ export class ModelCatalogService {
         tags: ['local', 'installed'],
       }));
     } catch (error) {
-      console.warn('Не удалось получить локальные модели:', error);
+      console.error("❌ Couldn't get local models:", error);
       return [];
     }
   }
@@ -301,7 +301,7 @@ export class ModelCatalogService {
 
       if (!parseResult.success) {
         console.warn(
-          'Не удалось получить модели из Ollama Library, используем статический список'
+          "⚠️ Couldn't get models from the Ollama Library, using a static list"
         );
         return this.getStaticModels();
       }
@@ -311,10 +311,6 @@ export class ModelCatalogService {
         parseResult.quantizedModels &&
         parseResult.quantizedModels.length > 0
       ) {
-        console.log(
-          `Используем ${parseResult.quantizedModels.length} квантизированных моделей`
-        );
-
         return parseResult.quantizedModels.map((model, index) => ({
           id: `library-${model.fullName}-${index}`,
           name: model.fullName,
@@ -335,8 +331,6 @@ export class ModelCatalogService {
 
       // Fallback на базовые модели если квантизированные недоступны
       if (parseResult.models && parseResult.models.length > 0) {
-        console.log(`Используем ${parseResult.models.length} базовых моделей`);
-
         return parseResult.models.map((model, index) => ({
           id: `library-${model.name}-${index}`,
           name: model.name,
@@ -355,12 +349,12 @@ export class ModelCatalogService {
       }
 
       console.warn(
-        'Нет доступных моделей из Ollama Library, используем статический список'
+        '⚠️ There are no available models from the Ollama Library, we use a static one'
       );
       return this.getStaticModels();
     } catch (error) {
-      console.warn(
-        'Ошибка получения моделей из Ollama Library, используем статический список:',
+      console.error(
+        '❌ Error getting models from the Ollama Library, using a static list:',
         error
       );
       return this.getStaticModels();

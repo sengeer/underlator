@@ -19,7 +19,7 @@ export class EmbeddedOllamaElectronApi {
    */
   async generate(request: OllamaGenerateRequest): Promise<string> {
     if (!window.electron?.ollama) {
-      throw new Error('Electron API недоступен');
+      throw new Error('❌ Electron API is unavailable');
     }
 
     return await window.electron.ollama.generate(request);
@@ -34,7 +34,7 @@ export class EmbeddedOllamaElectronApi {
     callback: (progress: OllamaGenerateResponse) => void
   ): () => void {
     if (!window.electron?.ollama) {
-      throw new Error('Electron API недоступен');
+      throw new Error('❌ Electron API is unavailable');
     }
 
     return window.electron.ollama.onGenerateProgress(callback);

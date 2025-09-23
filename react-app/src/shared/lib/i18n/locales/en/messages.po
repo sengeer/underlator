@@ -26,20 +26,12 @@ msgid "accent color"
 msgstr "accent color"
 
 #: src/widgets/settings/ui/index.tsx
-msgid "All models downloaded."
-msgstr "All models downloaded."
-
-#: src/widgets/settings/ui/index.tsx
 msgid "api configuration"
 msgstr "api configuration"
 
 #: src/widgets/settings/ui/index.tsx
 msgid "background color"
 msgstr "background color"
-
-#: src/widgets/settings/ui/index.tsx
-msgid "Both models are needed to translate en to ru and ru to en."
-msgstr "Both models are needed to translate en to ru and ru to en."
 
 #: src/widgets/settings/ui/index.tsx
 msgid "color scheme"
@@ -53,34 +45,21 @@ msgstr "Copy"
 msgid "Cut"
 msgstr "Cut"
 
-#: src/widgets/settings/ui/index.tsx
-msgid "done"
-msgstr "done"
+#: src/shared/ui/selector-option/complex-mode.tsx
+msgid "Download"
+msgstr "Download"
 
-#: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-msgid "download"
-msgstr "download"
+#: src/shared/lib/hooks/use-electron-translation/index.ts
+msgid "Downloading App..."
+msgstr "Downloading App..."
 
-#: src/widgets/settings/ui/index.tsx
-msgid "Download both or one of the models to enable offline translation."
-msgstr "Download both or one of the models to enable offline translation."
+#: src/shared/lib/hooks/use-electron-translation/index.ts
+msgid "Downloading Ollama..."
+msgstr "Downloading Ollama..."
 
-#: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-msgid "downloaded"
-msgstr "downloaded"
-
-#: src/widgets/settings/ui/index.tsx
-msgid "downloading models"
-msgstr "downloading models"
-
-#: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-msgid "downloading..."
-msgstr "downloading..."
+#: src/shared/ui/selector-option/complex-mode.tsx
+msgid "Downloading..."
+msgstr "Downloading..."
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "drag and drop your file here"
@@ -92,10 +71,6 @@ msgstr "drag and drop your file here"
 #: src/widgets/pdf-viewer/ui/index.tsx
 msgid "english"
 msgstr "english"
-
-#: src/widgets/settings/ui/index.tsx
-msgid "english → russian"
-msgstr "english → russian"
 
 #: src/widgets/pdf-viewer/ui/custom-error-message/index.tsx
 msgid "failed to load PDF file"
@@ -121,6 +96,10 @@ msgstr "main color"
 msgid "main settings"
 msgstr "main settings"
 
+#: src/widgets/settings/ui/index.tsx
+msgid "manage models"
+msgstr "manage models"
+
 #: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Menu"
 msgstr "Menu"
@@ -129,10 +108,13 @@ msgstr "Menu"
 msgid "model"
 msgstr "model"
 
+#: src/widgets/settings/ui/manage-embedded-ollama.tsx
+msgid "Model..."
+msgstr "Model..."
+
 #: src/widgets/settings/ui/index.tsx
-#: src/widgets/settings/ui/index.tsx
-msgid "not downloaded"
-msgstr "not downloaded"
+msgid "no model selected"
+msgstr "no model selected"
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "or click"
@@ -147,8 +129,16 @@ msgid "provider"
 msgstr "provider"
 
 #: src/shared/lib/hooks/use-electron-translation/index.ts
+msgid "Quit"
+msgstr "Quit"
+
+#: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Redo"
 msgstr "Redo"
+
+#: src/shared/ui/selector-option/complex-mode.tsx
+msgid "Remove"
+msgstr "Remove"
 
 #: src/widgets/text-translator/ui/index.tsx
 #: src/widgets/text-translator/ui/index.tsx
@@ -157,10 +147,6 @@ msgstr "Redo"
 msgid "russian"
 msgstr "russian"
 
-#: src/widgets/settings/ui/index.tsx
-msgid "russian → english"
-msgstr "russian → english"
-
 #: src/shared/lib/hooks/use-electron-translation/index.ts
 msgid "Select All"
 msgstr "Select All"
@@ -168,10 +154,6 @@ msgstr "Select All"
 #: src/widgets/text-translator/ui/index.tsx
 msgid "stop"
 msgstr "stop"
-
-#: src/widgets/settings/ui/index.tsx
-msgid "there downloads"
-msgstr "there downloads"
 
 #: src/shared/ui/file-upload/index.tsx
 msgid "to select a file!"
@@ -193,3 +175,7 @@ msgstr "Undo"
 #: src/widgets/pdf-viewer/ui/index.tsx
 msgid "what does this mean?"
 msgstr "what does this mean?"
+
+#: src/widgets/settings/ui/manage-embedded-ollama.tsx
+msgid "Мodels not found"
+msgstr "Мodels not found"

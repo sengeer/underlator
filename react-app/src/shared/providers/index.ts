@@ -11,7 +11,7 @@ const providers: Record<ProviderType, ModelUseProvider> = {
 export const getModelUseProvider = (type: ProviderType): ModelUseProvider => {
   const provider = providers[type];
   if (!provider) {
-    throw new Error(`Provider ${type} not found`);
+    throw new Error(`❌ Provider ${type} not found`);
   }
   return provider;
 };

@@ -32,7 +32,7 @@ export const fetchSplashStatus = createAsyncThunk(
 
       return status;
     } catch (error) {
-      console.error('❌ Ошибка получения статуса:', error);
+      console.error('❌ Error getting the status:', error);
       const errorMessage =
         error instanceof Error ? error.message : 'Неизвестная ошибка';
       return rejectWithValue(errorMessage);
