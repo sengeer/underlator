@@ -1,3 +1,4 @@
+import { DEFAULT_CONFIG } from '../constants/embedded-ollama-electron-api';
 import type {
   GetCatalogParams,
   ModelSearchFilters,
@@ -9,8 +10,7 @@ import type {
   ModelProgressCallback,
   ModelErrorCallback,
   SettingsApiConfig,
-} from '../types';
-import { DEFAULT_CONFIG } from './constants';
+} from '../types/embedded-ollama';
 
 /**
  * @module EmbeddedOllamaElectronApi

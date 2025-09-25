@@ -13,35 +13,35 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/shared/ui/markdown-renderer/index.tsx
+#: src/shared/ui/markdown-renderer/markdown-renderer.tsx
 msgid "🤔 thinking:"
 msgstr "🤔 thinking:"
 
-#: src/shared/lib/hooks/use-electron-translation/index.ts
-msgid "About underlator"
-msgstr "About underlator"
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "About Underlator"
+msgstr "About Underlator"
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "accent color"
 msgstr "accent color"
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "api configuration"
 msgstr "api configuration"
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "background color"
 msgstr "background color"
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "color scheme"
 msgstr "color scheme"
 
-#: src/shared/lib/hooks/use-electron-translation/index.ts
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Copy"
 msgstr "Copy"
 
-#: src/shared/lib/hooks/use-electron-translation/index.ts
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Cut"
 msgstr "Cut"
 
@@ -49,11 +49,11 @@ msgstr "Cut"
 msgid "Download"
 msgstr "Download"
 
-#: src/shared/lib/hooks/use-electron-translation/index.ts
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Downloading App..."
 msgstr "Downloading App..."
 
-#: src/shared/lib/hooks/use-electron-translation/index.ts
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Downloading Ollama..."
 msgstr "Downloading Ollama..."
 
@@ -61,50 +61,50 @@ msgstr "Downloading Ollama..."
 msgid "Downloading..."
 msgstr "Downloading..."
 
-#: src/shared/ui/file-upload/index.tsx
+#: src/shared/ui/file-upload/file-upload.tsx
 msgid "drag and drop your file here"
 msgstr "drag and drop your file here"
 
-#: src/widgets/text-translator/ui/index.tsx
-#: src/widgets/text-translator/ui/index.tsx
-#: src/widgets/pdf-viewer/ui/index.tsx
-#: src/widgets/pdf-viewer/ui/index.tsx
+#: src/widgets/text-translator/ui/text-translator.tsx
+#: src/widgets/text-translator/ui/text-translator.tsx
+#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
+#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 msgid "english"
 msgstr "english"
 
-#: src/widgets/pdf-viewer/ui/custom-error-message/index.tsx
+#: src/widgets/pdf-viewer/ui/custom-error-message.tsx
 msgid "failed to load PDF file"
 msgstr "failed to load PDF file"
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "foreground color"
 msgstr "foreground color"
 
-#: src/widgets/pdf-viewer/ui/index.tsx
+#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 msgid "instruction"
 msgstr "instruction"
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "interface language"
 msgstr "interface language"
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "main color"
 msgstr "main color"
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "main settings"
 msgstr "main settings"
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "manage models"
 msgstr "manage models"
 
-#: src/shared/lib/hooks/use-electron-translation/index.ts
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Menu"
 msgstr "Menu"
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "model"
 msgstr "model"
 
@@ -112,27 +112,27 @@ msgstr "model"
 msgid "Model..."
 msgstr "Model..."
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "no model selected"
 msgstr "no model selected"
 
-#: src/shared/ui/file-upload/index.tsx
+#: src/shared/ui/file-upload/file-upload.tsx
 msgid "or click"
 msgstr "or click"
 
-#: src/shared/lib/hooks/use-electron-translation/index.ts
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Paste"
 msgstr "Paste"
 
-#: src/widgets/settings/ui/index.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "provider"
 msgstr "provider"
 
-#: src/shared/lib/hooks/use-electron-translation/index.ts
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Quit"
 msgstr "Quit"
 
-#: src/shared/lib/hooks/use-electron-translation/index.ts
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Redo"
 msgstr "Redo"
 
@@ -140,39 +140,39 @@ msgstr "Redo"
 msgid "Remove"
 msgstr "Remove"
 
-#: src/widgets/text-translator/ui/index.tsx
-#: src/widgets/text-translator/ui/index.tsx
-#: src/widgets/pdf-viewer/ui/index.tsx
-#: src/widgets/pdf-viewer/ui/index.tsx
+#: src/widgets/text-translator/ui/text-translator.tsx
+#: src/widgets/text-translator/ui/text-translator.tsx
+#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
+#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 msgid "russian"
 msgstr "russian"
 
-#: src/shared/lib/hooks/use-electron-translation/index.ts
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Select All"
 msgstr "Select All"
 
-#: src/widgets/text-translator/ui/index.tsx
+#: src/widgets/text-translator/ui/text-translator.tsx
 msgid "stop"
 msgstr "stop"
 
-#: src/shared/ui/file-upload/index.tsx
+#: src/shared/ui/file-upload/file-upload.tsx
 msgid "to select a file!"
 msgstr "to select a file!"
 
-#: src/widgets/text-translator/ui/index.tsx
+#: src/widgets/text-translator/ui/text-translator.tsx
 msgid "translate"
 msgstr "translate"
 
-#: src/widgets/pdf-viewer/ui/index.tsx
+#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 msgid "translation"
 msgstr "translation"
 
-#: src/shared/lib/hooks/use-electron-translation/index.ts
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Undo"
 msgstr "Undo"
 
-#: src/widgets/pdf-viewer/ui/index.tsx
-#: src/widgets/pdf-viewer/ui/index.tsx
+#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
+#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 msgid "what does this mean?"
 msgstr "what does this mean?"
 

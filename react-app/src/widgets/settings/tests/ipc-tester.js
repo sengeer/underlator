@@ -1,5 +1,5 @@
 import { embeddedOllamaElectronApi } from '../apis/embedded-ollama-electron-api';
-import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from './constants';
+import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../constants/ipc-tester';
 
 /**
  * @module ManualIpcTesting

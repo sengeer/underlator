@@ -27,7 +27,7 @@ import type {
   ManageModelsProps,
   ModelDisplayState,
   ModelEventCallbacks,
-} from '../types';
+} from '../types/embedded-ollama';
 import ModelItem from './model-item';
 
 /**

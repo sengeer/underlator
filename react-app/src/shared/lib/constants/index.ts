@@ -1,6 +1,6 @@
 /**
  * @module Constants
- * @description Общие константы для приложения
+ * @description Общие константы приложения
  */
 
 /**

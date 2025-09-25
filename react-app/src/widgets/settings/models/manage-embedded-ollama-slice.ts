@@ -12,7 +12,7 @@ import type {
   InstallModelParams,
   RemoveModelParams,
   GetModelInfoParams,
-} from '../types';
+} from '../types/embedded-ollama';
 
 /**
  * @description Начальное состояние каталога моделей
@@ -144,7 +144,7 @@ export const installModel = createAsyncThunk(
 
       const result = await embeddedOllamaElectronApi.installModel(
         params,
-        (progress) => {
+        (progress: ModelInstallProgress) => {
           // Обновляет прогресс через dispatch
           dispatch(
             setInstallationProgress({
@@ -153,7 +153,7 @@ export const installModel = createAsyncThunk(
             })
           );
         },
-        (error) => {
+        (error: string) => {
           // Обрабатывает ошибку через dispatch
           dispatch(
             setInstallationError({

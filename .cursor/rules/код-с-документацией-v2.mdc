@@ -1,0 +1,72 @@
+---
+alwaysApply: false
+---
+Условие:
+При создании функций, классов, методов и модулей обязательно используй JSDoc комментарии на русском языке со следующей структурой:
+
+/**
+ * Краткое описание функциональности
+ *
+ * @description Подробное описание назначения, принципа работы и особенностей реализации
+ * @param props - Пропсы компонента
+ * @returns JSX элемент компонента
+ *
+ * @example
+ * Базовое использование
+ * <Component prop1={value1} prop2={value2}>
+ *   <div>Содержимое</div>
+ * </Component>
+ *
+ * @example
+ * Расширенное использование с дополнительными параметрами
+ * <Component
+ *   prop1={value1}
+ *   prop2={value2}
+ *   enableFeature={true}
+ *   threshold={50}>
+ *   {items.map(item => (
+ *     <Item key={item.id} {...item} />
+ *   ))}
+ * </Component>
+ */
+
+Для интерфейсов и типов используй ТОЧНО следующую структуру (как в react-app/src/shared/ui/popup/types.ts):
+
+/**
+ * @interface InterfaceName
+ * @description Описание назначения интерфейса и его роли в системе
+ * @property {React.ReactNode} children - Контент для отображения
+ * @property {React.ReactNode} placeholder - Placeholder для отображения до загрузки контента
+ * @property {string} rootMargin - Отступ от корневого элемента для предзагрузки
+ * @property {number} threshold - Порог видимости элемента (0.0 - 1.0)
+ * @property {string} className - Дополнительные CSS классы для контейнера
+ * @property {React.CSSProperties} style - Дополнительные стили для контейнера
+ * @property {string | number} key - Уникальный ключ для элемента (для React)
+ * @property {(entry: IntersectionObserverEntry) => void} onVisible - Обработчик события появления элемента в области просмотра
+ * @property {() => void} onHidden - Обработчик события исчезновения элемента из области просмотра
+ * @property {boolean} enableAnimation - Включает анимацию появления элемента
+ * @property {number} animationDuration - Длительность анимации в миллисекундах
+ * @property {number} animationDelay - Задержка анимации в миллисекундах
+ * @property {'fadeIn' | 'slideUp' | 'slideDown' | 'scaleIn'} animationType - Тип анимации появления
+ */
+
+ВАЖНО для интерфейсов:
+- Указывай полные типы (React.ReactNode, React.CSSProperties, () => void)
+- Не используй квадратные скобки [optionalProperty] для опциональных свойств в JSDoc
+- Опциональность отражается в TypeScript коде через "?"
+- Указывай единицы измерения (пиксели, миллисекунды) и диапазоны значений
+- Для union-типов указывай все варианты
+- Для функций указывай полную сигнатуру с параметрами
+
+Для классов добавляй:
+ * @class Описание назначения класса и его роли в архитектуре
+ * @extends {БазовыйКласс} - Если класс наследуется
+ * @implements {Интерфейс} - Если класс реализует интерфейс
+
+Для методов классов добавляй:
+ * @this {ТипКласса} - Описание контекста this, если это важно для понимания
+
+Для модулей добавляй:
+ * @module ИмяМодуля
+
+Все JSDoc комментарии должны быть написаны на русском языке и содержать исчерпывающую информацию для разработчиков, которые будут работать с кодом в будущем.

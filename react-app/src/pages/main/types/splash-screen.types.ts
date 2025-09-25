@@ -1,10 +1,4 @@
 /**
- * @module SplashScreenTypes
- * @description Типы для splash screen в React приложении
- * Определяет все интерфейсы и типы для работы с splash screen
- */
-
-/**
  * @description Статус инициализации приложения
  * Определяет возможные состояния процесса инициализации
  */

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import useIntersectionObserver from '../../lib/hooks/use-intersection-observer';
-import { LazyListItemProps, LazyListOptions } from './types';
+import { LazyListItemProps, LazyListOptions } from './types/popup';
 
 /**
  * @description Компонент для ленивой загрузки элементов списка

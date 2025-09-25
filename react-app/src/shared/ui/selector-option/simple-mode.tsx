@@ -1,5 +1,5 @@
 import TextButton from '../text-button/text-button';
-import { SelectorOptionProps } from './types';
+import { SelectorOptionProps } from './types/selector-option';
 
 /**
  * @module SimpleMode

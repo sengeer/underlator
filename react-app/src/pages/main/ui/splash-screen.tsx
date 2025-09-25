@@ -2,7 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '../../../app/';
 import logo from '../../../shared/assets/images/logo.svg';
-import { useElectronTranslation } from '../../../shared/lib/hooks/use-electron-translation';
+import useElectronTranslation from '../../../shared/lib/hooks/use-electron-translation';
 import ProgressBar from '../../../shared/ui/progress-bar';
 import { splashScreenApi } from '../apis/splash-screen-api';
 import {
@@ -14,8 +14,11 @@ import {
   fetchSplashStatus,
   selectSplashScreenState,
 } from '../models/splash-screen-slice';
-import type { SplashScreenProps, SplashStatusData } from '../types';
-import './splash-screen.scss';
+import type {
+  SplashScreenProps,
+  SplashStatusData,
+} from '../types/splash-screen.types';
+import '../styles/splash-screen.scss';
 
 /**
  * @description Компонент SplashScreen для отображения процесса инициализации
@@ -164,7 +167,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
 
       {/* Отображение ошибки если она есть */}
       {splashState.error && (
-        <div className='splash-screen__text splash-screen__text_color_foreground'>
+        <div className='splash-screen__text splash-screen__text_color_accent'>
           {splashState.error}
         </div>
       )}

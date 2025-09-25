@@ -1,0 +1,65 @@
+/* Анимация пульсации логотипа */
+@keyframes ripple {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* Основной контейнер splash screen */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+
+  /* Скрытое состояние splash screen */
+  &_hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Переходное состояние */
+  &_transitioning {
+    opacity: 0.5;
+  }
+
+  /* Изображение логотипа */
+  &__logo {
+    object-fit: contain;
+    width: 8rem;
+    height: 8rem;
+    animation: ripple 2s ease-in-out infinite alternate;
+  }
+
+  &__text {
+    font-weight: 500;
+    font-size: 1rem;
+    font-family: 'Roboto Mono', monospace;
+
+    &_color_main {
+      color: var(--main);
+    }
+
+    &_color_foreground {
+      color: var(--foreground);
+    }
+
+    &_color_accent {
+      color: var(--accent);
+    }
+  }
+}

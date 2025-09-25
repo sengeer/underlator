@@ -2,7 +2,10 @@ import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 import ProgressBar from '../progress-bar';
 import TextButton from '../text-button/text-button';
-import { SelectorOptionProps, SelectorOptionState } from './types';
+import {
+  SelectorOptionProps,
+  SelectorOptionState,
+} from './types/selector-option';
 
 /**
  * @module ComplexMode

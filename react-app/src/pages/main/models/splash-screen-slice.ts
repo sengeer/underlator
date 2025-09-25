@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { splashScreenApi } from '../apis/splash-screen-api';
-import type { SplashStatusData, SplashScreenState } from '../types';
+import type {
+  SplashStatusData,
+  SplashScreenState,
+} from '../types/splash-screen.types';
 
 /**
  * @description Начальное состояние splash screen

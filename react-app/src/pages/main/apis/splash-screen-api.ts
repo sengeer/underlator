@@ -1,3 +1,4 @@
+import { DEFAULT_CONFIG } from '../constants/splash-screen-api';
 import type {
   SplashStatusData,
   SplashApiConfig,
@@ -5,8 +6,7 @@ import type {
   SplashProgressCallback,
   SplashCompleteCallback,
   SplashErrorCallback,
-} from '../types';
-import { DEFAULT_CONFIG } from './constants';
+} from '../types/splash-screen.types';
 
 /**
  * @module SplashScreenApi
