@@ -14,7 +14,7 @@ function useElectronTranslation() {
     SELECT_ALL: t`Select All`,
     QUIT: t`Quit`,
     DOWNLOADING_OLLAMA: t`Downloading Ollama...`,
-    DOWNLOADING_APP: t`Downloading App...`,
+    LOADING_APP: t`Loading App...`,
   };
 
   async function translateElectron() {

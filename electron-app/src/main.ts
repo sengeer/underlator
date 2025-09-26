@@ -21,7 +21,7 @@ if (require('electron-squirrel-startup')) {
  * Определяет development режим
  * В Electron Forge с webpack NODE_ENV корректно передается через cross-env
  */
-const isDev: boolean = process.env['NODE_ENV'] === 'development';
+export const isDev: boolean = process.env['NODE_ENV'] === 'development';
 console.log('🔧 NODE_ENV:', process.env['NODE_ENV']);
 
 export let mainWindow: typeof BrowserWindow | null = null;
@@ -38,8 +38,11 @@ let isQuitting: boolean = false; // Флаг для отслеживания н�
  * Очищает ресурсы при закрытии приложения
  * Удаляет все IPC обработчики и завершает worker процессы
  */
-function cleanupResources(): void {
+async function cleanupResources(): Promise<void> {
   console.log('🧹 Cleaning up application resources...');
+
+  // Останавливает Ollama
+  await OllamaManager.stopOllama();
 
   // Удаляет Ollama обработчики
   ipcMain.removeHandler('ollama:generate');
@@ -96,6 +99,34 @@ function sendSplashError(error: string): void {
 }
 
 /**
+ * Преобразование ошибки в строку
+ * Используется для преобразования ошибки в строку
+ */
+function convertErrorToString(error: Error) {
+  let errorMessage = 'Critical error in main process';
+  if (error instanceof Error) {
+    // Если это объект Error,
+    // используется его stack или хотя бы message
+    errorMessage = error.stack || error.message || String(error);
+  } else {
+    // Если это не Error,
+    // преобразуется в строку
+    errorMessage = String(error);
+  }
+
+  return errorMessage;
+}
+
+/**
+ * Обработчик неперехваченных ошибок в главном процессе
+ * Используется для отправки ошибок в splash screen
+ */
+process.on('uncaughtException', error => {
+  console.error('❌ Unhandled exception in main process:', error);
+  sendSplashError(convertErrorToString(error));
+});
+
+/**
  * Инициализирует Ollama и создает API клиент
  * Выполняется при старте приложения для подготовки Ollama к работе
  * Отправляет статус инициализации в React splash screen через IPC события
@@ -104,8 +135,7 @@ async function initializeOllama(): Promise<void> {
   try {
     console.log('🚀 Starting initialization of Ollama...');
 
-    const downloadMessage =
-      translations.DOWNLOADING_APP || 'Downloading App...';
+    const downloadMessage = translations.LOADING_APP;
 
     // Отправляет статус проверки Ollama в React splash screen
     sendSplashStatus({
@@ -198,9 +228,7 @@ async function initializeOllama(): Promise<void> {
     console.error('❌ Ollama initialization error:', error);
 
     // Отправляет ошибку в React splash screen
-    sendSplashError(
-      `❌ Failed to initialize Ollama: ${(error as Error).message}`
-    );
+    sendSplashError('❌ Failed to initialize Ollama');
 
     throw new Error(
       `❌ Failed to initialize Ollama: ${(error as Error).message}`
@@ -289,7 +317,7 @@ function createWindow(): void {
     height: 350,
     minWidth: 480,
     minHeight: 350,
-    icon: path.join(__dirname, '../icons', isWindows ? 'icon.ico' : ''),
+    icon: isWindows && path.join(__dirname, '../../icons/icon.ico'),
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -297,9 +325,9 @@ function createWindow(): void {
     },
   });
 
-  // Загружает React приложение сразу после создания окна
+  // Загружает React приложение и инициализирует Ollama
   console.log('🌐 Uploading the React app...');
-  loadReactApp();
+  loadApp();
 
   /**
    * Обработчик закрытия окна
@@ -315,6 +343,7 @@ function createWindow(): void {
     } else {
       // На других платформах или при намеренном завершении закрывает окно полностью
       cleanupResources();
+      app.quit();
     }
   });
 
@@ -334,10 +363,10 @@ function createWindow(): void {
 }
 
 /**
- * Загружает React приложение в главное окно
- * Используется для загрузки основного приложения после создания окна
+ * Загружает React приложение и инициализирует Ollama
+ * Используется для загрузки приложения после создания окна
  */
-function loadReactApp(): void {
+async function loadApp(): Promise<void> {
   if (!mainWindow) {
     console.error('❌ Main window not available');
     return;
@@ -345,14 +374,19 @@ function loadReactApp(): void {
 
   if (isDev) {
     console.log('🔧 Uploading the URL in dev mode: http://localhost:8000');
-    mainWindow.loadURL('http://localhost:8000');
+    await mainWindow.loadURL('http://localhost:8000');
   } else {
     console.log(
       '🔧 Uploading the file in production mode:',
       path.join(__dirname, '../react/index.html')
     );
-    mainWindow.loadFile(path.join(__dirname, '../react/index.html'));
+    await mainWindow.loadFile(path.join(__dirname, '../react/index.html'));
   }
+
+  initializeOllama().catch(error => {
+    console.error('❌ Ollama initialization error:', error);
+    sendSplashError('❌ Ollama initialization error');
+  });
 }
 
 /**
@@ -624,20 +658,9 @@ app.on('ready', async () => {
   try {
     console.log('🚀 Electron app ready - starting initialization');
 
-    // Создает главное окно с React приложением
+    // Создает главное окно с React приложением и инициализирует Ollama
     console.log('📱 Creating the main window...');
     createWindow();
-
-    console.log('⏳ Starting asynchronous initialization of Ollama...');
-    // Инициализирует Ollama асинхронно после создания окна
-    // Это не блокирует загрузку React приложения
-    // Добавляем небольшую задержку, чтобы React приложение успело загрузиться
-    setTimeout(() => {
-      initializeOllama().catch(error => {
-        console.error('❌ Ollama initialization error:', error);
-        sendSplashError(`❌ Ollama initialization error: ${error.message}`);
-      });
-    }, 2000); // 2 секунды задержки
 
     console.log('✅ The application has been successfully initialized');
   } catch (error) {
@@ -653,15 +676,7 @@ app.on('ready', async () => {
 // явно не выйдет с помощью Cmd + Q
 app.on('window-all-closed', async () => {
   if (!isMac) {
-    // Останавливает Ollama при закрытии приложения
-    try {
-      await OllamaManager.stopOllama();
-      console.log('✅ Ollama server is stopped');
-    } catch (error) {
-      console.error('❌ Error stopping Ollama:', error);
-    }
-
-    app.quit();
+    await cleanupResources();
   }
   // На macOS не выходим из приложения, даже если все окна закрыты
   // Пользователь должен явно выйти через Cmd + Q или меню

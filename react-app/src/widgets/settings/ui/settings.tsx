@@ -156,52 +156,40 @@ function Settings({ isOpened }: Settings) {
           <div className='settings__column'>
             <h2 className='settings__title'>{'Тестирование IPC API'}</h2>
             <div className='settings__btns-group'>
-              <TextButton
-                onClick={testListModels}
-                className='settings__button'
-                style={{ marginBottom: '0.5rem' }}>
+              <TextButton onClick={testListModels} className='settings__button'>
                 {'📋 Список установленных моделей'}
               </TextButton>
-              <TextButton
-                onClick={testGetCatalog}
-                className='settings__button'
-                style={{ marginBottom: '0.5rem' }}>
+              <TextButton onClick={testGetCatalog} className='settings__button'>
                 {'📚 Получить каталог'}
               </TextButton>
               <TextButton
                 onClick={testGetCatalogForceRefresh}
-                className='settings__button'
-                style={{ marginBottom: '0.5rem' }}>
+                className='settings__button'>
                 {'🔄 Обновить каталог'}
               </TextButton>
               <TextButton
                 onClick={testSearchModels}
-                className='settings__button'
-                style={{ marginBottom: '0.5rem' }}>
+                className='settings__button'>
                 {'🔍 Поиск моделей'}
               </TextButton>
               <TextButton
                 onClick={testGetModelInfo}
-                className='settings__button'
-                style={{ marginBottom: '0.5rem' }}>
+                className='settings__button'>
                 {'ℹ️ Получить информацию о модели'}
               </TextButton>
               <TextButton
                 onClick={testInstallModel}
-                className='settings__button'
-                style={{ marginBottom: '0.5rem' }}>
+                className='settings__button'>
                 {'📥 Установить ' + OLLAMA_TEST_MODEL}
               </TextButton>
               <TextButton
                 onClick={testGenerateText}
-                className='settings__button'
-                style={{ marginBottom: '0.5rem' }}>
+                className='settings__button'>
                 {'🤖 Генерация ' + OLLAMA_TEST_PROMPT}
               </TextButton>
               <TextButton
                 onClick={testRemoveModel}
-                className='settings__button'
-                style={{ marginBottom: '0.5rem' }}>
+                className='settings__button'>
                 {'🗑️ Удалить ' + OLLAMA_TEST_MODEL}
               </TextButton>
               <TextButton

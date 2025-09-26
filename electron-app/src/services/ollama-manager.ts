@@ -1,7 +1,9 @@
 import { ElectronOllama } from 'electron-ollama';
+const path = require('path');
 import { app } from 'electron';
 import { mainWindow } from '../main';
 import { translations } from '../main';
+import { isDev } from '../main';
 
 /**
  * @module OllamaManager
@@ -20,6 +22,8 @@ class OllamaManager {
   private isInitialized: boolean = false;
   private isStarting: boolean = false;
   private isStopping: boolean = false;
+  private MAX_ATTEMPTS = 60;
+  private RETRY_DELAY_MS = 1000;
 
   /**
    * @description Инициализирует OllamaManager и выполняет автоматическую установку Ollama
@@ -36,9 +40,11 @@ class OllamaManager {
     try {
       console.log('🔄 Initialization of the OllamaManager...');
 
-      // Создание экземпляра ElectronOllama с базовым путем
+      // Создание экземпляра ElectronOllama
       this.electronOllama = new ElectronOllama({
-        basePath: app.getPath('userData'),
+        basePath: isDev
+          ? app.getPath('userData')
+          : path.dirname(app.getPath('exe')),
         directory: 'ollama-binaries',
       });
 
@@ -51,6 +57,27 @@ class OllamaManager {
         `❌ Failed to initialize the OllamaManager: ${(error as Error).message}`
       );
     }
+  }
+
+  /**
+   * @description Форматирует сообщение
+   * @param {string} msg - Сообщение для форматирования
+   * @returns {string} Форматированное сообщение
+   */
+  private formatMessage(msg: string) {
+    // Строка в формате:
+    // Downloading archive.zip (0MB / 0MB) 100%
+    // Делится на массив
+    const msgParts = msg.split(' ');
+
+    // Выбирает 1 по 5 строку
+    const selectedParts = msgParts.slice(1, 5);
+
+    // Соединяет 1 по 5 строку:
+    // archive.zip (0MB / 0MB)
+    if (selectedParts) return selectedParts.join(' ');
+
+    return '';
   }
 
   /**
@@ -71,39 +98,64 @@ class OllamaManager {
       return false;
     }
 
-    try {
-      this.isStarting = true;
-      console.log('🔄 Starting the Ollama server...');
+    let attempt = 0;
+    this.isStarting = true;
 
-      // Проверка текущего статуса сервера
-      const isRunning = await this.isOllamaRunning();
-      if (isRunning) {
-        console.log('✅ Ollama server is already running');
-        return false;
+    try {
+      // Повторяет попытку запуска Ollama сервера MAX_ATTEMPTS раз
+      while (attempt < this.MAX_ATTEMPTS) {
+        attempt++;
+        console.log(
+          `🔄 Attempt ${attempt}/${this.MAX_ATTEMPTS} to start Ollama server...`
+        );
+
+        try {
+          // Проверка текущего статуса сервера
+          const isRunning = await this.isOllamaRunning();
+          if (isRunning) {
+            console.log('✅ Ollama server is already running');
+            return false;
+          }
+
+          // Получение метаданных последней версии Ollama
+          const metadata = await this.electronOllama.getMetadata('latest');
+
+          // Запуск сервера с автоматической загрузкой при необходимости
+          await this.electronOllama.serve(metadata.version, {
+            serverLog: message => console.log('🔌 [Ollama Server]', message),
+            downloadLog: (percent, message) =>
+              mainWindow.webContents.send('splash:status-update', {
+                status: 'downloading-ollama',
+                message:
+                  translations.DOWNLOADING_OLLAMA || 'Downloading Ollama...',
+                details: this.formatMessage(message),
+                progress: percent,
+              }),
+            timeoutSec: 1,
+          });
+
+          console.log('✅ Ollama server started successfully');
+          return true;
+        } catch (error) {
+          console.error(`❌ Attempt ${attempt} failed:`, error);
+          console.error(`❌ Attempt ${attempt} failed:`, error);
+
+          // Если это последняя попытка - пробрасывает ошибку дальше
+          if (attempt >= this.MAX_ATTEMPTS) {
+            throw new Error(
+              `❌ Failed to start Ollama server after ${this.MAX_ATTEMPTS} attempts: ${(error as Error).message}`
+            );
+          }
+
+          // Ожидает перед следующей попыткой
+          console.log(`⏳ Retrying in ${this.RETRY_DELAY_MS}ms...`);
+          await new Promise(resolve =>
+            setTimeout(resolve, this.RETRY_DELAY_MS)
+          );
+        }
       }
 
-      // Получение метаданных последней версии Ollama
-      const metadata = await this.electronOllama.getMetadata('latest');
-
-      // Запуск сервера с автоматической загрузкой при необходимости
-      await this.electronOllama.serve(metadata.version, {
-        serverLog: message => console.log('🔌 [Ollama Server]', message),
-        downloadLog: percent =>
-          mainWindow.webContents.send('splash:status-update', {
-            status: 'downloading-ollama',
-            message: translations.DOWNLOADING_OLLAMA || 'Downloading Ollama...',
-            progress: percent,
-          }),
-        timeoutSec: 1,
-      });
-
-      console.log('✅ Ollama server started successfully');
-      return true;
-    } catch (error) {
-      console.error('❌ Error starting the Ollama server:', error);
-      throw new Error(
-        `❌ Failed to start the Ollama server: ${(error as Error).message}`
-      );
+      return false;
     } finally {
       this.isStarting = false;
     }
@@ -129,13 +181,6 @@ class OllamaManager {
     try {
       this.isStopping = true;
       console.log('🔄 Stopping the Ollama server...');
-
-      // Проверка текущего статуса сервера
-      const isRunning = await this.isOllamaRunning();
-      if (!isRunning) {
-        console.log('✅ Ollama server is already stopped');
-        return false;
-      }
 
       // Безопасная остановка сервера через getServer()
       const server = this.electronOllama.getServer();

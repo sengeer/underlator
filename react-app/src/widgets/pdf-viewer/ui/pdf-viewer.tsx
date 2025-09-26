@@ -30,6 +30,7 @@ import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import FileUpload from '../../../shared/ui/file-upload';
 import IconButton from '../../../shared/ui/icon-button';
+import Loader from '../../../shared/ui/loader';
 import MarkdownRenderer from '../../../shared/ui/markdown-renderer';
 import Switch from '../../../shared/ui/switch';
 import CustomErrorMessage from './custom-error-message';
@@ -358,11 +359,15 @@ function PdfViewer({ isOpened }: PdfTranslator) {
             </div>
             {(generatedResponse || status === 'process') && (
               <div className='pdf-viewer__output-wrapper'>
-                <MarkdownRenderer
-                  content={stringifyGenerateResponse(generatedResponse)}
-                  className='pdf-viewer__output'
-                  showThinking
-                />
+                {generatedResponse ? (
+                  <MarkdownRenderer
+                    content={stringifyGenerateResponse(generatedResponse)}
+                    className='pdf-viewer__output'
+                    showThinking
+                  />
+                ) : (
+                  <Loader />
+                )}
                 {status === 'process' ? (
                   <IconButton
                     style={{

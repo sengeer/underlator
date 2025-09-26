@@ -13,7 +13,7 @@ import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../constants/ipc-tester';
  */
 export async function testListModels() {
   console.log('🧪 Тестирование API получения списка установленных моделей...');
-  await embeddedOllamaElectronApi.listInstalledModels();
+  console.log(await embeddedOllamaElectronApi.listInstalledModels());
 }
 
 /**
@@ -22,9 +22,11 @@ export async function testListModels() {
  */
 export async function testInstallModel() {
   console.log('🧪 Тестирование API установки модели...');
-  await embeddedOllamaElectronApi.installModel({
-    name: OLLAMA_TEST_MODEL,
-  });
+  console.log(
+    await embeddedOllamaElectronApi.installModel({
+      name: OLLAMA_TEST_MODEL,
+    })
+  );
 }
 
 /**
@@ -96,7 +98,9 @@ export async function testGenerateText() {
  */
 export async function testGetCatalog() {
   console.log('🧪 Тестирование API получения каталога моделей...');
-  await embeddedOllamaElectronApi.getCatalog({ forceRefresh: false });
+  console.log(
+    await embeddedOllamaElectronApi.getCatalog({ forceRefresh: false })
+  );
 }
 
 /**
@@ -107,7 +111,9 @@ export async function testGetCatalogForceRefresh() {
   console.log(
     '🧪 Тестирование API получения каталога моделей с принудительным обновлением...'
   );
-  await embeddedOllamaElectronApi.getCatalog({ forceRefresh: true });
+  console.log(
+    await embeddedOllamaElectronApi.getCatalog({ forceRefresh: true })
+  );
 }
 
 /**
@@ -189,9 +195,11 @@ export async function testSearchModels() {
  */
 export async function testGetModelInfo() {
   console.log('🧪 Тестирование API получения детальной информации о модели...');
-  await embeddedOllamaElectronApi.getModelInfo({
-    modelName: OLLAMA_TEST_MODEL,
-  });
+  console.log(
+    await embeddedOllamaElectronApi.getModelInfo({
+      modelName: OLLAMA_TEST_MODEL,
+    })
+  );
 }
 
 /**
@@ -200,9 +208,11 @@ export async function testGetModelInfo() {
  */
 export async function testRemoveModel() {
   console.log(`🧪 Тестирование API удаления модели ${OLLAMA_TEST_MODEL}...`);
-  await embeddedOllamaElectronApi.removeModel({
-    name: OLLAMA_TEST_MODEL,
-  });
+  console.log(
+    await embeddedOllamaElectronApi.removeModel({
+      name: OLLAMA_TEST_MODEL,
+    })
+  );
 }
 
 /**

@@ -50,10 +50,6 @@ msgid "Download"
 msgstr "Загрузить"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
-msgid "Downloading App..."
-msgstr "Загрузка приложения..."
-
-#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Downloading Ollama..."
 msgstr "Загрузка Ollama..."
 
@@ -87,6 +83,10 @@ msgstr "Инструкция"
 #: src/widgets/settings/ui/settings.tsx
 msgid "interface language"
 msgstr "Язык интерфейса"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Loading App..."
+msgstr "Загрузка приложения..."
 
 #: src/widgets/settings/ui/settings.tsx
 msgid "main color"

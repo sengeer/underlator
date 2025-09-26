@@ -11,8 +11,7 @@
     "package": "electron-forge package",
     "build:prod": "cross-env NODE_ENV=production webpack --config webpack.config.js",
     "build:dev": "cross-env NODE_ENV=development webpack --config webpack.config.js",
-    "make": "npm run build:prod && npm run copy-to-webpack && electron-builder --dir",
-    "copy-to-webpack": "mkdir -p .webpack/main && mkdir -p .webpack/renderer/main_window && cp dist/electron/main.js .webpack/main/index.js && cp dist/electron/preload.js .webpack/renderer/main_window/index.js",
+    "make": "npm run build:prod && electron-builder --dir",
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "eslint --fix . --ext .js,.ts",
     "prettier": "prettier . --write",
@@ -80,7 +79,8 @@
     "files": [
       "dist/**/*",
       "node_modules/**/*",
-      "package.json"
+      "package.json",
+      "icons/icon.ico"
     ],
     "win": {
       "target": [

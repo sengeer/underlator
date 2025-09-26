@@ -56,5 +56,5 @@ export interface MenuTranslations {
   SELECT_ALL?: string;
   QUIT?: string;
   DOWNLOADING_OLLAMA?: string;
-  DOWNLOADING_APP?: string;
+  LOADING_APP?: string;
 }

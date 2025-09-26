@@ -148,7 +148,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
       <div className='splash-screen__text splash-screen__text_color_foreground'>
         {splashState.status?.message
           ? splashState.status?.message
-          : translations.DOWNLOADING_APP}
+          : translations.LOADING_APP}
       </div>
 
       {/* Дополнительная информация если доступна */}
