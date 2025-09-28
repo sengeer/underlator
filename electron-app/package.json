@@ -16,7 +16,8 @@
     "lint:fix": "eslint --fix . --ext .js,.ts",
     "prettier": "prettier . --write",
     "lint-staged": "lint-staged",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "docs": "npx typedoc"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",
@@ -44,6 +45,7 @@
     "terser-webpack-plugin": "^5.3.14",
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
+    "typedoc": "^0.28.13",
     "typescript": "^5.9.2",
     "wait-on": "^8.0.2",
     "webpack": "^5.101.3",
