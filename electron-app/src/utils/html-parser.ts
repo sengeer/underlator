@@ -1,15 +1,15 @@
 /**
  * @module HtmlParser
- * @description Утилиты для парсинга HTML страниц Ollama Library
- * Извлекает список моделей и их теги с официального сайта Ollama
+ * Утилиты для парсинга HTML страниц Ollama Library.
+ * Извлекает список моделей и их теги с официального сайта Ollama.
  */
 
 import { fetchWithErrorHandling } from './error-handler';
 import type { ParsedModel, ParseResult, QuantizedModel } from '../types';
 
 /**
- * @description Класс для парсинга HTML страниц Ollama Library
- * Предоставляет методы для извлечения моделей и их тегов
+ * Класс для парсинга HTML страниц Ollama Library.
+ * Предоставляет методы для извлечения моделей и их тегов.
  */
 export class OllamaHtmlParser {
   private readonly baseUrl = 'https://ollama.com';
@@ -22,8 +22,8 @@ export class OllamaHtmlParser {
   private cacheTimestamps = new Map<string, number>();
 
   /**
-   * @description Получает список всех доступных моделей со всеми квантизациями
-   * @returns Promise со списком моделей включая все квантизации
+   * Получает список всех доступных моделей со всеми квантизациями.
+   * @returns Promise со списком моделей включая все квантизации.
    */
   async getAvailableModels(): Promise<ParseResult> {
     try {
@@ -135,10 +135,10 @@ export class OllamaHtmlParser {
   }
 
   /**
-   * @description Получает теги для конкретной модели с кэшированием
-   * Использует кэш для избежания повторных HTTP запросов
-   * @param modelName - Название модели
-   * @returns Promise со списком тегов
+   * Получает теги для конкретной модели с кэшированием.
+   * Использует кэш для избежания повторных HTTP запросов.
+   * @param modelName - Название модели.
+   * @returns Promise со списком тегов.
    */
   async getModelTags(modelName: string): Promise<string[]> {
     // Проверяет кэш
@@ -172,9 +172,9 @@ export class OllamaHtmlParser {
   }
 
   /**
-   * @description Получает теги из кэша если они еще актуальны
-   * @param modelName - Название модели
-   * @returns Кэшированные теги или null
+   * Получает теги из кэша если они еще актуальны.
+   * @param modelName - Название модели.
+   * @returns Кэшированные теги или null.
    */
   private getCachedTags(modelName: string): string[] | null {
     const timestamp = this.cacheTimestamps.get(modelName);
@@ -186,9 +186,9 @@ export class OllamaHtmlParser {
   }
 
   /**
-   * @description Сохраняет теги в кэш
-   * @param modelName - Название модели
-   * @param tags - Список тегов
+   * Сохраняет теги в кэш.
+   * @param modelName - Название модели.
+   * @param tags - Список тегов.
    */
   private setCachedTags(modelName: string, tags: string[]): void {
     this.tagsCache.set(modelName, tags);
@@ -196,10 +196,10 @@ export class OllamaHtmlParser {
   }
 
   /**
-   * @description Парсит HTML главной страницы библиотеки
-   * Извлекает названия моделей и базовую информацию
-   * @param html - HTML содержимое страницы
-   * @returns Список моделей
+   * Парсит HTML главной страницы библиотеки.
+   * Извлекает названия моделей и базовую информацию.
+   * @param html - HTML содержимое страницы.
+   * @returns Список моделей.
    */
   private parseModelsFromHtml(html: string): ParsedModel[] {
     const models: ParsedModel[] = [];
@@ -240,11 +240,11 @@ export class OllamaHtmlParser {
   }
 
   /**
-   * @description Парсит HTML страницы тегов модели
-   * Оптимизированная версия для извлечения всех доступных тегов
-   * @param html - HTML содержимое страницы тегов
-   * @param modelName - Название модели
-   * @returns Список тегов
+   * Парсит HTML страницы тегов модели.
+   * Оптимизированная версия для извлечения всех доступных тегов.
+   * @param html - HTML содержимое страницы тегов.
+   * @param modelName - Название модели.
+   * @returns Список тегов.
    */
   private parseTagsFromHtml(html: string, modelName: string): string[] {
     const tags: string[] = [];
@@ -293,11 +293,11 @@ export class OllamaHtmlParser {
   }
 
   /**
-   * @description Извлекает дополнительную информацию о модели из HTML
-   * Ищет описание, размер, количество скачиваний и другие метаданные
-   * @param html - HTML содержимое страницы
-   * @param modelName - Название модели
-   * @returns Дополнительная информация о модели
+   * Извлекает дополнительную информацию о модели из HTML.
+   * Ищет описание, размер, количество скачиваний и другие метаданные.
+   * @param html - HTML содержимое страницы.
+   * @param modelName - Название модели.
+   * @returns Дополнительная информация о модели.
    */
   private extractModelInfo(
     html: string,
@@ -381,11 +381,11 @@ export class OllamaHtmlParser {
   }
 
   /**
-   * @description Оценивает размер квантизированной модели
-   * Рассчитывает приблизительный размер на основе уровня квантизации
-   * @param baseSize - Базовый размер модели
-   * @param tag - Тег квантизации
-   * @returns Оцененный размер квантизированной модели
+   * Оценивает размер квантизированной модели.
+   * Рассчитывает приблизительный размер на основе уровня квантизации.
+   * @param baseSize - Базовый размер модели.
+   * @param tag - Тег квантизации.
+   * @returns Оцененный размер квантизированной модели.
    */
   private estimateQuantizedSize(
     baseSize?: number,
@@ -420,7 +420,7 @@ export class OllamaHtmlParser {
   }
 
   /**
-   * @description Получает полную информацию о модели с тегами
+   * Получает полную информацию о модели с тегами
    * Объединяет базовую информацию с тегами
    * @param modelName - Название модели
    * @returns Promise с полной информацией о модели
@@ -456,8 +456,8 @@ export class OllamaHtmlParser {
 }
 
 /**
- * @description Создает экземпляр OllamaHtmlParser
- * @returns Экземпляр парсера
+ * Создает экземпляр OllamaHtmlParser.
+ * @returns Экземпляр парсера.
  */
 export function createOllamaHtmlParser(): OllamaHtmlParser {
   return new OllamaHtmlParser();

@@ -2,7 +2,7 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["src"],
   "out": "../docs/react-app",
-  "name": "Underlator React App",
+  "name": "Underlator React Frontend",
   "includeVersion": true,
   "excludePrivate": true,
   "excludeProtected": true,

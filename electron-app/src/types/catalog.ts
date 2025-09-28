@@ -1,17 +1,14 @@
 /**
  * @module CatalogTypes
- * @description Типы для работы с каталогом моделей Ollama
- * Определяет интерфейсы для получения, фильтрации и управления каталогом моделей
- *
- * Основные типы:
- * - CatalogFilters: параметры фильтрации и поиска
+ * Типы для работы с каталогом моделей Ollama.
+ * Определяет интерфейсы для получения, фильтрации и управления каталогом моделей.
  */
 
-import type { ModelStatus, ModelCatalog } from './models.types';
+import type { ModelStatus, ModelCatalog } from './models';
 
 /**
- * @description Расширенные фильтры для каталога
- * Параметры для фильтрации и поиска в каталоге моделей
+ * Расширенные фильтры для каталога.
+ * Параметры для фильтрации и поиска в каталоге моделей.
  */
 export interface CatalogFilters {
   /** Поисковый запрос */
@@ -64,8 +61,8 @@ export interface CatalogFilters {
 }
 
 /**
- * @description Конфигурация для ModelCatalog сервиса
- * Настройки для работы с локальным Ollama API
+ * Конфигурация для ModelCatalog сервиса.
+ * Настройки для работы с локальным Ollama API.
  */
 export interface ModelCatalogConfig {
   /** Базовый URL для локального Ollama API */
@@ -81,8 +78,8 @@ export interface ModelCatalogConfig {
 }
 
 /**
- * @description Интерфейс для кэшированных данных каталога
- * Структура для хранения кэшированного каталога моделей
+ * Интерфейс для кэшированных данных каталога.
+ * Структура для хранения кэшированного каталога моделей.
  */
 export interface CachedCatalog {
   /** Данные каталога */

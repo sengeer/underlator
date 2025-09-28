@@ -1,12 +1,12 @@
 /**
  * @module OllamaConstants
- * @description Константы для работы с Ollama API
- * Централизованная конфигурация для всех операций с Ollama
+ * Константы для работы с Ollama API.
+ * Централизованная конфигурация для всех операций с Ollama.
  */
 
 /**
- * @description Базовые настройки для Ollama API
- * Используются по умолчанию для всех HTTP запросов
+ * Базовые настройки для Ollama API.
+ * Используются по умолчанию для всех HTTP запросов.
  */
 export const OLLAMA_DEFAULT_CONFIG = {
   /** Базовый URL для Ollama API по умолчанию */
@@ -20,7 +20,7 @@ export const OLLAMA_DEFAULT_CONFIG = {
 } as const;
 
 /**
- * @description Endpoints Ollama API
+ * Endpoints Ollama API
  * Все доступные endpoints для взаимодействия с Ollama
  */
 export const OLLAMA_ENDPOINTS = {
@@ -39,8 +39,8 @@ export const OLLAMA_ENDPOINTS = {
 } as const;
 
 /**
- * @description HTTP статус коды для обработки ошибок
- * Используются для определения типа ошибки
+ * HTTP статус коды для обработки ошибок.
+ * Используются для определения типа ошибки.
  */
 export const OLLAMA_HTTP_STATUS = {
   /** Успешный запрос */
@@ -66,8 +66,8 @@ export const OLLAMA_HTTP_STATUS = {
 } as const;
 
 /**
- * @description Типы ошибок Ollama
- * Категории ошибок для централизованной обработки
+ * Типы ошибок Ollama.
+ * Категории ошибок для централизованной обработки.
  */
 export const OLLAMA_ERROR_TYPES = {
   /** Ошибка сети */
@@ -85,25 +85,8 @@ export const OLLAMA_ERROR_TYPES = {
 } as const;
 
 /**
- * @description Статусы операций с моделями
- * Используются для отслеживания состояния установки/удаления
- */
-export const OLLAMA_MODEL_STATUS = {
-  /** Модель загружается */
-  DOWNLOADING: 'downloading',
-  /** Модель проверяется */
-  VERIFYING: 'verifying',
-  /** Модель записывается */
-  WRITING: 'writing',
-  /** Операция завершена */
-  COMPLETE: 'complete',
-  /** Ошибка операции */
-  ERROR: 'error',
-} as const;
-
-/**
- * @description Заголовки HTTP запросов
- * Стандартные заголовки для всех запросов к Ollama API
+ * Заголовки HTTP запросов.
+ * Стандартные заголовки для всех запросов к Ollama API.
  */
 export const OLLAMA_HEADERS = {
   /** Тип содержимого для JSON */
@@ -115,8 +98,8 @@ export const OLLAMA_HEADERS = {
 } as const;
 
 /**
- * @description Параметры по умолчанию для генерации
- * Базовые настройки для всех операций генерации
+ * Параметры по умолчанию для генерации.
+ * Базовые настройки для всех операций генерации.
  */
 export const OLLAMA_DEFAULT_GENERATION_PARAMS = {
   /** Температура генерации */
@@ -130,8 +113,8 @@ export const OLLAMA_DEFAULT_GENERATION_PARAMS = {
 } as const;
 
 /**
- * @description Сообщения об ошибках
- * Стандартизированные сообщения для различных типов ошибок
+ * Сообщения об ошибках.
+ * Стандартизированные сообщения для различных типов ошибок.
  */
 export const OLLAMA_ERROR_MESSAGES = {
   /** Сервер недоступен */
@@ -152,8 +135,8 @@ export const OLLAMA_ERROR_MESSAGES = {
 } as const;
 
 /**
- * @description Настройки для retry логики
- * Параметры для повторных попыток при ошибках
+ * Настройки для retry логики.
+ * Параметры для повторных попыток при ошибках.
  */
 export const OLLAMA_RETRY_CONFIG = {
   /** Максимальное количество попыток */

@@ -1,7 +1,7 @@
 /**
  * @module OllamaApi
- * @description HTTP клиент для работы с Ollama API
- * Реализует все основные операции: генерация, управление моделями, streaming ответы
+ * HTTP клиент для работы с Ollama API.
+ * Реализует все основные операции: генерация, управление моделями, streaming ответы.
  */
 
 import {
@@ -9,7 +9,7 @@ import {
   OLLAMA_ENDPOINTS,
   OLLAMA_HEADERS,
   OLLAMA_DEFAULT_GENERATION_PARAMS,
-} from '../constants/ollama.constants';
+} from '../constants/ollama';
 import {
   fetchWithErrorHandling,
   withRetry,
@@ -31,16 +31,16 @@ import type {
 
 /**
  * @class OllamaApi
- * @description Основной класс для взаимодействия с Ollama HTTP API
- * Предоставляет методы для генерации текста и управления моделями
+ * Основной класс для взаимодействия с Ollama HTTP API.
+ * Предоставляет методы для генерации текста и управления моделями.
  */
 export class OllamaApi {
   private config: OllamaApiConfig;
   private baseUrl: string;
 
   /**
-   * @description Создает экземпляр OllamaApi с настройками
-   * @param config - Конфигурация API клиента
+   * Создает экземпляр OllamaApi с настройками.
+   * @param config - Конфигурация API клиента.
    */
   constructor(config?: Partial<OllamaApiConfig>) {
     this.config = {
@@ -51,12 +51,12 @@ export class OllamaApi {
   }
 
   /**
-   * @description Генерирует текст с помощью указанной модели
-   * Поддерживает streaming ответы и обработку ошибок
-   * @param request - Параметры генерации
-   * @param onChunk - Callback для обработки streaming ответов
-   * @param signal - AbortSignal для отмены операции
-   * @returns Promise с полным ответом
+   * Генерирует текст с помощью указанной модели.
+   * Поддерживает streaming ответы и обработку ошибок.
+   * @param request - Параметры генерации.
+   * @param onChunk - Callback для обработки streaming ответов.
+   * @param signal - AbortSignal для отмены операции.
+   * @returns Promise с полным ответом.
    */
   async generate(
     request: OllamaGenerateRequest,
@@ -119,9 +119,9 @@ export class OllamaApi {
   }
 
   /**
-   * @description Получает список доступных моделей
-   * @param signal - AbortSignal для отмены операции
-   * @returns Promise со списком моделей
+   * Получает список доступных моделей.
+   * @param signal - AbortSignal для отмены операции.
+   * @returns Promise со списком моделей.
    */
   async listModels(signal?: AbortSignal): Promise<OllamaModelsResponse> {
     const context = 'listModels';
@@ -149,12 +149,12 @@ export class OllamaApi {
   }
 
   /**
-   * @description Устанавливает модель из реестра
-   * Поддерживает streaming прогресс установки
-   * @param request - Параметры установки модели
-   * @param onProgress - Callback для обработки прогресса
-   * @param signal - AbortSignal для отмены операции
-   * @returns Promise с результатом установки
+   * Устанавливает модель из реестра.
+   * Поддерживает streaming прогресс установки.
+   * @param request - Параметры установки модели.
+   * @param onProgress - Callback для обработки прогресса.
+   * @param signal - AbortSignal для отмены операции.
+   * @returns Promise с результатом установки.
    */
   async installModel(
     request: OllamaPullRequest,
@@ -207,10 +207,10 @@ export class OllamaApi {
   }
 
   /**
-   * @description Удаляет модель из системы
-   * @param request - Параметры удаления модели
-   * @param signal - AbortSignal для отмены операции
-   * @returns Promise с результатом удаления
+   * Удаляет модель из системы.
+   * @param request - Параметры удаления модели.
+   * @param signal - AbortSignal для отмены операции.
+   * @returns Promise с результатом удаления.
    */
   async removeModel(
     request: OllamaDeleteRequest,
@@ -268,9 +268,9 @@ export class OllamaApi {
   }
 
   /**
-   * @description Проверяет доступность Ollama сервера
-   * @param signal - AbortSignal для отмены операции
-   * @returns Promise с результатом проверки
+   * Проверяет доступность Ollama сервера.
+   * @param signal - AbortSignal для отмены операции.
+   * @returns Promise с результатом проверки.
    */
   async healthCheck(signal?: AbortSignal): Promise<boolean> {
     const context = 'healthCheck';
@@ -297,10 +297,10 @@ export class OllamaApi {
   }
 
   /**
-   * @description Получает информацию о конкретной модели
-   * @param modelName - Название модели
-   * @param signal - AbortSignal для отмены операции
-   * @returns Promise с информацией о модели
+   * Получает информацию о конкретной модели.
+   * @param modelName - Название модели.
+   * @param signal - AbortSignal для отмены операции.
+   * @returns Promise с информацией о модели.
    */
   async getModelInfo(modelName: string, signal?: AbortSignal): Promise<any> {
     const context = `getModelInfo(${modelName})`;
@@ -330,8 +330,8 @@ export class OllamaApi {
   }
 
   /**
-   * @description Обновляет конфигурацию API клиента
-   * @param newConfig - Новая конфигурация
+   * Обновляет конфигурацию API клиента.
+   * @param newConfig - Новая конфигурация.
    */
   updateConfig(newConfig: Partial<OllamaApiConfig>): void {
     this.config = {
@@ -342,17 +342,17 @@ export class OllamaApi {
   }
 
   /**
-   * @description Получает текущую конфигурацию API клиента
-   * @returns Текущая конфигурация
+   * Получает текущую конфигурацию API клиента.
+   * @returns Текущая конфигурация.
    */
   getConfig(): OllamaApiConfig {
     return { ...this.config };
   }
 
   /**
-   * @description Создает новый экземпляр API с другой конфигурацией
-   * @param config - Новая конфигурация
-   * @returns Новый экземпляр OllamaApi
+   * Создает новый экземпляр API с другой конфигурацией.
+   * @param config - Новая конфигурация.
+   * @returns Новый экземпляр OllamaApi.
    */
   clone(config?: Partial<OllamaApiConfig>): OllamaApi {
     return new OllamaApi({
@@ -363,9 +363,9 @@ export class OllamaApi {
 }
 
 /**
- * @description Создает экземпляр OllamaApi с настройками по умолчанию
- * @param config - Опциональная конфигурация
- * @returns Экземпляр OllamaApi
+ * Создает экземпляр OllamaApi с настройками по умолчанию.
+ * @param config - Опциональная конфигурация.
+ * @returns Экземпляр OllamaApi.
  */
 export function createOllamaApi(config?: Partial<OllamaApiConfig>): OllamaApi {
   return new OllamaApi(config);

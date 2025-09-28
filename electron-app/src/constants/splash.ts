@@ -1,12 +1,12 @@
 /**
  * @module SplashConstants
- * @description Константы для работы с splash screen
- * Централизованная конфигурация для всех операций splash screen
+ * Константы для работы с splash screen.
+ * Централизованная конфигурация для всех операций splash screen.
  */
 
 /**
- * @description Временные интервалы для splash screen
- * Настройки времени для различных операций
+ * Временные интервалы для splash screen.
+ * Настройки времени для различных операций.
  */
 export const SPLASH_TIMING = {
   /** Задержка перед показом splash screen */
@@ -22,8 +22,8 @@ export const SPLASH_TIMING = {
 } as const;
 
 /**
- * @description IPC события для splash screen в React архитектуре
- * События для коммуникации между main и renderer процессами
+ * IPC события для splash screen в React архитектуре.
+ * События для коммуникации между main и renderer процессами.
  */
 export const SPLASH_IPC_EVENTS = {
   /** Получение текущего статуса */

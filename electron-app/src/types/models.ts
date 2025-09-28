@@ -1,12 +1,12 @@
 /**
  * @module ModelsTypes
- * @description Типы для работы с моделями
- * Определяет интерфейсы для управления моделями в системе
+ * Типы для работы с моделями.
+ * Определяет интерфейсы для управления моделями в системе.
  */
 
 /**
- * @description Базовая информация о модели
- * Общий интерфейс для всех типов моделей
+ * Базовая информация о модели.
+ * Общий интерфейс для всех типов моделей.
  */
 export interface BaseModel {
   /** Уникальный идентификатор модели */
@@ -28,8 +28,8 @@ export interface BaseModel {
 }
 
 /**
- * @description Модель Ollama
- * Специфичная информация для моделей Ollama
+ * Модель Ollama.
+ * Специфичная информация для моделей Ollama.
  */
 export interface OllamaModelInfo extends BaseModel {
   /** Тип модели */
@@ -47,8 +47,8 @@ export interface OllamaModelInfo extends BaseModel {
 }
 
 /**
- * @description Статус модели в системе
- * Отслеживает состояние модели
+ * Статус модели в системе.
+ * Отслеживает состояние модели.
  */
 export type ModelStatus =
   | 'available'
@@ -59,8 +59,8 @@ export type ModelStatus =
   | 'corrupted';
 
 /**
- * @description Каталог моделей
- * Список доступных моделей
+ * Каталог моделей.
+ * Список доступных моделей.
  */
 export interface ModelCatalog {
   /** Модели Ollama */
@@ -72,8 +72,8 @@ export interface ModelCatalog {
 }
 
 /**
- * @description Фильтры для моделей
- * Параметры фильтрации каталога
+ * Фильтры для моделей.
+ * Параметры фильтрации каталога.
  */
 export interface ModelFilters {
   /** Поисковый запрос */

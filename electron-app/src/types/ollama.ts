@@ -1,12 +1,12 @@
 /**
  * @module OllamaTypes
- * @description Типы для работы с Ollama API
- * Определяет интерфейсы для всех операций с Ollama HTTP API
+ * Типы для работы с Ollama API.
+ * Определяет интерфейсы для всех операций с Ollama HTTP API.
  */
 
 /**
- * @description Параметры для генерации текста через Ollama
- * Соответствует API endpoint /api/generate
+ * Параметры для генерации текста через Ollama.
+ * Соответствует API endpoint /api/generate.
  */
 export interface OllamaGenerateRequest {
   /** Название модели для использования */
@@ -30,8 +30,8 @@ export interface OllamaGenerateRequest {
 }
 
 /**
- * @description Ответ от Ollama API при генерации
- * Структура streaming ответа от /api/generate
+ * Ответ от Ollama API при генерации.
+ * Структура streaming ответа от /api/generate.
  */
 export interface OllamaGenerateResponse {
   /** Название использованной модели */
@@ -61,8 +61,8 @@ export interface OllamaGenerateResponse {
 }
 
 /**
- * @description Информация о модели в Ollama
- * Структура ответа от /api/tags
+ * Информация о модели в Ollama.
+ * Структура ответа от /api/tags.
  */
 export interface OllamaModel {
   /** Название модели */
@@ -85,8 +85,8 @@ export interface OllamaModel {
 }
 
 /**
- * @description Список доступных моделей
- * Ответ от /api/tags
+ * Список доступных моделей.
+ * Ответ от /api/tags.
  */
 export interface OllamaModelsResponse {
   /** Массив доступных моделей */
@@ -94,8 +94,8 @@ export interface OllamaModelsResponse {
 }
 
 /**
- * @description Параметры для установки модели
- * Структура запроса для /api/pull
+ * Параметры для установки модели.
+ * Структура запроса для /api/pull.
  */
 export interface OllamaPullRequest {
   /** Название модели для установки */
@@ -109,8 +109,8 @@ export interface OllamaPullRequest {
 }
 
 /**
- * @description Прогресс установки модели
- * Streaming ответ от /api/pull
+ * Прогресс установки модели.
+ * Streaming ответ от /api/pull.
  */
 export interface OllamaPullProgress {
   /** Статус операции */
@@ -128,8 +128,8 @@ export interface OllamaPullProgress {
 }
 
 /**
- * @description Параметры для удаления модели
- * Структура запроса для /api/delete
+ * Параметры для удаления модели.
+ * Структура запроса для /api/delete.
  */
 export interface OllamaDeleteRequest {
   /** Название модели для удаления */
@@ -137,8 +137,8 @@ export interface OllamaDeleteRequest {
 }
 
 /**
- * @description Результат удаления модели
- * Ответ от /api/delete
+ * Результат удаления модели.
+ * Ответ от /api/delete.
  */
 export interface OllamaDeleteResponse {
   /** Успешность операции */
@@ -148,8 +148,8 @@ export interface OllamaDeleteResponse {
 }
 
 /**
- * @description Конфигурация HTTP клиента
- * Настройки для OllamaApi класса
+ * Конфигурация HTTP клиента.
+ * Настройки для OllamaApi класса.
  */
 export interface OllamaApiConfig {
   /** Базовый URL для Ollama API */
@@ -163,26 +163,20 @@ export interface OllamaApiConfig {
 }
 
 /**
- * @description Callback для обработки streaming ответов
- * Используется для обработки прогресса генерации
+ * Callback для обработки streaming ответов.
+ * Используется для обработки прогресса генерации.
  */
 export type OllamaStreamCallback = (chunk: OllamaGenerateResponse) => void;
 
 /**
- * @description Callback для обработки прогресса установки
- * Используется для отслеживания загрузки моделей
+ * Callback для обработки прогресса установки.
+ * Используется для отслеживания загрузки моделей.
  */
 export type OllamaProgressCallback = (progress: OllamaPullProgress) => void;
 
 /**
- * @description Callback для обработки ошибок
- * Используется для централизованной обработки ошибок
- */
-export type OllamaErrorCallback = (error: Error, context?: string) => void;
-
-/**
- * @description Статусы операций с Ollama
- * Используется для отслеживания состояния операций
+ * Статусы операций с Ollama.
+ * Используется для отслеживания состояния операций.
  */
 export type OllamaOperationStatus =
   | 'idle'
@@ -195,8 +189,8 @@ export type OllamaOperationStatus =
   | 'success';
 
 /**
- * @description Результат операции с Ollama
- * Универсальный тип для результатов всех операций
+ * Результат операции с Ollama.
+ * Универсальный тип для результатов всех операций.
  */
 export interface OllamaOperationResult<T = any> {
   /** Успешность операции */

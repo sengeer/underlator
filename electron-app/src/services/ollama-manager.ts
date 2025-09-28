@@ -1,3 +1,10 @@
+/**
+ * @module OllamaManager
+ * Сервис для управления Ollama через electron-ollama библиотеку.
+ * Обеспечивает автоматическую установку, запуск и остановку Ollama сервера.
+ * Реализует fallback логику для обработки ошибок и восстановления работоспособности.
+ */
+
 import { ElectronOllama } from 'electron-ollama';
 const path = require('path');
 import { app } from 'electron';
@@ -6,16 +13,9 @@ import { translations } from '../main';
 import { isDev } from '../main';
 
 /**
- * @module OllamaManager
- * @description Сервис для управления Ollama через electron-ollama библиотеку
- * Обеспечивает автоматическую установку, запуск и остановку Ollama сервера
- * Реализует fallback логику для обработки ошибок и восстановления работоспособности
- */
-
-/**
- * @class OllamaManager
- * @description Менеджер для управления Ollama сервером в Electron main process
- * Обеспечивает автоматическую установку и управление жизненным циклом Ollama
+ * @class OllamaManager.
+ * Менеджер для управления Ollama сервером в Electron main process.
+ * Обеспечивает автоматическую установку и управление жизненным циклом Ollama.
  */
 class OllamaManager {
   private electronOllama: ElectronOllama | null = null;
@@ -26,10 +26,10 @@ class OllamaManager {
   private RETRY_DELAY_MS = 1000;
 
   /**
-   * @description Инициализирует OllamaManager и выполняет автоматическую установку Ollama
-   * Проверяет доступность Ollama и устанавливает его при необходимости
-   * @returns {Promise<void>} Promise, который разрешается после инициализации
-   * @throws {Error} Ошибка инициализации или установки Ollama
+   * Инициализирует OllamaManager и выполняет автоматическую установку Ollama.
+   * Проверяет доступность Ollama и устанавливает его при необходимости.
+   * @returns {Promise<void>} Promise, который разрешается после инициализации.
+   * @throws {Error} Ошибка инициализации или установки Ollama.
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
@@ -60,9 +60,9 @@ class OllamaManager {
   }
 
   /**
-   * @description Форматирует сообщение
-   * @param {string} msg - Сообщение для форматирования
-   * @returns {string} Форматированное сообщение
+   * ообщение.
+   * @param {string} msg - Сообщение для форматирования.
+   * @returns {string} Форматированное сообщение.
    */
   private formatMessage(msg: string) {
     // Строка в формате:
@@ -81,10 +81,10 @@ class OllamaManager {
   }
 
   /**
-   * @description Запускает Ollama сервер
-   * Проверяет статус сервера и запускает его при необходимости
-   * @returns {Promise<boolean>} Promise с результатом запуска (true - успешно, false - уже запущен)
-   * @throws {Error} Ошибка запуска Ollama сервера
+   * Запускает Ollama сервер.
+   * Проверяет статус сервера и запускает его при необходимости.
+   * @returns {Promise<boolean>} Promise с результатом запуска (true - успешно, false - уже запущен).
+   * @throws {Error} Ошибка запуска Ollama сервера.
    */
   async startOllama(): Promise<boolean> {
     if (!this.electronOllama) {
@@ -162,10 +162,10 @@ class OllamaManager {
   }
 
   /**
-   * @description Останавливает Ollama сервер
-   * Безопасно завершает работу сервера с сохранением состояния
-   * @returns {Promise<boolean>} Promise с результатом остановки (true - успешно, false - уже остановлен)
-   * @throws {Error} Ошибка остановки Ollama сервера
+   * Останавливает Ollama сервер.
+   * Безопасно завершает работу сервера с сохранением состояния.
+   * @returns {Promise<boolean>} Promise с результатом остановки (true - успешно, false - уже остановлен).
+   * @throws {Error} Ошибка остановки Ollama сервера.
    */
   async stopOllama(): Promise<boolean> {
     if (!this.electronOllama) {
@@ -201,10 +201,10 @@ class OllamaManager {
   }
 
   /**
-   * @description Проверяет статус работы Ollama сервера
-   * Выполняет ping запрос к серверу для определения его доступности
-   * @returns {Promise<boolean>} Promise с результатом проверки (true - сервер работает, false - не работает)
-   * @throws {Error} Ошибка проверки статуса сервера
+   * Проверяет статус работы Ollama сервера.
+   * Выполняет ping запрос к серверу для определения его доступности.
+   * @returns {Promise<boolean>} Promise с результатом проверки (true - сервер работает, false - не работает).
+   * @throws {Error} Ошибка проверки статуса сервера.
    */
   async isOllamaRunning(): Promise<boolean> {
     if (!this.electronOllama) {
@@ -222,25 +222,25 @@ class OllamaManager {
   }
 
   /**
-   * @description Получает экземпляр ElectronOllama для прямого взаимодействия
-   * @returns {ElectronOllama | null} Экземпляр ElectronOllama или null если не инициализирован
+   * Получает экземпляр ElectronOllama для прямого взаимодействия.
+   * @returns {ElectronOllama | null} Экземпляр ElectronOllama или null если не инициализирован.
    */
   getElectronOllamaInstance(): ElectronOllama | null {
     return this.electronOllama;
   }
 
   /**
-   * @description Проверяет статус инициализации OllamaManager
-   * @returns {boolean} true если OllamaManager инициализирован, false в противном случае
+   * Проверяет статус инициализации OllamaManager.
+   * @returns {boolean} true если OllamaManager инициализирован, false в противном случае.
    */
   getInitializationStatus(): boolean {
     return this.isInitialized;
   }
 
   /**
-   * @description Выполняет полную очистку ресурсов OllamaManager
-   * Останавливает сервер и освобождает ресурсы
-   * @returns {Promise<void>} Promise, который разрешается после очистки
+   * Выполняет полную очистку ресурсов OllamaManager.
+   * Останавливает сервер и освобождает ресурсы.
+   * @returns {Promise<void>} Promise, который разрешается после очистки.
    */
   async cleanup(): Promise<void> {
     try {

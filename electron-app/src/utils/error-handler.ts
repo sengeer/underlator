@@ -1,6 +1,6 @@
 /**
  * @module OllamaErrorHandler
- * @description Утилиты для обработки ошибок Ollama API
+ * Утилиты для обработки ошибок Ollama API
  * Реализует retry логику и централизованную обработку ошибок
  */
 
@@ -9,19 +9,19 @@ import {
   OLLAMA_ERROR_MESSAGES,
   OLLAMA_RETRY_CONFIG,
   OLLAMA_HTTP_STATUS,
-} from '../constants/ollama.constants';
+} from '../constants/ollama';
 import type { OllamaOperationResult } from '../types';
 
 /**
- * @description Класс для обработки ошибок Ollama API
- * Предоставляет методы для классификации и обработки различных типов ошибок
+ * Класс для обработки ошибок Ollama API.
+ * Предоставляет методы для классификации и обработки различных типов ошибок.
  */
 export class OllamaErrorHandler {
   /**
-   * @description Классифицирует ошибку по типу
-   * Определяет категорию ошибки для правильной обработки
-   * @param error - Объект ошибки
-   * @returns Классифицированная ошибка с типом и сообщением
+   * Классифицирует ошибку по типу.
+   * Определяет категорию ошибки для правильной обработки.
+   * @param error - Объект ошибки.
+   * @returns Классифицированная ошибка с типом и сообщением.
    */
   static classifyError(error: any): {
     type: string;
@@ -85,10 +85,10 @@ export class OllamaErrorHandler {
   }
 
   /**
-   * @description Проверяет, нужно ли повторить операцию
-   * Определяет, является ли ошибка временной и подходящей для retry
-   * @param error - Объект ошибки
-   * @returns true если операцию стоит повторить
+   * Проверяет, нужно ли повторить операцию.
+   * Определяет, является ли ошибка временной и подходящей для retry.
+   * @param error - Объект ошибки.
+   * @returns true если операцию стоит повторить.
    */
   static shouldRetry(error: any): boolean {
     const { type } = this.classifyError(error);
@@ -101,10 +101,10 @@ export class OllamaErrorHandler {
   }
 
   /**
-   * @description Создает результат операции с ошибкой
-   * Форматирует ошибку в стандартный формат результата
-   * @param error - Объект ошибки
-   * @returns Результат операции с информацией об ошибке
+   * Создает результат операции с ошибкой.
+   * Форматирует ошибку в стандартный формат результата.
+   * @param error - Объект ошибки.
+   * @returns Результат операции с информацией об ошибке.
    */
   static createErrorResult<T>(error: any): OllamaOperationResult<T> {
     const { message } = this.classifyError(error);
@@ -117,11 +117,11 @@ export class OllamaErrorHandler {
   }
 
   /**
-   * @description Логирует ошибку с контекстом
-   * Записывает информацию об ошибке для отладки
-   * @param error - Объект ошибки
-   * @param context - Контекст операции
-   * @param attempt - Номер попытки (для retry)
+   * Логирует ошибку с контекстом.
+   * Записывает информацию об ошибке для отладки.
+   * @param error - Объект ошибки.
+   * @param context - Контекст операции.
+   * @param attempt - Номер попытки (для retry).
    */
   static logError(error: any, context?: string, attempt?: number): void {
     const { type, message } = this.classifyError(error);
@@ -141,12 +141,12 @@ export class OllamaErrorHandler {
 }
 
 /**
- * @description Утилита для выполнения операций с retry логикой
- * Автоматически повторяет операции при временных ошибках
- * @param operation - Функция для выполнения
- * @param config - Конфигурация retry
- * @param context - Контекст операции
- * @returns Promise с результатом операции
+ * Утилита для выполнения операций с retry логикой.
+ * Автоматически повторяет операции при временных ошибках.
+ * @param operation - Функция для выполнения.
+ * @param config - Конфигурация retry.
+ * @param context - Контекст операции.
+ * @returns Promise с результатом операции.
  */
 export async function withRetry<T>(
   operation: () => Promise<T>,
@@ -188,12 +188,12 @@ export async function withRetry<T>(
 }
 
 /**
- * @description Утилита для создания HTTP запроса с обработкой ошибок
- * Обертка над fetch с дополнительной обработкой ошибок
- * @param url - URL для запроса
- * @param options - Опции fetch
- * @param context - Контекст операции
- * @returns Promise с ответом
+ * Утилита для создания HTTP запроса с обработкой ошибок.
+ * Обертка над fetch с дополнительной обработкой ошибок.
+ * @param url - URL для запроса.
+ * @param options - Опции fetch.
+ * @param context - Контекст операции.
+ * @returns Promise с ответом.
  */
 export async function fetchWithErrorHandling(
   url: string,
@@ -221,12 +221,12 @@ export async function fetchWithErrorHandling(
 }
 
 /**
- * @description Утилита для обработки streaming ответов
- * Обрабатывает поток данных с обработкой ошибок
- * @param response - HTTP ответ
- * @param onChunk - Callback для обработки чанков
- * @param onError - Callback для обработки ошибок
- * @returns Promise с полным ответом
+ * Утилита для обработки streaming ответов.
+ * Обрабатывает поток данных с обработкой ошибок.
+ * @param response - HTTP ответ.
+ * @param onChunk - Callback для обработки чанков.
+ * @param onError - Callback для обработки ошибок.
+ * @returns Promise с полным ответом.
  */
 export async function processStreamResponse(
   response: Response,

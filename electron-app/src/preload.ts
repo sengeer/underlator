@@ -1,5 +1,9 @@
-// См. документацию Electron для деталей по использованию preload скриптов:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
+/**
+ * @module Preload
+ * Preload содержит код, который выполняется в процессе рендерера.
+ * См. документацию Electron для деталей по использованию preload скриптов:
+ * https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
+ */
 
 const { contextBridge, ipcRenderer } = require('electron');
 import type {
@@ -14,7 +18,7 @@ import type {
 } from './types';
 
 /**
- * Здесь используется API `contextBridge` для экспозиции кастомного API в renderer процесс
+ * Здесь используется API `contextBridge` для экспозиции кастомного API в renderer процесс.
  */
 contextBridge.exposeInMainWorld('electron', {
   // API для i18n локализации Electron

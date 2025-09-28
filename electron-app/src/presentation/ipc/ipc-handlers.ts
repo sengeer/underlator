@@ -1,66 +1,22 @@
 /**
  * @module IpcHandlers
- * @description Утилиты для обработки IPC сообщений
- * Предоставляет функции для валидации, логирования и форматирования IPC операций
+ * Утилиты для обработки IPC сообщений.
+ * Предоставляет функции для валидации, логирования и форматирования IPC операций.
  */
 
 import type { OllamaOperationResult } from '../../types';
+import type { IpcMessage, IpcResponse } from '../../types';
 
 /**
- * @description Интерфейс для IPC сообщений
- * Стандартная структура для всех IPC операций
- */
-export interface IpcMessage<T = any> {
-  /** Тип операции */
-  type: string;
-  /** Данные сообщения */
-  data?: T;
-  /** Ошибка операции */
-  error?: string;
-  /** Статус операции */
-  status: 'success' | 'error' | 'progress';
-  /** ID сообщения для отслеживания */
-  id?: string;
-}
-
-/**
- * @description Интерфейс для IPC запросов
- * Структура входящих запросов от renderer процесса
- */
-export interface IpcRequest<T = any> {
-  /** Тип операции */
-  type: string;
-  /** Параметры запроса */
-  params?: T;
-  /** ID запроса для отслеживания */
-  id?: string;
-}
-
-/**
- * @description Интерфейс для IPC ответов
- * Структура ответов от main процесса
- */
-export interface IpcResponse<T = any> {
-  /** Успешность операции */
-  success: boolean;
-  /** Данные ответа */
-  data?: T;
-  /** Ошибка операции */
-  error?: string;
-  /** ID ответа для отслеживания */
-  id?: string;
-}
-
-/**
- * @description Класс для обработки IPC сообщений
- * Предоставляет методы для валидации и форматирования IPC операций
+ * Класс для обработки IPC сообщений.
+ * Предоставляет методы для валидации и форматирования IPC операций.
  */
 export class IpcHandler {
   /**
-   * @description Создает успешный IPC ответ
-   * @param data - Данные ответа
-   * @param id - ID сообщения
-   * @returns Форматированный успешный ответ
+   * Создает успешный IPC ответ.
+   * @param data - Данные ответа.
+   * @param id - ID сообщения.
+   * @returns Форматированный успешный ответ.
    */
   static createSuccessResponse<T>(data: T, id?: string): IpcResponse<T> {
     return {
@@ -71,10 +27,10 @@ export class IpcHandler {
   }
 
   /**
-   * @description Создает ответ с ошибкой
-   * @param error - Сообщение об ошибке
-   * @param id - ID сообщения
-   * @returns Форматированный ответ с ошибкой
+   * Создает ответ с ошибкой.
+   * @param error - Сообщение об ошибке.
+   * @param id - ID сообщения.
+   * @returns Форматированный ответ с ошибкой.
    */
   static createErrorResponse(error: string, id?: string): IpcResponse {
     return {
@@ -85,10 +41,10 @@ export class IpcHandler {
   }
 
   /**
-   * @description Создает прогресс сообщение
-   * @param progress - Данные прогресса
-   * @param id - ID сообщения
-   * @returns Форматированное сообщение прогресса
+   * Создает прогресс сообщение.
+   * @param progress - Данные прогресса.
+   * @param id - ID сообщения.
+   * @returns Форматированное сообщение прогресса.
    */
   static createProgressMessage<T>(progress: T, id?: string): IpcMessage<T> {
     return {
@@ -100,10 +56,10 @@ export class IpcHandler {
   }
 
   /**
-   * @description Валидирует входящий IPC запрос
-   * @param request - Объект запроса
-   * @param requiredFields - Обязательные поля
-   * @returns Результат валидации
+   * Валидирует входящий IPC запрос.
+   * @param request - Объект запроса.
+   * @param requiredFields - Обязательные поля.
+   * @returns Результат валидации.
    */
   static validateRequest(
     request: any,
@@ -124,11 +80,11 @@ export class IpcHandler {
   }
 
   /**
-   * @description Логирует IPC операцию
-   * @param operation - Название операции
-   * @param request - Входящий запрос
-   * @param response - Исходящий ответ
-   * @param duration - Время выполнения в миллисекундах
+   * Логирует IPC операцию.
+   * @param operation - Название операции.
+   * @param request - Входящий запрос.
+   * @param response - Исходящий ответ.
+   * @param duration - Время выполнения в миллисекундах.
    */
   static logOperation(
     operation: string,
@@ -148,10 +104,10 @@ export class IpcHandler {
   }
 
   /**
-   * @description Обрабатывает ошибки IPC операций
-   * @param error - Объект ошибки
-   * @param context - Контекст операции
-   * @returns Форматированная ошибка для IPC
+   * Обрабатывает ошибки IPC операций.
+   * @param error - Объект ошибки.
+   * @param context - Контекст операции.
+   * @returns Форматированная ошибка для IPC.
    */
   static handleError(error: any, context?: string): string {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -163,10 +119,10 @@ export class IpcHandler {
   }
 
   /**
-   * @description Преобразует результат Ollama операции в IPC ответ
-   * @param result - Результат Ollama операции
-   * @param id - ID сообщения
-   * @returns IPC ответ
+   * Преобразует результат Ollama операции в IPC ответ.
+   * @param result - Результат Ollama операции.
+   * @param id - ID сообщения.
+   * @returns IPC ответ.
    */
   static convertOllamaResult<T>(
     result: OllamaOperationResult<T>,
@@ -180,10 +136,10 @@ export class IpcHandler {
   }
 
   /**
-   * @description Создает обертку для IPC обработчика с логированием
-   * @param handler - Функция обработчика
-   * @param operationName - Название операции для логирования
-   * @returns Обернутый обработчик
+   * Создает обертку для IPC обработчика с логированием.
+   * @param handler - Функция обработчика.
+   * @param operationName - Название операции для логирования.
+   * @returns Обернутый обработчик.
    */
   static createHandlerWrapper<T, R>(
     handler: (request: T) => Promise<R>,
@@ -236,10 +192,10 @@ export class IpcHandler {
   }
 
   /**
-   * @description Создает обработчик для streaming операций
-   * @param handler - Функция обработчика с callback
-   * @param operationName - Название операции
-   * @returns Обернутый streaming обработчик
+   * Создает обработчик для streaming операций.
+   * @param handler - Функция обработчика с callback.
+   * @param operationName - Название операции.
+   * @returns Обернутый streaming обработчик.
    */
   static createStreamingHandlerWrapper<T>(
     handler: (request: T, onProgress: (progress: any) => void) => Promise<any>,

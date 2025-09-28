@@ -1,8 +1,14 @@
+/**
+ * @module CatalogConstants
+ * Константы для работы с каталогом моделей Ollama.
+ * Централизованная конфигурация для всех операций с каталогом моделей Ollama.
+ */
+
 import type { ModelCatalogConfig } from '../types';
 
 /**
- * @description Статический запасной список моделей Ollama
- * Список моделей, которые можно установить через ollama pull
+ * Статический запасной список моделей Ollama.
+ * Список моделей, которые можно установить через ollama pull.
  */
 export const STATIC_MODELS = [
   {
@@ -23,8 +29,8 @@ export const STATIC_MODELS = [
 ];
 
 /**
- * @description Конфигурация по умолчанию для ModelCatalog
- * Базовые настройки для работы с локальным Ollama API
+ * Конфигурация по умолчанию для ModelCatalog.
+ * Базовые настройки для работы с локальным Ollama API.
  */
 export const DEFAULT_CATALOG_CONFIG: ModelCatalogConfig = {
   /** Локальный Ollama API */

@@ -1,6 +1,6 @@
 /**
- * Типы для Electron API
- * Расширяет глобальные типы для лучшей поддержки TypeScript
+ * @module ElectronTypes
+ * Расширяет глобальные типы для лучшей поддержки TypeScript.
  */
 
 declare global {
@@ -29,21 +29,7 @@ declare global {
 export {};
 
 /**
- * Типы для прогресса загрузки моделей
- */
-export interface ModelDownloadProgress {
-  modelName: string;
-  currentFile: string;
-  fileProgress: number;
-  overallProgress: number;
-  completedFiles: number;
-  totalFiles: number;
-  downloadedSize: number;
-  totalSize: number;
-}
-
-/**
- * Типы для переводов меню
+ * Типы для переводов меню.
  */
 export interface MenuTranslations {
   MENU?: string;

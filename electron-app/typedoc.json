@@ -3,7 +3,7 @@
   "entryPoints": ["src/**/*.ts"],
   "entryPointStrategy": "expand",
   "out": "../docs/electron-app",
-  "name": "Underlator Electron App",
+  "name": "Underlator Electron Backend",
   "includeVersion": true,
   "excludePrivate": true,
   "excludeProtected": true,

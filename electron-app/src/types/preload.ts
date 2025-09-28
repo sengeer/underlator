@@ -1,7 +1,7 @@
 /**
  * @module PreloadTypes
- * @description Типы для работы с preload
- * Определяет интерфейсы для API Electron, доступного в renderer процессе
+ * Типы для работы с preload.
+ * Определяет интерфейсы для API Electron, доступного в renderer процессе.
  */
 
 import type {
@@ -17,8 +17,8 @@ import type {
 } from './index';
 
 /**
- * Интерфейс для API Electron, доступного в renderer процессе
- * Обеспечивает безопасное взаимодействие между main и renderer процессами
+ * Интерфейс для API Electron, доступного в renderer процессе.
+ * Обеспечивает безопасное взаимодействие между main и renderer процессами.
  */
 export interface ElectronAPI {
   updateTranslations: (translations: any) => void;
