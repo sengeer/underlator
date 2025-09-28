@@ -13,7 +13,6 @@ import {
 import {
   fetchWithErrorHandling,
   withRetry,
-  createTimeoutController,
   processStreamResponse,
 } from '../utils/error-handler';
 import type {
@@ -68,20 +67,11 @@ export class OllamaApi {
 
     return withRetry(
       async () => {
-        // Создает таймаут контроллер
-        const { controller: timeoutController } = createTimeoutController(
-          this.config.timeout
-        );
-
-        // Объединяет сигналы отмены
+        // Создает сигнал отмены
         const abortController = new AbortController();
         if (signal) {
           signal.addEventListener('abort', () => abortController.abort());
         }
-
-        timeoutController.signal.addEventListener('abort', () =>
-          abortController.abort()
-        );
 
         try {
           // Подготавливает запрос с параметрами по умолчанию

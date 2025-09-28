@@ -90,8 +90,7 @@ async function handleContextualTranslation(
     await embeddedOllamaElectronApi.generate({
       model,
       prompt,
-      temperature: params.temperature || DEFAULT_CONFIG.defaultTemperature,
-      max_tokens: params.maxTokens || DEFAULT_CONFIG.defaultMaxTokens,
+      think: params.think,
     });
 
     // Финальная обработка ответа
@@ -158,6 +157,7 @@ async function handleInstruction(
     await embeddedOllamaElectronApi.generate({
       model,
       prompt: finalPrompt,
+      think: params.think,
       temperature: params.temperature || DEFAULT_CONFIG.defaultTemperature,
       max_tokens: params.maxTokens || DEFAULT_CONFIG.defaultMaxTokens,
     });
@@ -208,6 +208,7 @@ async function handleSimpleTranslation(
     await embeddedOllamaElectronApi.generate({
       model,
       prompt,
+      think: params.think,
       temperature: params.temperature || DEFAULT_CONFIG.defaultTemperature,
       max_tokens: params.maxTokens || DEFAULT_CONFIG.defaultMaxTokens,
     });

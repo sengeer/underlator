@@ -224,8 +224,9 @@ function PdfViewer({ isOpened }: PdfTranslator) {
           values.instruction === ''
             ? t`what does this mean?`
             : values.instruction,
+        think: true,
       });
-    } else {
+    } else if (settings.typeUse === 'translation') {
       collectedTextInfos.forEach(({ element }) => {
         element.style.backgroundColor = 'var(--background)';
         element.style.color = 'var(--foreground)';
@@ -242,25 +243,27 @@ function PdfViewer({ isOpened }: PdfTranslator) {
 
   // Processing block translation results
   useEffect(() => {
-    if (Object.keys(generatedResponse).length === 0) return;
+    if (settings.typeUse === 'translation') {
+      if (Object.keys(generatedResponse).length === 0) return;
 
-    // Functional utility for updating text nodes
-    const shouldLogErrors =
-      (status === 'success' || status === 'error') && textInfos.length > 0;
-    const updateHandler = createUpdateHandler(textInfos, shouldLogErrors);
+      // Functional utility for updating text nodes
+      const shouldLogErrors =
+        (status === 'success' || status === 'error') && textInfos.length > 0;
+      const updateHandler = createUpdateHandler(textInfos, shouldLogErrors);
 
-    updateHandler(generatedResponse as Record<number, string>);
+      updateHandler(generatedResponse as Record<number, string>);
 
-    if (status === 'success' || status === 'error') {
-      if (status === 'error' && translationErrors) {
-        const span = document.createElement('span');
-        span.style.color = 'red';
-        span.textContent = `Ошибка перевода: ${translationErrors}`;
-      }
+      if (status === 'success' || status === 'error') {
+        if (status === 'error' && translationErrors) {
+          const span = document.createElement('span');
+          span.style.color = 'red';
+          span.textContent = `Ошибка перевода: ${translationErrors}`;
+        }
 
-      if (settings.typeUse !== 'instruction') {
-        setTextInfos([]);
-        resetResponse();
+        if (settings.typeUse !== 'instruction') {
+          setTextInfos([]);
+          resetResponse();
+        }
       }
     }
 

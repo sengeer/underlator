@@ -139,9 +139,9 @@ export class IpcHandler {
     const logData = {
       operation,
       timestamp: new Date().toISOString(),
-      request: request ? JSON.stringify(request) : undefined,
-      response: response ? JSON.stringify(response) : undefined,
-      duration: duration ? `${duration}ms` : undefined,
+      request: request ? JSON.stringify(request) : '',
+      response: response ? JSON.stringify(response) : '',
+      duration: duration ? `${duration}ms` : '',
     };
 
     console.log(`🔌 [IPC] ${operation}:`, logData);

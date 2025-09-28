@@ -11,8 +11,6 @@
 export const OLLAMA_DEFAULT_CONFIG = {
   /** Базовый URL для Ollama API по умолчанию */
   baseUrl: 'http://127.0.0.1:11434',
-  /** Таймаут для HTTP запросов в миллисекундах */
-  timeout: 30000,
   /** Количество попыток при ошибках сети */
   retryAttempts: 3,
   /** Задержка между попытками в миллисекундах */
@@ -122,13 +120,13 @@ export const OLLAMA_HEADERS = {
  */
 export const OLLAMA_DEFAULT_GENERATION_PARAMS = {
   /** Температура генерации */
-  TEMPERATURE: 0.7,
+  temperature: 0.7,
   /** Максимальное количество токенов */
-  MAX_TOKENS: 2048,
+  max_tokens: 2048,
   /** Количество вариантов ответа */
-  NUM_PREDICT: 1,
-  /** Включить режим "думания" */
-  THINK: false,
+  num_predict: 1,
+  /** Включить режим рассуждения */
+  think: true,
 } as const;
 
 /**

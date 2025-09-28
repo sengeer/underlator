@@ -205,7 +205,7 @@ interface Window {
   electron: {
     updateTranslations: (message: any) => void;
     ollama: {
-      generate: (request: any) => Promise<string>;
+      generate: (request: any) => Promise<any>;
       stop: () => Promise<void>;
       onGenerateProgress: (callback: (progress: any) => void) => () => void;
     };

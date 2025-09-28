@@ -135,12 +135,12 @@ async function initializeOllama(): Promise<void> {
   try {
     console.log('🚀 Starting initialization of Ollama...');
 
-    const downloadMessage = translations.LOADING_APP;
+    const loadingMessage = translations.LOADING_APP || '';
 
     // Отправляет статус проверки Ollama в React splash screen
     sendSplashStatus({
       status: 'checking-ollama',
-      message: downloadMessage,
+      message: loadingMessage,
       progress: 10,
     });
 
@@ -150,7 +150,7 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус запуска Ollama в React splash screen
     sendSplashStatus({
       status: 'starting-ollama',
-      message: downloadMessage,
+      message: loadingMessage,
       progress: 25,
     });
 
@@ -166,7 +166,7 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус ожидания сервера в React splash screen
     sendSplashStatus({
       status: 'waiting-for-server',
-      message: downloadMessage,
+      message: loadingMessage,
       progress: 40,
     });
 
@@ -176,7 +176,7 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус проверки здоровья в React splash screen
     sendSplashStatus({
       status: 'health-check',
-      message: downloadMessage,
+      message: loadingMessage,
       progress: 60,
     });
 
@@ -193,7 +193,7 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус создания API в React splash screen
     sendSplashStatus({
       status: 'creating-api',
-      message: downloadMessage,
+      message: loadingMessage,
       progress: 75,
     });
 
@@ -203,7 +203,7 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус создания каталога в React splash screen
     sendSplashStatus({
       status: 'creating-catalog',
-      message: downloadMessage,
+      message: loadingMessage,
       progress: 90,
     });
 
@@ -216,7 +216,7 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус готовности в React splash screen
     sendSplashStatus({
       status: 'ready',
-      message: downloadMessage,
+      message: loadingMessage,
       progress: 100,
     });
 

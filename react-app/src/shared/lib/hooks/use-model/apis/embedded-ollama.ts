@@ -1,7 +1,7 @@
 import type {
   OllamaGenerateRequest,
   OllamaGenerateResponse,
-} from './embedded-ollama.types';
+} from '../types/embedded-ollama';
 
 /**
  * @module EmbeddedOllamaElectronApi
@@ -17,7 +17,6 @@ export class EmbeddedOllamaElectronApi {
   /**
    * @description Генерирует текст через Ollama API через Electron IPC
    * @param request - Параметры генерации
-   * @param signal - AbortSignal для отмены операции
    * @returns Promise с полным ответом
    */
   async generate(request: OllamaGenerateRequest): Promise<string> {

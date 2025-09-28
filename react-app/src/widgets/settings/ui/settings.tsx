@@ -34,20 +34,8 @@ import Popup from '../../../shared/ui/popup';
 import PopupWithSearch from '../../../shared/ui/popup-with-search';
 import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
-import TextButton from '../../../shared/ui/text-button/text-button';
-import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../constants/ipc-tester';
-import {
-  testListModels,
-  testInstallModel,
-  testGenerateText,
-  testRemoveModel,
-  testGetCatalog,
-  testGetCatalogForceRefresh,
-  testSearchModels,
-  testGetModelInfo,
-  runFullTest,
-} from '../tests/ipc-tester';
 import ManageModels from './manage-embedded-ollama';
+import TestIpc from './test-ipc';
 
 export interface PopupSelectorData {
   [key: string]: string;
@@ -150,63 +138,7 @@ function Settings({ isOpened }: Settings) {
 
   return (
     <section className={`settings${isOpened ? ' settings_open' : ''}`}>
-      {/* IPC API Testing Section */}
-      {import.meta.env.DEV && (
-        <div className='settings__container'>
-          <div className='settings__column'>
-            <h2 className='settings__title'>{'Тестирование IPC API'}</h2>
-            <div className='settings__btns-group'>
-              <TextButton onClick={testListModels} className='settings__button'>
-                {'📋 Список установленных моделей'}
-              </TextButton>
-              <TextButton onClick={testGetCatalog} className='settings__button'>
-                {'📚 Получить каталог'}
-              </TextButton>
-              <TextButton
-                onClick={testGetCatalogForceRefresh}
-                className='settings__button'>
-                {'🔄 Обновить каталог'}
-              </TextButton>
-              <TextButton
-                onClick={testSearchModels}
-                className='settings__button'>
-                {'🔍 Поиск моделей'}
-              </TextButton>
-              <TextButton
-                onClick={testGetModelInfo}
-                className='settings__button'>
-                {'ℹ️ Получить информацию о модели'}
-              </TextButton>
-              <TextButton
-                onClick={testInstallModel}
-                className='settings__button'>
-                {'📥 Установить ' + OLLAMA_TEST_MODEL}
-              </TextButton>
-              <TextButton
-                onClick={testGenerateText}
-                className='settings__button'>
-                {'🤖 Генерация ' + OLLAMA_TEST_PROMPT}
-              </TextButton>
-              <TextButton
-                onClick={testRemoveModel}
-                className='settings__button'>
-                {'🗑️ Удалить ' + OLLAMA_TEST_MODEL}
-              </TextButton>
-              <TextButton
-                onClick={() => dispatch(openElement('testListModelsPopup'))}
-                className='settings__button'>
-                {'📋 Тестирование списка моделей'}
-              </TextButton>
-              <TextButton onClick={runFullTest} className='settings__button'>
-                {'🚀 Запуск полного тестирования'}
-              </TextButton>
-            </div>
-            <p className='settings__description'>
-              {'Тестирование Ollama IPC API. Проверьте результаты в консоли.'}
-            </p>
-          </div>
-        </div>
-      )}
+      <TestIpc />
 
       <div className='settings__container'>
         <div className='settings__column'>

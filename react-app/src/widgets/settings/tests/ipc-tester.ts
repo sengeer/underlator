@@ -20,11 +20,11 @@ export async function testListModels() {
  * @description Устанавливает OLLAMA_TEST_MODEL с выводом прогресса
  * Тестирует IPC endpoint models:install с streaming прогрессом
  */
-export async function testInstallModel() {
+export async function testInstallModel(model = OLLAMA_TEST_MODEL) {
   console.log('🧪 Тестирование API установки модели...');
   console.log(
     await embeddedOllamaElectronApi.installModel({
-      name: OLLAMA_TEST_MODEL,
+      name: model,
     })
   );
 }
@@ -33,11 +33,12 @@ export async function testInstallModel() {
  * @description Генерирует текст модели OLLAMA_TEST_MODEL
  * Тестирует IPC endpoint ollama:generate с streaming ответом
  */
-export async function testGenerateText() {
+export async function testGenerateText(
+  model = OLLAMA_TEST_MODEL,
+  prompt = OLLAMA_TEST_PROMPT
+) {
   try {
-    console.log(
-      `🧪 Тестирование API генерации текста с моделью ${OLLAMA_TEST_MODEL}...`
-    );
+    console.log(`🧪 Тестирование API генерации текста с моделью ${model}...`);
 
     let fullResponse = '';
     let isFirstChunk = true;
@@ -63,8 +64,8 @@ export async function testGenerateText() {
 
     // Запуск генерации
     const response = await window.electron.ollama.generate({
-      model: OLLAMA_TEST_MODEL,
-      prompt: OLLAMA_TEST_PROMPT,
+      model: model,
+      prompt: prompt,
       temperature: 0.7,
       max_tokens: 200,
       num_predict: 1,
@@ -193,11 +194,11 @@ export async function testSearchModels() {
  * @description Получает информацию детальную информацию о конкретной модели
  * Тестирует IPC endpoint catalog:get-model-info
  */
-export async function testGetModelInfo() {
+export async function testGetModelInfo(model = OLLAMA_TEST_MODEL) {
   console.log('🧪 Тестирование API получения детальной информации о модели...');
   console.log(
     await embeddedOllamaElectronApi.getModelInfo({
-      modelName: OLLAMA_TEST_MODEL,
+      modelName: model,
     })
   );
 }
@@ -206,11 +207,11 @@ export async function testGetModelInfo() {
  * @description Удаляет модель
  * Тестирует IPC endpoint models:remove
  */
-export async function testRemoveModel() {
-  console.log(`🧪 Тестирование API удаления модели ${OLLAMA_TEST_MODEL}...`);
+export async function testRemoveModel(model = OLLAMA_TEST_MODEL) {
+  console.log(`🧪 Тестирование API удаления модели ${model}...`);
   console.log(
     await embeddedOllamaElectronApi.removeModel({
-      name: OLLAMA_TEST_MODEL,
+      name: model,
     })
   );
 }
@@ -219,7 +220,7 @@ export async function testRemoveModel() {
  * @description Запускает полный цикл тестирования
  * Выполняет все тесты по порядку
  */
-export async function runFullTest() {
+export async function runFullTest(model: string, prompt: string) {
   console.log('🚀 Запуск полного цикла тестирования IPC API...\n');
 
   try {
@@ -236,19 +237,19 @@ export async function runFullTest() {
     console.log('');
 
     console.log('🧪 ТЕСТ 4: Получение информации о модели');
-    await testGetModelInfo();
+    await testGetModelInfo(model);
     console.log('');
 
     console.log('🧪 ТЕСТ 5: Скачивание модели');
-    await testInstallModel();
+    await testInstallModel(model);
     console.log('');
 
     console.log('🧪 ТЕСТ 6: Генерация текста');
-    await testGenerateText();
+    await testGenerateText(model, prompt);
     console.log('');
 
     console.log('🧪 ТЕСТ 7: Удаление модели');
-    await testRemoveModel();
+    await testRemoveModel(model);
     console.log('');
 
     console.log('✅ Все тесты завершены успешно!');

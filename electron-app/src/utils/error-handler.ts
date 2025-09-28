@@ -221,28 +221,6 @@ export async function fetchWithErrorHandling(
 }
 
 /**
- * @description Утилита для создания AbortController с таймаутом
- * Автоматически отменяет операцию по истечении времени
- * @param timeout - Таймаут в миллисекундах
- * @returns Объект с controller и promise для таймаута
- */
-export function createTimeoutController(timeout: number): {
-  controller: AbortController;
-  timeoutPromise: Promise<never>;
-} {
-  const controller = new AbortController();
-
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => {
-      controller.abort();
-      reject(new Error('❌ Operation timeout'));
-    }, timeout);
-  });
-
-  return { controller, timeoutPromise };
-}
-
-/**
  * @description Утилита для обработки streaming ответов
  * Обрабатывает поток данных с обработкой ошибок
  * @param response - HTTP ответ
