@@ -21,11 +21,11 @@ import type {
 import '../styles/splash-screen.scss';
 
 /**
- * @description Компонент SplashScreen для отображения процесса инициализации
- * Показывает прогресс запуска приложения с анимированным логотипом и статусом
+ * Компонент SplashScreen для отображения процесса инициализации.
+ * Показывает прогресс запуска приложения с анимированным логотипом и статусом.
  *
- * @param props - Пропсы компонента
- * @returns JSX элемент компонента SplashScreen
+ * @param props - Пропсы компонента.
+ * @returns JSX элемент.
  *
  * @example
  * Базовое использование
@@ -42,8 +42,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
   const { translations } = useElectronTranslation();
 
   /**
-   * @description Обработчик обновления статуса
-   * Обновляет статус в Redux store при получении обновлений от Electron
+   * Обработчик обновления статуса.
+   * Обновляет статус в Redux store при получении обновлений от Electron.
    */
   const handleStatusUpdate = useCallback(
     (status: SplashStatusData) => {
@@ -53,8 +53,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
   );
 
   /**
-   * @description Обработчик обновления прогресса
-   * Обновляет прогресс в Redux store при получении обновлений от Electron
+   * Обработчик обновления прогресса.
+   * Обновляет прогресс в Redux store при получении обновлений от Electron.
    */
   const handleProgressUpdate = useCallback(
     (progress: number) => {
@@ -64,8 +64,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
   );
 
   /**
-   * @description Обработчик завершения инициализации
-   * Скрывает splash screen при завершении инициализации
+   * Обработчик завершения инициализации.
+   * Скрывает splash screen при завершении инициализации.
    */
   const handleComplete = useCallback(() => {
     dispatch(complete());
@@ -77,8 +77,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
   }, [dispatch]);
 
   /**
-   * @description Обработчик ошибок инициализации
-   * Отображает ошибку в splash screen
+   * Обработчик ошибок инициализации.
+   * Отображает ошибку в splash screen.
    */
   const handleError = useCallback(
     (error: string) => {
@@ -88,8 +88,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
   );
 
   /**
-   * @description Настраивает подписки на события splash screen
-   * Подписывается на обновления статуса, прогресса и ошибок от Electron
+   * Настраивает подписки на события splash screen.
+   * Подписывается на обновления статуса, прогресса и ошибок от Electron.
    */
   useEffect(() => {
     // Получает начальный статус splash screen
@@ -124,8 +124,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
   }
 
   /**
-   * @description Определяет CSS классы для контейнера
-   * Добавляет классы состояния на основе текущего статуса
+   * Определяет CSS классы для контейнера.
+   * Добавляет классы состояния на основе текущего статуса.
    */
   const containerClasses = [
     'splash-screen',

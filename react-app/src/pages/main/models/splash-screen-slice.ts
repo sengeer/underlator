@@ -1,3 +1,8 @@
+/**
+ * @module SplashScreenSlice
+ * Redux slice для управления состоянием splash screen.
+ */
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { splashScreenApi } from '../apis/splash-screen-api';
 import type {
@@ -6,8 +11,8 @@ import type {
 } from '../types/splash-screen.types';
 
 /**
- * @description Начальное состояние splash screen
- * Состояние с настройками по умолчанию
+ * Начальное состояние splash screen.
+ * Состояние с настройками по умолчанию.
  */
 const initialState: SplashScreenState = {
   status: null,
@@ -20,8 +25,8 @@ const initialState: SplashScreenState = {
 };
 
 /**
- * @description Async thunk для получения статуса splash screen
- * Загружает текущий статус инициализации от Electron
+ * Async thunk для получения статуса splash screen.
+ * Загружает текущий статус инициализации от Electron.
  */
 export const fetchSplashStatus = createAsyncThunk(
   'splashScreen/fetchStatus',
@@ -44,16 +49,16 @@ export const fetchSplashStatus = createAsyncThunk(
 );
 
 /**
- * @description Redux slice для управления состоянием splash screen
- * Содержит reducers и actions для всех операций с splash screen
+ * Redux slice для управления состоянием splash screen.
+ * Содержит reducers и actions для всех операций с splash screen.
  */
 const splashScreenSlice = createSlice({
   name: 'splashScreen',
   initialState,
   reducers: {
     /**
-     * @description Устанавливает статус splash screen
-     * Обновляет текущий статус инициализации
+     * Устанавливает статус splash screen.
+     * Обновляет текущий статус инициализации.
      */
     setStatus: (state, action: PayloadAction<SplashStatusData>) => {
       state.status = action.payload;
@@ -66,16 +71,16 @@ const splashScreenSlice = createSlice({
     },
 
     /**
-     * @description Устанавливает прогресс инициализации
-     * Обновляет прогресс в процентах
+     * Устанавливает прогресс инициализации.
+     * Обновляет прогресс в процентах.
      */
     setProgress: (state, action: PayloadAction<number>) => {
       state.progress = Math.max(0, Math.min(100, action.payload));
     },
 
     /**
-     * @description Устанавливает ошибку инициализации
-     * Сохраняет ошибку для отображения пользователю
+     * Устанавливает ошибку инициализации.
+     * Сохраняет ошибку для отображения пользователю.
      */
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
@@ -83,16 +88,16 @@ const splashScreenSlice = createSlice({
     },
 
     /**
-     * @description Устанавливает состояние загрузки
-     * Управляет индикатором загрузки
+     * Устанавливает состояние загрузки.
+     * Управляет индикатором загрузки.
      */
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
 
     /**
-     * @description Показывает splash screen
-     * Делает splash screen видимым
+     * Показывает splash screen.
+     * Делает splash screen видимым.
      */
     show: (state) => {
       state.visible = true;
@@ -101,8 +106,8 @@ const splashScreenSlice = createSlice({
     },
 
     /**
-     * @description Скрывает splash screen
-     * Делает splash screen невидимым
+     * Скрывает splash screen.
+     * Делает splash screen невидимым.
      */
     hide: (state) => {
       state.visible = false;
@@ -110,8 +115,8 @@ const splashScreenSlice = createSlice({
     },
 
     /**
-     * @description Завершает инициализацию
-     * Устанавливает финальное состояние готовности
+     * Завершает инициализацию.
+     * Устанавливает финальное состояние готовности.
      */
     complete: (state) => {
       state.loading = false;
@@ -128,16 +133,14 @@ const splashScreenSlice = createSlice({
     },
 
     /**
-     * @description Очищает ошибку
-     * Удаляет текущую ошибку
+     * Очищает ошибку.
      */
     clearError: (state) => {
       state.error = null;
     },
 
     /**
-     * @description Сбрасывает состояние splash screen
-     * Возвращает состояние к начальному
+     * Сбрасывает состояние splash screen.
      */
     reset: () => initialState,
   },

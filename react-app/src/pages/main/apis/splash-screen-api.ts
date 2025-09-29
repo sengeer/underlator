@@ -1,3 +1,9 @@
+/**
+ * @module SplashScreenApi
+ * API клиент для взаимодействия с Electron IPC в splash screen.
+ * Предоставляет функции для получения статуса и подписки на обновления splash screen.
+ */
+
 import { DEFAULT_CONFIG } from '../constants/splash-screen-api';
 import type {
   SplashStatusData,
@@ -9,14 +15,8 @@ import type {
 } from '../types/splash-screen.types';
 
 /**
- * @module SplashScreenApi
- * @description API клиент для взаимодействия с Electron IPC в splash screen
- * Предоставляет функции для получения статуса и подписки на обновления splash screen
- */
-
-/**
- * @description Класс для работы с Electron API splash screen
- * Инкапсулирует все операции взаимодействия с splash screen через IPC
+ * @class Класс для работы с Electron API splash screen.
+ * Инкапсулирует все операции взаимодействия с splash screen через IPC.
  */
 export class SplashScreenApi {
   private config: SplashApiConfig;
@@ -39,9 +39,9 @@ export class SplashScreenApi {
   }
 
   /**
-   * @description Получает текущий статус splash screen
-   * Используется для получения актуального состояния инициализации
-   * @returns Promise с текущим статусом splash screen
+   * Получает текущий статус splash screen.
+   * Используется для получения актуального состояния инициализации.
+   * @returns Promise с текущим статусом splash screen.
    */
   async getStatus(): Promise<SplashStatusData | null> {
     try {
@@ -62,10 +62,10 @@ export class SplashScreenApi {
   }
 
   /**
-   * @description Подписывается на обновления статуса splash screen
-   * Используется для получения обновлений статуса в реальном времени
-   * @param callback - Функция обратного вызова для получения обновлений статуса
-   * @returns Функция для отписки от событий
+   * Подписывается на обновления статуса splash screen.
+   * Используется для получения обновлений статуса в реальном времени.
+   * @param callback - Функция обратного вызова для получения обновлений статуса.
+   * @returns Функция для отписки от событий.
    */
   onStatusUpdate(callback: SplashStatusCallback): () => void {
     this.statusCallbacks.push(callback);
@@ -80,10 +80,10 @@ export class SplashScreenApi {
   }
 
   /**
-   * @description Подписывается на обновления прогресса splash screen
-   * Используется для отображения прогресса инициализации
-   * @param callback - Функция обратного вызова для получения обновлений прогресса
-   * @returns Функция для отписки от событий
+   * Подписывается на обновления прогресса splash screen.
+   * Используется для отображения прогресса инициализации.
+   * @param callback - Функция обратного вызова для получения обновлений прогресса.
+   * @returns Функция для отписки от событий.
    */
   onProgressUpdate(callback: SplashProgressCallback): () => void {
     this.progressCallbacks.push(callback);
@@ -98,10 +98,10 @@ export class SplashScreenApi {
   }
 
   /**
-   * @description Подписывается на завершение инициализации
-   * Используется для скрытия splash screen
-   * @param callback - Функция обратного вызова для уведомления о завершении
-   * @returns Функция для отписки от событий
+   * Подписывается на завершение инициализации.
+   * Используется для скрытия splash screen.
+   * @param callback - Функция обратного вызова для уведомления о завершении.
+   * @returns Функция для отписки от событий.
    */
   onComplete(callback: SplashCompleteCallback): () => void {
     this.completeCallbacks.push(callback);
@@ -116,10 +116,10 @@ export class SplashScreenApi {
   }
 
   /**
-   * @description Подписывается на ошибки инициализации
-   * Используется для отображения ошибок в splash screen
-   * @param callback - Функция обратного вызова для получения ошибок
-   * @returns Функция для отписки от событий
+   * Подписывается на ошибки инициализации.
+   * Используется для отображения ошибок в splash screen.
+   * @param callback - Функция обратного вызова для получения ошибок.
+   * @returns Функция для отписки от событий.
    */
   onError(callback: SplashErrorCallback): () => void {
     this.errorCallbacks.push(callback);
@@ -134,8 +134,8 @@ export class SplashScreenApi {
   }
 
   /**
-   * @description Настраивает слушатели событий от Electron IPC
-   * Подписывается на события splash screen от main процесса
+   * Настраивает слушатели событий от Electron IPC.
+   * Подписывается на события splash screen от main процесса.
    */
   private setupEventListeners(): void {
     // Проверяем доступность Electron API
@@ -168,26 +168,26 @@ export class SplashScreenApi {
   }
 
   /**
-   * @description Обновляет конфигурацию API клиента
-   * Позволяет изменить настройки во время выполнения
-   * @param newConfig - Новая конфигурация
+   * Обновляет конфигурацию API клиента.
+   * Позволяет изменить настройки во время выполнения.
+   * @param newConfig - Новая конфигурация.
    */
   updateConfig(newConfig: Partial<SplashApiConfig>): void {
     this.config = { ...this.config, ...newConfig };
   }
 
   /**
-   * @description Получает текущую конфигурацию
-   * Возвращает копию текущих настроек
-   * @returns Текущая конфигурация
+   * Получает текущую конфигурацию.
+   * Возвращает копию текущих настроек.
+   * @returns Текущая конфигурация.
    */
   getConfig(): SplashApiConfig {
     return { ...this.config };
   }
 
   /**
-   * @description Очищает все активные подписки
-   * Используется при размонтировании компонента
+   * Очищает все активные подписки.
+   * Используется при размонтировании компонента.
    */
   cleanup(): void {
     this.statusCallbacks = [];
@@ -198,10 +198,10 @@ export class SplashScreenApi {
 }
 
 /**
- * @description Создает экземпляр API клиента
- * Фабричная функция для создания настроенного клиента
- * @param config - Конфигурация для клиента
- * @returns Экземпляр API клиента
+ * Создает экземпляр API клиента.
+ * Фабричная функция для создания настроенного клиента.
+ * @param config - Конфигурация для клиента.
+ * @returns Экземпляр API клиента.
  */
 export function createSplashScreenApi(
   config?: Partial<SplashApiConfig>
@@ -210,8 +210,8 @@ export function createSplashScreenApi(
 }
 
 /**
- * @description Глобальный экземпляр API клиента
- * Используется для единообразного доступа к API во всем приложении
+ * Глобальный экземпляр API клиента.
+ * Используется для единообразного доступа к API во всем приложении.
  */
 export const splashScreenApi = createSplashScreenApi();
 

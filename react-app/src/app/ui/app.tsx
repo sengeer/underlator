@@ -1,3 +1,8 @@
+/**
+ * @module AppComponent
+ * Основной компонент приложения
+ */
+
 import { i18n } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
 import loadPixelperfect from 'pixelperfect-tool';

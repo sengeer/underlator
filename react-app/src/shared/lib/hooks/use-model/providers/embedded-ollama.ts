@@ -1,3 +1,10 @@
+/**
+ * @module EmbeddedOllamaProvider
+ * Основной провайдер Embedded Ollama.
+ * Реализует ModelUseProvider для работы через Electron IPC.
+ * Поддерживает контекстный перевод, инструкции и простой перевод.
+ */
+
 import {
   prepareContextualTranslation,
   processContextualResponse,
@@ -15,22 +22,9 @@ import type {
 } from '../types/embedded-ollama';
 
 /**
- * @module EmbeddedOllamaProvider
- * @description Основной провайдер Embedded Ollama
- * Реализует ModelUseProvider для работы через Electron IPC
- * Поддерживает контекстный перевод, инструкции и простой перевод
- */
-
-/**
- * @description Обрабатывает контекстный перевод через Electron IPC
- * Упрощенная версия без HOF (как в ollamaProvider) для прямого взаимодействия с IPC
- * @param chunks - Массив текстов для перевода
- * @param translateLanguage - Язык перевода (en-ru, ru-en)
- * @param model - Модель Ollama для использования
- * @param params - Параметры генерации
- * @param signal - AbortSignal для отмены операции
- * @param onModelResponse - Callback для обработки ответов
- * @returns Promise с результатом контекстного перевода
+ * Обрабатывает контекстный перевод через Electron IPC.
+ * Упрощенная версия без HOF (как в ollamaProvider) для прямого взаимодействия с IPC.
+ * @returns Promise с результатом контекстного перевода.
  */
 async function handleContextualTranslation(
   chunks: string[],
@@ -123,13 +117,9 @@ async function handleContextualTranslation(
 }
 
 /**
- * @description Обрабатывает инструкции через Electron IPC
- * Генерирует текст на основе инструкции и входного текста
- * @param text - Входной текст
- * @param model - Модель Ollama для использования
- * @param params - Параметры генерации
- * @param signal - AbortSignal для отмены операции
- * @param onModelResponse - Callback для обработки ответов
+ * Обрабатывает инструкции через Electron IPC.
+ * Генерирует текст на основе инструкции и входного текста.
+ * @returns Promise с результатом генерации инструкции.
  */
 async function handleInstruction(
   text: string,
@@ -167,13 +157,9 @@ async function handleInstruction(
 }
 
 /**
- * @description Обрабатывает простой перевод через Electron IPC
- * Генерирует перевод для одного текста или массива текстов
- * @param text - Текст или массив текстов для перевода
- * @param translateLanguage - Язык перевода
- * @param model - Модель Ollama для использования
- * @param params - Параметры генерации
- * @param onModelResponse - Callback для обработки ответов
+ * Обрабатывает простой перевод через Electron IPC.
+ * Генерирует перевод для одного текста или массива текстов.
+ * @returns Promise с результатом генерации простого перевода.
  */
 async function handleSimpleTranslation(
   text: string | string[],
@@ -218,17 +204,12 @@ async function handleSimpleTranslation(
 }
 
 /**
- * @description Основной провайдер Embedded Ollama
- * Реализует ModelUseProvider для работы через Electron IPC
- * Поддерживает контекстный перевод, инструкции и простой перевод
+ * Основной провайдер Embedded Ollama.
+ * Реализует ModelUseProvider для работы через Electron IPC.
+ * Поддерживает контекстный перевод, инструкции и простой перевод.
+ * @returns Promise с результатом генерации.
  */
 export const embeddedOllamaProvider: ModelUseProvider = {
-  /**
-   * @description Генерирует текст через Ollama API
-   * Поддерживает как строки, так и массивы строк
-   * Обрабатывает контекстный перевод и инструкции
-   * @param options - Опции генерации
-   */
   generate: async ({
     text,
     translateLanguage,

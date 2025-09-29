@@ -5,7 +5,8 @@ import type {
   OllamaModelInfo,
   ModelDisplayState,
   ModelEventCallbacks,
-} from '../types';
+} from '../types/embedded-ollama';
+
 /**
  * @module ModelItem
  * @description Компонент для отображения отдельной модели

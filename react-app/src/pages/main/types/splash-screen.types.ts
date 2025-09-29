@@ -1,7 +1,8 @@
 /**
- * @description Статус инициализации приложения
- * Определяет возможные состояния процесса инициализации
+ * @module SplashScreenTypes
+ * Типы для splash screen.
  */
+
 export type SplashStatus =
   | 'initializing'
   | 'checking-ollama'
@@ -15,81 +16,81 @@ export type SplashStatus =
   | 'error';
 
 /**
- * @description Интерфейс для статуса splash screen
- * Определяет структуру данных статуса инициализации
- * @property {SplashStatus} status - Статус инициализации
- * @property {string} message - Текст для отображения пользователю
- * @property {string} details - Дополнительная информация
- * @property {number} progress - Прогресс в процентах (0-100)
+ * Интерфейс для статуса splash screen.
+ * Определяет структуру данных статуса инициализации.
  */
 export interface SplashStatusData {
+  /** Статус инициализации */
   status: SplashStatus;
+  /** Текст для отображения пользователю */
   message?: string;
+  /** Дополнительная информация */
   details?: string;
+  /** Прогресс в процентах (0-100) */
   progress?: number;
 }
 
 /**
- * @description Интерфейс для конфигурации API клиента
- * Настройки для управления поведением API клиента
- * @property {boolean} enableLogging - Включить логирование операций
- * @property {number} timeout - Таймаут для операций в миллисекундах
+ * Интерфейс для конфигурации API клиента.
+ * Настройки для управления поведением API клиента.
  */
 export interface SplashApiConfig {
+  /** Включить логирование операций */
   enableLogging: boolean;
+  /** Таймаут для операций в миллисекундах */
   timeout: number;
 }
 
 /**
- * @description Интерфейс для состояния splash screen в Redux
- * Определяет структуру состояния splash screen в Redux store
- * @property {SplashStatusData | null} status - Статус инициализации
- * @property {number} progress - Прогресс инициализации в процентах (0-100)
- * @property {boolean} loading - Состояние загрузки
- * @property {string | null} error - Ошибка инициализации
- * @property {boolean} visible - Видимость splash screen
- * @property {number | null} startTime - Время начала инициализации
- * @property {number | null} endTime - Время завершения инициализации
+ * Интерфейс для состояния splash screen в Redux.
+ * Определяет структуру состояния splash screen в Redux store.
  */
 export interface SplashScreenState {
+  /** Статус инициализации */
   status: SplashStatusData | null;
+  /** Прогресс инициализации в процентах (0-100) */
   progress: number;
+  /** Состояние загрузки */
   loading: boolean;
+  /** Ошибка инициализации */
   error: string | null;
+  /** Видимость splash screen */
   visible: boolean;
+  /** Время начала инициализации */
   startTime: number | null;
+  /** Время завершения инициализации */
   endTime: number | null;
 }
 
 /**
- * @description Интерфейс для пропсов компонента SplashScreen
- * Определяет свойства компонента splash screen
- * @property {string} className - Дополнительные CSS классы
+ * Интерфейс для пропсов компонента SplashScreen.
+ * Определяет свойства компонента splash screen.
  */
 export interface SplashScreenProps {
+  /** Дополнительные CSS классы */
   className?: string;
 }
 
 /**
- * @description Тип для callback функций статуса
- * Определяет сигнатуру функций обратного вызова для обновлений статуса
+ * Тип для callback функций статуса.
+ * Определяет сигнатуру функций обратного вызова для обновлений статуса.
  */
 export type SplashStatusCallback = (status: SplashStatusData) => void;
 
 /**
- * @description Тип для callback функций прогресса
- * Определяет сигнатуру функций обратного вызова для обновлений прогресса
+ * Тип для callback функций прогресса.
+ * Определяет сигнатуру функций обратного вызова для обновлений прогресса.
  */
 export type SplashProgressCallback = (progress: number) => void;
 
 /**
- * @description Тип для callback функций завершения
- * Определяет сигнатуру функций обратного вызова для завершения инициализации
+ * Тип для callback функций завершения.
+ * Определяет сигнатуру функций обратного вызова для завершения инициализации.
  */
 export type SplashCompleteCallback = () => void;
 
 /**
- * @description Тип для callback функций ошибок
- * Определяет сигнатуру функций обратного вызова для ошибок
+ * Тип для callback функций ошибок.
+ * Определяет сигнатуру функций обратного вызова для ошибок.
  */
 export type SplashErrorCallback = (error: string) => void;

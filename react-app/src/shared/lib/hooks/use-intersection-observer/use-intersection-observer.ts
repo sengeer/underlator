@@ -1,3 +1,8 @@
+/**
+ * @module UseIntersectionObserver
+ * Хук для отслеживания видимости элемента через Intersection Observer.
+ */
+
 import { useEffect, useRef, useState } from 'react';
 import {
   IntersectionObserverConfig,
@@ -5,14 +10,12 @@ import {
 } from './types/use-intersection-observer';
 
 /**
- * @description Хук для отслеживания видимости элемента через Intersection Observer
- *
  * Предоставляет реактивный функционал для отслеживания видимости элементов
  * в области просмотра. Автоматически управляет жизненным циклом Observer'а
  * и предоставляет удобные состояния для компонентов.
  *
- * @param config - Конфигурация Intersection Observer
- * @returns Объект с ref, состояниями видимости и информацией о пересечении
+ * @param config - Конфигурация Intersection Observer.
+ * @returns Объект с ref, состояниями видимости и информацией о пересечении.
  *
  * @example
  * Базовое использование

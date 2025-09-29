@@ -1,3 +1,8 @@
+/**
+ * @module CreateContextualTranslationHandlerIndex
+ * Индексный файл для экспорта HOF CreateContextualTranslationHandler.
+ */
+
 export { default } from './create-contextual-translation-handler';
 
 export type {

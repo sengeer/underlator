@@ -1,3 +1,10 @@
+/**
+ * @module OllamaProvider
+ * Провайдер для работы с Ollama API
+ * Реализует ModelUseProvider для взаимодействия с Ollama через HTTP
+ * Поддерживает контекстный перевод, инструкции и streaming ответы
+ */
+
 import createContextualTranslationHandler from '../../../hofs/create-contextual-translation-handler';
 import {
   getContextualTranslationConfig,
@@ -8,6 +15,11 @@ import { createOllamaChunkProcessor } from '../../../utils/safe-json-parser';
 import { OllamaApi } from '../apis/ollama';
 import { GenerateOptions } from '../types/ollama';
 
+/**
+ * Обрабатывает контекстный перевод через Ollama API.
+ * Использует HOF для создания обработчика контекстного перевода.
+ * @returns Promise с результатом перевода.
+ */
 async function handleContextualTranslation(
   chunks: string[],
   translateLanguage: string,
@@ -17,10 +29,10 @@ async function handleContextualTranslation(
   signal?: AbortSignal,
   onModelResponse?: (response: ModelResponse) => void
 ): Promise<Record<number, string>> {
-  // Validate contextual translation parameters
+  // Валидация параметров контекстного перевода
   const config = getContextualTranslationConfig('Ollama');
 
-  // Validation result
+  // Результат валидации
   const validation = validateContextualTranslationParams(chunks, config);
 
   if (!validation.valid) {
@@ -32,9 +44,9 @@ async function handleContextualTranslation(
     );
   }
 
-  // Context translation handler based on HOF
+  // Обработчик контекстного перевода на основе HOF
   const contextualHandler = createContextualTranslationHandler<Response>(
-    // The Ollama API call adapter
+    // Адаптер вызова Ollama API
     async (prompt: string, params: Params, signal?: AbortSignal) => {
       const response = await ollamaApi.generatePrompt(
         model,
@@ -50,44 +62,44 @@ async function handleContextualTranslation(
       return response;
     },
 
-    // The streaming response handler
+    // Обработчик streaming ответа
     async (
       response: Response,
       onChunk?: (chunk: string) => void,
       onError?: (error: string, line?: string) => void
     ) => {
-      // Response stream reader
+      // Читатель потока ответа
       const reader = response.body?.getReader();
 
-      // Accumulated full response
+      // Накопленный полный ответ
       let fullResponse = '';
 
-      // The Ollama chunk processor
+      // Процессор чанков Ollama
       const processChunk = createOllamaChunkProcessor(
         (chunkResponse: string) => {
           fullResponse += chunkResponse;
-          // Skip onChunk during streaming to prevent duplication
+          // Пропускаем onChunk во время streaming для предотвращения дублирования
         },
         (error: string, line: string) => {
           onError?.(error, line);
         }
       );
 
-      // Stream processing execution
+      // Выполнение обработки потока
       if (reader) {
         await processStream(reader, (chunk) => {
           processChunk(chunk);
         });
       }
 
-      // Final notification of the chunk with the full response
+      // Финальное уведомление о чанке с полным ответом
       onChunk?.(fullResponse);
 
       return fullResponse;
     }
   );
 
-  // Contextual translation execution
+  // Выполнение контекстного перевода
   return await contextualHandler(
     chunks,
     translateLanguage,
@@ -97,6 +109,11 @@ async function handleContextualTranslation(
   );
 }
 
+/**
+ * Обрабатывает инструкции через Ollama API.
+ * Генерирует текст на основе инструкции и входного текста.
+ * @returns Promise с результатом генерации инструкции.
+ */
 async function handleInstruction(
   text: string,
   ollamaApi: OllamaApi,
@@ -120,7 +137,7 @@ async function handleInstruction(
 
   const reader = response.body?.getReader();
 
-  // Сhunk processor using a functional utility
+  // Процессор чанков с использованием функциональной утилиты
   const processChunk = createOllamaChunkProcessor(
     (chunkResponse: string) => {
       if (onModelResponse) onModelResponse(chunkResponse);
@@ -130,12 +147,18 @@ async function handleInstruction(
     }
   );
 
-  // Read the stream
+  // Чтение потока
   await processStream(reader, (chunk) => {
     processChunk(chunk);
   });
 }
 
+/**
+ * Основной провайдер Ollama.
+ * Реализует ModelUseProvider для работы с Ollama API через HTTP.
+ * Поддерживает контекстный перевод и инструкции.
+ * @returns Promise с результатом генерации.
+ */
 export const ollamaProvider: ModelUseProvider = {
   generate: async ({
     text,
@@ -153,7 +176,7 @@ export const ollamaProvider: ModelUseProvider = {
 
     const ollamaApi = new OllamaApi(url);
 
-    // Use contextual translation for arrays when enabled
+    // Использование контекстного перевода для массивов при включении
     if (
       params.useContextualTranslation &&
       Array.isArray(text) &&

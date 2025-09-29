@@ -1,23 +1,23 @@
+/**
+ * @module EmbeddedOllamaElectronApi
+ * API клиент для взаимодействия с Electron IPC.
+ * Предоставляет функции для работы с Ollama через Electron IPC.
+ */
+
 import type {
   OllamaGenerateRequest,
   OllamaGenerateResponse,
 } from '../types/embedded-ollama';
 
 /**
- * @module EmbeddedOllamaElectronApi
- * @description API клиент для взаимодействия с Electron IPC
- * Предоставляет функции для работы с Ollama через Electron IPC
- */
-
-/**
- * @description Класс для работы с Electron API
- * Инкапсулирует Electron IPC операции для Ollama
+ * Класс для работы с Electron API.
+ * Инкапсулирует Electron IPC операции для Ollama.
  */
 export class EmbeddedOllamaElectronApi {
   /**
-   * @description Генерирует текст через Ollama API через Electron IPC
-   * @param request - Параметры генерации
-   * @returns Promise с полным ответом
+   * Генерирует текст через Ollama API через Electron IPC.
+   * @param request - Параметры генерации.
+   * @returns Promise с полным ответом.
    */
   async generate(request: OllamaGenerateRequest): Promise<string> {
     if (!window.electron?.ollama) {
@@ -28,9 +28,9 @@ export class EmbeddedOllamaElectronApi {
   }
 
   /**
-   * @description Подписывается на прогресс генерации через Electron IPC
-   * @param callback - Callback для обработки streaming ответов
-   * @returns Функция для отписки
+   * Подписывается на прогресс генерации через Electron IPC.
+   * @param callback - Callback для обработки streaming ответов.
+   * @returns Функция для отписки.
    */
   onGenerateProgress(
     callback: (progress: OllamaGenerateResponse) => void
@@ -44,8 +44,8 @@ export class EmbeddedOllamaElectronApi {
 }
 
 /**
- * @description Глобальный экземпляр API клиента
- * Используется для единообразного доступа к API во всем приложении
+ * Глобальный экземпляр API клиента.
+ * Используется для единообразного доступа к API во всем приложении.
  */
 export const embeddedOllamaElectronApi = new EmbeddedOllamaElectronApi();
 

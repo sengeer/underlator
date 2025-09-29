@@ -1,12 +1,12 @@
 /**
  * @module EmbeddedOllamaTypes
- * @description Типы для embedded-ollama провайдера
- * Определяет интерфейсы для работы с Ollama через Electron IPC
+ * Типы для embedded-ollama провайдера.
+ * Определяет интерфейсы для работы с Ollama через Electron IPC.
  */
 
 /**
- * @description Ответ от Ollama через Electron IPC
- * Структура данных, получаемых от IPC
+ * Ответ от Ollama через Electron IPC.
+ * Структура данных, получаемых от IPC.
  */
 export interface OllamaIpcResponse {
   /** Текст ответа */
@@ -20,14 +20,14 @@ export interface OllamaIpcResponse {
 }
 
 /**
- * @description Результат контекстного перевода
- * Маппинг индексов на переведенные тексты
+ * Результат контекстного перевода.
+ * Маппинг индексов на переведенные тексты.
  */
 export type ContextualTranslationResult = Record<number, string>;
 
 /**
- * @description Параметры для генерации текста через Ollama через Electron IPC
- * Соответствует API endpoint /api/generate
+ * Параметры для генерации текста через Ollama через Electron IPC.
+ * Соответствует API endpoint /api/generate.
  */
 export interface OllamaGenerateRequest {
   /** Название модели для использования */
@@ -51,8 +51,8 @@ export interface OllamaGenerateRequest {
 }
 
 /**
- * @description Ответ от Ollama API при генерации через Electron IPC
- * Структура streaming ответа от /api/generate
+ * Ответ от Ollama API при генерации через Electron IPC.
+ * Структура streaming ответа от /api/generate.
  */
 export interface OllamaGenerateResponse {
   /** Название использованной модели */
@@ -82,17 +82,26 @@ export interface OllamaGenerateResponse {
 }
 
 /**
- * @description Опции генерации для Embedded Ollama
- * Расширяет базовые опции специфичными для Ollama параметрами
+ * Опции генерации для Embedded Ollama.
+ * Расширяет базовые опции специфичными для Ollama параметрами.
  */
 export interface GenerateOptions {
+  /** Текст или массив текстов для перевода. */
   text: string | string[];
+  /** Язык перевода (en-ru, ru-en). */
   translateLanguage: 'en-ru' | 'ru-en';
+  /** Название модели Ollama для использования. */
   model?: string;
+  /** URL сервера Ollama. */
   url?: string;
+  /** Тип использования модели (instruction, translation). */
   typeUse?: 'instruction' | 'translation';
+  /** Callback для обработки ответов. */
   onModelResponse?: (response: ModelResponse) => void;
+  /** Callback для отслеживания прогресса. */
   onProgress?: (progress: Progress) => void;
+  /** Сигнал для отмены операции. */
   signal?: AbortSignal;
+  /** Параметры генерации. */
   params: Params;
 }

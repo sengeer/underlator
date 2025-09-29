@@ -1,6 +1,6 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["src"],
+  "entryPoints": ["src/**"],
   "out": "../docs/react-app",
   "name": "Underlator React Frontend",
   "includeVersion": true,

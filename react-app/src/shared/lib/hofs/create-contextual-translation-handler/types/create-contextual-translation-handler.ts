@@ -1,65 +1,73 @@
 /**
- * @interface ApiCallFunction
- * @description Функция для выполнения API вызова к провайдеру LLM
- * Универсальная функция для взаимодействия с различными провайдерами
- * @property {string} prompt - Промпт для отправки в модель
- * @property {Params} params - Параметры генерации
- * @property {AbortSignal} signal - Сигнал для отмены операции
- * @returns {Promise<TApiResponse>} Ответ от API провайдера
+ * @module CreateContextualTranslationHandlerTypes
+ * Типы для HOF CreateContextualTranslationHandler.
+ */
+
+/**
+ * Интерфейс ApiCallFunction.
+ * Интерфейс универсальной функции для взаимодействия с различными провайдерами.
  */
 export interface ApiCallFunction<TApiResponse> {
-  (prompt: string, params: Params, signal?: AbortSignal): Promise<TApiResponse>;
+  (
+    /** Промпт для отправки в модель */
+    prompt: string,
+    /** Параметры генерации */
+    params: Params,
+    /** Сигнал для отмены операции */
+    signal?: AbortSignal
+    /** Ответ от API провайдера */
+  ): Promise<TApiResponse>;
 }
 
 /**
- * @interface ResponseProcessorFunction
- * @description Функция для обработки ответа от API провайдера
- * Преобразует ответ провайдера в строку с поддержкой стриминга
- * @property {TApiResponse} response - Ответ от API провайдера
- * @property {(chunkResponse: string) => void} onChunk - Callback для обработки фрагментов ответа
- * @property {(error: string, line?: string) => void} onError - Callback для обработки ошибок
- * @returns {Promise<string>} Полный обработанный ответ
+ * Интерфейс ResponseProcessorFunction.
+ * Интерфейс функции для обработки ответа от API провайдера.
+ * Преобразует ответ провайдера в строку с поддержкой стриминга.
  */
 export interface ResponseProcessorFunction<TApiResponse> {
   (
+    /** Ответ от API провайдера */
     response: TApiResponse,
+    /** Callback для обработки фрагментов ответа */
     onChunk?: (chunkResponse: string) => void,
+    /** Callback для обработки ошибок */
     onError?: (error: string, line?: string) => void
+    /** Полный обработанный ответ */
   ): Promise<string>;
 }
 
 /**
- * @interface ContextualTranslationHandler
- * @description Обработчик контекстного перевода
- * Основная функция для выполнения контекстного перевода текстов
- * @property {string[]} texts - Массив текстов для перевода
- * @property {string} translateLanguage - Направление перевода в формате "source-target"
- * @property {Params} params - Параметры генерации
- * @property {AbortSignal} signal - Сигнал для отмены операции
- * @property {(response: ModelResponse) => void} onModelResponse - Callback для получения ответов модели
- * @returns {Promise<Record<number, string>>} Результат перевода в виде маппинга индексов на переведенные тексты
+ * Интерфейс ContextualTranslationHandler.
+ * Интерфейс обработчика контекстного перевода.
+ * Основная функция для выполнения контекстного перевода текстов.
  */
 export interface ContextualTranslationHandler {
   (
+    /** Массив текстов для перевода */
     texts: string[],
+    /** Направление перевода в формате "source-target" */
     translateLanguage: string,
+    /** Параметры генерации */
     params: Params,
+    /** Сигнал для отмены операции */
     signal?: AbortSignal,
+    /** Callback для получения ответов модели */
     onModelResponse?: (response: ModelResponse) => void
+    /** Результат перевода в виде маппинга индексов на переведенные тексты */
   ): Promise<Record<number, string>>;
 }
 
 /**
- * @interface CreateContextualTranslationHandlerFunction
- * @description HOF для создания обработчика контекстного перевода
- * Фабричная функция для создания обработчика с конкретным провайдером
- * @property {ApiCallFunction<TApiResponse>} apiCall - Функция для API вызова
- * @property {ResponseProcessorFunction<TApiResponse>} responseProcessor - Функция обработки ответа
- * @returns {ContextualTranslationHandler} Готовый обработчик контекстного перевода
+ * Интерфейс CreateContextualTranslationHandlerFunction.
+ * Интерфейс HOF для создания обработчика контекстного перевода.
+ * Фабричная функция для создания обработчика с конкретным провайдером.
  */
 export interface CreateContextualTranslationHandlerFunction {
   <TApiResponse>(
+    /** Функция для API вызова */
     apiCall: ApiCallFunction<TApiResponse>,
+    /** Функция обработки ответа */
     responseProcessor: ResponseProcessorFunction<TApiResponse>
+    /** Готовый обработчик контекстного перевода */
   ): ContextualTranslationHandler;
 }
