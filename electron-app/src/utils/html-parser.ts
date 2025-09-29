@@ -1,7 +1,6 @@
 /**
  * @module HtmlParser
  * Утилиты для парсинга HTML страниц Ollama Library.
- * Извлекает список моделей и их теги с официального сайта Ollama.
  */
 
 import { fetchWithErrorHandling } from './error-handler';
@@ -9,7 +8,6 @@ import type { ParsedModel, ParseResult, QuantizedModel } from '../types';
 
 /**
  * Класс для парсинга HTML страниц Ollama Library.
- * Предоставляет методы для извлечения моделей и их тегов.
  */
 export class OllamaHtmlParser {
   private readonly baseUrl = 'https://ollama.com';
@@ -18,7 +16,7 @@ export class OllamaHtmlParser {
 
   // Кэш для тегов моделей
   private tagsCache = new Map<string, string[]>();
-  private cacheTimeout = 5 * 60 * 1000; // 5 минут
+  private cacheTimeout = 10 * 60 * 1000; // 10 минут
   private cacheTimestamps = new Map<string, number>();
 
   /**
@@ -39,26 +37,16 @@ export class OllamaHtmlParser {
       const html = await response.text();
       const baseModels = this.parseModelsFromHtml(html);
 
-      // Ограничивает количество моделей для парсинга тегов (первые 20 самых популярных)
+      // Ограничивает количество моделей для парсинга тегов (первые 10 самых популярных)
       const modelsToProcess = baseModels
         .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
-        .slice(0, 20);
+        .slice(0, 10); // Уменьшено с 20 до 10
 
-      // Параллельно получает теги для всех моделей (сложность O(1))
-      const tagPromises = modelsToProcess.map(async baseModel => {
-        try {
-          const tags = await this.getModelTags(baseModel.name);
-          return { baseModel, tags, success: true };
-        } catch (error) {
-          console.error(
-            `❌ Couldn't get tags for the model ${baseModel.name}:`,
-            error
-          );
-          return { baseModel, tags: [], success: false };
-        }
-      });
-
-      const tagResults = await Promise.all(tagPromises);
+      // Параллельно получает теги для всех моделей с ограничением concurrency
+      const tagResults = await this.getTagsWithConcurrencyLimit(
+        modelsToProcess,
+        3
+      );
 
       // Создает квантизированные модели
       const quantizedModels: QuantizedModel[] = [];
@@ -67,7 +55,6 @@ export class OllamaHtmlParser {
         if (success && tags.length > 0) {
           // Создает отдельную запись для каждой квантизации
           for (const tag of tags) {
-            // Исправляет формат названия - убирает дублирование baseName
             const fullName = tag.includes(':')
               ? tag
               : `${baseModel.name}:${tag}`;
@@ -135,8 +122,48 @@ export class OllamaHtmlParser {
   }
 
   /**
+   * Получает теги для моделей с ограничением concurrency.
+   * @param models - Список моделей для обработки.
+   * @param concurrencyLimit - Максимальное количество одновременных запросов.
+   * @returns Promise с результатами получения тегов.
+   */
+  private async getTagsWithConcurrencyLimit(
+    models: ParsedModel[],
+    concurrencyLimit: number
+  ): Promise<
+    Array<{ baseModel: ParsedModel; tags: string[]; success: boolean }>
+  > {
+    const results: Array<{
+      baseModel: ParsedModel;
+      tags: string[];
+      success: boolean;
+    }> = [];
+
+    for (let i = 0; i < models.length; i += concurrencyLimit) {
+      const batch = models.slice(i, i + concurrencyLimit);
+
+      const batchPromises = batch.map(async baseModel => {
+        try {
+          const tags = await this.getModelTags(baseModel.name);
+          return { baseModel, tags, success: true };
+        } catch (error) {
+          console.error(
+            `❌ Couldn't get tags for the model ${baseModel.name}:`,
+            error
+          );
+          return { baseModel, tags: [], success: false };
+        }
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+    }
+
+    return results;
+  }
+
+  /**
    * Получает теги для конкретной модели с кэшированием.
-   * Использует кэш для избежания повторных HTTP запросов.
    * @param modelName - Название модели.
    * @returns Promise со списком тегов.
    */
@@ -197,14 +224,14 @@ export class OllamaHtmlParser {
 
   /**
    * Парсит HTML главной страницы библиотеки.
-   * Извлекает названия моделей и базовую информацию.
    * @param html - HTML содержимое страницы.
    * @returns Список моделей.
    */
   private parseModelsFromHtml(html: string): ParsedModel[] {
     const models: ParsedModel[] = [];
+    const seen = new Set<string>(); // Для быстрого удаления дубликатов
 
-    // Регулярное выражение для поиска ссылок на модели
+    // Оптимизированное регулярное выражение для поиска ссылок на модели
     const modelLinkRegex = /href="\/library\/([^"]+)"/g;
     let match;
 
@@ -212,17 +239,24 @@ export class OllamaHtmlParser {
       const modelName = match[1];
 
       // Проверяет, что modelName существует и не является служебной ссылкой
-      if (!modelName || modelName.includes('/') || modelName === '') {
+      if (
+        !modelName ||
+        modelName.includes('/') ||
+        modelName === '' ||
+        seen.has(modelName)
+      ) {
         continue;
       }
 
-      // Извлекаем дополнительную информацию о модели
-      const modelInfo = this.extractModelInfo(html, modelName);
+      seen.add(modelName);
+
+      // Упрощенное извлечение информации о модели
+      const modelInfo = this.extractModelInfoFast(html, modelName);
 
       models.push({
         name: modelName,
         description: modelInfo.description,
-        tags: ['available'], // Базовый тег
+        tags: ['available'],
         size: modelInfo.size,
         downloads: modelInfo.downloads,
         lastUpdated: modelInfo.lastUpdated,
@@ -230,28 +264,22 @@ export class OllamaHtmlParser {
       });
     }
 
-    // Убирает дубликаты
-    const uniqueModels = models.filter(
-      (model, index, self) =>
-        index === self.findIndex(m => m.name === model.name)
-    );
-
-    return uniqueModels;
+    return models;
   }
 
   /**
    * Парсит HTML страницы тегов модели.
-   * Оптимизированная версия для извлечения всех доступных тегов.
    * @param html - HTML содержимое страницы тегов.
    * @param modelName - Название модели.
    * @returns Список тегов.
    */
   private parseTagsFromHtml(html: string, modelName: string): string[] {
     const tags: string[] = [];
+    const seen = new Set<string>(); // Для быстрого удаления дубликатов
 
-    // Ищет все теги модели в формате "model:tag"
+    // Оптимизированное регулярное выражение для поиска тегов
     const tagRegex = new RegExp(
-      `\\b${modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:([^"\\s<>,\\]]+)`,
+      `\\b${modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:([^"\\s<>,\\]]+q[^"\\s<>,\\]]*)`,
       'g'
     );
 
@@ -259,47 +287,46 @@ export class OllamaHtmlParser {
     while ((match = tagRegex.exec(html)) !== null) {
       const tag = match[1];
 
-      // Очищает тег от HTML тегов и лишних символов
+      // Быстрая очистка тега
       const cleanTag = tag?.replace(/<[^>]*>/g, '').trim();
 
-      // Проверяет что тег валидный (не пустой, не содержит служебные символы)
+      // Проверяет что тег валидный и не дублируется
       if (
         cleanTag &&
         cleanTag.length > 0 &&
-        cleanTag.length < 50 && // разумная длина тега
-        !cleanTag.includes('http') && // не URL
-        !cleanTag.includes('www') && // не URL
-        !tags.includes(cleanTag)
+        cleanTag.length < 50 &&
+        !cleanTag.includes('http') &&
+        !cleanTag.includes('www') &&
+        !seen.has(cleanTag)
       ) {
         tags.push(cleanTag);
+        seen.add(cleanTag);
       }
     }
 
-    // Если не найдены теги в формате "model:tag", ищет альтернативные форматы
+    // Если не найдены теги в основном формате, ищет альтернативные
     if (tags.length === 0) {
-      // Ищет теги в других форматах
       const alternativeRegex = /<[^>]*>([^<]*:\d+(?:\.\d+)?[^<]*)</g;
       let altMatch;
       while ((altMatch = alternativeRegex.exec(html)) !== null) {
         const tag = altMatch[1]?.trim();
-        if (tag && !tags.includes(tag)) {
+        if (tag && !seen.has(tag)) {
           tags.push(tag);
+          seen.add(tag);
         }
       }
     }
 
-    // Убирает дубликаты и сортирует
-    return [...new Set(tags)].sort();
+    return tags.sort();
   }
 
   /**
-   * Извлекает дополнительную информацию о модели из HTML.
-   * Ищет описание, размер, количество скачиваний и другие метаданные.
+   * Быстрое извлечение информации о модели из HTML.
    * @param html - HTML содержимое страницы.
    * @param modelName - Название модели.
    * @returns Дополнительная информация о модели.
    */
-  private extractModelInfo(
+  private extractModelInfoFast(
     html: string,
     modelName: string
   ): {
@@ -309,9 +336,9 @@ export class OllamaHtmlParser {
     lastUpdated?: string;
     category?: string;
   } {
-    // Ищет блок с информацией о модели
+    // Упрощенный поиск блока с информацией о модели
     const modelBlockRegex = new RegExp(
-      `href="/library/${modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>([\\s\\S]*?)</a>`,
+      `href="/library/${modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>([^<]+)</a>`,
       'i'
     );
 
@@ -322,11 +349,7 @@ export class OllamaHtmlParser {
 
     const modelBlock = match[1];
 
-    // Извлекает описание
-    const descriptionMatch = modelBlock.match(/>([^<]+)</);
-    const description = descriptionMatch?.[1]?.trim();
-
-    // Извлекает размер (ищет паттерны типа "2.5B", "7B", "70B")
+    // Быстрое извлечение размера
     const sizeMatch = modelBlock.match(/(\d+(?:\.\d+)?)([BMK])/i);
     let size: number | undefined;
     if (sizeMatch && sizeMatch[1] && sizeMatch[2]) {
@@ -334,18 +357,18 @@ export class OllamaHtmlParser {
       const unit = sizeMatch[2].toUpperCase();
       switch (unit) {
         case 'B':
-          size = value * 1000000000; // миллиарды
+          size = value * 1000000000;
           break;
         case 'M':
-          size = value * 1000000; // миллионы
+          size = value * 1000000;
           break;
         case 'K':
-          size = value * 1000; // тысячи
+          size = value * 1000;
           break;
       }
     }
 
-    // Извлекает количество загрузок
+    // Быстрое извлечение количества загрузок
     const downloadsMatch = modelBlock.match(/(\d+(?:\.\d+)?)([MK]?)\s*Pulls/i);
     let downloads: number | undefined;
     if (downloadsMatch && downloadsMatch[1]) {
@@ -373,7 +396,7 @@ export class OllamaHtmlParser {
     else category = 'general';
 
     return {
-      description,
+      description: modelBlock.trim(),
       size,
       downloads,
       category,

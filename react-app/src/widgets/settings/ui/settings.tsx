@@ -303,8 +303,8 @@ function Settings({ isOpened }: Settings) {
         lazyLoadingThreshold={20}
         lazyLoadingMargin='100px'
         enableAnimation
-        animationDuration={80}
-        animationDelay={40}
+        animationDuration={20}
+        animationDelay={10}
         animationType='scaleIn'
         searchPlaceholder='Model...'
         searchDebounceMs={300}
