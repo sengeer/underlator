@@ -1,15 +1,15 @@
+/**
+ * @module IpcTest
+ * Функции для ручного тестирования IPC API с Ollama.
+ * Используется для проверки работы Electron IPC методов.
+ */
+
 import { embeddedOllamaElectronApi } from '../apis/embedded-ollama-electron-api';
 import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../constants/ipc-tester';
 
 /**
- * @module ManualIpcTesting
- * @description Функции для ручного тестирования IPC API с Ollama
- * Используется для проверки работы Electron IPC методов
- */
-
-/**
- * @description Получает список доступных моделей Ollama
- * Тестирует IPC endpoint models:list
+ * Получает список доступных моделей Ollama.
+ * Тестирует IPC endpoint models:list.
  */
 export async function testListModels() {
   console.log('🧪 Тестирование API получения списка установленных моделей...');
@@ -17,8 +17,8 @@ export async function testListModels() {
 }
 
 /**
- * @description Устанавливает OLLAMA_TEST_MODEL с выводом прогресса
- * Тестирует IPC endpoint models:install с streaming прогрессом
+ * Устанавливает OLLAMA_TEST_MODEL с выводом прогресса.
+ * Тестирует IPC endpoint models:install с streaming прогрессом.
  */
 export async function testInstallModel(model = OLLAMA_TEST_MODEL) {
   console.log('🧪 Тестирование API установки модели...');
@@ -30,8 +30,8 @@ export async function testInstallModel(model = OLLAMA_TEST_MODEL) {
 }
 
 /**
- * @description Генерирует текст модели OLLAMA_TEST_MODEL
- * Тестирует IPC endpoint ollama:generate с streaming ответом
+ * Генерирует текст модели OLLAMA_TEST_MODEL.
+ * Тестирует IPC endpoint ollama:generate с streaming ответом.
  */
 export async function testGenerateText(
   model = OLLAMA_TEST_MODEL,
@@ -94,8 +94,8 @@ export async function testGenerateText(
 }
 
 /**
- * @description Получает каталог моделей Ollama
- * Тестирует IPC endpoint catalog:get
+ * Получает каталог моделей Ollama.
+ * Тестирует IPC endpoint catalog:get.
  */
 export async function testGetCatalog() {
   console.log('🧪 Тестирование API получения каталога моделей...');
@@ -105,8 +105,8 @@ export async function testGetCatalog() {
 }
 
 /**
- * @description Получает каталог моделей с принудительным обновлением
- * Тестирует IPC endpoint catalog:get с параметром forceRefresh
+ * Получает каталог моделей с принудительным обновлением.
+ * Тестирует IPC endpoint catalog:get с параметром forceRefresh.
  */
 export async function testGetCatalogForceRefresh() {
   console.log(
@@ -118,8 +118,8 @@ export async function testGetCatalogForceRefresh() {
 }
 
 /**
- * @description Выполняет поиск моделей по фильтрам
- * Тестирует IPC endpoint catalog:search
+ * Выполняет поиск моделей по фильтрам.
+ * Тестирует IPC endpoint catalog:search.
  */
 export async function testSearchModels() {
   try {
@@ -191,8 +191,8 @@ export async function testSearchModels() {
 }
 
 /**
- * @description Получает информацию детальную информацию о конкретной модели
- * Тестирует IPC endpoint catalog:get-model-info
+ * Получает информацию детальную информацию о конкретной модели.
+ * Тестирует IPC endpoint catalog:get-model-info.
  */
 export async function testGetModelInfo(model = OLLAMA_TEST_MODEL) {
   console.log('🧪 Тестирование API получения детальной информации о модели...');
@@ -204,8 +204,8 @@ export async function testGetModelInfo(model = OLLAMA_TEST_MODEL) {
 }
 
 /**
- * @description Удаляет модель
- * Тестирует IPC endpoint models:remove
+ * Удаляет модель.
+ * Тестирует IPC endpoint models:remove.
  */
 export async function testRemoveModel(model = OLLAMA_TEST_MODEL) {
   console.log(`🧪 Тестирование API удаления модели ${model}...`);
@@ -217,8 +217,8 @@ export async function testRemoveModel(model = OLLAMA_TEST_MODEL) {
 }
 
 /**
- * @description Запускает полный цикл тестирования
- * Выполняет все тесты по порядку
+ * Запускает полный цикл тестирования.
+ * Выполняет все тесты по порядку.
  */
 export async function runFullTest(model: string, prompt: string) {
   console.log('🚀 Запуск полного цикла тестирования IPC API...\n');

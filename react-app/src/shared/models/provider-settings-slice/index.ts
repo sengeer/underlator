@@ -1,3 +1,9 @@
+/**
+ * @module ProviderSettingsSliceIndex
+ * Индексный файл для экспорта ProviderSettingsSlice.
+ * Предоставляет единую точку доступа к действиям, селекторам и редьюсеру.
+ */
+
 export {
   selectProviderSettings,
   selectActiveProviderSettings,

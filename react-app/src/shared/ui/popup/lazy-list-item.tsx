@@ -1,9 +1,14 @@
+/**
+ * @module LazyListItem
+ * Компонент реализации ленивой загрузки.
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import useIntersectionObserver from '../../lib/hooks/use-intersection-observer';
 import { LazyListItemProps, LazyListOptions } from './types/popup';
 
 /**
- * @description Компонент для ленивой загрузки элементов списка
+ * Компонент ленивой загрузки.
  *
  * Реализует ленивую загрузку контента с использованием Intersection Observer API.
  * Элементы загружаются только когда они становятся видимыми в области просмотра,
@@ -12,11 +17,11 @@ import { LazyListItemProps, LazyListOptions } from './types/popup';
  * После загрузки элемент остается в DOM и не перезагружается при повторном
  * появлении в области просмотра, что обеспечивает стабильность состояния.
  *
- * @param props - Свойства компонента
- * @returns JSX элемент с ленивой загрузкой
+ * @param props - Свойства компонента. Подробнее см. в документации интерфейса LazyListItemProps.
+ * @returns JSX элемент с ленивой загрузкой.
  *
  * @example
- * Базовое использование
+ * // Базовое использование
  * <LazyListItem>
  *   <SelectorOption
  *     state='available'
@@ -26,7 +31,7 @@ import { LazyListItemProps, LazyListOptions } from './types/popup';
  * </LazyListItem>
  *
  * @example
- * С кастомным placeholder
+ * // С кастомным placeholder
  * <LazyListItem
  *   placeholder={
  *     <div className='loading-skeleton'>
@@ -38,14 +43,14 @@ import { LazyListItemProps, LazyListOptions } from './types/popup';
  * </LazyListItem>
  *
  * @example
- * С обработчиками событий
+ * // С обработчиками событий
  * <LazyListItem
  *   onVisible={(entry) => analytics.track('model_viewed', { model: entry.target.id })}>
  *   <ModelCard id='model-1' />
  * </LazyListItem>
  *
  * @example
- * В большом списке моделей
+ * // В большом списке моделей
  * {models.map((model) => (
  *   <LazyListItem
  *     key={model.id}
@@ -61,7 +66,7 @@ import { LazyListItemProps, LazyListOptions } from './types/popup';
  * ))}
  *
  * @example
- * С анимацией появления
+ * // С анимацией появления
  * <LazyListItem
  *   enableAnimation={true}
  *   animationDuration={500}
@@ -75,7 +80,6 @@ import { LazyListItemProps, LazyListOptions } from './types/popup';
  * </LazyListItem>
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API} Intersection Observer API
- * @see {@link ../hooks/use-intersection-observer} useIntersectionObserver hook
  */
 export function LazyListItem({
   children,
@@ -215,15 +219,15 @@ export function LazyListItem({
 }
 
 /**
- * @description Хук для создания оптимизированного списка с ленивой загрузкой
+ * Хук для создания оптимизированного списка с ленивой загрузкой.
  *
  * Предоставляет удобный интерфейс для создания больших списков с ленивой загрузкой.
  * Автоматически определяет оптимальные параметры для Intersection Observer
  * на основе размера списка и типа контента.
  *
- * @param items - Массив элементов для отображения
- * @param options - Опции конфигурации
- * @returns Объект с компонентами и утилитами для рендеринга списка
+ * @param items - Массив элементов для отображения.
+ * @param options - Опции конфигурации.
+ * @returns Объект с компонентами и утилитами для рендеринга списка.
  *
  * @example
  * function ModelList({ models }) {

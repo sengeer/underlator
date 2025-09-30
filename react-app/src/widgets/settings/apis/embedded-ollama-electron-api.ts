@@ -1,3 +1,9 @@
+/**
+ * @module EmbeddedOllamaElectronApi
+ * API клиент для взаимодействия с Electron IPC в Settings виджете.
+ * Предоставляет функции для управления каталогом моделей.
+ */
+
 import { DEFAULT_CONFIG } from '../constants/embedded-ollama-electron-api';
 import type {
   GetCatalogParams,
@@ -13,14 +19,9 @@ import type {
 } from '../types/embedded-ollama';
 
 /**
- * @module EmbeddedOllamaElectronApi
- * @description API клиент для взаимодействия с Electron IPC в Settings виджете
- * Предоставляет функции для управления каталогом моделей
- */
-
-/**
- * @description Класс для работы с Electron API
- * Инкапсулирует Electron IPC операции
+ * @class EmbeddedOllamaElectronApi
+ * Класс для работы с Electron API.
+ * Инкапсулирует Electron IPC операции.
  */
 export class EmbeddedOllamaElectronApi {
   private config: SettingsApiConfig;
@@ -41,10 +42,10 @@ export class EmbeddedOllamaElectronApi {
   }
 
   /**
-   * @description Получает каталог доступных моделей Ollama
-   * Поддерживает кэширование и принудительное обновление
-   * @param params - Параметры получения каталога
-   * @returns Promise с каталогом моделей
+   * Получает каталог доступных моделей Ollama.
+   * Поддерживает кэширование и принудительное обновление.
+   * @param params - Параметры получения каталога.
+   * @returns Promise с каталогом моделей.
    */
   async getCatalog(
     params: GetCatalogParams = {}
@@ -71,10 +72,10 @@ export class EmbeddedOllamaElectronApi {
   }
 
   /**
-   * @description Выполняет поиск моделей по фильтрам
-   * Поддерживает поиск по названию, размеру, тегам и другим параметрам
-   * @param filters - Фильтры для поиска
-   * @returns Promise с результатами поиска
+   * Выполняет поиск моделей по фильтрам.
+   * Поддерживает поиск по названию, размеру, тегам и другим параметрам.
+   * @param filters - Фильтры для поиска.
+   * @returns Promise с результатами поиска.
    */
   async searchModels(
     filters: ModelSearchFilters
@@ -99,10 +100,10 @@ export class EmbeddedOllamaElectronApi {
   }
 
   /**
-   * @description Получает детальную информацию о конкретной модели
-   * Используется для отображения подробной информации о модели
-   * @param params - Параметры получения информации о модели
-   * @returns Promise с информацией о модели
+   * Получает детальную информацию о конкретной модели.
+   * Используется для отображения подробной информации о модели.
+   * @param params - Параметры получения информации о модели.
+   * @returns Promise с информацией о модели.
    */
   async getModelInfo(
     params: GetModelInfoParams
@@ -129,12 +130,12 @@ export class EmbeddedOllamaElectronApi {
   }
 
   /**
-   * @description Устанавливает модель с отслеживанием прогресса
-   * Подписывается на события прогресса и обрабатывает ошибки
-   * @param params - Параметры установки модели
-   * @param onProgress - Callback для обработки прогресса
-   * @param onError - Callback для обработки ошибок
-   * @returns Promise с результатом установки
+   * Устанавливает модель с отслеживанием прогресса.
+   * Подписывается на события прогресса и обрабатывает ошибки.
+   * @param params - Параметры установки модели.
+   * @param onProgress - Callback для обработки прогресса.
+   * @param onError - Callback для обработки ошибок.
+   * @returns Promise с результатом установки.
    */
   async installModel(
     params: InstallModelParams,
@@ -186,10 +187,10 @@ export class EmbeddedOllamaElectronApi {
   }
 
   /**
-   * @description Удаляет установленную модель
-   * Используется для удаления модели
-   * @param params - Параметры удаления модели
-   * @returns Promise с результатом удаления
+   * Удаляет установленную модель.
+   * Используется для удаления модели.
+   * @param params - Параметры удаления модели.
+   * @returns Promise с результатом удаления.
    */
   async removeModel(params: RemoveModelParams): Promise<ModelOperationResult> {
     try {
@@ -214,9 +215,9 @@ export class EmbeddedOllamaElectronApi {
   }
 
   /**
-   * @description Получает список установленных моделей
-   * Используется для проверки статуса моделей
-   * @returns Promise со списком установленных моделей
+   * Получает список установленных моделей.
+   * Используется для проверки статуса моделей.
+   * @returns Promise со списком установленных моделей.
    */
   async listInstalledModels(): Promise<ModelOperationResult> {
     try {
@@ -239,8 +240,8 @@ export class EmbeddedOllamaElectronApi {
   }
 
   /**
-   * @description Настраивает слушатели прогресса установки
-   * Подписывается на события прогресса от Electron IPC
+   * Настраивает слушатели прогресса установки.
+   * Подписывается на события прогресса от Electron IPC.
    */
   private setupProgressListeners(): void {
     // Проверяем доступность Electron API
@@ -277,26 +278,26 @@ export class EmbeddedOllamaElectronApi {
   }
 
   /**
-   * @description Обновляет конфигурацию API клиента
-   * Позволяет изменить настройки во время выполнения
-   * @param newConfig - Новая конфигурация
+   * Обновляет конфигурацию API клиента.
+   * Позволяет изменить настройки во время выполнения.
+   * @param newConfig - Новая конфигурация.
    */
   updateConfig(newConfig: Partial<SettingsApiConfig>): void {
     this.config = { ...this.config, ...newConfig };
   }
 
   /**
-   * @description Получает текущую конфигурацию
-   * Возвращает копию текущих настроек
-   * @returns Текущая конфигурация
+   * Получает текущую конфигурацию.
+   * Возвращает копию текущих настроек.
+   * @returns Текущая конфигурация.
    */
   getConfig(): SettingsApiConfig {
     return { ...this.config };
   }
 
   /**
-   * @description Очищает все активные подписки
-   * Используется при размонтировании компонента
+   * Очищает все активные подписки.
+   * Используется при размонтировании компонента.
    */
   cleanup(): void {
     this.progressCallbacks.clear();
@@ -305,10 +306,10 @@ export class EmbeddedOllamaElectronApi {
 }
 
 /**
- * @description Создает экземпляр API клиента
- * Фабричная функция для создания настроенного клиента
- * @param config - Конфигурация для клиента
- * @returns Экземпляр API клиента
+ * Создает экземпляр API клиента.
+ * Фабричная функция для создания настроенного клиента.
+ * @param config - Конфигурация для клиента.
+ * @returns Экземпляр API клиента.
  */
 export function createEmbeddedOllamaElectronApi(
   config?: Partial<SettingsApiConfig>
@@ -317,8 +318,8 @@ export function createEmbeddedOllamaElectronApi(
 }
 
 /**
- * @description Глобальный экземпляр API клиента
- * Используется для единообразного доступа к API во всем приложении
+ * Глобальный экземпляр API клиента.
+ * Используется для единообразного доступа к API во всем приложении.
  */
 export const embeddedOllamaElectronApi = createEmbeddedOllamaElectronApi();
 

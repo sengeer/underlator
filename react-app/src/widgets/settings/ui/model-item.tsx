@@ -1,3 +1,26 @@
+/**
+ * @module ModelItem
+ * Компонент для отображения отдельной модели в списке.
+ *
+ * Представляет модель Ollama в виде SelectorOption с поддержкой различных
+ * состояний (доступна, устанавливается, установлена) и соответствующих действий.
+ * Интегрируется с системой управления моделями для установки, удаления и выбора.
+ *
+ * Компонент используется в ManageModels для отображения каждой модели
+ * в списке. Получает состояние модели и обработчики событий от родительского
+ * компонента.
+ *
+ * @example
+ * // Использование в ManageModels
+ * <ModelItem
+ *   key={model.name}
+ *   model={model}
+ *   displayState={displayState}
+ *   eventCallbacks={eventCallbacks}
+ *   onProgress={getModelProgress}
+ * />
+ */
+
 import { useLingui } from '@lingui/react/macro';
 import { useMemo } from 'react';
 import SelectorOption from '../../../shared/ui/selector-option';
@@ -8,9 +31,19 @@ import type {
 } from '../types/embedded-ollama';
 
 /**
- * @module ModelItem
- * @description Компонент для отображения отдельной модели
- * Рендерит SelectorOption с соответствующим состоянием
+ * Компонент ModelItem.
+ *
+ * Отображает отдельную модель Ollama в виде интерактивного элемента списка.
+ * Управляет отображением состояния модели, прогресса установки и обработкой
+ * пользовательских действий. Использует SelectorOption для единообразного
+ * отображения с остальными элементами интерфейса.
+ *
+ * @param props - Пропсы компонента.
+ * @param props.model - Информация о модели Ollama.
+ * @param props.displayState - Состояние модели для отображения.
+ * @param props.eventCallbacks - Обработчики событий для действий с моделью.
+ * @param props.onProgress - Функция получения прогресса установки модели.
+ * @returns JSX элемент с информацией о модели.
  */
 function ModelItem({
   model,
@@ -25,7 +58,15 @@ function ModelItem({
 }) {
   const { t } = useLingui();
 
-  // Получает информацию о прогрессе если модель устанавливается
+  /**
+   * Получает информацию о прогрессе установки модели.
+   *
+   * Извлекает и обрабатывает данные о прогрессе установки модели из Redux store.
+   * Поддерживает два формата прогресса: legacy (size/total) и новый (completed/total).
+   * Вычисляет процентное соотношение для отображения в SelectorOption.
+   *
+   * @returns Объект с информацией о прогрессе или undefined.
+   */
   const progressInfo = useMemo(() => {
     if (displayState.state === 'loading' && onProgress) {
       const progress = onProgress(model.name);
@@ -60,7 +101,16 @@ function ModelItem({
     return undefined;
   }, [displayState.state, model.name, model.size, onProgress]);
 
-  // Определяет обработчики действий
+  /**
+   * Определяет обработчики действий для модели.
+   *
+   * Создает объект с обработчиками действий в зависимости от текущего
+   * состояния модели. Для каждого состояния доступны соответствующие
+   * действия: установка для доступных моделей, удаление и выбор для
+   * установленных моделей.
+   *
+   * @returns Объект с обработчиками действий или пустой объект.
+   */
   const actionHandlers = useMemo(() => {
     const handlers: any = {};
 

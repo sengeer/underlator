@@ -1,6 +1,7 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["src/**"],
+  "entryPoints": ["src/**/*.ts", "src/**/*.tsx"],
+  "entryPointStrategy": "expand",
   "out": "../docs/react-app",
   "name": "Underlator React Frontend",
   "includeVersion": true,
@@ -43,9 +44,17 @@
     "**/*.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx",
+    "**/*.css",
+    "**/*.scss",
+    "**/*.ttf",
+    "**/*.svg",
+    "**/*.po",
+    "**/*.json",
     "**/node_modules/**",
     "**/dist/**",
-    "**/build/**"
+    "**/build/**",
+    "**/styles/**",
+    "**/assets/**"
   ],
   "externalPattern": ["**/node_modules/**"],
   "excludeNotDocumented": false,
@@ -56,5 +65,6 @@
     "inherited": true,
     "external": false
   },
-  "skipErrorChecking": true
+  "skipErrorChecking": true,
+  "logLevel": "Error"
 }

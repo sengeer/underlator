@@ -1,3 +1,10 @@
+/**
+ * @module ProviderSettingsSlice
+ * Redux slice для управления настройками провайдеров LLM.
+ * Обеспечивает сохранение и восстановление настроек провайдеров в localStorage.
+ * Поддерживает переключение между провайдерами и обновление их параметров.
+ */
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
   getStorageWrite,
@@ -9,7 +16,12 @@ import {
   State,
 } from './types/provider-settings-slice';
 
-// Function for retrieving the initial state from localStorage
+/**
+ * Получает начальное состояние из localStorage.
+ * Восстанавливает сохраненные настройки провайдеров или возвращает значения по умолчанию.
+ * Обеспечивает персистентность настроек между сессиями приложения.
+ * @returns Начальное состояние настроек провайдеров.
+ */
 function getInitialState(): ProviderSettingsState {
   const savedState = getStorageWrite('providerSettings');
   const defaultState: ProviderSettingsState = {
@@ -34,16 +46,31 @@ function getInitialState(): ProviderSettingsState {
 
 const initialState: ProviderSettingsState = getInitialState();
 
+/**
+ * Redux slice для управления настройками провайдеров.
+ * Содержит reducers для переключения провайдеров и обновления их настроек.
+ * Автоматически сохраняет изменения в localStorage для персистентности.
+ */
 export const providerSettingsSlice = createSlice({
   name: 'providerSettings',
   initialState,
   reducers: {
-    // A redirector for installing an active provider
+    /**
+     * Устанавливает активный провайдер.
+     * Переключает текущий провайдер для генерации текста.
+     * @param state - Текущее состояние настроек провайдеров.
+     * @param action - Действие с типом провайдера для установки.
+     */
     setProvider(state, action: PayloadAction<ProviderType>) {
       state.provider = action.payload;
       setStorageWrite('providerSettings', JSON.stringify(state));
     },
-    // Reducer for updating the settings of a specific provider
+    /**
+     * Обновляет настройки конкретного провайдера.
+     * Мержит новые настройки с существующими для указанного провайдера.
+     * @param state - Текущее состояние настроек провайдеров.
+     * @param action - Действие с провайдером и новыми настройками.
+     */
     updateProviderSettings(
       state,
       action: PayloadAction<{
@@ -58,9 +85,18 @@ export const providerSettingsSlice = createSlice({
       state.settings[provider] = { ...state.settings[provider], ...settings };
       setStorageWrite('providerSettings', JSON.stringify(state));
     },
+    /**
+     * Устанавливает тип использования для провайдера.
+     * Обновляет режим работы модели (instruction/translation).
+     * @param state - Текущее состояние настроек провайдеров.
+     * @param action - Действие с провайдером и типом использования.
+     */
     setTypeUse(
       state,
-      action: PayloadAction<{ provider: ProviderType; typeUse: string }>
+      action: PayloadAction<{
+        provider: ProviderType;
+        typeUse: 'instruction' | 'translation';
+      }>
     ) {
       const { provider, typeUse } = action.payload;
       if (state.settings[provider]) {
@@ -74,8 +110,20 @@ export const providerSettingsSlice = createSlice({
 export const { setProvider, updateProviderSettings, setTypeUse } =
   providerSettingsSlice.actions;
 
+/**
+ * Селектор для получения всех настроек провайдеров.
+ * Возвращает полное состояние настроек провайдеров из Redux store.
+ * @param state - Корневое состояние приложения.
+ * @returns Состояние настроек провайдеров.
+ */
 export const selectProviderSettings = (state: State) => state.providerSettings;
 
+/**
+ * Селектор для получения настроек активного провайдера.
+ * Возвращает активный провайдер и его настройки для удобного использования в компонентах.
+ * @param state - Корневое состояние приложения.
+ * @returns Объект с активным провайдером и его настройками.
+ */
 export const selectActiveProviderSettings = (state: State) => {
   const { provider, settings } = state.providerSettings;
   return { provider, settings: settings[provider] || {} };

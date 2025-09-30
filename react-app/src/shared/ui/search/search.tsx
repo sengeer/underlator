@@ -1,3 +1,8 @@
+/**
+ * @module Search
+ * Компонент поиска в виде поля ввода.
+ */
+
 import React, {
   useState,
   useEffect,
@@ -17,28 +22,27 @@ import {
 import './styles/search.scss';
 
 /**
- * @component Search
- * @description Переиспользуемый компонент поиска с поддержкой debounce, горячих клавиш и кастомных стилей
+ * Компонент поиска с поддержкой debounce, горячих клавиш и кастомных стилей.
  *
  * Особенности реализации:
- * - Debounce для оптимизации производительности при вводе
- * - Поддержка горячих клавиш для быстрого доступа
- * - Кнопка поиска которая фокусирует на поле ввода
- * - Полная поддержка accessibility (ARIA)
- * - Автофокус и программное управление
+ * - Debounce для оптимизации производительности при вводе.
+ * - Поддержка горячих клавиш для быстрого доступа.
+ * - Кнопка поиска которая фокусирует на поле ввода.
+ * - Полная поддержка accessibility (ARIA).
+ * - Автофокус и программное управление.
  *
- * @param {SearchProps} props - Пропсы компонента
- * @returns {JSX.Element} React элемент компонента поиска
+ * @param {SearchProps} props - Пропсы компонента.
+ * @returns {JSX.Element} React элемент компонента поиска.
  *
  * @example
- * Базовое использование
+ * // Базовое использование
  * <Search
  *   placeholder="Поиск моделей..."
  *   onChange={(value) => console.log(value)}
  * />
  *
  * @example
- * С debounce и горячей клавишей
+ * // С debounce и горячей клавишей
  * <Search
  *   placeholder="Поиск..."
  *   debounceMs={300}
@@ -79,10 +83,9 @@ const Search = forwardRef<SearchRef, SearchProps>(
     const prevValueRef = useRef(value);
 
     /**
-     * @function parseHotkey
-     * @description Парсит строку горячей клавиши в объект конфигурации
-     * @param {string} hotkeyString - Строка горячей клавиши (например, "Ctrl+k")
-     * @returns {HotkeyConfig} Объект конфигурации горячей клавиши
+     * Парсит строку горячей клавиши в объект конфигурации.
+     * @param {string} hotkeyString - Строка горячей клавиши (например, "Ctrl+k").
+     * @returns {HotkeyConfig} Объект конфигурации горячей клавиши.
      */
     const parseHotkey = useCallback((hotkeyString: string): HotkeyConfig => {
       const parts = hotkeyString
@@ -115,9 +118,8 @@ const Search = forwardRef<SearchRef, SearchProps>(
     }, []);
 
     /**
-     * @function handleHotkey
-     * @description Обработчик горячих клавиш для фокуса на поле поиска
-     * @param {KeyboardEvent} event - Событие клавиатуры
+     * Обработчик горячих клавиш для фокуса на поле поиска.
+     * @param {KeyboardEvent} event - Событие клавиатуры.
      */
     const handleHotkey = useCallback(
       (event: KeyboardEvent) => {
@@ -145,9 +147,8 @@ const Search = forwardRef<SearchRef, SearchProps>(
     );
 
     /**
-     * @function debouncedOnChange
-     * @description Debounced версия onChange для оптимизации производительности
-     * @param {string} newValue - Новое значение поиска
+     * Debounced версия onChange для оптимизации производительности.
+     * @param {string} newValue - Новое значение поиска.
      */
     const debouncedOnChange = useCallback(
       (newValue: string) => {
@@ -169,9 +170,8 @@ const Search = forwardRef<SearchRef, SearchProps>(
     );
 
     /**
-     * @function handleInputChange
-     * @description Обработчик изменения значения в поле ввода
-     * @param {React.ChangeEvent<HTMLInputElement>} event - Событие изменения
+     * Обработчик изменения значения в поле ввода.
+     * @param {React.ChangeEvent<HTMLInputElement>} event - Событие изменения.
      */
     const handleInputChange = useCallback(
       (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,24 +184,21 @@ const Search = forwardRef<SearchRef, SearchProps>(
     );
 
     /**
-     * @function handleFocus
-     * @description Обработчик фокуса на поле ввода
+     * Обработчик фокуса на поле ввода.
      */
     const handleFocus = useCallback(() => {
       setState((prev) => ({ ...prev, isFocused: true }));
     }, []);
 
     /**
-     * @function handleBlur
-     * @description Обработчик потери фокуса с поля ввода
+     * Обработчик потери фокуса с поля ввода.
      */
     const handleBlur = useCallback(() => {
       setState((prev) => ({ ...prev, isFocused: false }));
     }, []);
 
     /**
-     * @function handleClear
-     * @description Обработчик очистки поля поиска
+     * Обработчик очистки поля поиска.
      */
     const handleClear = useCallback(() => {
       setState((prev) => ({ ...prev, inputValue: '' }));
@@ -217,9 +214,8 @@ const Search = forwardRef<SearchRef, SearchProps>(
     }, [onChange]);
 
     /**
-     * @function handleKeyDown
-     * @description Обработчик нажатий клавиш для дополнительной функциональности
-     * @param {React.KeyboardEvent<HTMLInputElement>} event - Событие клавиатуры
+     * Обработчик нажатий клавиш для дополнительной функциональности.
+     * @param {React.KeyboardEvent<HTMLInputElement>} event - Событие клавиатуры.
      */
     const handleKeyDown = useCallback(
       (event: React.KeyboardEvent<HTMLInputElement>) => {

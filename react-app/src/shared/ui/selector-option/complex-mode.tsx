@@ -1,3 +1,8 @@
+/**
+ * @module ComplexMode
+ * Минималистичный компонент для сложного отображения SelectorOption.
+ */
+
 import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 import ProgressBar from '../progress-bar';
@@ -8,14 +13,9 @@ import {
 } from './types/selector-option';
 
 /**
- * @module ComplexMode
- * @description Минималистичный компонент для сложного отображения SelectorOption
- */
-
-/**
- * @description Форматирует размер файла в читаемый вид
- * @param bytes - Размер в байтах
- * @returns Отформатированная строка с размером
+ * Форматирует размер файла в читаемый вид.
+ * @param bytes - Размер в байтах.
+ * @returns Отформатированная строка с размером.
  */
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -26,9 +26,9 @@ function formatFileSize(bytes: number): string {
 }
 
 /**
- * @description Рендерит прогресс-бар для состояния загрузки
- * @param progressInfo - Информация о прогрессе
- * @returns JSX элемент с прогресс-баром
+ * Рендерит прогресс-бар для состояния загрузки.
+ * @param progressInfo - Информация о прогрессе.
+ * @returns JSX элемент с прогресс-баром.
  */
 function renderProgressBar(progressInfo: any) {
   const { percentage, currentSize, totalSize } = progressInfo;
@@ -48,10 +48,10 @@ function renderProgressBar(progressInfo: any) {
 }
 
 /**
- * @description Рендерит кнопки действий в зависимости от состояния
- * @param state - Текущее состояние
- * @param actionHandlers - Обработчики действий
- * @returns JSX элемент с кнопками действий
+ * Рендерит кнопки действий в зависимости от состояния<div className=""></div>
+ * @param state - Текущее состояние.
+ * @param actionHandlers - Обработчики действий.
+ * @returns JSX элемент с кнопками действий.
  */
 function renderActionButtons(state: SelectorOptionState, actionHandlers: any) {
   const { t } = useLingui();

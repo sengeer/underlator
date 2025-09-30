@@ -1,74 +1,74 @@
 /**
- * @interface SearchProps
- * @description Основные пропсы для компонента Search
- * @property {string} [placeholder] - Текст placeholder для поля ввода
- * @property {string} [value] - Текущее значение поиска
- * @property {(value: string) => void} [onChange] - Обработчик изменения значения поиска
- * @property {string} [className] - Дополнительные CSS классы
- * @property {React.CSSProperties} [style] - Инлайн стили
- * @property {boolean} [disabled] - Состояние отключения компонента
- * @property {boolean} [autoFocus] - Автофокус при монтировании
- * @property {number} [debounceMs] - Задержка debounce в миллисекундах
- * @property {string} [hotkey] - Горячая клавиша для фокуса (например, 'Ctrl+k')
- * @property {boolean} [showClearButton] - Показывать кнопку очистки
- * @property {boolean} [showSearchIcon] - Показывать иконку поиска
- * @property {string} [id] - HTML id атрибут
- * @property {string} [name] - HTML name атрибут
- * @property {string} [ariaLabel] - ARIA метка для доступности
- * @property {string} [ariaPlaceholder] - ARIA placeholder для скринридеров
+ * @module SearchTypes
+ * Типы для Search.
+ */
+
+/**
+ * Основные пропсы для компонента Search.
  */
 export interface SearchProps {
+  /** Текст placeholder для поля ввода */
   placeholder?: string;
+  /** Текущее значение поиска */
   value?: string;
+  /** Обработчик изменения значения поиска */
   onChange?: (value: string) => void;
+  /** Дополнительные CSS классы */
   className?: string;
+  /** Инлайн стили */
   style?: React.CSSProperties;
+  /** Состояние отключения компонента */
   disabled?: boolean;
+  /** Автофокус при монтировании */
   autoFocus?: boolean;
+  /** Задержка debounce в миллисекундах */
   debounceMs?: number;
+  /** Горячая клавиша для фокуса (например, 'Ctrl+k') */
   hotkey?: string;
+  /** Показывать кнопку очистки */
   showClearButton?: boolean;
+  /** Показывать иконку поиска */
   showSearchIcon?: boolean;
+  /** HTML id атрибут */
   id?: string;
+  /** HTML name атрибут */
   name?: string;
+  /** ARIA метка для доступности */
   ariaLabel?: string;
+  /** ARIA placeholder для скринридеров */
   ariaPlaceholder?: string;
 }
 
 /**
- * @interface SearchState
- * @description Внутреннее состояние компонента Search
- * @property {string} inputValue - Текущее значение в поле ввода
- * @property {boolean} isFocused - Состояние фокуса
- * @property {boolean} isDebouncing - Состояние debounce процесса
+ * Внутреннее состояние компонента Search.
  */
 export interface SearchState {
+  /** Текущее значение в поле ввода */
   inputValue: string;
+  /** Состояние фокуса */
   isFocused: boolean;
+  /** Состояние debounce процесса */
   isDebouncing: boolean;
 }
 
 /**
- * @interface HotkeyConfig
- * @description Конфигурация для горячих клавиш
- * @property {string} key - Клавиша (например, 'k')
- * @property {boolean} [ctrl] - Требуется ли Ctrl
- * @property {boolean} [alt] - Требуется ли Alt
- * @property {boolean} [shift] - Требуется ли Shift
- * @property {boolean} [meta] - Требуется ли Meta (Cmd на Mac)
+ * Конфигурация для горячих клавиш.
  */
 export interface HotkeyConfig {
+  /** Клавиша (например, 'k') */
   key: string;
   ctrl?: boolean;
+  /** Требуется ли Alt */
   alt?: boolean;
+  /** Требуется ли Shift */
   shift?: boolean;
+  /** Требуется ли Meta (Cmd на Mac) */
   meta?: boolean;
 }
 
 /**
- * @type SearchRef
- * @description Ref для компонента Search
- * Предоставляет методы для программного управления компонентом
+ * Ref для компонента Search.
+ * Предоставляет методы для программного управления компонентом.
  */
 export interface SearchRef {
   focus: () => void;

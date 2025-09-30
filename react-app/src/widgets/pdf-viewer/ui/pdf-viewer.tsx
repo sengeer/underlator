@@ -1,3 +1,10 @@
+/**
+ * @module PdfViewer
+ * Виджет для просмотра и перевода PDF документов.
+ * Предоставляет функциональность загрузки PDF файлов, выделения текста,
+ * контекстного перевода и интерактивного взаимодействия с моделью.
+ */
+
 import { useLingui } from '@lingui/react/macro';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { useState, useEffect, useRef } from 'react';
@@ -37,36 +44,79 @@ import CustomErrorMessage from './custom-error-message';
 import CustomLoading from './custom-loading';
 import '../styles/pdf-viewer.scss';
 
+// Конфигурация PDF.js worker для обработки PDF документов
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url
 ).toString();
 
+/**
+ * Опции для рендеринга PDF документов.
+ * Настройки для корректного отображения шрифтов и символов.
+ */
 const options = {
   cMapUrl: '/cmaps/',
   standardFontDataUrl: '/standard_fonts/',
 };
 
+/**
+ * Максимальная ширина PDF документа в пикселях.
+ * Ограничивает размер документа для оптимальной производительности.
+ */
 const maxWidth = 2560;
 
-interface PdfTranslator {
+/**
+ * Интерфейс пропсов компонента PdfViewer.
+ * Определяет параметры для управления видимостью виджета.
+ */
+export interface PdfTranslator {
+  /** Флаг видимости виджета PDF просмотрщика */
   isOpened: boolean;
 }
 
+/**
+ * Компонент PdfViewer.
+ *
+ * Основной виджет для работы с PDF документами, включающий:
+ * - Загрузку и отображение PDF файлов
+ * - Выделение текста для перевода
+ * - Контекстный перевод через LLM модели
+ * - Интерактивные инструкции для анализа документов
+ * - Управление состоянием перевода и отображения результатов
+ *
+ * Использует react-pdf для рендеринга, Redux для управления состоянием,
+ * и интегрируется с системой переводов через useModel хук.
+ *
+ * @param props - Пропсы компонента
+ * @param props.isOpened - Флаг видимости виджета
+ * @returns JSX элемент PDF просмотрщика
+ *
+ * @example
+ * // Базовое использование в Main компоненте
+ * <PdfViewer isOpened={isOpenPdfTranslationSection} />
+ */
 function PdfViewer({ isOpened }: PdfTranslator) {
+  // Состояние загруженного PDF файла
   const [file, setFile] = useState<File>();
+  // Массив текстовых узлов для перевода
   const [textInfos, setTextInfos] = useState<TextInfo[]>([]);
+  // Количество страниц в PDF документе
   const [numPages, setNumPages] = useState<number>();
 
+  // Настройки активного провайдера из Redux store
   const { provider, settings } = useSelector(selectActiveProviderSettings);
   const dispatch = useDispatch();
 
+  // Хук для работы с копированием текста
   const { isCopied, handleCopy } = useCopying();
 
+  // Ссылка на input элемент для загрузки файлов
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Хук для интернационализации
   const { t } = useLingui();
 
+  // Хук для работы с LLM моделями
   const {
     status,
     generatedResponse,
@@ -78,8 +128,10 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     stop,
   } = useModel();
 
+  // Ссылка на верхнюю панель для позиционирования кнопки перевода
   const topBarRef = useRef(null);
 
+  // Хук для управления кнопкой перевода
   const {
     buttonState,
     handleTranslateClick,
@@ -94,13 +146,20 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     containerRef: topBarRef,
   });
 
+  // Хук для работы с формами и валидацией
   const { values, handleChange, resetForm, setValues } = useFormAndValidation();
 
+  // Хук для отслеживания размеров документа
   const { width: documentWidth, ref: documentRef } = useResizeDetector({
     refreshMode: 'debounce',
     refreshRate: 100,
   });
 
+  /**
+   * Обработчик изменения файла.
+   * Устанавливает выбранный PDF файл в состояние компонента.
+   * @param event - Событие изменения input элемента.
+   */
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { files } = event.target;
 
@@ -111,12 +170,22 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     }
   }
 
+  /**
+   * Обработчик успешной загрузки PDF документа.
+   * Устанавливает количество страниц документа.
+   * @param param0 - Объект с информацией о загруженном документе.
+   * @param param0.numPages - Количество страниц в документе.
+   */
   function onDocumentLoadSuccess({
     numPages: nextNumPages,
   }: PDFDocumentProxy): void {
     setNumPages(nextNumPages);
   }
 
+  /**
+   * Сбрасывает состояние компонента.
+   * Очищает загруженный файл, количество страниц и input элемент.
+   */
   function handleReset() {
     setFile(undefined);
     setNumPages(undefined);
@@ -126,12 +195,28 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     }
   }
 
+  /**
+   * Интерфейс для сбора текстовых узлов.
+   * Определяет структуру данных для работы с DOM узлами при переводе.
+   */
   interface CollectTextNodes {
+    /** DOM текстовый узел */
     node: Text;
+    /** Оригинальный текст узла */
     original: string;
+    /** Родительский HTML элемент */
     element: HTMLElement;
   }
 
+  /**
+   * Собирает видимые текстовые узлы в указанном диапазоне.
+   * Использует TreeWalker для эффективного обхода DOM дерева
+   * и фильтрации только видимых текстовых узлов.
+   *
+   * @param rootNode - Корневой узел для поиска.
+   * @param range - Диапазон выделения для проверки пересечения.
+   * @returns Массив найденных текстовых узлов с их метаданными.
+   */
   function collectTextNodes(rootNode: Node, range: Range): CollectTextNodes[] {
     const visibleTextInfos: TextInfo[] = [];
     const treeWalker = document.createTreeWalker(
@@ -173,6 +258,14 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     return visibleTextInfos;
   }
 
+  /**
+   * Находит ближайший блочный элемент от указанного узла.
+   * Поднимается по DOM дереву до первого элемента с блочным типом отображения.
+   * Используется для определения контейнера для позиционирования кнопки перевода.
+   *
+   * @param startNode - Начальный узел для поиска.
+   * @returns Ближайший блочный HTML элемент или null.
+   */
   function findClosestElement(startNode: Node): HTMLElement | null {
     let currentNode: Node | null = startNode;
 
@@ -197,12 +290,20 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     return null;
   }
 
+  /**
+   * Обработчик клика по кнопке перевода.
+   * Собирает выделенный текст, определяет режим работы (перевод/инструкция)
+   * и запускает соответствующий процесс генерации через LLM модель.
+   *
+   * Для режима перевода использует контекстный перевод с массивом текстовых фрагментов.
+   * Для режима инструкций обрабатывает текст как единую строку с пользовательской инструкцией.
+   */
   async function onTranslateClick() {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
 
-    // TODO: Add a validity to show translate button only inside a specific HTML element
+    // TODO: Добавить допустимость отображения кнопки перевода только внутри определенного HTML-элемента
     const block = findClosestElement(range.commonAncestorContainer);
     if (!block) return;
 
@@ -241,12 +342,16 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     }
   }
 
-  // Processing block translation results
+  /**
+   * Эффект для обработки результатов перевода.
+   * Обновляет DOM узлы с переведенным текстом и управляет состоянием компонента.
+   * Использует функциональную утилиту createUpdateHandler для безопасного обновления текстовых узлов.
+   */
   useEffect(() => {
     if (settings.typeUse === 'translation') {
       if (Object.keys(generatedResponse).length === 0) return;
 
-      // Functional utility for updating text nodes
+      // Функциональная утилита для обновления текстовых узлов
       const shouldLogErrors =
         (status === 'success' || status === 'error') && textInfos.length > 0;
       const updateHandler = createUpdateHandler(textInfos, shouldLogErrors);
@@ -260,7 +365,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
           span.textContent = `Ошибка перевода: ${translationErrors}`;
         }
 
-        if (settings.typeUse !== 'instruction') {
+        if (settings.typeUse === 'translation') {
           setTextInfos([]);
           resetResponse();
         }
@@ -278,6 +383,10 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     hideButton,
   ]);
 
+  /**
+   * Эффект для инициализации формы инструкций.
+   * Сбрасывает форму и устанавливает пустое значение для поля инструкции.
+   */
   useEffect(() => {
     resetForm();
     setValues({

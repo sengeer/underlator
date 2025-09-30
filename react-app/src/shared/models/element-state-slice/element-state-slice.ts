@@ -1,3 +1,8 @@
+/**
+ * @module ElementStateSlice
+ * Redux slice для управления состоянием элементов интерфейса.
+ */
+
 import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit';
 import { Elements } from './types/element-state-slice';
 

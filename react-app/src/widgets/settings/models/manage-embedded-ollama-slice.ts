@@ -1,3 +1,9 @@
+/**
+ * @module ManageEmbeddedOllamaSlice
+ * Redux slice для управления моделями в Settings виджете.
+ * Обеспечивает управление каталогом моделей, установкой, удалением и поиском моделей.
+ */
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { updateProviderSettings } from '../../../shared/models/provider-settings-slice';
 import { embeddedOllamaElectronApi } from '../apis/embedded-ollama-electron-api';
@@ -15,8 +21,8 @@ import type {
 } from '../types/embedded-ollama';
 
 /**
- * @description Начальное состояние каталога моделей
- * Состояние с настройками по умолчанию
+ * Начальное состояние каталога моделей.
+ * Состояние с настройками по умолчанию.
  */
 const initialCatalogState: CatalogState = {
   catalog: null,
@@ -27,8 +33,8 @@ const initialCatalogState: CatalogState = {
 };
 
 /**
- * @description Начальное состояние процесса установки
- * Состояние с настройками по умолчанию
+ * Начальное состояние процесса установки.
+ * Состояние с настройками по умолчанию.
  */
 const initialInstallationState: InstallationState = {
   progress: {},
@@ -38,8 +44,8 @@ const initialInstallationState: InstallationState = {
 };
 
 /**
- * @description Начальное состояние поиска и фильтрации
- * Состояние с настройками по умолчанию
+ * Начальное состояние поиска и фильтрации.
+ * Состояние с настройками по умолчанию.
  */
 const initialSearchState: SearchState = {
   query: '',
@@ -49,8 +55,8 @@ const initialSearchState: SearchState = {
 };
 
 /**
- * @description Начальное состояние управления моделями
- * Объединяет все подсостояния в единое состояние
+ * Начальное состояние управления моделями.
+ * Объединяет все подсостояния в единое состояние.
  */
 const initialState: ManageModelsState = {
   catalog: initialCatalogState,
@@ -61,8 +67,8 @@ const initialState: ManageModelsState = {
 };
 
 /**
- * @description Async thunk для получения каталога моделей
- * Загружает каталог с поддержкой кэширования и принудительного обновления
+ * Async thunk для получения каталога моделей.
+ * Загружает каталог с поддержкой кэширования и принудительного обновления.
  */
 export const fetchCatalog = createAsyncThunk(
   'manageModels/fetchCatalog',
@@ -84,8 +90,8 @@ export const fetchCatalog = createAsyncThunk(
 );
 
 /**
- * @description Async thunk для поиска моделей
- * Выполняет поиск по фильтрам и возвращает отфильтрованные результаты
+ * Async thunk для поиска моделей.
+ * Выполняет поиск по фильтрам и возвращает отфильтрованные результаты.
  */
 export const searchModels = createAsyncThunk(
   'manageModels/searchModels',
@@ -107,8 +113,8 @@ export const searchModels = createAsyncThunk(
 );
 
 /**
- * @description Async thunk для получения информации о модели
- * Загружает детальную информацию о конкретной модели
+ * Async thunk для получения информации о модели.
+ * Загружает детальную информацию о конкретной модели.
  */
 export const fetchModelInfo = createAsyncThunk(
   'manageModels/fetchModelInfo',
@@ -132,8 +138,8 @@ export const fetchModelInfo = createAsyncThunk(
 );
 
 /**
- * @description Async thunk для установки модели
- * Запускает процесс установки модели с отслеживанием прогресса
+ * Async thunk для установки модели.
+ * Запускает процесс установки модели с отслеживанием прогресса.
  */
 export const installModel = createAsyncThunk(
   'manageModels/installModel',
@@ -187,8 +193,8 @@ export const installModel = createAsyncThunk(
 );
 
 /**
- * @description Async thunk для удаления модели
- * Удаляет установленную модель
+ * Async thunk для удаления модели.
+ * Удаляет установленную модель.
  */
 export const removeModel = createAsyncThunk(
   'manageModels/removeModel',
@@ -229,8 +235,8 @@ export const removeModel = createAsyncThunk(
 );
 
 /**
- * @description Async thunk для получения списка установленных моделей
- * Загружает список всех установленных в системе моделей
+ * Async thunk для получения списка установленных моделей.
+ * Загружает список всех установленных в системе моделей.
  */
 export const fetchInstalledModels = createAsyncThunk(
   'manageModels/fetchInstalledModels',
@@ -254,16 +260,16 @@ export const fetchInstalledModels = createAsyncThunk(
 );
 
 /**
- * @description Redux slice для управления моделями
- * Содержит reducers и actions для всех операций с моделями
+ * Redux slice для управления моделями.
+ * Содержит reducers и actions для всех операций с моделями.
  */
 const manageEmbeddedOllamaSlice = createSlice({
   name: 'manageModels',
   initialState,
   reducers: {
     /**
-     * @description Устанавливает каталог моделей
-     * Обновляет каталог и время последнего обновления
+     * Устанавливает каталог моделей.
+     * Обновляет каталог и время последнего обновления.
      */
     setCatalog: (state, action: PayloadAction<any>) => {
       state.catalog.catalog = action.payload;
@@ -272,8 +278,8 @@ const manageEmbeddedOllamaSlice = createSlice({
     },
 
     /**
-     * @description Устанавливает прогресс установки модели
-     * Обновляет прогресс для конкретной модели
+     * Устанавливает прогресс установки модели.
+     * Обновляет прогресс для конкретной модели.
      */
     setInstallationProgress: (
       state,
@@ -299,8 +305,8 @@ const manageEmbeddedOllamaSlice = createSlice({
     },
 
     /**
-     * @description Устанавливает ошибку процесса установки модели
-     * Сохраняет ошибку для конкретной модели
+     * Устанавливает ошибку процесса установки модели.
+     * Сохраняет ошибку для конкретной модели.
      */
     setInstallationError: (
       state,
@@ -319,8 +325,8 @@ const manageEmbeddedOllamaSlice = createSlice({
     },
 
     /**
-     * @description Добавляет модель в список устанавливаемых
-     * Отмечает модель как находящуюся в процессе установки
+     * Добавляет модель в список устанавливаемых.
+     * Отмечает модель как находящуюся в процессе установки.
      */
     addInstallingModel: (state, action: PayloadAction<string>) => {
       const modelName = action.payload;
@@ -333,8 +339,8 @@ const manageEmbeddedOllamaSlice = createSlice({
     },
 
     /**
-     * @description Удаляет модель из списка устанавливаемых
-     * Убирает модель из процесса установки
+     * Удаляет модель из списка устанавливаемых.
+     * Убирает модель из процесса установки.
      */
     removeInstallingModel: (state, action: PayloadAction<string>) => {
       const modelName = action.payload;
@@ -348,40 +354,40 @@ const manageEmbeddedOllamaSlice = createSlice({
     },
 
     /**
-     * @description Устанавливает поисковый запрос
-     * Обновляет текущий поисковый запрос
+     * Устанавливает поисковый запрос.
+     * Обновляет текущий поисковый запрос.
      */
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.search.query = action.payload;
     },
 
     /**
-     * @description Устанавливает фильтры поиска
-     * Обновляет активные фильтры для поиска моделей
+     * Устанавливает фильтры поиска.
+     * Обновляет активные фильтры для поиска моделей.
      */
     setSearchFilters: (state, action: PayloadAction<ModelSearchFilters>) => {
       state.search.filters = action.payload;
     },
 
     /**
-     * @description Устанавливает отфильтрованные результаты
-     * Обновляет результаты поиска
+     * Устанавливает отфильтрованные результаты.
+     * Обновляет результаты поиска.
      */
     setFilteredResults: (state, action: PayloadAction<any[]>) => {
       state.search.filteredResults = action.payload;
     },
 
     /**
-     * @description Очищает ошибки установки
-     * Удаляет все ошибки установки моделей
+     * Очищает ошибки установки.
+     * Удаляет все ошибки установки моделей.
      */
     clearInstallationErrors: (state) => {
       state.installation.errors = {};
     },
 
     /**
-     * @description Очищает ошибку установки конкретной модели
-     * Удаляет ошибку для указанной модели
+     * Очищает ошибку установки конкретной модели.
+     * Удаляет ошибку для указанной модели.
      */
     clearModelError: (state, action: PayloadAction<string>) => {
       const modelName = action.payload;
@@ -389,8 +395,8 @@ const manageEmbeddedOllamaSlice = createSlice({
     },
 
     /**
-     * @description Сбрасывает состояние поиска
-     * Очищает все параметры поиска и результаты
+     * Сбрасывает состояние поиска.
+     * Очищает все параметры поиска и результаты.
      */
     resetSearch: (state) => {
       state.search.query = '';
@@ -400,8 +406,8 @@ const manageEmbeddedOllamaSlice = createSlice({
     },
 
     /**
-     * @description Сбрасывает все состояние
-     * Возвращает состояние к начальному
+     * Сбрасывает все состояние.
+     * Возвращает состояние к начальному.
      */
     resetState: () => initialState,
   },

@@ -1,3 +1,8 @@
+/**
+ * @module ElementStateSliceIndex
+ * Индексный файл для экспорта ElementStateSlice.
+ */
+
 export {
   isElementOpen,
   openElement,

@@ -1,3 +1,19 @@
+/**
+ * @module Settings
+ * Основной компонент настроек приложения.
+ *
+ * Предоставляет интерфейс для настройки приложения. Интегрируется с Redux store для управления
+ * состоянием настроек и синхронизации с остальным приложением.
+ *
+ * Компонент использует модальные окна для выбора опций и автоматически
+ * сохраняет изменения в Redux store и localStorage. Поддерживает
+ * валидацию форм и обработку ошибок.
+ *
+ * @example
+ * // Использование в Main компоненте
+ * <Settings isOpened={isOpenSettingsSection} />
+ */
+
 import '../styles/settings.scss';
 import { useLingui } from '@lingui/react/macro';
 import { Trans } from '@lingui/react/macro';
@@ -34,27 +50,19 @@ import Popup from '../../../shared/ui/popup';
 import PopupWithSearch from '../../../shared/ui/popup-with-search';
 import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
+import { LANGUAGES, PROVIDERS } from '../constants/settings';
+import { Settings } from '../types/settings';
 import ManageModels from './manage-embedded-ollama';
 import TestIpc from './test-ipc';
 
-export interface PopupSelectorData {
-  [key: string]: string;
-}
-
-const LANGUAGES: PopupSelectorData = {
-  english: 'en',
-  русский: 'ru',
-};
-
-const PROVIDERS: PopupSelectorData = {
-  Ollama: 'Ollama',
-  'Embedded Ollama': 'Embedded Ollama',
-};
-
-interface Settings {
-  isOpened: boolean;
-}
-
+/**
+ * Компонент Settings.
+ *
+ * Реализует основной интерфейс настроек приложения.
+ *
+ * @param isOpened - Открыт ли компонент настроек.
+ * @returns JSX элемент с интерфейсом настроек.
+ */
 function Settings({ isOpened }: Settings) {
   const { values, handleChange, resetForm, setValues } = useFormAndValidation();
   const [searchValue, setSearchValue] = useState('');
@@ -62,6 +70,10 @@ function Settings({ isOpened }: Settings) {
   const dispatch = useDispatch();
   const { provider, settings } = useSelector(selectProviderSettings);
 
+  /**
+   * Ключ языка для отображения в интерфейсе.
+   * Инициализируется из localStorage или использует значение по умолчанию.
+   */
   const [languageKey, setLanguageKey] = useState(() => {
     const localeFromStorage = getStorageWrite('locale');
 
@@ -78,6 +90,10 @@ function Settings({ isOpened }: Settings) {
     }
   });
 
+  /**
+   * Код языка для использования в приложении.
+   * Инициализируется из localStorage или использует значение по умолчанию.
+   */
   const [language, setLanguage] = useState(() => {
     const localeFromStorage = getStorageWrite('locale');
 
@@ -89,22 +105,47 @@ function Settings({ isOpened }: Settings) {
   const { t } = useLingui();
   const { translateElectron } = useElectronTranslation();
 
+  /**
+   * Состояние открытия модального окна выбора языка.
+   * Получается из Redux store для управления видимостью.
+   */
   const isOpenLanguageSelectorPopup = useSelector((state) =>
     isElementOpen(state, 'languageSelectorPopup')
   );
 
+  /**
+   * Состояние открытия модального окна выбора провайдера.
+   * Получается из Redux store для управления видимостью.
+   */
   const isOpenProviderSelectorPopup = useSelector((state) =>
     isElementOpen(state, 'providerSelectorPopup')
   );
 
+  /**
+   * Состояние открытия модального окна тестового списка моделей.
+   * Получается из Redux store для управления видимостью.
+   */
   const isOpenTestListModelsPopup = useSelector((state) =>
     isElementOpen(state, 'testListModelsPopup')
   );
 
+  /**
+   * Состояние открытия модального окна управления моделями.
+   * Получается из Redux store для управления видимостью.
+   */
   const isOpenManageModelsPopup = useSelector((state) =>
     isElementOpen(state, 'manageModelsPopup')
   );
 
+  /**
+   * Обработчик изменения языка интерфейса.
+   *
+   * Обновляет состояние языка, загружает каталог переводов,
+   * сохраняет выбор в localStorage и синхронизирует переводы
+   * с Electron процессом.
+   *
+   * @param lang - Код языка для установки.
+   */
   const handleLanguageChange = useCallback(
     (lang: string) => {
       setLanguage(lang);
@@ -115,11 +156,25 @@ function Settings({ isOpened }: Settings) {
     [loadCatalog, translateElectron]
   );
 
+  /**
+   * Обработчик изменения провайдера LLM.
+   *
+   * Обновляет активный провайдер в Redux store.
+   * Автоматически сбрасывает настройки формы при смене провайдера.
+   *
+   * @param newProvider - Новый провайдер для установки.
+   */
   function handleProviderChange(newProvider: string) {
     dispatch(setProvider(newProvider as ProviderType));
   }
 
-  // When changing inputs, save them in the store
+  /**
+   * Автоматическое сохранение изменений формы в Redux store.
+   *
+   * Отслеживает изменения в полях формы и автоматически сохраняет
+   * их в настройках провайдера. Устанавливает тип использования
+   * как 'translation' для совместимости с существующей логикой.
+   */
   useEffect(() => {
     if (provider && (values.url !== undefined || values.model !== undefined)) {
       dispatch(updateProviderSettings({ provider, settings: values }));
@@ -127,14 +182,20 @@ function Settings({ isOpened }: Settings) {
     }
   }, [values, provider, dispatch]);
 
-  // When changing the provider or initializing, set the values from the store
+  /**
+   * Синхронизация формы с настройками провайдера.
+   *
+   * При изменении провайдера или инициализации компонента
+   * загружает настройки из Redux store в форму. Если настройки
+   * отсутствуют, сбрасывает форму к значениям по умолчанию.
+   */
   useEffect(() => {
     if (provider && settings[provider]) {
       setValues(settings[provider]);
     } else {
       resetForm();
     }
-  }, [provider, setValues, resetForm]);
+  }, [provider, settings, setValues, resetForm]);
 
   return (
     <section className={`settings${isOpened ? ' settings_open' : ''}`}>

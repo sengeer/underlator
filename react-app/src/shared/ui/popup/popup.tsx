@@ -1,20 +1,25 @@
+/**
+ * @module Popup
+ * Компонент Popup с поддержкой ленивой загрузки.
+ */
+
 import { useEffect, createRef, useMemo, isValidElement } from 'react';
 import { LazyListItem } from './lazy-list-item';
 import './styles/popup.scss';
 import { PopupProps } from './types/popup';
 
 /**
- * @description Компонент Popup с поддержкой ленивой загрузки
+ * Компонент Popup с поддержкой ленивой загрузки.
  *
  * Универсальный компонент модального окна, с
  * оптимизацией производительности при работе с большими списками
  * через ленивую загрузку элементов.
  *
- * @param props - Пропсы компонента
- * @returns JSX элемент попапа
+ * @param props - Пропсы компонента. Подробнее см. в документации интерфейса PopupProps.
+ * @returns JSX элемент попапа.
  *
  * @example
- * Базовое использование
+ * // Базовое использование
  * <Popup
  *   isOpened={isOpen}
  *   setOpened={setOpen}>
@@ -22,7 +27,7 @@ import { PopupProps } from './types/popup';
  * </Popup>
  *
  * @example
- * С ленивой загрузкой для большого списка
+ * // С ленивой загрузкой для большого списка
  * <Popup
  *   isOpened={isOpen}
  *   setOpened={setOpen}
@@ -35,7 +40,7 @@ import { PopupProps } from './types/popup';
  * </Popup>
  *
  * @example
- * Автоматическая активация ленивой загрузки
+ * // Автоматическая активация ленивой загрузки
  * <Popup
  *   isOpened={isOpen}
  *   setOpened={setOpen}
@@ -48,7 +53,7 @@ import { PopupProps } from './types/popup';
  *
  *
  * @example
- * С анимацией появления элементов
+ * // С анимацией появления элементов
  * <Popup
  *   isOpened={isOpen}
  *   setOpened={setOpen}

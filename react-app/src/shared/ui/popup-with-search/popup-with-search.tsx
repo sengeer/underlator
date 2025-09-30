@@ -1,3 +1,8 @@
+/**
+ * @module PopupWithSearch
+ * Компонент PopupWithSearch с поддержкой поиска.
+ */
+
 import {
   useEffect,
   useRef,
@@ -16,25 +21,24 @@ import {
 import './styles/popup-with-search.scss';
 
 /**
- * @component PopupWithSearch
- * @description Модальное окно с интегрированным поиском
+ * Модальное окно с интегрированным поиском.
  *
  * Расширяет базовый Popup компонент по принципу LSP (Liskov Substitution Principle),
  * добавляя функциональность поиска без нарушения существующего API.
  *
  * Особенности реализации:
- * - Полная совместимость с базовым Popup компонентом
- * - Интегрированный компонент Search с поддержкой debounce
- * - Поддержка горячих клавиш для быстрого доступа к поиску
- * - Автофокус на поле поиска при открытии модального окна
- * - Программное управление через ref API
- * - Сохранение всех возможностей базового Popup (ленивая загрузка, анимации)
+ * - Полная совместимость с базовым Popup компонентом.
+ * - Интегрированный компонент Search с поддержкой debounce.
+ * - Поддержка горячих клавиш для быстрого доступа к поиску.
+ * - Автофокус на поле поиска при открытии модального окна.
+ * - Программное управление через ref API.
+ * - Сохранение всех возможностей базового Popup (ленивая загрузка, анимации).
  *
- * @param {PopupWithSearchProps} props - Пропсы компонента
- * @returns {JSX.Element} React элемент модального окна с поиском
+ * @param {PopupWithSearchProps} props - Пропсы компонента. Подробнее см. в документации интерфейса PopupWithSearchProps.
+ * @returns {JSX.Element} React элемент модального окна с поиском.
  *
  * @example
- * Базовое использование
+ * // Базовое использование
  * <PopupWithSearch
  *   isOpened={isOpen}
  *   setOpened={setOpen}
@@ -45,7 +49,7 @@ import './styles/popup-with-search.scss';
  * </PopupWithSearch>
  *
  * @example
- * С ленивой загрузкой и анимациями
+ * // С ленивой загрузкой и анимациями
  * <PopupWithSearch
  *   isOpened={isOpen}
  *   setOpened={setOpen}
@@ -64,7 +68,7 @@ import './styles/popup-with-search.scss';
  * </PopupWithSearch>
  *
  * @example
- * С программным управлением через ref
+ * // С программным управлением через ref
  * const popupRef = useRef<PopupWithSearchRef>(null);
  *
  * <PopupWithSearch
@@ -77,7 +81,7 @@ import './styles/popup-with-search.scss';
  *   <div>Контент</div>
  * </PopupWithSearch>
  *
- * Программное управление
+ * // Программное управление
  * popupRef.current?.focusSearch();
  * popupRef.current?.clearSearch();
  */
@@ -85,7 +89,6 @@ const PopupWithSearch = forwardRef<PopupWithSearchRef, PopupWithSearchProps>(
   (
     {
       children,
-      // Свойства поиска
       searchPlaceholder = 'Поиск...',
       searchValue = '',
       onSearchChange,
@@ -111,8 +114,7 @@ const PopupWithSearch = forwardRef<PopupWithSearchRef, PopupWithSearchProps>(
     const searchRef = useRef<SearchRef>(null);
 
     /**
-     * @function focusSearch
-     * @description Фокусирует на поле поиска
+     * Фокусирует на поле поиска.
      */
     const focusSearch = useCallback(() => {
       searchRef.current?.focus();

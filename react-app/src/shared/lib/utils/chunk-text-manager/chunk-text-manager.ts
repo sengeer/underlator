@@ -1,32 +1,33 @@
+/**
+ * @module ChunkTextManager
+ * Утилита для управления текстовыми фрагментами в контекстном переводе.
+ * Обеспечивает объединение, разделение и обработку текстовых фрагментов для работы с LLM.
+ * Используется в провайдерах для подготовки данных к контекстному переводу и обработки ответов.
+ */
+
 import { CHUNK_DELIMITER } from '../../constants';
 import createContextualPrompt from '../../hofs/create-contextual-prompt';
 import { ChunkOperationResult } from './types/chunk-text-manager';
 
 /**
- * @module ChunkTextManager
- * @description Утилита для управления текстовыми фрагментами в контекстном переводе
- * Обеспечивает объединение, разделение и обработку текстовых фрагментов для работы с LLM
- */
-
-/**
- * Объединяет массив текстовых фрагментов в единую строку с использованием разделителя
+ * Объединяет массив текстовых фрагментов в единую строку с использованием разделителя.
  *
- * @description Чистая функция для объединения текстовых фрагментов с разделителем CHUNK_DELIMITER.
+ * Чистая функция для объединения текстовых фрагментов с разделителем CHUNK_DELIMITER.
  * Фильтрует пустые и невалидные фрагменты, обеспечивая корректное формирование контекста для LLM.
  * Используется в контекстном переводе для передачи множественных текстовых фрагментов в одном запросе.
  *
- * @param {string[]} chunks - Массив текстовых фрагментов для объединения
- * @returns {ChunkOperationResult<string>} Результат операции с объединенным текстом или ошибкой
+ * @param chunks - Массив текстовых фрагментов для объединения.
+ * @returns Результат операции с объединенным текстом или ошибкой.
  *
  * @example
- * Базовое использование
+ * // Базовое использование
  * const result = combineChunks(['Привет', 'мир', '!']);
  * if (result.success) {
- *   console.log(result.data); // 'Приветмир!'
+ *   console.log(result.data); // 'Приветмир!'
  * }
  *
  * @example
- * Обработка ошибок
+ * // Обработка ошибок
  * const result = combineChunks([]);
  * if (!result.success) {
  *   console.error(result.error); // 'All chunks are empty or invalid'
@@ -38,7 +39,7 @@ export function combineChunks(chunks: string[]): ChunkOperationResult<string> {
     return { success: false, error: 'Input must be an array' };
   }
 
-  // Обработка пустого массива - возвращаем пустую строку
+  // Обработка пустого массива - возвращается пустая строка для валидного результата
   if (chunks.length === 0) {
     return { success: true, data: '' };
   }
@@ -57,24 +58,24 @@ export function combineChunks(chunks: string[]): ChunkOperationResult<string> {
 }
 
 /**
- * Разделяет объединенный текст обратно на массив фрагментов
+ * Разделяет объединенный текст обратно на массив фрагментов.
  *
- * @description Чистая функция для разделения текста, объединенного с помощью CHUNK_DELIMITER,
+ * Чистая функция для разделения текста, объединенного с помощью CHUNK_DELIMITER,
  * обратно на массив отдельных фрагментов. Удаляет пустые строки и обрезает пробелы.
  * Используется для обработки ответов от LLM в контекстном переводе.
  *
- * @param {string} combinedText - Объединенный текст с разделителями
- * @returns {ChunkOperationResult<string[]>} Результат операции с массивом фрагментов или ошибкой
+ * @param combinedText - Объединенный текст с разделителями.
+ * @returns Результат операции с массивом фрагментов или ошибкой.
  *
  * @example
- * Базовое использование
- * const result = splitCombinedText('Приветмир!');
+ * // Базовое использование
+ * const result = splitCombinedText('Приветмир!');
  * if (result.success) {
  *   console.log(result.data); // ['Привет', 'мир', '!']
  * }
  *
  * @example
- * Обработка пустого текста
+ * // Обработка пустого текста
  * const result = splitCombinedText('');
  * if (result.success) {
  *   console.log(result.data); // []
@@ -103,22 +104,22 @@ export function splitCombinedText(
 }
 
 /**
- * Преобразует массив строк в объект с числовыми ключами
+ * Преобразует массив строк в объект с числовыми ключами.
  *
- * @description Утилитарная функция для преобразования массива текстовых фрагментов
+ * Утилитарная функция для преобразования массива текстовых фрагментов
  * в объект формата Record<number, string>. Используется для создания структуры данных,
  * удобной для обновления отдельных фрагментов в UI компонентах.
  *
- * @param {string[]} chunks - Массив текстовых фрагментов
- * @returns {Record<number, string>} Объект с числовыми ключами и строковыми значениями
+ * @param chunks - Массив текстовых фрагментов.
+ * @returns Объект с числовыми ключами и строковыми значениями.
  *
  * @example
- * Базовое использование
+ * // Базовое использование
  * const record = convertArrayToRecord(['Привет', 'мир', '!']);
  * console.log(record); // { 0: 'Привет', 1: 'мир', 2: '!' }
  *
  * @example
- * Использование в UI обновлениях
+ * // Использование в UI обновлениях
  * const chunks = ['Фрагмент 1', 'Фрагмент 2'];
  * const record = convertArrayToRecord(chunks);
  * // record[0] можно использовать для обновления первого элемента
@@ -133,19 +134,19 @@ export function convertArrayToRecord(chunks: string[]): Record<number, string> {
 }
 
 /**
- * Подготавливает данные для контекстного перевода
+ * Подготавливает данные для контекстного перевода.
  *
- * @description Композитная функция, объединяющая текстовые фрагменты и создающая промпт
+ * Композитная функция, объединяющая текстовые фрагменты и создающая промпт
  * для контекстного перевода. Использует createContextualPrompt для генерации промпта
  * с учетом исходного и целевого языков. Обеспечивает полную подготовку данных для LLM.
  *
- * @param {string[]} chunks - Массив текстовых фрагментов для перевода
- * @param {string} sourceLanguage - Исходный язык (например, 'ru')
- * @param {string} targetLanguage - Целевой язык (например, 'en')
- * @returns {ChunkOperationResult<{combinedText: string; prompt: string}>} Результат с объединенным текстом и промптом
+ * @param chunks - Массив текстовых фрагментов для перевода.
+ * @param sourceLanguage - Исходный язык (например, 'ru').
+ * @param targetLanguage - Целевой язык (например, 'en').
+ * @returns Результат с объединенным текстом и промптом.
  *
  * @example
- * Подготовка перевода с русского на английский
+ * // Подготовка перевода с русского на английский
  * const result = prepareContextualTranslation(
  *   ['Привет мир', 'Как дела?'],
  *   'ru',
@@ -153,11 +154,11 @@ export function convertArrayToRecord(chunks: string[]): Record<number, string> {
  * );
  * if (result.success) {
  *   console.log(result.data.prompt); // Промпт для перевода
- *   console.log(result.data.combinedText); // 'Привет мирКак дела?'
+ *   console.log(result.data.combinedText); // 'Привет мирКак дела?'
  * }
  *
  * @example
- * Обработка ошибок подготовки
+ * // Обработка ошибок подготовки
  * const result = prepareContextualTranslation([], 'ru', 'en');
  * if (!result.success) {
  *   console.error(result.error); // Сообщение об ошибке
@@ -192,21 +193,21 @@ export function prepareContextualTranslation(
 }
 
 /**
- * Обрабатывает ответ контекстного перевода с поддержкой частичных результатов
+ * Обрабатывает ответ контекстного перевода с поддержкой частичных результатов.
  *
- * @description Чистая функция для обработки ответа от LLM в контекстном переводе.
+ * Чистая функция для обработки ответа от LLM в контекстном переводе.
  * Разделяет переведенный текст на фрагменты и преобразует в формат Record<number, string>.
  * Обрабатывает случаи, когда модель возвращает больше или меньше фрагментов, чем ожидалось.
  * Поддерживает частичные результаты для инкрементального обновления UI.
  *
- * @param {string} translatedText - Переведенный текст от LLM
- * @param {number} originalChunksCount - Количество исходных фрагментов
- * @returns {ChunkOperationResult<Record<number, string>>} Результат с обработанными фрагментами
+ * @param translatedText - Переведенный текст от LLM.
+ * @param originalChunksCount - Количество исходных фрагментов.
+ * @returns Результат с обработанными фрагментами.
  *
  * @example
- * Обработка корректного ответа
+ * // Обработка корректного ответа
  * const result = processContextualResponse(
- *   'Hello worldHow are you?',
+ *   'Hello worldHow are you?',
  *   2
  * );
  * if (result.success) {
@@ -214,9 +215,9 @@ export function prepareContextualTranslation(
  * }
  *
  * @example
- * Обработка ответа с лишними фрагментами
+ * // Обработка ответа с лишними фрагментами
  * const result = processContextualResponse(
- *   'HelloworldHowareyou?',
+ *   'HelloworldHowareyou?',
  *   2
  * );
  * if (result.success) {
@@ -227,7 +228,7 @@ export function processContextualResponse(
   translatedText: string,
   originalChunksCount: number
 ): ChunkOperationResult<Record<number, string>> {
-  // Обработка пустого ответа - возвращаем пустые фрагменты
+  // Обработка пустого ответа - возвращаются пустые фрагменты
   if (!translatedText.trim()) {
     const data: Record<number, string> = {};
 

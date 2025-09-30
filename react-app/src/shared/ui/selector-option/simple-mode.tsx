@@ -2,9 +2,8 @@ import TextButton from '../text-button/text-button';
 import { SelectorOptionProps } from './types/selector-option';
 
 /**
- * @module SimpleMode
- * @description Минималистичный компонент для простого отображения SelectorOption
- * Одна строка с TextButton слева и обработчиком клика на всю область
+ * Минималистичный компонент для простого отображения SelectorOption.
+ * Одна строка с TextButton слева и обработчиком клика на всю область.
  */
 function SimpleMode({
   text,

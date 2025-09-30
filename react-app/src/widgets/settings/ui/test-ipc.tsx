@@ -17,10 +17,10 @@ import {
   testSearchModels,
   testGetModelInfo,
   runFullTest,
-} from '../tests/ipc-tester';
+} from '../tests/ipc';
 
 /**
- * @description Компонент для тестирования IPC API
+ * Компонент для тестирования IPC API
  */
 function TestIpc() {
   const { values, handleChange, setValues } = useFormAndValidation();
