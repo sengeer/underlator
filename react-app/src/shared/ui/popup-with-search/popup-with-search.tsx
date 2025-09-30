@@ -89,6 +89,7 @@ const PopupWithSearch = forwardRef<PopupWithSearchRef, PopupWithSearchProps>(
   (
     {
       children,
+      // Свойства поиска
       searchPlaceholder = 'Поиск...',
       searchValue = '',
       onSearchChange,

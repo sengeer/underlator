@@ -1,5 +1,5 @@
-const path = require('path');
-const TerserPlugin = require('terser-webpack-plugin');
+import path from 'path';
+import TerserPlugin from 'terser-webpack-plugin';
 
 /**
  * Webpack конфигурация для создания минифицированных файлов в dist/electron
@@ -10,7 +10,7 @@ const TerserPlugin = require('terser-webpack-plugin');
  * Документация: https://webpack.js.org/configuration/
  */
 
-module.exports = (env, argv) => {
+export default (argv: { mode: string }) => {
   /**
    * Определение режима сборки
    *
@@ -21,7 +21,7 @@ module.exports = (env, argv) => {
    * одну конфигурацию для разных сценариев сборки.
    */
   const isProduction =
-    process.env.NODE_ENV === 'production' || argv.mode === 'production';
+    process.env['NODE_ENV'] === 'production' || argv.mode === 'production';
 
   return {
     /**

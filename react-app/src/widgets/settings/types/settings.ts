@@ -15,7 +15,7 @@ export interface PopupSelectorData {
  * Пропсы компонента Settings.
  * Определяет интерфейс для настройки отображения компонента.
  */
-export interface Settings {
+export interface SettingsState {
   /** Открыт ли компонент настроек */
   isOpened: boolean;
 }

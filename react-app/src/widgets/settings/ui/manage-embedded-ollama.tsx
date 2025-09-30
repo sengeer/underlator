@@ -366,8 +366,8 @@ function ManageModels({ onClose }: ManageModelsProps) {
       lazyLoadingThreshold={20}
       lazyLoadingMargin='100px'
       enableAnimation
-      animationDuration={80}
-      animationDelay={40}
+      animationDuration={50}
+      animationDelay={25}
       animationType='scaleIn'
       searchPlaceholder={t`Model...`}
       searchDebounceMs={300}

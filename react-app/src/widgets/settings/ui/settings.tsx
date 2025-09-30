@@ -51,7 +51,7 @@ import PopupWithSearch from '../../../shared/ui/popup-with-search';
 import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import { LANGUAGES, PROVIDERS } from '../constants/settings';
-import { Settings } from '../types/settings';
+import { SettingsState } from '../types/settings';
 import ManageModels from './manage-embedded-ollama';
 import TestIpc from './test-ipc';
 
@@ -63,7 +63,7 @@ import TestIpc from './test-ipc';
  * @param isOpened - Открыт ли компонент настроек.
  * @returns JSX элемент с интерфейсом настроек.
  */
-function Settings({ isOpened }: Settings) {
+function Settings({ isOpened }: SettingsState) {
   const { values, handleChange, resetForm, setValues } = useFormAndValidation();
   const [searchValue, setSearchValue] = useState('');
 
@@ -195,7 +195,7 @@ function Settings({ isOpened }: Settings) {
     } else {
       resetForm();
     }
-  }, [provider, settings, setValues, resetForm]);
+  }, [provider, setValues, resetForm]);
 
   return (
     <section className={`settings${isOpened ? ' settings_open' : ''}`}>
@@ -364,8 +364,8 @@ function Settings({ isOpened }: Settings) {
         lazyLoadingThreshold={20}
         lazyLoadingMargin='100px'
         enableAnimation
-        animationDuration={20}
-        animationDelay={10}
+        animationDuration={50}
+        animationDelay={25}
         animationType='scaleIn'
         searchPlaceholder='Model...'
         searchDebounceMs={300}
