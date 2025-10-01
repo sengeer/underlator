@@ -319,26 +319,36 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       .join(' ');
 
     if (settings.typeUse === 'instruction') {
-      generate(payloadString, {
-        responseMode: 'stringStream',
-        instruction:
-          values.instruction === ''
-            ? t`what does this mean?`
-            : values.instruction,
-        think: true,
-      });
-    } else if (settings.typeUse === 'translation') {
+      generate(
+        payloadString,
+        {
+          responseMode: 'stringStream',
+          instruction:
+            values.instruction === ''
+              ? t`what does this mean?`
+              : values.instruction,
+        },
+        {
+          think: true,
+        }
+      );
+    } else {
       collectedTextInfos.forEach(({ element }) => {
         element.style.backgroundColor = 'var(--background)';
         element.style.color = 'var(--foreground)';
       });
 
       setTextInfos(collectedTextInfos);
-      generate(payloadArray, {
-        responseMode: 'arrayStream',
-        think: false,
-        useContextualTranslation: true,
-      });
+      generate(
+        payloadArray,
+        {
+          responseMode: 'arrayStream',
+          useContextualTranslation: true,
+        },
+        {
+          think: false,
+        }
+      );
     }
   }
 

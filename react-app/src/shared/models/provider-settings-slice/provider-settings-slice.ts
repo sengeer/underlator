@@ -10,11 +10,7 @@ import {
   getStorageWrite,
   setStorageWrite,
 } from '../../lib/utils/control-local-storage';
-import {
-  ProviderSettingsState,
-  ProviderSettings,
-  State,
-} from './types/provider-settings-slice';
+import { ProviderSettingsState, State } from './types/provider-settings-slice';
 
 /**
  * Получает начальное состояние из localStorage.

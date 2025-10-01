@@ -69,17 +69,19 @@
 
   &__description {
     color: var(--main);
+    font-weight: 500;
     font-size: 1rem;
   }
 
   &__button {
     margin: 0;
     padding: 0.5rem 1rem;
-    border: 1px solid var(--accent);
+    border: 0.15rem solid var(--accent);
     border-radius: 4px;
     background: transparent;
     color: var(--accent);
-    font-size: 0.9rem;
+    font-weight: 500;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
 

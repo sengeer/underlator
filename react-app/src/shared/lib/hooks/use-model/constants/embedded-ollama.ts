@@ -8,8 +8,5 @@
  * Настройки для оптимальной работы с Electron IPC.
  */
 export const DEFAULT_CONFIG = {
-  defaultTemperature: 0.7,
-  defaultMaxTokens: 2000,
-  maxChunksPerRequest: 50,
-  ipcTimeout: 30000,
+  temperature: 0.7,
 };

@@ -50,13 +50,18 @@ function TextTranslator({ isOpened }: TextTranslator) {
     const sourceLanguage = translateLanguage.split('-')[0];
     const targetLanguage = translateLanguage.split('-')[1];
 
-    generate(input, {
-      responseMode: 'stringStream',
-      think: false,
-      instruction: `Translate from ${sourceLanguage} to ${
-        targetLanguage
-      } the text after the colon, and return only the translated text`,
-    });
+    generate(
+      input,
+      {
+        responseMode: 'stringStream',
+        instruction: `Translate from ${sourceLanguage} to ${
+          targetLanguage
+        } the text after the colon, and return only the translated text`,
+      },
+      {
+        think: false,
+      }
+    );
   }
 
   const { width } = useWindowSize();

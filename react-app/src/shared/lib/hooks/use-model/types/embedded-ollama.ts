@@ -80,28 +80,3 @@ export interface OllamaGenerateResponse {
   /** Дополнительные данные от модели */
   [key: string]: any;
 }
-
-/**
- * Опции генерации для Embedded Ollama.
- * Расширяет базовые опции специфичными для Ollama параметрами.
- */
-export interface GenerateOptions {
-  /** Текст или массив текстов для перевода. */
-  text: string | string[];
-  /** Язык перевода (en-ru, ru-en). */
-  translateLanguage: 'en-ru' | 'ru-en';
-  /** Название модели Ollama для использования. */
-  model?: string;
-  /** URL сервера Ollama. */
-  url?: string;
-  /** Тип использования модели (instruction, translation). */
-  typeUse?: 'instruction' | 'translation';
-  /** Callback для обработки ответов. */
-  onModelResponse?: (response: ModelResponse) => void;
-  /** Callback для отслеживания прогресса. */
-  onProgress?: (progress: Progress) => void;
-  /** Сигнал для отмены операции. */
-  signal?: AbortSignal;
-  /** Параметры генерации. */
-  params: Params;
-}

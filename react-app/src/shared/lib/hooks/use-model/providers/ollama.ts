@@ -13,7 +13,6 @@ import {
 import processStream from '../../../utils/process-stream';
 import { createOllamaChunkProcessor } from '../../../utils/safe-json-parser';
 import { OllamaApi } from '../apis/ollama';
-import { GenerateOptions } from '../types/ollama';
 
 /**
  * Обрабатывает контекстный перевод через Ollama API.
@@ -25,7 +24,7 @@ async function handleContextualTranslation(
   translateLanguage: string,
   ollamaApi: OllamaApi,
   model: string,
-  params: Params,
+  options: OllamaGenerateOptions,
   signal?: AbortSignal,
   onModelResponse?: (response: ModelResponse) => void
 ): Promise<Record<number, string>> {
@@ -47,11 +46,17 @@ async function handleContextualTranslation(
   // Обработчик контекстного перевода на основе HOF
   const contextualHandler = createContextualTranslationHandler<Response>(
     // Адаптер вызова Ollama API
-    async (prompt: string, params: Params, signal?: AbortSignal) => {
-      const response = await ollamaApi.generatePrompt(
-        model,
-        prompt,
-        params,
+    async (
+      prompt: string,
+      options: OllamaGenerateOptions,
+      signal?: AbortSignal
+    ) => {
+      const response = await ollamaApi.generate(
+        {
+          model,
+          prompt,
+          ...options,
+        },
         signal
       );
       if (!response) {
@@ -103,7 +108,7 @@ async function handleContextualTranslation(
   return await contextualHandler(
     chunks,
     translateLanguage,
-    params,
+    options,
     signal,
     onModelResponse
   );
@@ -118,16 +123,19 @@ async function handleInstruction(
   text: string,
   ollamaApi: OllamaApi,
   model: string,
-  params: Params,
+  params: UseModelParams,
+  options: OllamaGenerateOptions,
   signal?: AbortSignal,
   onModelResponse?: (response: ModelResponse) => void
 ) {
   const finalPrompt = `${params.instruction}: ${text}`;
 
-  const response = await ollamaApi.generatePrompt(
-    model,
-    finalPrompt,
-    params,
+  const response = await ollamaApi.generate(
+    {
+      model,
+      prompt: finalPrompt,
+      ...options,
+    },
     signal
   );
 
@@ -167,9 +175,10 @@ export const ollamaProvider: ModelUseProvider = {
     url,
     onModelResponse,
     typeUse,
-    signal,
     params,
-  }: GenerateOptions) => {
+    options,
+    signal,
+  }: GenerateOptions & ProviderSettings) => {
     if (!model) {
       throw new Error('❌ Ollama model is not specified');
     }
@@ -187,7 +196,7 @@ export const ollamaProvider: ModelUseProvider = {
         translateLanguage,
         ollamaApi,
         model,
-        params,
+        options,
         signal,
         onModelResponse
       );
@@ -199,6 +208,7 @@ export const ollamaProvider: ModelUseProvider = {
         ollamaApi,
         model,
         params,
+        options,
         signal,
         onModelResponse
       );

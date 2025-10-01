@@ -25,8 +25,6 @@ export interface OllamaGenerateRequest {
   think?: boolean;
   /** Параметры для управления контекстом */
   context?: number[];
-  /** Дополнительные параметры модели */
-  options?: Record<string, any>;
 }
 
 /**

@@ -80,52 +80,52 @@ function TestIpc() {
               <TextButton
                 onClick={() => testListModels()}
                 className='settings__button'>
-                {'📋 Список установленных моделей'}
+                {'Список установленных моделей'}
               </TextButton>
               <TextButton
                 onClick={() => testGetCatalog()}
                 className='settings__button'>
-                {'📚 Получить каталог'}
+                {'Получить каталог'}
               </TextButton>
               <TextButton
                 onClick={() => testGetCatalogForceRefresh()}
                 className='settings__button'>
-                {'🔄 Обновить каталог'}
+                {'Обновить каталог'}
               </TextButton>
               <TextButton
                 onClick={() => testSearchModels()}
                 className='settings__button'>
-                {'🔍 Поиск моделей'}
+                {'Поиск моделей'}
               </TextButton>
               <TextButton
                 onClick={() => testGetModelInfo(values.model)}
                 className='settings__button'>
-                {'ℹ️ Получить информацию о модели'}
+                {'Получить информацию о модели'}
               </TextButton>
               <TextButton
                 onClick={() => testInstallModel(values.model)}
                 className='settings__button'>
-                {'📥 Установить ' + values.model}
+                {'Установить ' + values.model}
               </TextButton>
               <TextButton
                 onClick={() => testGenerateText(values.model, values.prompt)}
                 className='settings__button'>
-                {'🤖 Генерация ' + values.prompt}
+                {'Генерация ' + values.prompt}
               </TextButton>
               <TextButton
                 onClick={() => testRemoveModel(values.model)}
                 className='settings__button'>
-                {'🗑️ Удалить ' + values.model}
+                {'Удалить ' + values.model}
               </TextButton>
               <TextButton
                 onClick={() => dispatch(openElement('testListModelsPopup'))}
                 className='settings__button'>
-                {'📋 Тестирование списка моделей'}
+                {'Тестирование списка моделей'}
               </TextButton>
               <TextButton
                 onClick={() => runFullTest(values.model, values.prompt)}
                 className='settings__button'>
-                {'🚀 Запуск полного тестирования'}
+                {'Запуск полного тестирования'}
               </TextButton>
             </div>
             <p className='settings__description'>

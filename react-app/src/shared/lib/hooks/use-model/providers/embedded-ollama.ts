@@ -14,11 +14,9 @@ import {
   validateContextualTranslationParams,
 } from '../../../utils/contextual-translation';
 import { embeddedOllamaElectronApi } from '../apis/embedded-ollama';
-import { DEFAULT_CONFIG } from '../constants/embedded-ollama';
 import type {
   OllamaIpcResponse,
   ContextualTranslationResult,
-  GenerateOptions,
 } from '../types/embedded-ollama';
 
 /**
@@ -30,7 +28,7 @@ async function handleContextualTranslation(
   chunks: string[],
   translateLanguage: string,
   model: string,
-  params: Params,
+  options: OllamaGenerateOptions,
   onModelResponse?: (response: ModelResponse) => void
 ): Promise<ContextualTranslationResult> {
   // Валидация параметров контекстного перевода
@@ -84,7 +82,7 @@ async function handleContextualTranslation(
     await embeddedOllamaElectronApi.generate({
       model,
       prompt,
-      think: params.think,
+      ...options,
     });
 
     // Финальная обработка ответа
@@ -124,7 +122,8 @@ async function handleContextualTranslation(
 async function handleInstruction(
   text: string,
   model: string,
-  params: Params,
+  params: UseModelParams,
+  options: OllamaGenerateOptions,
   onModelResponse?: (response: ModelResponse) => void
 ): Promise<void> {
   const finalPrompt = `${params.instruction}: ${text}`;
@@ -147,9 +146,7 @@ async function handleInstruction(
     await embeddedOllamaElectronApi.generate({
       model,
       prompt: finalPrompt,
-      think: params.think,
-      temperature: params.temperature || DEFAULT_CONFIG.defaultTemperature,
-      max_tokens: params.maxTokens || DEFAULT_CONFIG.defaultMaxTokens,
+      ...options,
     });
   } finally {
     unsubscribe();
@@ -165,7 +162,8 @@ async function handleSimpleTranslation(
   text: string | string[],
   translateLanguage: string,
   model: string,
-  params: Params,
+  params: UseModelParams,
+  options: OllamaGenerateOptions,
   onModelResponse?: (response: ModelResponse) => void
 ): Promise<void> {
   const sourceLanguage = translateLanguage.split('-')[0];
@@ -194,9 +192,7 @@ async function handleSimpleTranslation(
     await embeddedOllamaElectronApi.generate({
       model,
       prompt,
-      think: params.think,
-      temperature: params.temperature || DEFAULT_CONFIG.defaultTemperature,
-      max_tokens: params.maxTokens || DEFAULT_CONFIG.defaultMaxTokens,
+      ...options,
     });
   } finally {
     unsubscribe();
@@ -217,7 +213,8 @@ export const embeddedOllamaProvider: ModelUseProvider = {
     onModelResponse,
     typeUse,
     params,
-  }: GenerateOptions) => {
+    options,
+  }: GenerateOptions & ProviderSettings) => {
     if (!model) {
       throw new Error('❌ Ollama model is not specified');
     }
@@ -232,14 +229,20 @@ export const embeddedOllamaProvider: ModelUseProvider = {
         text,
         translateLanguage,
         model,
-        params,
+        options,
         onModelResponse
       );
     }
 
     // Обработка инструкций
     if (params.instruction && typeof text === 'string') {
-      return await handleInstruction(text, model, params, onModelResponse);
+      return await handleInstruction(
+        text,
+        model,
+        params,
+        options,
+        onModelResponse
+      );
     }
 
     // Обработка простого перевода
@@ -248,6 +251,7 @@ export const embeddedOllamaProvider: ModelUseProvider = {
       translateLanguage,
       model,
       params,
+      options,
       onModelResponse
     );
   },

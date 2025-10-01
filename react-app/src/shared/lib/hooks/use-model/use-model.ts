@@ -8,7 +8,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
-import { DEFAULT_PARAMS } from './constants/use-model';
 import { getModelUseProvider } from './get-model-use-provider';
 import { Status } from './types/use-model';
 
@@ -54,7 +53,7 @@ function useModel() {
    * @param params - Параметры генерации для определения режима.
    */
   const handleResponse = useCallback(
-    (response: ModelResponse, params: Params) => {
+    (response: ModelResponse, params: UseModelParams) => {
       // Обработка массива ответов для контекстного перевода
       if (typeof response === 'object' && params.responseMode === 'arrayStream')
         setGeneratedResponse((prev) => {
@@ -82,10 +81,12 @@ function useModel() {
    * Запускает процесс генерации с указанными параметрами.
    * @param texts - Текст или массив текстов для обработки.
    * @param params - Параметры генерации (по умолчанию DEFAULT_PARAMS).
+   * @param options - Дополнительные опции модели, например think.
    */
   async function generate(
     texts: string[] | string,
-    params: Params = DEFAULT_PARAMS
+    params: UseModelParams,
+    options: OllamaGenerateOptions
   ) {
     setStatus('process');
     setGeneratedResponse(params.responseMode === 'arrayStream' ? {} : '');
@@ -104,8 +105,9 @@ function useModel() {
         translateLanguage,
         onModelResponse: (response: ModelResponse) =>
           handleResponse(response, params),
-        signal: controller.signal,
         params: params,
+        options: options,
+        signal: controller.signal,
       });
 
       setStatus('success');

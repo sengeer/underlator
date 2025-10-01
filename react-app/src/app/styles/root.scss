@@ -7,8 +7,6 @@
 :root {
   background-color: var(--background);
   font-family: 'Roboto Mono', monospace, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 
   @media (width <= 1600px) {
     font-size: 15px;

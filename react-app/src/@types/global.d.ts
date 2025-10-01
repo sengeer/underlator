@@ -28,28 +28,19 @@ interface ModelUseProvider {
 }
 
 /**
- * Интерфейс опций для генерации текста.
- * Определяет параметры для запроса генерации текста через LLM.
+ * Настройки провайдера LLM.
+ * Гибкий интерфейс для хранения специфичных настроек каждого провайдера.
+ * Поддерживает различные типы провайдеров (Ollama, Embedded Ollama) с их уникальными параметрами.
  */
-interface GenerateOptions {
-  /** Текст для обработки (один или массив фрагментов) */
-  text: string | string[];
-  /** Направление перевода */
-  translateLanguage: 'en-ru' | 'ru-en';
+interface ProviderSettings {
+  /** URL сервера провайдера (для Ollama) */
+  url?: string;
   /** Название модели для использования */
   model?: string;
-  /** URL для внешних API (если требуется) */
-  url?: string;
-  /** Тип использования модели */
+  /** Тип использования модели (instruction, translation) */
   typeUse?: 'instruction' | 'translation';
-  /** Callback для получения ответа модели */
-  onModelResponse?: (response: ModelResponse) => void;
-  /** Callback для отслеживания прогресса */
-  onProgress?: (progress: Progress) => void;
-  /** Сигнал для отмены операции */
-  signal?: AbortSignal;
-  /** Дополнительные параметры генерации */
-  params: Params;
+  /** Дополнительные параметры провайдера */
+  [key: string]: any;
 }
 
 /**
@@ -93,22 +84,91 @@ interface Chunk {
 type ModelResponse = Chunk | string;
 
 /**
+ * Опции генерации для Embedded Ollama.
+ * Расширяет базовые опции специфичными для Ollama параметрами.
+ */
+interface GenerateOptions {
+  /** Текст или массив текстов для перевода. */
+  text: string | string[];
+  /** Язык перевода (en-ru, ru-en). */
+  translateLanguage: 'en-ru' | 'ru-en';
+  /** Название модели Ollama для использования. */
+  model?: string;
+  /** URL сервера Ollama. */
+  url?: string;
+  /** Тип использования модели (instruction, translation). */
+  typeUse?: 'instruction' | 'translation';
+  /** Callback для обработки ответов. */
+  onModelResponse?: (response: ModelResponse) => void;
+  /** Callback для отслеживания прогресса. */
+  onProgress?: (progress: Progress) => void;
+  /** Сигнал для отмены операции. */
+  signal?: AbortSignal;
+  /** Параметры генерации. */
+  params: UseModelParams;
+}
+
+/**
  * Интерфейс параметров генерации.
  * Определяет настройки для работы с LLM моделями.
  */
-interface Params {
+interface UseModelParams {
   /** Режим получения ответа */
   responseMode: 'arrayStream' | 'stringStream' | string;
   /** Инструкция для модели */
   instruction?: string;
-  /** Включить режим "думания" модели */
-  think?: boolean;
   /** Использовать контекстный перевод */
   useContextualTranslation?: boolean;
+}
+
+/**
+ * Дополнительные опции модели, перечисленные в Modelfile, такие как temperature.
+ */
+interface OllamaGenerateOptions {
   /** Температура генерации (0.0 - 1.0) */
   temperature?: number;
   /** Максимальное количество токенов в ответе */
-  maxTokens?: number;
+  max_tokens?: number;
+  /** Количество вариантов ответа */
+  num_predict?: number;
+  /** Включить режим "думания" модели */
+  think?: boolean;
+}
+
+/**
+ * Параметры для генерации текста через Ollama.
+ * Соответствует API endpoint /api/generate.
+ */
+interface OllamaGenerateRequest {
+  /** Название модели для использования */
+  model: string;
+  /** Текст для обработки моделью */
+  prompt: string;
+  /** Дополнительные параметры модели */
+  options?: OllamaGenerateOptions;
+  /** Системный промпт для настройки поведения модели */
+  system?: string;
+  /** Параметры для управления контекстом */
+  context?: number[];
+}
+
+/**
+ * Интерфейс опций для генерации текста.
+ * Определяет параметры для запроса генерации текста через LLM.
+ */
+interface GenerateOptions {
+  /** Текст для обработки (один или массив фрагментов) */
+  text: string | string[];
+  /** Направление перевода */
+  translateLanguage: 'en-ru' | 'ru-en';
+  /** Тип использования модели */
+  onModelResponse?: (response: ModelResponse) => void;
+  /** Параметры генерации. */
+  params: UseModelParams;
+  /** Дополнительные опции модели. */
+  options: OllamaGenerateOptions;
+  /** Сигнал для отмены операции */
+  signal?: AbortSignal;
 }
 
 /**

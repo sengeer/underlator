@@ -23,19 +23,12 @@ export class OllamaApi {
   /**
    * Генерирует текст через Ollama API.
    * Отправляет POST запрос к /api/generate endpoint.
-   * @param model - Название модели для использования.
-   * @param prompt - Текст для обработки моделью.
-   * @param params - Параметры генерации (think, temperature и т.д.).
+   * @param request - Запрос для генерации.
    * @param signal - AbortSignal для отмены запроса.
    * @returns Promise с Response объектом для streaming чтения.
    * @throws {Error} При ошибке HTTP запроса или API.
    */
-  generatePrompt = async (
-    model: string,
-    prompt: string,
-    params: Params,
-    signal?: AbortSignal
-  ) => {
+  generate = async (request: OllamaGenerateRequest, signal?: AbortSignal) => {
     let error = null;
 
     const res = await fetch(`${this.baseUrl}/api/generate`, {
@@ -44,11 +37,7 @@ export class OllamaApi {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: model,
-        prompt: prompt,
-        think: params.think,
-      }),
+      body: JSON.stringify(request),
       signal,
     }).catch((err) => {
       console.error(err);

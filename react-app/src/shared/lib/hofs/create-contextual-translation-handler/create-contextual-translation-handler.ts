@@ -30,8 +30,8 @@ import {
  * @example
  * Базовое использование с Ollama провайдером
  * const ollamaHandler = createContextualTranslationHandler(
- *   async (prompt, params, signal) => {
- *     return await ollamaApi.generatePrompt(model, prompt, params, signal);
+ *   async (prompt, options, signal) => {
+ *     return await ollamaApi.generatePrompt(model, prompt, options, signal);
  *   },
  *   async (response, onChunk, onError) => {
  *     // Обработка streaming ответа от Ollama
@@ -53,7 +53,7 @@ const createContextualTranslationHandler: CreateContextualTranslationHandlerFunc
     return async (
       texts: string[],
       translateLanguage: string,
-      params: Params,
+      options: OllamaGenerateOptions,
       signal?: AbortSignal,
       onModelResponse?: (response: ModelResponse) => void
     ): Promise<Record<number, string>> => {
@@ -80,7 +80,7 @@ const createContextualTranslationHandler: CreateContextualTranslationHandlerFunc
 
       // Выполнение API запроса к провайдеру LLM
       // Использует переданный адаптер для взаимодействия с конкретным провайдером
-      const response = await apiCall(prompt, params, signal);
+      const response = await apiCall(prompt, options, signal);
       if (!response) {
         throw new Error('❌ Failed to get response for contextual translation');
       }

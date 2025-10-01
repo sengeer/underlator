@@ -24,6 +24,8 @@ export class EmbeddedOllamaElectronApi {
       throw new Error('❌ Electron API is unavailable');
     }
 
+    console.log('request', request);
+
     return await window.electron.ollama.generate(request);
   }
 
