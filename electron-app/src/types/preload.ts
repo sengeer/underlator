@@ -1,7 +1,6 @@
 /**
  * @module PreloadTypes
- * Типы для работы с preload.
- * Определяет интерфейсы для API Electron, доступного в renderer процессе.
+ * Типы для preload.
  */
 
 import type {

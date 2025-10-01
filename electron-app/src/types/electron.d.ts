@@ -1,32 +1,7 @@
 /**
  * @module ElectronTypes
- * Расширяет глобальные типы для лучшей поддержки TypeScript.
+ * Общие типы Electron приложения.
  */
-
-declare global {
-  interface Window {
-    electron: {
-      ollama: {
-        generate: (request: any) => Promise<string>;
-        stop: () => Promise<void>;
-        onGenerateProgress: (callback: (progress: any) => void) => () => void;
-      };
-      models: {
-        install: (request: any) => Promise<{ success: boolean }>;
-        remove: (request: any) => Promise<{ success: boolean }>;
-        list: () => Promise<any>;
-        onInstallProgress: (callback: (progress: any) => void) => () => void;
-      };
-      catalog: {
-        get: (params?: { forceRefresh?: boolean }) => Promise<any>;
-        search: (filters: any) => Promise<any>;
-        getModelInfo: (params: { modelName: string }) => Promise<any>;
-      };
-    };
-  }
-}
-
-export {};
 
 /**
  * Типы для переводов меню.
