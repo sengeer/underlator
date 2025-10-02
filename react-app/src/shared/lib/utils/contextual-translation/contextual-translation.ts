@@ -43,7 +43,7 @@ import {
  */
 export const shouldUseContextualTranslation = (
   text: string | string[],
-  params: Params,
+  params: UseModelParams,
   typeUse?: string
 ): ContextualTranslationDecision => {
   // Не использовать контекстный перевод для режима инструкций

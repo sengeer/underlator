@@ -15,6 +15,7 @@ import type {
   CatalogFilters,
   ElectronAPI,
   SplashMessages,
+  ElectronApiConfig,
 } from './types';
 
 /**
@@ -28,8 +29,8 @@ contextBridge.exposeInMainWorld('electron', {
 
   // API для Ollama генерации
   ollama: {
-    generate: (request: OllamaGenerateRequest) =>
-      ipcRenderer.invoke('ollama:generate', request),
+    generate: (request: OllamaGenerateRequest, config: ElectronApiConfig) =>
+      ipcRenderer.invoke('ollama:generate', request, config),
 
     stop: () => ipcRenderer.invoke('ollama:stop'),
 

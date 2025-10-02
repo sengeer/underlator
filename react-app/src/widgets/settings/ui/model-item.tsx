@@ -28,7 +28,7 @@ import type {
   OllamaModelInfo,
   ModelDisplayState,
   ModelEventCallbacks,
-} from '../types/embedded-ollama';
+} from '../types/electron';
 
 /**
  * Компонент ModelItem.

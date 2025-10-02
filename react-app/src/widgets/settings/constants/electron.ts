@@ -1,10 +1,10 @@
 /**
- * @module EmbeddedOllamaElectronApiConstants
+ * @module ElectronConstants
  * Конфигурация по умолчанию для API клиента.
  * Настройки для оптимальной работы с Electron IPC.
  */
 
-import type { SettingsApiConfig } from '../types/embedded-ollama';
+import type { SettingsApiConfig } from '../types/electron';
 
 export const DEFAULT_CONFIG: SettingsApiConfig = {
   timeout: 30000,

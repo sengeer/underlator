@@ -191,7 +191,10 @@ function Settings({ isOpened }: SettingsState) {
    */
   useEffect(() => {
     if (provider && settings[provider]) {
-      setValues(settings[provider]);
+      setValues({
+        url: settings[provider].url || '',
+        model: settings[provider].model || '',
+      });
     } else {
       resetForm();
     }

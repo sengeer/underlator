@@ -9,38 +9,18 @@
 type ProviderType = 'Ollama' | 'Embedded Ollama';
 
 /**
- * Статус загрузки модели.
- * Определяет возможные состояния модели в процессе загрузки.
- */
-type ModelStatus = 'notDownloaded' | 'downloading' | 'downloaded' | 'error';
-
-/**
- * Интерфейс провайдера для работы с моделями.
- * Определяет контракт для провайдеров, работающих с LLM моделями.
- */
-interface ModelUseProvider {
-  /** Инициализация провайдера */
-  initialize?: () => Promise<void>;
-  /** Генерация текста через модель */
-  generate: (options: GenerateOptions) => void;
-  /** Прерывание текущей операции */
-  abort?: () => void;
-}
-
-/**
- * Настройки провайдера LLM.
- * Гибкий интерфейс для хранения специфичных настроек каждого провайдера.
- * Поддерживает различные типы провайдеров (Ollama, Embedded Ollama) с их уникальными параметрами.
+ * Настройки конекретного провайдера.
+ * Интерфейс для хранения специфичных настроек каждого провайдера.
  */
 interface ProviderSettings {
-  /** URL сервера провайдера (для Ollama) */
-  url?: string;
+  /** Идентификатор провайдера */
+  id: string;
+  /** URL провайдера */
+  url: string;
   /** Название модели для использования */
   model?: string;
-  /** Тип использования модели (instruction, translation) */
+  /** Тип использования модели */
   typeUse?: 'instruction' | 'translation';
-  /** Дополнительные параметры провайдера */
-  [key: string]: any;
 }
 
 /**
@@ -84,47 +64,9 @@ interface Chunk {
 type ModelResponse = Chunk | string;
 
 /**
- * Опции генерации для Embedded Ollama.
- * Расширяет базовые опции специфичными для Ollama параметрами.
- */
-interface GenerateOptions {
-  /** Текст или массив текстов для перевода. */
-  text: string | string[];
-  /** Язык перевода (en-ru, ru-en). */
-  translateLanguage: 'en-ru' | 'ru-en';
-  /** Название модели Ollama для использования. */
-  model?: string;
-  /** URL сервера Ollama. */
-  url?: string;
-  /** Тип использования модели (instruction, translation). */
-  typeUse?: 'instruction' | 'translation';
-  /** Callback для обработки ответов. */
-  onModelResponse?: (response: ModelResponse) => void;
-  /** Callback для отслеживания прогресса. */
-  onProgress?: (progress: Progress) => void;
-  /** Сигнал для отмены операции. */
-  signal?: AbortSignal;
-  /** Параметры генерации. */
-  params: UseModelParams;
-}
-
-/**
- * Интерфейс параметров генерации.
- * Определяет настройки для работы с LLM моделями.
- */
-interface UseModelParams {
-  /** Режим получения ответа */
-  responseMode: 'arrayStream' | 'stringStream' | string;
-  /** Инструкция для модели */
-  instruction?: string;
-  /** Использовать контекстный перевод */
-  useContextualTranslation?: boolean;
-}
-
-/**
  * Дополнительные опции модели, перечисленные в Modelfile, такие как temperature.
  */
-interface OllamaGenerateOptions {
+interface GenerateOptions {
   /** Температура генерации (0.0 - 1.0) */
   temperature?: number;
   /** Максимальное количество токенов в ответе */
@@ -136,50 +78,16 @@ interface OllamaGenerateOptions {
 }
 
 /**
- * Параметры для генерации текста через Ollama.
- * Соответствует API endpoint /api/generate.
+ * Интерфейс параметров генерации.
+ * Определяет настройки для работы с LLM моделями через хук useModel.
  */
-interface OllamaGenerateRequest {
-  /** Название модели для использования */
-  model: string;
-  /** Текст для обработки моделью */
-  prompt: string;
-  /** Дополнительные параметры модели */
-  options?: OllamaGenerateOptions;
-  /** Системный промпт для настройки поведения модели */
-  system?: string;
-  /** Параметры для управления контекстом */
-  context?: number[];
-}
-
-/**
- * Интерфейс опций для генерации текста.
- * Определяет параметры для запроса генерации текста через LLM.
- */
-interface GenerateOptions {
-  /** Текст для обработки (один или массив фрагментов) */
-  text: string | string[];
-  /** Направление перевода */
-  translateLanguage: 'en-ru' | 'ru-en';
-  /** Тип использования модели */
-  onModelResponse?: (response: ModelResponse) => void;
-  /** Параметры генерации. */
-  params: UseModelParams;
-  /** Дополнительные опции модели. */
-  options: OllamaGenerateOptions;
-  /** Сигнал для отмены операции */
-  signal?: AbortSignal;
-}
-
-/**
- * Интерфейс прогресса операции.
- * Используется для отслеживания прогресса загрузки файлов.
- */
-interface Progress {
-  /** Имя файла */
-  file: string;
-  /** Прогресс в процентах (0-100) */
-  progress: number;
+interface UseModelParams {
+  /** Режим получения ответа */
+  responseMode: 'arrayStream' | 'stringStream' | string;
+  /** Инструкция для модели */
+  instruction?: string;
+  /** Использовать контекстный перевод */
+  useContextualTranslation?: boolean;
 }
 
 /**
@@ -198,44 +106,6 @@ interface Icon {
 }
 
 /**
- * Интерфейс сообщения.
- * Используется для передачи данных между процессами.
- */
-interface Message {
-  /** Статус сообщения */
-  status: string;
-  /** Данные прогресса */
-  data?: Progress;
-  /** Выходные данные */
-  output?: string | any[];
-  /** Ошибка (если есть) */
-  error?: unknown;
-}
-
-/**
- * Интерфейс прогресса загрузки модели.
- * Детальная информация о процессе загрузки модели.
- */
-interface ModelDownloadProgress {
-  /** Название модели */
-  modelName: string;
-  /** Текущий загружаемый файл */
-  currentFile: string;
-  /** Прогресс текущего файла в процентах (0-100) */
-  fileProgress: number;
-  /** Общий прогресс загрузки в процентах (0-100) */
-  overallProgress: number;
-  /** Количество завершенных файлов */
-  completedFiles: number;
-  /** Общее количество файлов */
-  totalFiles: number;
-  /** Размер загруженных данных в байтах */
-  downloadedSize: number;
-  /** Общий размер модели в байтах */
-  totalSize: number;
-}
-
-/**
  * Расширение глобального интерфейса Window.
  * Добавляет поддержку Electron API в браузерном окружении.
  */
@@ -247,7 +117,7 @@ interface Window {
     /** API для работы с Ollama */
     ollama: {
       /** Генерация текста через модель */
-      generate: (request: any) => Promise<any>;
+      generate: (request: any, settings?: any) => Promise<any>;
       /** Остановка генерации */
       stop: () => Promise<void>;
       /** Подписка на прогресс генерации */

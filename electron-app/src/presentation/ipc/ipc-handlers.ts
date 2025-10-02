@@ -142,16 +142,21 @@ export class IpcHandler {
    * @returns Обернутый обработчик.
    */
   static createHandlerWrapper<T, R>(
-    handler: (request: T) => Promise<R>,
+    handler: (request: T, ...args: any[]) => Promise<R>,
     operationName: string
   ) {
-    return async (_event: any, request: T): Promise<IpcResponse<R>> => {
+    return async (
+      _event: any,
+      request: T,
+      ...args: any[]
+    ): Promise<IpcResponse<R>> => {
       const startTime = Date.now();
       const requestId = Math.random().toString(36).substr(2, 9);
 
       console.log(`🔧 IPC Handler is called: ${operationName}`, {
         requestId,
         request,
+        args,
       });
 
       try {
@@ -159,7 +164,7 @@ export class IpcHandler {
         this.logOperation(operationName, request, undefined, undefined);
 
         // Выполняем обработчик
-        const result = await handler(request);
+        const result = await handler(request, ...args);
         const duration = Date.now() - startTime;
 
         // Создаем успешный ответ

@@ -6,6 +6,7 @@
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { DEFAULT_MODEL, DEFAULT_URL } from '../../lib/constants';
 import {
   getStorageWrite,
   setStorageWrite,
@@ -24,15 +25,16 @@ function getInitialState(): ProviderSettingsState {
     provider: 'Embedded Ollama',
     settings: {
       Ollama: {
-        url: 'http://127.0.0.1:11434',
-        model: 'gemma:2b',
+        id: 'ollama',
+        url: DEFAULT_URL,
+        model: DEFAULT_MODEL,
         typeUse: 'instruction',
-        prompt: '',
       },
       'Embedded Ollama': {
+        id: 'embedded-ollama',
+        url: DEFAULT_URL,
+        model: DEFAULT_MODEL,
         typeUse: 'instruction',
-        model: 'qwen3:4b',
-        prompt: '',
       },
     },
   };
@@ -71,12 +73,17 @@ export const providerSettingsSlice = createSlice({
       state,
       action: PayloadAction<{
         provider: ProviderType;
-        settings: ProviderSettings;
+        settings: Partial<ProviderSettings>;
       }>
     ) {
       const { provider, settings } = action.payload;
       if (!state.settings[provider]) {
-        state.settings[provider] = {};
+        state.settings[provider] = {
+          id: provider,
+          url: DEFAULT_URL,
+          model: DEFAULT_MODEL,
+          typeUse: 'instruction',
+        };
       }
       state.settings[provider] = { ...state.settings[provider], ...settings };
       setStorageWrite('providerSettings', JSON.stringify(state));
@@ -122,7 +129,16 @@ export const selectProviderSettings = (state: State) => state.providerSettings;
  */
 export const selectActiveProviderSettings = (state: State) => {
   const { provider, settings } = state.providerSettings;
-  return { provider, settings: settings[provider] || {} };
+  const defaultSettings: ProviderSettings = {
+    id: 'embedded-ollama',
+    url: DEFAULT_URL,
+    model: DEFAULT_MODEL,
+    typeUse: 'instruction',
+  };
+  return {
+    provider,
+    settings: settings[provider] || defaultSettings,
+  };
 };
 
 export default providerSettingsSlice.reducer;

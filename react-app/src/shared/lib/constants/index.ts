@@ -1,19 +1,12 @@
 /**
- * @module Constants
- * Общие константы приложения.
+ * @module ConstantsIndex
+ * Индексный файл для экспорта всех констант.
  */
 
-/**
- * Базовый URL для Ollama API.
- */
-export const OLLAMA_API_BASE_URL = 'http://127.0.0.1:11434';
-
-/**
- * Delimiter для разделения чанков контекстного перевода.
- */
-export const CHUNK_DELIMITER = '🔴';
-
-/**
- * Локализация приложения по умолчанию.
- */
-export const DEFAULT_LOCALE = 'ru';
+export {
+  DEFAULT_MODEL,
+  DEFAULT_URL,
+  DEFAULT_OPTIONS,
+  CHUNK_DELIMITER,
+  DEFAULT_LOCALE,
+} from './app';

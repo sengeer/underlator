@@ -22,7 +22,7 @@ import type {
 export interface ElectronAPI {
   updateTranslations: (translations: any) => void;
   ollama: {
-    generate: (request: OllamaGenerateRequest) => Promise<string>;
+    generate: (request: OllamaGenerateRequest, config?: any) => Promise<string>;
     stop: () => Promise<void>;
     onGenerateProgress: (
       callback: (progress: OllamaGenerateResponse) => void

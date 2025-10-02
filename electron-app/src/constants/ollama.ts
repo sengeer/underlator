@@ -101,13 +101,13 @@ export const OLLAMA_HEADERS = {
  * Параметры по умолчанию для генерации.
  * Базовые настройки для всех операций генерации.
  */
-export const OLLAMA_DEFAULT_GENERATION_PARAMS = {
+export const OLLAMA_DEFAULT_OPTIONS = {
   /** Температура генерации */
   temperature: 0.7,
   /** Максимальное количество токенов */
-  max_tokens: 2048,
+  // max_tokens: 2048,
   /** Количество вариантов ответа */
-  num_predict: 1,
+  // num_predict: 1,
   /** Включить режим рассуждения */
   think: true,
 } as const;

@@ -4,6 +4,16 @@
  */
 
 /**
+ * Конфигурация для API Electron.
+ */
+export interface ElectronApiConfig {
+  /** Идентификатор провайдера */
+  id: string;
+  /** URL провайдера */
+  url: string;
+}
+
+/**
  * Типы для переводов меню.
  */
 export interface MenuTranslations {

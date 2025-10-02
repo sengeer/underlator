@@ -1,5 +1,5 @@
 /**
- * @module IpcTesterConstants
+ * @module IpcConstants
  * Константы для тестирования IPC API.
  */
 

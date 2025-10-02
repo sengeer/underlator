@@ -18,6 +18,7 @@ import type {
   OllamaModelInfo,
   CatalogFilters,
   SplashMessages,
+  ElectronApiConfig,
 } from './types';
 
 if (require('electron-squirrel-startup')) {
@@ -417,7 +418,10 @@ function setupOllamaIpcHandlers(): void {
   ipcMain.handle(
     'ollama:generate',
     IpcHandler.createHandlerWrapper(
-      async (request: OllamaGenerateRequest): Promise<string> => {
+      async (
+        request: OllamaGenerateRequest,
+        config: ElectronApiConfig
+      ): Promise<string> => {
         // Создает новый AbortController для этой операции
         currentAbortController = new AbortController();
 
@@ -435,6 +439,7 @@ function setupOllamaIpcHandlers(): void {
         try {
           await ollamaApi!.generate(
             request,
+            config,
             chunk => {
               // Отправка streaming ответов в renderer процесс
               mainWindow?.webContents.send('ollama:generate-progress', chunk);

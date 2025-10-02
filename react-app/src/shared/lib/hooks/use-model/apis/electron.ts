@@ -1,32 +1,33 @@
 /**
- * @module EmbeddedOllamaElectronApi
+ * @module ElectronApi
  * API клиент для взаимодействия с Electron IPC.
- * Предоставляет функции для работы с Ollama через Electron IPC.
  */
 
-import type {
-  OllamaGenerateRequest,
-  OllamaGenerateResponse,
-} from '../types/embedded-ollama';
+import type { GenerateResponse, GenerateRequest } from '../types/electron';
 
 /**
  * Класс для работы с Electron API.
- * Инкапсулирует Electron IPC операции для Ollama.
+ * Инкапсулирует Electron IPC функционал для генерации текста.
  */
-export class EmbeddedOllamaElectronApi {
+export class Electron {
   /**
-   * Генерирует текст через Ollama API через Electron IPC.
-   * @param request - Параметры генерации.
+   * Генерирует текст через Electron IPC.
+   * @param request - Сформированный запрос для генерации.
+   * @param config - Конфигурация для API.
    * @returns Promise с полным ответом.
    */
-  async generate(request: OllamaGenerateRequest): Promise<string> {
+  async generate(
+    request: GenerateRequest & GenerateOptions,
+    config?: ProviderSettings
+  ): Promise<string> {
     if (!window.electron?.ollama) {
       throw new Error('❌ Electron API is unavailable');
     }
 
-    console.log('request', request);
+    console.log('🚀 request', request);
+    console.log('🚀 config', config);
 
-    return await window.electron.ollama.generate(request);
+    return await window.electron.ollama.generate(request, config);
   }
 
   /**
@@ -35,7 +36,7 @@ export class EmbeddedOllamaElectronApi {
    * @returns Функция для отписки.
    */
   onGenerateProgress(
-    callback: (progress: OllamaGenerateResponse) => void
+    callback: (progress: GenerateResponse) => void
   ): () => void {
     if (!window.electron?.ollama) {
       throw new Error('❌ Electron API is unavailable');
@@ -49,6 +50,6 @@ export class EmbeddedOllamaElectronApi {
  * Глобальный экземпляр API клиента.
  * Используется для единообразного доступа к API во всем приложении.
  */
-export const embeddedOllamaElectronApi = new EmbeddedOllamaElectronApi();
+export const electron = new Electron();
 
-export default embeddedOllamaElectronApi;
+export default electron;

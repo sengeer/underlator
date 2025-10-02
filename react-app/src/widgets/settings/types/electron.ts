@@ -1,10 +1,16 @@
 /**
+ * @module ElectronTypes
+ * Типы для работы с Electron API.
+ */
+
+/**
  * Информация о модели Ollama.
  * Упрощенная версия для использования в Settings виджете.
  */
 export interface OllamaModelInfo {
   /** Название модели */
   name: string;
+  /** Размер модели */
   size: number;
   /** Описание модели */
   description?: string;

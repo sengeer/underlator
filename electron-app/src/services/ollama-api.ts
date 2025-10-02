@@ -8,7 +8,7 @@ import {
   OLLAMA_DEFAULT_CONFIG,
   OLLAMA_ENDPOINTS,
   OLLAMA_HEADERS,
-  OLLAMA_DEFAULT_GENERATION_PARAMS,
+  OLLAMA_DEFAULT_OPTIONS,
 } from '../constants/ollama';
 import {
   fetchWithErrorHandling,
@@ -27,6 +27,7 @@ import type {
   OllamaStreamCallback,
   OllamaProgressCallback,
   OllamaOperationResult,
+  ElectronApiConfig,
 } from '../types';
 
 /**
@@ -54,12 +55,14 @@ export class OllamaApi {
    * Генерирует текст с помощью указанной модели.
    * Поддерживает streaming ответы и обработку ошибок.
    * @param request - Параметры генерации.
+   * @param config - Конфигурация для API.
    * @param onChunk - Callback для обработки streaming ответов.
    * @param signal - AbortSignal для отмены операции.
    * @returns Promise с полным ответом.
    */
   async generate(
     request: OllamaGenerateRequest,
+    config: ElectronApiConfig,
     onChunk?: OllamaStreamCallback,
     signal?: AbortSignal
   ): Promise<string> {
@@ -76,12 +79,15 @@ export class OllamaApi {
         try {
           // Подготавливает запрос с параметрами по умолчанию
           const requestBody: OllamaGenerateRequest = {
-            ...OLLAMA_DEFAULT_GENERATION_PARAMS,
             ...request,
+            ...OLLAMA_DEFAULT_OPTIONS,
           };
 
+          console.log('⚛️ requestBody', requestBody);
+          console.log('⚛️ config', config);
+
           const response = await fetchWithErrorHandling(
-            `${this.baseUrl}${OLLAMA_ENDPOINTS.GENERATE}`,
+            `${config.url || this.baseUrl}${OLLAMA_ENDPOINTS.GENERATE}`,
             {
               method: 'POST',
               headers: {

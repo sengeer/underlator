@@ -36,6 +36,6 @@ export type {
 
 export type { SplashStatus, SplashMessages } from './splash';
 
-export type { MenuTranslations } from './electron';
+export type { MenuTranslations, ElectronApiConfig } from './electron';
 
 export type { IpcMessage, IpcResponse } from './ipc-handlers';

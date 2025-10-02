@@ -129,9 +129,7 @@ function TestIpc() {
               </TextButton>
             </div>
             <p className='settings__description'>
-              {
-                'Кнопки тестирования Ollama IPC API. Проверьте результаты в консоли.'
-              }
+              {'Кнопки тестирования IPC API. Проверьте результаты в консоли.'}
             </p>
           </div>
         </div>

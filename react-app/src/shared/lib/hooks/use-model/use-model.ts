@@ -8,13 +8,14 @@
 import { useState, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
-import { getModelUseProvider } from './get-model-use-provider';
+import { DEFAULT_URL } from '../../constants';
+import provider from './provider';
 import { Status } from './types/use-model';
 
 /**
  * Хук для работы с LLM моделями.
  * Управляет состоянием генерации, переключением языков и обработкой ответов.
- * Поддерживает различные провайдеры (Ollama, Embedded Ollama) и режимы работы.
+ * Поддерживает различные провайдеры и режимы работы.
  * @returns Объект с методами и состоянием для работы с моделями.
  */
 function useModel() {
@@ -78,15 +79,15 @@ function useModel() {
 
   /**
    * Генерирует текст через активный провайдер.
-   * Запускает процесс генерации с указанными параметрами.
+   * Запускает процесс генерации с параметрами контекста.
    * @param texts - Текст или массив текстов для обработки.
-   * @param params - Параметры генерации (по умолчанию DEFAULT_PARAMS).
+   * @param params - Параметры генерации.
    * @param options - Дополнительные опции модели, например think.
    */
   async function generate(
     texts: string[] | string,
     params: UseModelParams,
-    options: OllamaGenerateOptions
+    options: GenerateOptions
   ) {
     setStatus('process');
     setGeneratedResponse(params.responseMode === 'arrayStream' ? {} : '');
@@ -97,10 +98,13 @@ function useModel() {
     abortControllerRef.current = controller;
 
     try {
-      // Получение провайдера по типу из настроек
-      const provider = getModelUseProvider(providerSettings.provider);
       await provider.generate({
-        ...providerSettings.settings,
+        config: {
+          id: (providerSettings.settings as any)?.id || 'embedded-ollama',
+          url: providerSettings.settings.url || DEFAULT_URL,
+        },
+        model: providerSettings.settings.model,
+        typeUse: providerSettings.settings.typeUse,
         text: texts,
         translateLanguage,
         onModelResponse: (response: ModelResponse) =>
@@ -133,18 +137,15 @@ function useModel() {
 
   /**
    * Останавливает текущую операцию генерации.
-   * Отменяет HTTP запрос и дополнительно останавливает IPC для Embedded Ollama.
+   * Отменяет HTTP запрос и дополнительно останавливает IPC.
    */
   function stop() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
 
-      // Дополнительно вызываем IPC остановку для Embedded Ollama
-      if (providerSettings.provider === 'Embedded Ollama') {
-        window.electron.ollama.stop().catch((error: Error) => {
-          console.error('❌ Failed to stop generation via IPC:', error);
-        });
-      }
+      window.electron.ollama.stop().catch((error: Error) => {
+        console.error('❌ Failed to stop generation via IPC:', error);
+      });
     }
   }
 

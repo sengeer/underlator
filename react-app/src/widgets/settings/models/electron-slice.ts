@@ -1,12 +1,12 @@
 /**
- * @module ManageEmbeddedOllamaSlice
+ * @module ElectronSlice
  * Redux slice для управления моделями в Settings виджете.
  * Обеспечивает управление каталогом моделей, установкой, удалением и поиском моделей.
  */
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { updateProviderSettings } from '../../../shared/models/provider-settings-slice';
-import { embeddedOllamaElectronApi } from '../apis/embedded-ollama-electron-api';
+import { electron } from '../apis/electron';
 import type {
   ManageModelsState,
   CatalogState,
@@ -18,7 +18,7 @@ import type {
   InstallModelParams,
   RemoveModelParams,
   GetModelInfoParams,
-} from '../types/embedded-ollama';
+} from '../types/electron';
 
 /**
  * Начальное состояние каталога моделей.
@@ -74,7 +74,7 @@ export const fetchCatalog = createAsyncThunk(
   'manageModels/fetchCatalog',
   async (params: GetCatalogParams = {}, { rejectWithValue }) => {
     try {
-      const result = await embeddedOllamaElectronApi.getCatalog(params);
+      const result = await electron.getCatalog(params);
 
       if (!result.success) {
         return rejectWithValue(result.error || 'Ошибка получения каталога');
@@ -97,7 +97,7 @@ export const searchModels = createAsyncThunk(
   'manageModels/searchModels',
   async (filters: ModelSearchFilters, { rejectWithValue }) => {
     try {
-      const result = await embeddedOllamaElectronApi.searchModels(filters);
+      const result = await electron.searchModels(filters);
 
       if (!result.success) {
         return rejectWithValue(result.error || 'Ошибка поиска моделей');
@@ -120,7 +120,7 @@ export const fetchModelInfo = createAsyncThunk(
   'manageModels/fetchModelInfo',
   async (params: GetModelInfoParams, { rejectWithValue }) => {
     try {
-      const result = await embeddedOllamaElectronApi.getModelInfo(params);
+      const result = await electron.getModelInfo(params);
 
       if (!result.success) {
         return rejectWithValue(
@@ -148,7 +148,7 @@ export const installModel = createAsyncThunk(
       // Добавляет модель в список устанавливаемых
       dispatch(addInstallingModel(params.name));
 
-      const result = await embeddedOllamaElectronApi.installModel(
+      const result = await electron.installModel(
         params,
         (progress: ModelInstallProgress) => {
           // Обновляет прогресс через dispatch
@@ -200,13 +200,13 @@ export const removeModel = createAsyncThunk(
   'manageModels/removeModel',
   async (params: RemoveModelParams, { rejectWithValue, dispatch }) => {
     try {
-      const resultRemove = await embeddedOllamaElectronApi.removeModel(params);
+      const resultRemove = await electron.removeModel(params);
       if (!resultRemove.success) {
         console.log('❌ Remove failed:', resultRemove.error);
         return rejectWithValue(resultRemove.error || 'Ошибка удаления модели');
       }
 
-      const resultList = await embeddedOllamaElectronApi.listInstalledModels();
+      const resultList = await electron.listInstalledModels();
       if (!resultList.success) {
         return rejectWithValue(
           resultList.error || 'Ошибка получения списка моделей'
@@ -242,7 +242,7 @@ export const fetchInstalledModels = createAsyncThunk(
   'manageModels/fetchInstalledModels',
   async (_, { rejectWithValue }) => {
     try {
-      const result = await embeddedOllamaElectronApi.listInstalledModels();
+      const result = await electron.listInstalledModels();
 
       if (!result.success) {
         return rejectWithValue(
@@ -263,7 +263,7 @@ export const fetchInstalledModels = createAsyncThunk(
  * Redux slice для управления моделями.
  * Содержит reducers и actions для всех операций с моделями.
  */
-const manageEmbeddedOllamaSlice = createSlice({
+const electronSlice = createSlice({
   name: 'manageModels',
   initialState,
   reducers: {
@@ -547,10 +547,10 @@ export const {
   clearModelError,
   resetSearch,
   resetState,
-} = manageEmbeddedOllamaSlice.actions;
+} = electronSlice.actions;
 
 // Экспорт reducer
-export default manageEmbeddedOllamaSlice.reducer;
+export default electronSlice.reducer;
 
 // Селекторы для упрощения доступа к состоянию
 export const selectManageModelsState = (state: {

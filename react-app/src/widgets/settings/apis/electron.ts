@@ -1,10 +1,10 @@
 /**
- * @module EmbeddedOllamaElectronApi
+ * @module ElectronApi
  * API клиент для взаимодействия с Electron IPC в Settings виджете.
  * Предоставляет функции для управления каталогом моделей.
  */
 
-import { DEFAULT_CONFIG } from '../constants/embedded-ollama-electron-api';
+import { DEFAULT_CONFIG } from '../constants/electron';
 import type {
   GetCatalogParams,
   ModelSearchFilters,
@@ -16,14 +16,14 @@ import type {
   ModelProgressCallback,
   ModelErrorCallback,
   SettingsApiConfig,
-} from '../types/embedded-ollama';
+} from '../types/electron';
 
 /**
- * @class EmbeddedOllamaElectronApi
+ * @class Electron
  * Класс для работы с Electron API.
  * Инкапсулирует Electron IPC операции.
  */
-export class EmbeddedOllamaElectronApi {
+export class Electron {
   private config: SettingsApiConfig;
   private progressCallbacks = new Map<string, ModelProgressCallback>();
   private errorCallbacks = new Map<string, ModelErrorCallback>();
@@ -311,16 +311,14 @@ export class EmbeddedOllamaElectronApi {
  * @param config - Конфигурация для клиента.
  * @returns Экземпляр API клиента.
  */
-export function createEmbeddedOllamaElectronApi(
-  config?: Partial<SettingsApiConfig>
-): EmbeddedOllamaElectronApi {
-  return new EmbeddedOllamaElectronApi(config);
+export function createElectron(config?: Partial<SettingsApiConfig>): Electron {
+  return new Electron(config);
 }
 
 /**
  * Глобальный экземпляр API клиента.
  * Используется для единообразного доступа к API во всем приложении.
  */
-export const embeddedOllamaElectronApi = createEmbeddedOllamaElectronApi();
+export const electron = createElectron();
 
-export default embeddedOllamaElectronApi;
+export default electron;

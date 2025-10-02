@@ -39,7 +39,8 @@
     "electron": "npm run build && node electron-build.mts && cd ../electron-app && npm run make",
     "extract": "lingui extract",
     "compile": "lingui compile --typescript",
-    "docs": "npx typedoc"
+    "docs": "npx typedoc",
+    "type:check": "tsc --noEmit --pretty"
   },
   "eslintConfig": {
     "extends": [

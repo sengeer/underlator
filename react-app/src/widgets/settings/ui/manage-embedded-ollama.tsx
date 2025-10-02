@@ -34,12 +34,12 @@ import {
   installModel,
   removeModel,
   setSearchQuery,
-} from '../models/manage-embedded-ollama-slice';
+} from '../models/electron-slice';
 import {
   selectCatalogState,
   selectInstallationState,
   selectSearchState,
-} from '../models/manage-embedded-ollama-slice';
+} from '../models/electron-slice';
 import type {
   OllamaModelInfo,
   InstallModelPayload,
@@ -47,7 +47,7 @@ import type {
   ManageModelsProps,
   ModelDisplayState,
   ModelEventCallbacks,
-} from '../types/embedded-ollama';
+} from '../types/electron';
 import ModelItem from './model-item';
 
 /**
