@@ -74,7 +74,7 @@ msgstr "Не удалось загрузить PDF-файл"
 
 #: src/widgets/settings/ui/settings.tsx
 msgid "foreground color"
-msgstr "Цвет заголовков и выделения"
+msgstr "Цвет заголовков"
 
 #: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 msgid "instruction"
