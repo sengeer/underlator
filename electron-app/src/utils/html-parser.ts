@@ -229,9 +229,8 @@ export class OllamaHtmlParser {
    */
   private parseModelsFromHtml(html: string): ParsedModel[] {
     const models: ParsedModel[] = [];
-    const seen = new Set<string>(); // Для быстрого удаления дубликатов
 
-    // Оптимизированное регулярное выражение для поиска ссылок на модели
+    // Регулярное выражение для поиска ссылок на модели
     const modelLinkRegex = /href="\/library\/([^"]+)"/g;
     let match;
 
@@ -239,16 +238,9 @@ export class OllamaHtmlParser {
       const modelName = match[1];
 
       // Проверяет, что modelName существует и не является служебной ссылкой
-      if (
-        !modelName ||
-        modelName.includes('/') ||
-        modelName === '' ||
-        seen.has(modelName)
-      ) {
+      if (!modelName || modelName.includes('/') || modelName === '') {
         continue;
       }
-
-      seen.add(modelName);
 
       // Упрощенное извлечение информации о модели
       const modelInfo = this.extractModelInfoFast(html, modelName);
@@ -256,7 +248,7 @@ export class OllamaHtmlParser {
       models.push({
         name: modelName,
         description: modelInfo.description,
-        tags: ['available'],
+        tags: ['available'], // Базовый тег
         size: modelInfo.size,
         downloads: modelInfo.downloads,
         lastUpdated: modelInfo.lastUpdated,
@@ -264,7 +256,13 @@ export class OllamaHtmlParser {
       });
     }
 
-    return models;
+    // Убирает дубликаты
+    const uniqueModels = models.filter(
+      (model, index, self) =>
+        index === self.findIndex(m => m.name === model.name)
+    );
+
+    return uniqueModels;
   }
 
   /**
@@ -275,11 +273,10 @@ export class OllamaHtmlParser {
    */
   private parseTagsFromHtml(html: string, modelName: string): string[] {
     const tags: string[] = [];
-    const seen = new Set<string>(); // Для быстрого удаления дубликатов
 
-    // Оптимизированное регулярное выражение для поиска тегов
+    // Ищет все теги модели в формате "model:tag"
     const tagRegex = new RegExp(
-      `\\b${modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:([^"\\s<>,\\]]+q[^"\\s<>,\\]]*)`,
+      `\\b${modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:([^"\\s<>,\\]]+)`,
       'g'
     );
 
@@ -287,37 +284,37 @@ export class OllamaHtmlParser {
     while ((match = tagRegex.exec(html)) !== null) {
       const tag = match[1];
 
-      // Быстрая очистка тега
+      // Очищает тег от HTML тегов и лишних символов
       const cleanTag = tag?.replace(/<[^>]*>/g, '').trim();
 
-      // Проверяет что тег валидный и не дублируется
+      // Проверяет что тег валидный (не пустой, не содержит служебные символы)
       if (
         cleanTag &&
         cleanTag.length > 0 &&
-        cleanTag.length < 50 &&
-        !cleanTag.includes('http') &&
-        !cleanTag.includes('www') &&
-        !seen.has(cleanTag)
+        cleanTag.length < 50 && // разумная длина тега
+        !cleanTag.includes('http') && // не URL
+        !cleanTag.includes('www') && // не URL
+        !tags.includes(cleanTag)
       ) {
         tags.push(cleanTag);
-        seen.add(cleanTag);
       }
     }
 
-    // Если не найдены теги в основном формате, ищет альтернативные
+    // Если не найдены теги в формате "model:tag", ищет альтернативные форматы
     if (tags.length === 0) {
+      // Ищет теги в других форматах
       const alternativeRegex = /<[^>]*>([^<]*:\d+(?:\.\d+)?[^<]*)</g;
       let altMatch;
       while ((altMatch = alternativeRegex.exec(html)) !== null) {
         const tag = altMatch[1]?.trim();
-        if (tag && !seen.has(tag)) {
+        if (tag && !tags.includes(tag)) {
           tags.push(tag);
-          seen.add(tag);
         }
       }
     }
 
-    return tags.sort();
+    // Убирает дубликаты и сортирует
+    return [...new Set(tags)].sort();
   }
 
   /**
@@ -357,18 +354,18 @@ export class OllamaHtmlParser {
       const unit = sizeMatch[2].toUpperCase();
       switch (unit) {
         case 'B':
-          size = value * 1000000000;
+          size = value * 1000000000; // миллиарды
           break;
         case 'M':
-          size = value * 1000000;
+          size = value * 1000000; // миллионы
           break;
         case 'K':
-          size = value * 1000;
+          size = value * 1000; // тысячи
           break;
       }
     }
 
-    // Быстрое извлечение количества загрузок
+    // Извлекает количество загрузок
     const downloadsMatch = modelBlock.match(/(\d+(?:\.\d+)?)([MK]?)\s*Pulls/i);
     let downloads: number | undefined;
     if (downloadsMatch && downloadsMatch[1]) {
