@@ -4,7 +4,9 @@
  * Обеспечивает управление каталогом моделей, установкой, удалением и поиском моделей.
  */
 
+import { i18n } from '@lingui/core';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { addNotification } from '../../../shared/models/notifications-slice/';
 import { updateProviderSettings } from '../../../shared/models/provider-settings-slice';
 import { electron } from '../apis/electron';
 import type {
@@ -72,18 +74,34 @@ const initialState: ManageModelsState = {
  */
 export const fetchCatalog = createAsyncThunk(
   'manageModels/fetchCatalog',
-  async (params: GetCatalogParams = {}, { rejectWithValue }) => {
+  async (params: GetCatalogParams = {}, { rejectWithValue, dispatch }) => {
     try {
       const result = await electron.getCatalog(params);
 
       if (!result.success) {
-        return rejectWithValue(result.error || 'Ошибка получения каталога');
+        dispatch(
+          addNotification({
+            type: 'error',
+            message: i18n._('❌ Error getting the models catalog'),
+          })
+        );
+
+        return rejectWithValue(
+          result.error || 'Error getting the models catalog'
+        );
       }
 
       return result;
     } catch (error) {
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: i18n._('❌ Error getting the catalog'),
+        })
+      );
+
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
+        error instanceof Error ? error.message : 'Unknown error';
       return rejectWithValue(errorMessage);
     }
   }
@@ -95,18 +113,32 @@ export const fetchCatalog = createAsyncThunk(
  */
 export const searchModels = createAsyncThunk(
   'manageModels/searchModels',
-  async (filters: ModelSearchFilters, { rejectWithValue }) => {
+  async (filters: ModelSearchFilters, { rejectWithValue, dispatch }) => {
     try {
       const result = await electron.searchModels(filters);
 
       if (!result.success) {
-        return rejectWithValue(result.error || 'Ошибка поиска моделей');
+        dispatch(
+          addNotification({
+            type: 'error',
+            message: i18n._('❌ Error searching models'),
+          })
+        );
+
+        return rejectWithValue(result.error || 'Error searching models');
       }
 
       return result;
     } catch (error) {
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: i18n._('❌ Error searching models'),
+        })
+      );
+
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
+        error instanceof Error ? error.message : 'Unknown error';
       return rejectWithValue(errorMessage);
     }
   }
@@ -118,20 +150,32 @@ export const searchModels = createAsyncThunk(
  */
 export const fetchModelInfo = createAsyncThunk(
   'manageModels/fetchModelInfo',
-  async (params: GetModelInfoParams, { rejectWithValue }) => {
+  async (params: GetModelInfoParams, { rejectWithValue, dispatch }) => {
     try {
       const result = await electron.getModelInfo(params);
 
       if (!result.success) {
-        return rejectWithValue(
-          result.error || 'Ошибка получения информации о модели'
+        dispatch(
+          addNotification({
+            type: 'error',
+            message: i18n._('❌ Error getting model info'),
+          })
         );
+
+        return rejectWithValue(result.error || 'Error getting model info');
       }
 
       return result;
     } catch (error) {
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: i18n._('❌ Error getting model info'),
+        })
+      );
+
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
+        error instanceof Error ? error.message : 'Unknown error';
       return rejectWithValue(errorMessage);
     }
   }
@@ -171,7 +215,14 @@ export const installModel = createAsyncThunk(
       );
 
       if (!result.success) {
-        return rejectWithValue(result.error || 'Ошибка установки модели');
+        dispatch(
+          addNotification({
+            type: 'error',
+            message: i18n._('❌ Model installation error'),
+          })
+        );
+
+        return rejectWithValue(result.error || 'Error installing model');
       }
 
       dispatch(
@@ -185,8 +236,15 @@ export const installModel = createAsyncThunk(
 
       return { ...result, modelName: params.name };
     } catch (error) {
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: i18n._('❌ Model installation error'),
+        })
+      );
+
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
+        error instanceof Error ? error.message : 'Unknown error';
       return rejectWithValue(errorMessage);
     }
   }
@@ -202,14 +260,28 @@ export const removeModel = createAsyncThunk(
     try {
       const resultRemove = await electron.removeModel(params);
       if (!resultRemove.success) {
-        console.log('❌ Remove failed:', resultRemove.error);
-        return rejectWithValue(resultRemove.error || 'Ошибка удаления модели');
+        dispatch(
+          addNotification({
+            type: 'error',
+            message: i18n._('❌ Model removal error'),
+          })
+        );
+
+        console.error('❌ Remove failed', resultRemove.error);
+        return rejectWithValue(resultRemove.error || 'Error removing model');
       }
 
       const resultList = await electron.listInstalledModels();
       if (!resultList.success) {
+        dispatch(
+          addNotification({
+            type: 'error',
+            message: i18n._('❌ Error getting list of models'),
+          })
+        );
+
         return rejectWithValue(
-          resultList.error || 'Ошибка получения списка моделей'
+          resultList.error || 'Error getting list of models'
         );
       }
 
@@ -227,8 +299,15 @@ export const removeModel = createAsyncThunk(
         firstInstalledModel: resultList.data.models[0].model,
       };
     } catch (error) {
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: i18n._('❌ Model removal error'),
+        })
+      );
+
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
+        error instanceof Error ? error.message : 'Unknown error';
       return rejectWithValue(errorMessage);
     }
   }
@@ -240,20 +319,32 @@ export const removeModel = createAsyncThunk(
  */
 export const fetchInstalledModels = createAsyncThunk(
   'manageModels/fetchInstalledModels',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
       const result = await electron.listInstalledModels();
 
       if (!result.success) {
-        return rejectWithValue(
-          result.error || 'Ошибка получения списка моделей'
+        dispatch(
+          addNotification({
+            type: 'error',
+            message: i18n._('❌ Error getting list of models'),
+          })
         );
+
+        return rejectWithValue(result.error || 'Error getting list of models');
       }
 
       return result;
     } catch (error) {
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: i18n._('❌ Error getting list of models'),
+        })
+      );
+
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
+        error instanceof Error ? error.message : 'Unknown error';
       return rejectWithValue(errorMessage);
     }
   }
@@ -299,7 +390,7 @@ const electronSlice = createSlice({
 
         if (progress.status === 'error') {
           state.installation.errors[modelName] =
-            progress.error || 'Неизвестная ошибка';
+            progress.error || 'Unknown error';
         }
       }
     },

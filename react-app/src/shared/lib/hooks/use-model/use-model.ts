@@ -5,8 +5,10 @@
  * Поддерживает перевод, инструкции, контекстный перевод и streaming ответы.
  */
 
+import { useLingui } from '@lingui/react/macro';
 import { useState, useCallback, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { addNotification } from '../../../models/notifications-slice/';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
 import { DEFAULT_URL } from '../../constants';
 import provider from './provider';
@@ -21,6 +23,9 @@ import { Status } from './types/use-model';
 function useModel() {
   // Контроллер для отмены операций
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const dispatch = useDispatch();
+  const { t } = useLingui();
 
   // Состояние выполнения операции
   const [status, setStatus] = useState<Status>('idle');
@@ -117,7 +122,14 @@ function useModel() {
       setStatus('success');
     } catch (e) {
       const err = e as Error;
-      console.error(err.message);
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: t`❌ The model is unavailable`,
+        })
+      );
+
+      console.error('❌ Failed to generate text: ' + err.message);
       setError(err.message);
       setStatus('error');
     } finally {
@@ -144,6 +156,13 @@ function useModel() {
       abortControllerRef.current.abort();
 
       window.electron.ollama.stop().catch((error: Error) => {
+        dispatch(
+          addNotification({
+            type: 'error',
+            message: t`❌ Failed to stop generation`,
+          })
+        );
+
         console.error('❌ Failed to stop generation via IPC:', error);
       });
     }

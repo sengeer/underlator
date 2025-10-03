@@ -5,7 +5,10 @@
  * при возникновении ошибок при загрузке или рендеринге PDF файла.
  */
 
-import { Trans } from '@lingui/react/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { addNotification } from '../../../shared/models/notifications-slice/';
 import '../styles/custom-error-message.scss';
 
 /**
@@ -28,6 +31,15 @@ import '../styles/custom-error-message.scss';
  * </Document>
  */
 function CustomErrorMessage() {
+  const dispatch = useDispatch();
+  const { t } = useLingui();
+
+  useEffect(() => {
+    dispatch(
+      addNotification({ type: 'error', message: t`❌ Failed to load PDF file` })
+    );
+  }, []);
+
   return (
     <div className='custom-error-message'>
       <Trans>failed to load PDF file</Trans>

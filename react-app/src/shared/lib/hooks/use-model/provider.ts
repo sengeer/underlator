@@ -4,6 +4,9 @@
  * Поддерживает контекстный перевод, инструкции и простой перевод.
  */
 
+import { useLingui } from '@lingui/react/macro';
+import { useDispatch } from 'react-redux';
+import { addNotification } from '../../../models/notifications-slice/';
 import { DEFAULT_MODEL } from '../../constants';
 import {
   prepareContextualTranslation,
@@ -29,6 +32,9 @@ import type {
 async function handleContextualTranslation(
   props: ModelRequestContext
 ): Promise<ContextualTranslationResult> {
+  const dispatch = useDispatch();
+  const { t } = useLingui();
+
   // Валидация параметров контекстного перевода
   const config = getContextualTranslationConfig('Embedded Ollama');
   const validation = validateContextualTranslationParams(
@@ -37,6 +43,13 @@ async function handleContextualTranslation(
   );
 
   if (!validation.valid) {
+    dispatch(
+      addNotification({
+        type: 'error',
+        message: t`❌ Translation error`,
+      })
+    );
+
     console.warn(
       `⚠️ Contextual translation validation failed: ${validation.reason}`
     );
@@ -56,6 +69,13 @@ async function handleContextualTranslation(
   );
 
   if (!preparation.success) {
+    dispatch(
+      addNotification({
+        type: 'error',
+        message: t`❌ Translation error`,
+      })
+    );
+
     throw new Error(
       `❌ Failed to prepare contextual translation: ${preparation.error}`
     );
@@ -72,6 +92,13 @@ async function handleContextualTranslation(
     }
 
     if (chunk.error) {
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: t`❌ Translation error`,
+        })
+      );
+
       throw new Error(`❌ Contextual translation failed: ${chunk.error}`);
     }
   });
@@ -95,6 +122,13 @@ async function handleContextualTranslation(
     );
 
     if (!finalResult.success) {
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: t`❌ Translation error`,
+        })
+      );
+
       console.warn(
         `⚠️ Contextual translation processing failed: ${finalResult.error}`
       );
@@ -131,6 +165,9 @@ async function handleContextualTranslation(
 async function handleInstruction(props: ModelRequestContext): Promise<void> {
   const finalPrompt = `${props.params.instruction}: ${props.text}`;
 
+  const dispatch = useDispatch();
+  const { t } = useLingui();
+
   // Подписка на прогресс генерации через IPC
   const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {
     if (chunk.response && props.onModelResponse) {
@@ -138,7 +175,14 @@ async function handleInstruction(props: ModelRequestContext): Promise<void> {
     }
 
     if (chunk.error) {
-      throw new Error(`❌ Instruction generation failed: ${chunk.error}`);
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: t`❌ Failed to generate a response`,
+        })
+      );
+
+      throw new Error(`❌ Failed to generate a response: ${chunk.error}`);
     }
   });
 
@@ -170,6 +214,9 @@ async function handleSimpleTranslation(
   const sourceLanguage = props.translateLanguage.split('-')[0];
   const targetLanguage = props.translateLanguage.split('-')[1];
 
+  const dispatch = useDispatch();
+  const { t } = useLingui();
+
   // Формирование промпта для перевода
   const prompt = Array.isArray(props.text)
     ? `Translate the following ${sourceLanguage} texts to ${targetLanguage}:\n${props.text.join('\n')}`
@@ -182,7 +229,14 @@ async function handleSimpleTranslation(
     }
 
     if (chunk.error) {
-      throw new Error(`❌ Translation failed: ${chunk.error}`);
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: t`❌ Translation error`,
+        })
+      );
+
+      throw new Error(`❌ Translation error: ${chunk.error}`);
     }
   });
 

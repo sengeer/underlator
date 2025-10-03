@@ -13,6 +13,85 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Error getting the models catalog"
+msgstr "❌ Error getting the models catalog"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Error getting the catalog"
+msgstr "❌ Error getting the catalog"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Error searching models"
+msgstr "❌ Error searching models"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Error getting model info"
+msgstr "❌ Error getting model info"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Model installation error"
+msgstr "❌ Model installation error"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Model removal error"
+msgstr "❌ Model removal error"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Error getting list of models"
+msgstr "❌ Error getting list of models"
+
+#. js-lingui-explicit-id
+#: src/pages/main/models/splash-screen-slice.ts
+#: src/pages/main/models/splash-screen-slice.ts
+msgid "❌ Internal application error"
+msgstr "❌ Internal application error"
+
+#: src/shared/lib/hooks/use-copying/use-copying.ts
+msgid "❌ Failed to copy text"
+msgstr "❌ Failed to copy text"
+
+#: src/shared/lib/hooks/use-model/provider.ts
+msgid "❌ Failed to generate a response"
+msgstr "❌ Failed to generate a response"
+
+#: src/widgets/pdf-viewer/ui/custom-error-message.tsx
+msgid "❌ Failed to load PDF file"
+msgstr "❌ Failed to load PDF file"
+
+#: src/shared/lib/hooks/use-model/use-model.ts
+msgid "❌ Failed to stop generation"
+msgstr "❌ Failed to stop generation"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "❌ Failed to translate app"
+msgstr "❌ Failed to translate app"
+
+#: src/shared/lib/hooks/use-model/use-model.ts
+msgid "❌ The model is unavailable"
+msgstr "❌ The model is unavailable"
+
+#: src/shared/lib/hooks/use-model/provider.ts
+#: src/shared/lib/hooks/use-model/provider.ts
+#: src/shared/lib/hooks/use-model/provider.ts
+#: src/shared/lib/hooks/use-model/provider.ts
+#: src/shared/lib/hooks/use-model/provider.ts
+msgid "❌ Translation error"
+msgstr "❌ Translation error"
+
 #: src/shared/ui/markdown-renderer/markdown-renderer.tsx
 msgid "🤔 thinking:"
 msgstr "🤔 thinking:"

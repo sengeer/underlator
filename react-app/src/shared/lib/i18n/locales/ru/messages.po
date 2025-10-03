@@ -13,6 +13,85 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Error getting the models catalog"
+msgstr "❌ Ошибка получения каталога моделей"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Error getting the catalog"
+msgstr "❌ Ошибка при получении каталога моделей"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Error searching models"
+msgstr "❌ Ошибка поиска модели"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Error getting model info"
+msgstr "❌ Ошибка получения информации о модели"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Model installation error"
+msgstr "❌ Ошибка установки модели"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Model removal error"
+msgstr "❌ Ошибка удаления модели"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/electron-slice.ts
+msgid "❌ Error getting list of models"
+msgstr "❌ Ошибка при получении списка моделей"
+
+#. js-lingui-explicit-id
+#: src/pages/main/models/splash-screen-slice.ts
+#: src/pages/main/models/splash-screen-slice.ts
+msgid "❌ Internal application error"
+msgstr "❌ Внутренняя ошибка приложения"
+
+#: src/shared/lib/hooks/use-copying/use-copying.ts
+msgid "❌ Failed to copy text"
+msgstr "❌ Не удалось скопировать текст"
+
+#: src/shared/lib/hooks/use-model/provider.ts
+msgid "❌ Failed to generate a response"
+msgstr "❌ Не удалось сгенерировать ответ"
+
+#: src/widgets/pdf-viewer/ui/custom-error-message.tsx
+msgid "❌ Failed to load PDF file"
+msgstr "❌ Не удалось загрузить PDF-файл"
+
+#: src/shared/lib/hooks/use-model/use-model.ts
+msgid "❌ Failed to stop generation"
+msgstr "❌ Не удалось остановить генерацию"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "❌ Failed to translate app"
+msgstr "❌ Ошибка локализации приложения"
+
+#: src/shared/lib/hooks/use-model/use-model.ts
+msgid "❌ The model is unavailable"
+msgstr "❌ Модель недоступна"
+
+#: src/shared/lib/hooks/use-model/provider.ts
+#: src/shared/lib/hooks/use-model/provider.ts
+#: src/shared/lib/hooks/use-model/provider.ts
+#: src/shared/lib/hooks/use-model/provider.ts
+#: src/shared/lib/hooks/use-model/provider.ts
+msgid "❌ Translation error"
+msgstr "❌ Ошибка перевода"
+
 #: src/shared/ui/markdown-renderer/markdown-renderer.tsx
 msgid "🤔 thinking:"
 msgstr "🤔 Рассуждение модели:"

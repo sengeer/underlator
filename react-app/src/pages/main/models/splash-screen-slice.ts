@@ -3,7 +3,9 @@
  * Redux slice для управления состоянием splash screen.
  */
 
+import { i18n } from '@lingui/core';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { addNotification } from '../../../shared/models/notifications-slice/';
 import { splashScreenApi } from '../apis/splash-screen-api';
 import type {
   SplashStatusData,
@@ -30,19 +32,33 @@ const initialState: SplashScreenState = {
  */
 export const fetchSplashStatus = createAsyncThunk(
   'splashScreen/fetchStatus',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
       const status = await splashScreenApi.getStatus();
 
       if (!status) {
-        return rejectWithValue('Не удалось получить статус splash screen');
+        dispatch(
+          addNotification({
+            type: 'error',
+            message: i18n._('❌ Internal application error'),
+          })
+        );
+
+        return rejectWithValue("❌ Couldn't get splash screen status");
       }
 
       return status;
     } catch (error) {
-      console.error('❌ Error getting the status:', error);
+      dispatch(
+        addNotification({
+          type: 'error',
+          message: i18n._('❌ Internal application error'),
+        })
+      );
+
+      console.error('❌ Error getting the status', error);
       const errorMessage =
-        error instanceof Error ? error.message : 'Неизвестная ошибка';
+        error instanceof Error ? error.message : '❌ Unknown error';
       return rejectWithValue(errorMessage);
     }
   }

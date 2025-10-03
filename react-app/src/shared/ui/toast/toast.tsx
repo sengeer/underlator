@@ -8,7 +8,6 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import CheckIcon from '../../assets/icons/check-icon';
 import CloseIcon from '../../assets/icons/close-icon';
-import ErrorIcon from '../../assets/icons/error-icon';
 import InfoIcon from '../../assets/icons/info-icon';
 import { removeNotification } from '../../models/notifications-slice';
 import ButtonWrapperWithBackground from '../button-wrapper-with-background';
@@ -86,7 +85,7 @@ function Toast({ id, type, message }: ToastProps) {
       setParams({
         color: 'var(--accent)',
         milliseconds: 6000,
-        icon: <ErrorIcon />,
+        icon: null,
       });
       return;
     }
