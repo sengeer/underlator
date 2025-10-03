@@ -125,11 +125,11 @@ function useModel() {
       dispatch(
         addNotification({
           type: 'error',
-          message: t`❌ The model is unavailable`,
+          message: t`The model is unavailable`,
         })
       );
 
-      console.error('❌ Failed to generate text: ' + err.message);
+      console.error('Failed to generate text: ' + err.message);
       setError(err.message);
       setStatus('error');
     } finally {
@@ -159,11 +159,11 @@ function useModel() {
         dispatch(
           addNotification({
             type: 'error',
-            message: t`❌ Failed to stop generation`,
+            message: t`Failed to stop generation`,
           })
         );
 
-        console.error('❌ Failed to stop generation via IPC:', error);
+        console.error('Failed to stop generation via IPC:', error);
       });
     }
   }

@@ -36,7 +36,7 @@ function CustomErrorMessage() {
 
   useEffect(() => {
     dispatch(
-      addNotification({ type: 'error', message: t`❌ Failed to load PDF file` })
+      addNotification({ type: 'error', message: t`Failed to load PDF file` })
     );
   }, []);
 

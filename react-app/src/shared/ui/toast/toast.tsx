@@ -6,9 +6,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import CheckIcon from '../../assets/icons/check-icon';
 import CloseIcon from '../../assets/icons/close-icon';
-import InfoIcon from '../../assets/icons/info-icon';
 import { removeNotification } from '../../models/notifications-slice';
 import ButtonWrapperWithBackground from '../button-wrapper-with-background';
 import DecorativeTextAndIconButton from '../decorative-text-and-icon-button';
@@ -40,8 +38,8 @@ function Toast({ id, type, message }: ToastProps) {
   const [isShow, setIsShow] = useState<boolean>(false);
   const [params, setParams] = useState<ToastParams>({
     color: '',
+    emoji: '',
     milliseconds: 0,
-    icon: null,
   } as InitialToastParams);
 
   const dispatch = useDispatch();
@@ -83,9 +81,9 @@ function Toast({ id, type, message }: ToastProps) {
 
     if (type === 'error') {
       setParams({
-        color: 'var(--accent)',
+        color: 'var(--main)',
+        emoji: '❌',
         milliseconds: 6000,
-        icon: null,
       });
       return;
     }
@@ -93,8 +91,8 @@ function Toast({ id, type, message }: ToastProps) {
     if (type === 'info') {
       setParams({
         color: 'var(--main)',
+        emoji: '💡',
         milliseconds: 6000,
-        icon: <InfoIcon />,
       });
       return;
     }
@@ -102,8 +100,8 @@ function Toast({ id, type, message }: ToastProps) {
     if (type === 'success') {
       setParams({
         color: 'var(--main)',
+        emoji: '🎉',
         milliseconds: 6000,
-        icon: <CheckIcon />,
       });
       return;
     }
@@ -111,8 +109,8 @@ function Toast({ id, type, message }: ToastProps) {
     // Значения по умолчанию для неизвестных типов
     setParams({
       color: 'var(--main)',
+      emoji: '💡',
       milliseconds: 6000,
-      icon: <InfoIcon />,
     });
   }
 
@@ -132,7 +130,7 @@ function Toast({ id, type, message }: ToastProps) {
             marginLeft: '1rem',
             color: params.color,
           }}>
-          {params.icon}
+          {params.emoji}
         </DecorativeTextAndIconButton>
         <IconButton
           style={{ marginRight: '1rem' }}

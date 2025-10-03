@@ -46,15 +46,15 @@ async function handleContextualTranslation(
     dispatch(
       addNotification({
         type: 'error',
-        message: t`❌ Translation error`,
+        message: t`Translation error`,
       })
     );
 
     console.warn(
-      `⚠️ Contextual translation validation failed: ${validation.reason}`
+      `Contextual translation validation failed: ${validation.reason}`
     );
     throw new Error(
-      `❌ Contextual translation not possible: ${validation.reason}`
+      `Contextual translation not possible: ${validation.reason}`
     );
   }
 
@@ -72,12 +72,12 @@ async function handleContextualTranslation(
     dispatch(
       addNotification({
         type: 'error',
-        message: t`❌ Translation error`,
+        message: t`Translation error`,
       })
     );
 
     throw new Error(
-      `❌ Failed to prepare contextual translation: ${preparation.error}`
+      `Failed to prepare contextual translation: ${preparation.error}`
     );
   }
 
@@ -95,11 +95,11 @@ async function handleContextualTranslation(
       dispatch(
         addNotification({
           type: 'error',
-          message: t`❌ Translation error`,
+          message: t`Translation error`,
         })
       );
 
-      throw new Error(`❌ Contextual translation failed: ${chunk.error}`);
+      throw new Error(`Contextual translation failed: ${chunk.error}`);
     }
   });
 
@@ -125,12 +125,12 @@ async function handleContextualTranslation(
       dispatch(
         addNotification({
           type: 'error',
-          message: t`❌ Translation error`,
+          message: t`Translation error`,
         })
       );
 
       console.warn(
-        `⚠️ Contextual translation processing failed: ${finalResult.error}`
+        `Contextual translation processing failed: ${finalResult.error}`
       );
       const textArray = Array.isArray(props.text) ? props.text : [props.text];
       return textArray.reduce(
@@ -178,11 +178,11 @@ async function handleInstruction(props: ModelRequestContext): Promise<void> {
       dispatch(
         addNotification({
           type: 'error',
-          message: t`❌ Failed to generate a response`,
+          message: t`Failed to generate a response`,
         })
       );
 
-      throw new Error(`❌ Failed to generate a response: ${chunk.error}`);
+      throw new Error(`Failed to generate a response: ${chunk.error}`);
     }
   });
 
@@ -232,11 +232,11 @@ async function handleSimpleTranslation(
       dispatch(
         addNotification({
           type: 'error',
-          message: t`❌ Translation error`,
+          message: t`Translation error`,
         })
       );
 
-      throw new Error(`❌ Translation error: ${chunk.error}`);
+      throw new Error(`Translation error: ${chunk.error}`);
     }
   });
 

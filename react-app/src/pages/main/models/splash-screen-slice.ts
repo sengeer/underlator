@@ -40,11 +40,11 @@ export const fetchSplashStatus = createAsyncThunk(
         dispatch(
           addNotification({
             type: 'error',
-            message: i18n._('❌ Internal application error'),
+            message: i18n._('Internal application error'),
           })
         );
 
-        return rejectWithValue("❌ Couldn't get splash screen status");
+        return rejectWithValue("Couldn't get splash screen status");
       }
 
       return status;
@@ -52,13 +52,13 @@ export const fetchSplashStatus = createAsyncThunk(
       dispatch(
         addNotification({
           type: 'error',
-          message: i18n._('❌ Internal application error'),
+          message: i18n._('Internal application error'),
         })
       );
 
-      console.error('❌ Error getting the status', error);
+      console.error('Error getting the status', error);
       const errorMessage =
-        error instanceof Error ? error.message : '❌ Unknown error';
+        error instanceof Error ? error.message : 'Unknown error';
       return rejectWithValue(errorMessage);
     }
   }

@@ -33,7 +33,7 @@ export class SplashScreenApi {
       this.setupEventListeners();
     } else {
       console.warn(
-        '⚠️ Electron API is unavailable, splash screen may not work correctly'
+        'Electron API is unavailable, splash screen may not work correctly'
       );
     }
   }
@@ -47,7 +47,7 @@ export class SplashScreenApi {
   async getStatus(): Promise<SplashStatusData | null> {
     try {
       if (!window.electron?.splash) {
-        throw new Error('❌ The Electron API is unavailable');
+        throw new Error('The Electron API is unavailable');
       }
 
       const status = await window.electron.splash.getStatus();
@@ -56,7 +56,7 @@ export class SplashScreenApi {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Неизвестная ошибка';
-      console.error('❌ Error getting the splash screen status:', errorMessage);
+      console.error('Error getting the splash screen status:', errorMessage);
 
       return null;
     }
@@ -146,7 +146,7 @@ export class SplashScreenApi {
     // Проверяем доступность Electron API
     if (!window.electron?.splash) {
       console.warn(
-        '⚠️ Electron API is not available for configuring splash screen listeners'
+        'Electron API is not available for configuring splash screen listeners'
       );
       return;
     }

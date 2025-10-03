@@ -78,7 +78,7 @@ function useElectronTranslation(): UseElectronTranslationReturn {
       dispatch(
         addNotification({
           type: 'error',
-          message: t`❌ Failed to translate app`,
+          message: t`Failed to translate app`,
         })
       );
 

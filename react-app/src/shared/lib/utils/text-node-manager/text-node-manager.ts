@@ -123,7 +123,7 @@ export function createUpdateHandler(
   // Создание обработчика ошибок с условным логированием
   const errorHandler = shouldLogErrors
     ? (index: number, error: string) =>
-        console.warn(`⚠️ Node at index ${index} not found in textInfos`)
+        console.warn(`Node at index ${index} not found in textInfos`)
     : undefined;
 
   // Возврат каррированной функции с зафиксированным контекстом

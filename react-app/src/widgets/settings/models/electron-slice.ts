@@ -82,7 +82,7 @@ export const fetchCatalog = createAsyncThunk(
         dispatch(
           addNotification({
             type: 'error',
-            message: i18n._('❌ Error getting the models catalog'),
+            message: i18n._('Error getting the models catalog'),
           })
         );
 
@@ -96,7 +96,7 @@ export const fetchCatalog = createAsyncThunk(
       dispatch(
         addNotification({
           type: 'error',
-          message: i18n._('❌ Error getting the catalog'),
+          message: i18n._('Error getting the catalog'),
         })
       );
 
@@ -121,7 +121,7 @@ export const searchModels = createAsyncThunk(
         dispatch(
           addNotification({
             type: 'error',
-            message: i18n._('❌ Error searching models'),
+            message: i18n._('Error searching models'),
           })
         );
 
@@ -133,7 +133,7 @@ export const searchModels = createAsyncThunk(
       dispatch(
         addNotification({
           type: 'error',
-          message: i18n._('❌ Error searching models'),
+          message: i18n._('Error searching models'),
         })
       );
 
@@ -158,7 +158,7 @@ export const fetchModelInfo = createAsyncThunk(
         dispatch(
           addNotification({
             type: 'error',
-            message: i18n._('❌ Error getting model info'),
+            message: i18n._('Error getting model info'),
           })
         );
 
@@ -170,7 +170,7 @@ export const fetchModelInfo = createAsyncThunk(
       dispatch(
         addNotification({
           type: 'error',
-          message: i18n._('❌ Error getting model info'),
+          message: i18n._('Error getting model info'),
         })
       );
 
@@ -218,7 +218,7 @@ export const installModel = createAsyncThunk(
         dispatch(
           addNotification({
             type: 'error',
-            message: i18n._('❌ Model installation error'),
+            message: i18n._('Model installation error'),
           })
         );
 
@@ -239,7 +239,7 @@ export const installModel = createAsyncThunk(
       dispatch(
         addNotification({
           type: 'error',
-          message: i18n._('❌ Model installation error'),
+          message: i18n._('Model installation error'),
         })
       );
 
@@ -263,11 +263,11 @@ export const removeModel = createAsyncThunk(
         dispatch(
           addNotification({
             type: 'error',
-            message: i18n._('❌ Model removal error'),
+            message: i18n._('Model removal error'),
           })
         );
 
-        console.error('❌ Remove failed', resultRemove.error);
+        console.error('Remove failed', resultRemove.error);
         return rejectWithValue(resultRemove.error || 'Error removing model');
       }
 
@@ -276,7 +276,7 @@ export const removeModel = createAsyncThunk(
         dispatch(
           addNotification({
             type: 'error',
-            message: i18n._('❌ Error getting list of models'),
+            message: i18n._('Error getting list of models'),
           })
         );
 
@@ -302,7 +302,7 @@ export const removeModel = createAsyncThunk(
       dispatch(
         addNotification({
           type: 'error',
-          message: i18n._('❌ Model removal error'),
+          message: i18n._('Model removal error'),
         })
       );
 
@@ -327,7 +327,7 @@ export const fetchInstalledModels = createAsyncThunk(
         dispatch(
           addNotification({
             type: 'error',
-            message: i18n._('❌ Error getting list of models'),
+            message: i18n._('Error getting list of models'),
           })
         );
 
@@ -339,7 +339,7 @@ export const fetchInstalledModels = createAsyncThunk(
       dispatch(
         addNotification({
           type: 'error',
-          message: i18n._('❌ Error getting list of models'),
+          message: i18n._('Error getting list of models'),
         })
       );
 

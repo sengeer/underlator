@@ -145,7 +145,7 @@ function TestIpc() {
                     addNotification({
                       type: 'error',
 
-                      message: '❌ Ошибка',
+                      message: 'Ошибка',
                     })
                   )
                 }

@@ -253,7 +253,7 @@ export function processContextualResponse(
   // Это может произойти, если модель добавила дополнительные разделители
   if (chunks.length > originalChunksCount) {
     console.warn(
-      `⚠️ Expected ${originalChunksCount} chunks, but got ${chunks.length}. ` +
+      `Expected ${originalChunksCount} chunks, but got ${chunks.length}. ` +
         'Combining extra chunks into the last one'
     );
 

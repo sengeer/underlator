@@ -16,10 +16,10 @@ import type {
 export interface ToastParams {
   /** Цвет акцента toast-уведомления */
   color: string;
+  /** Эмодзи уведомления */
+  emoji: string;
   /** Время отображения уведомления в миллисекундах */
   milliseconds: number;
-  /** Иконка уведомления */
-  icon: React.ReactNode;
 }
 
 /**
@@ -42,8 +42,6 @@ export interface ToastProps {
 export interface InitialToastParams
   extends Omit<ToastParams, keyof ToastParams> {
   color: '';
-  messageColor: '';
-  title: '';
+  emoji: '';
   milliseconds: 0;
-  icon: null;
 }

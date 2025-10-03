@@ -21,7 +21,7 @@ export class Electron {
     config?: ProviderSettings
   ): Promise<string> {
     if (!window.electron?.ollama) {
-      throw new Error('❌ Electron API is unavailable');
+      throw new Error('Electron API is unavailable');
     }
 
     console.log('🚀 request', request);
@@ -39,7 +39,7 @@ export class Electron {
     callback: (progress: GenerateResponse) => void
   ): () => void {
     if (!window.electron?.ollama) {
-      throw new Error('❌ Electron API is unavailable');
+      throw new Error('Electron API is unavailable');
     }
 
     return window.electron.ollama.onGenerateProgress(callback);

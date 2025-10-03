@@ -41,12 +41,12 @@ function useCopying() {
       dispatch(
         addNotification({
           type: 'error',
-          message: t`❌ Failed to copy text`,
+          message: t`Failed to copy text`,
         })
       );
 
       // Логирование ошибок копирования для отладки
-      console.error('❌ Failed to copy text', err);
+      console.error('Failed to copy text', err);
     }
   }
 

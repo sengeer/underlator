@@ -36,7 +36,7 @@ export class Electron {
       this.setupProgressListeners();
     } else {
       console.warn(
-        '⚠️ Electron API is unavailable, and some functions may not work'
+        'Electron API is unavailable, and some functions may not work'
       );
     }
   }
@@ -52,7 +52,7 @@ export class Electron {
   ): Promise<ModelOperationResult> {
     try {
       if (!window.electron?.catalog) {
-        throw new Error('❌ Electron API is unavailable');
+        throw new Error('Electron API is unavailable');
       }
 
       const response = await window.electron.catalog.get({
@@ -62,7 +62,7 @@ export class Electron {
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : '❌ Unknown error';
+        error instanceof Error ? error.message : 'Unknown error';
 
       return {
         success: false,
@@ -82,7 +82,7 @@ export class Electron {
   ): Promise<ModelOperationResult> {
     try {
       if (!window.electron?.catalog) {
-        throw new Error('❌ Electron API is unavailable');
+        throw new Error('Electron API is unavailable');
       }
 
       const response = await window.electron.catalog.search(filters);
@@ -90,7 +90,7 @@ export class Electron {
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : '❌ Unknown error';
+        error instanceof Error ? error.message : 'Unknown error';
 
       return {
         success: false,
@@ -110,7 +110,7 @@ export class Electron {
   ): Promise<ModelOperationResult> {
     try {
       if (!window.electron?.catalog) {
-        throw new Error('❌ Electron API is unavailable');
+        throw new Error('Electron API is unavailable');
       }
 
       const response = await window.electron.catalog.getModelInfo({
@@ -120,7 +120,7 @@ export class Electron {
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : '❌ Unknown error';
+        error instanceof Error ? error.message : 'Unknown error';
 
       return {
         success: false,
@@ -152,7 +152,7 @@ export class Electron {
       }
 
       if (!window.electron?.models) {
-        throw new Error('❌ Electron API is unavailable');
+        throw new Error('Electron API is unavailable');
       }
 
       const response = await window.electron.models.install({
@@ -167,7 +167,7 @@ export class Electron {
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : '❌ Unknown error';
+        error instanceof Error ? error.message : 'Unknown error';
 
       // Вызывает callback ошибки, если есть
       const errorCallback = this.errorCallbacks.get(params.name);
@@ -195,7 +195,7 @@ export class Electron {
   async removeModel(params: RemoveModelParams): Promise<ModelOperationResult> {
     try {
       if (!window.electron?.models) {
-        throw new Error('❌ Electron API is unavailable');
+        throw new Error('Electron API is unavailable');
       }
 
       const response = await window.electron.models.remove({
@@ -205,7 +205,7 @@ export class Electron {
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : '❌ Unknown error';
+        error instanceof Error ? error.message : 'Unknown error';
 
       return {
         success: false,
@@ -222,7 +222,7 @@ export class Electron {
   async listInstalledModels(): Promise<ModelOperationResult> {
     try {
       if (!window.electron?.models) {
-        throw new Error('❌ Electron API is unavailable');
+        throw new Error('Electron API is unavailable');
       }
 
       const response = await window.electron.models.list();
@@ -230,7 +230,7 @@ export class Electron {
       return response;
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : '❌ Unknown error';
+        error instanceof Error ? error.message : 'Unknown error';
 
       return {
         success: false,
@@ -247,7 +247,7 @@ export class Electron {
     // Проверяем доступность Electron API
     if (!window.electron?.models) {
       console.warn(
-        '⚠️ Electron API is not available for configuring progress listeners'
+        'Electron API is not available for configuring progress listeners'
       );
       return;
     }
