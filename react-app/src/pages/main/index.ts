@@ -1,6 +1,6 @@
 /**
  * @module MainIndex
- * Индексный файл для экспорта.
+ * Индексный файл для экспортов.
  */
 
 export { default } from './ui/main';

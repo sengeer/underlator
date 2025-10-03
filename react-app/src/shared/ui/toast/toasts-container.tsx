@@ -18,13 +18,11 @@ import './styles/toasts-container.scss';
  * @returns JSX элемент контейнера с уведомлениями
  *
  * @example
- * Использование ToastsContainer в главном компоненте
- * ```tsx
+ * // Использование ToastsContainer в главном компоненте
  * <>
  *   <ToastsContainer />
  *   <MainContent />
  * </>
- * ```
  */
 function ToastsContainer() {
   // Извлечение уведомлений из Redux store с типизацией

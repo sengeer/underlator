@@ -109,7 +109,7 @@ export const OLLAMA_DEFAULT_OPTIONS = {
   /** Количество вариантов ответа */
   // num_predict: 1,
   /** Включить режим рассуждения */
-  think: true,
+  think: false,
 } as const;
 
 /**

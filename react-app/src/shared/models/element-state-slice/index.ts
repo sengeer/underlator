@@ -1,6 +1,6 @@
 /**
  * @module ElementStateSliceIndex
- * Индексный файл для экспорта ElementStateSlice.
+ * Индексный файл для экспортов ElementStateSlice.
  */
 
 export {

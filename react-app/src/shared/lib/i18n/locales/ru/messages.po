@@ -119,10 +119,6 @@ msgstr "английский"
 msgid "Failed to copy text"
 msgstr "Не удалось скопировать текст"
 
-#: src/shared/lib/hooks/use-model/provider.ts
-msgid "Failed to generate a response"
-msgstr "Не удалось сгенерировать ответ"
-
 #: src/widgets/pdf-viewer/ui/custom-error-message.tsx
 msgid "failed to load PDF file"
 msgstr "Не удалось загрузить PDF-файл"
@@ -207,6 +203,10 @@ msgstr "Повторить"
 msgid "Remove"
 msgstr "Удалить"
 
+#: src/shared/lib/hooks/use-model/use-model.ts
+msgid "Request error, check the settings"
+msgstr "Ошибка запроса, проверьте настройки"
+
 #: src/widgets/text-translator/ui/text-translator.tsx
 #: src/widgets/text-translator/ui/text-translator.tsx
 #: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
@@ -222,10 +222,6 @@ msgstr "Выбрать все"
 msgid "stop"
 msgstr "Стоп"
 
-#: src/shared/lib/hooks/use-model/use-model.ts
-msgid "The model is unavailable"
-msgstr "Модель недоступна"
-
 #: src/shared/ui/file-upload/file-upload.tsx
 msgid "to select a file!"
 msgstr "выберите файл"
@@ -237,14 +233,6 @@ msgstr "Перевести"
 #: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 msgid "translation"
 msgstr "Перевод"
-
-#: src/shared/lib/hooks/use-model/provider.ts
-#: src/shared/lib/hooks/use-model/provider.ts
-#: src/shared/lib/hooks/use-model/provider.ts
-#: src/shared/lib/hooks/use-model/provider.ts
-#: src/shared/lib/hooks/use-model/provider.ts
-msgid "Translation error"
-msgstr "Ошибка перевода"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Undo"

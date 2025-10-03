@@ -1,6 +1,6 @@
 /**
  * @module ControlLocalStorageIndex
- * Индексный файл для экспорта утилит работы с localStorage.
+ * Индексный файл для экспортов ControlLocalStorage.
  */
 
 export {

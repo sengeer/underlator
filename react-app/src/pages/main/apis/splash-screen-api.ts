@@ -219,7 +219,6 @@ export function createSplashScreenApi(
 
 /**
  * Глобальный экземпляр API клиента.
- * Используется для единообразного доступа к API во всем приложении.
  */
 export const splashScreenApi = createSplashScreenApi();
 

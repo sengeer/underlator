@@ -1,6 +1,6 @@
 /**
  * @module UseIntersectionObserver
- * Хук для отслеживания видимости элемента через Intersection Observer.
+ * Хук UseIntersectionObserver для отслеживания видимости элемента через Intersection Observer.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -18,7 +18,7 @@ import {
  * @returns Объект с ref, состояниями видимости и информацией о пересечении.
  *
  * @example
- * Базовое использование
+ * // Базовое использование
  * function LazyComponent() {
  *   const { ref, isVisible, hasBeenVisible } = useIntersectionObserver({
  *     threshold: 0.1,
@@ -33,7 +33,7 @@ import {
  * }
  *
  * @example
- * С анимацией появления
+ * // С анимацией появления
  * function AnimatedElement() {
  *   const { ref, isVisible } = useIntersectionObserver({
  *     threshold: 0.5,
@@ -50,7 +50,7 @@ import {
  * }
  *
  * @example
- * С обработчиками событий
+ * // С обработчиками событий
  * function InfiniteScrollItem() {
  *   const { ref, isVisible, intersectionEntry } = useIntersectionObserver({
  *     rootMargin: '100px',

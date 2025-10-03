@@ -1,6 +1,6 @@
 /**
  * @module ContextualTranslationTypes
- * Типы для контекстного перевода.
+ * Типы для ContextualTranslation.
  * Определяет интерфейсы и типы для работы с контекстным переводом.
  */
 

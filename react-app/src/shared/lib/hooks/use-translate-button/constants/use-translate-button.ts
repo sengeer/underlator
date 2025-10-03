@@ -1,7 +1,6 @@
 /**
  * @module UseTranslateButtonConstants
  * Константы для хука useTranslateButton.
- * Определяет значения по умолчанию для конфигурации кнопки перевода.
  */
 
 import { UseTranslateButtonConfig } from '../types/use-translate-button';

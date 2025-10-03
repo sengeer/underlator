@@ -1,6 +1,6 @@
 /**
  * @module UseTranslateButtonIndex
- * Индексный файл для экспорта хука useTranslateButton.
+ * Индексный файл для экспортов хука useTranslateButton.
  */
 
 export { default } from './use-translate-button';

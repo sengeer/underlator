@@ -1,6 +1,6 @@
 /**
  * @module CreateJsonParser
- * HOF для создания парсера JSON строк с обработкой ошибок.
+ * HOF CreateJsonParser для создания парсера JSON строк с обработкой ошибок.
  */
 
 import { parseJsonLine } from '../../utils/safe-json-parser';
@@ -15,7 +15,7 @@ import { parseJsonLine } from '../../utils/safe-json-parser';
  * @returns Функция парсера, принимающая JSON строку и возвращающая типизированный результат.
  *
  * @example
- * Базовое использование без обработки ошибок
+ * // Базовое использование без обработки ошибок
  * const parser = createJsonParser<{ message: string }>();
  * const result = parser('{"message": "Hello"}');
  * if (result.success) {
@@ -23,7 +23,7 @@ import { parseJsonLine } from '../../utils/safe-json-parser';
  * }
  *
  * @example
- * Использование с обработкой ошибок
+ * // Использование с обработкой ошибок
  * const parser = createJsonParser<{ response: string }>({
  *   onError: (error, line) => {
  *     console.error(`JSON parsing failed: ${error}`, line);
@@ -34,7 +34,7 @@ import { parseJsonLine } from '../../utils/safe-json-parser';
  * Ошибка будет залогирована через onError
  *
  * @example
- * Использование в потоковой обработке данных
+ * // Использование в потоковой обработке данных
  * const parser = createJsonParser<OllamaResponse>();
  *
  * stream.on('data', (chunk: string) => {

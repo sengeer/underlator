@@ -1,6 +1,6 @@
 /**
  * @module Settings
- * Индексный файл для экспорта Settings.
+ * Индексный файл для экспортов Settings.
  */
 
 export { default } from './ui/settings';

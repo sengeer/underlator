@@ -1,6 +1,6 @@
 /**
  * @module CreateNodeUpdater
- * HOF для создания обновляющего узла с обработкой ошибок.
+ * HOF CreateNodeUpdater для создания обновляющего узла с обработкой ошибок.
  */
 
 import type { NodeOperationResult } from './types/create-node-updater';
@@ -8,13 +8,13 @@ import type { NodeOperationResult } from './types/create-node-updater';
 /**
  * Высокоуровневая HOF функция для безопасного обновления DOM узлов.
  * Реализует функциональный подход к обновлению DOM узлов с обработкой ошибок и валидацией.
- * Используется в системе перевода PDF документов для обновления текстовых узлов переведенным контентом.
+ * Используется в системе перевода DOM дерева для обновления текстовых узлов переведенным контентом.
  *
  * @param onError - Опциональный обработчик ошибок, вызывается при неудачном обновлении узла.
  * @returns Функция обновления узла, принимающая карту узлов, индекс и новый текст.
  *
  * @example
- * Базовое использование с обработкой ошибок
+ * // Базовое использование с обработкой ошибок
  * const nodeUpdater = createNodeUpdater((index, error) => {
  *   console.warn(`Ошибка обновления узла ${index}: ${error}`);
  * });
@@ -25,7 +25,7 @@ import type { NodeOperationResult } from './types/create-node-updater';
  * }
  *
  * @example
- * Использование в batch обновлении через text-node-manager
+ * // Использование в batch обновлении через text-node-manager
  * const nodeUpdater = createNodeUpdater();
  * const textInfoMap = new Map([[0, textInfo]]);
  *

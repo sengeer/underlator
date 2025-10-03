@@ -1,6 +1,6 @@
 /**
  * @module UseCopyingIndex
- * Индексный файл для экспорта хука UseCopying.
+ * Индексный файл для экспортов хука UseCopying.
  */
 
 export { default } from './use-copying';

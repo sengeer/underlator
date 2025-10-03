@@ -9,4 +9,4 @@ export {
   DEFAULT_OPTIONS,
   CHUNK_DELIMITER,
   DEFAULT_LOCALE,
-} from './app';
+} from './shared';

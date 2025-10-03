@@ -1,3 +1,8 @@
+/**
+ * @module SplashScreen
+ * Компонент SplashScreen для отображения процесса инициализации.
+ */
+
 import { useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '../../../app/';
@@ -21,18 +26,17 @@ import type {
 import '../styles/splash-screen.scss';
 
 /**
- * Компонент SplashScreen для отображения процесса инициализации.
  * Показывает прогресс запуска приложения с анимированным логотипом и статусом.
  *
  * @param props - Пропсы компонента.
  * @returns JSX элемент.
  *
  * @example
- * Базовое использование
+ * //Базовое использование
  * <SplashScreen />
  *
  * @example
- * Использование с дополнительными классами
+ * // Использование с дополнительными классами
  * <SplashScreen className="custom-splash" />
  */
 const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {

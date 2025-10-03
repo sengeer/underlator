@@ -1,6 +1,6 @@
 /**
  * @module UseElectronTranslationIndex
- * Экспорт хука useElectronTranslation для синхронизации переводов с Electron.
+ * Индексный файл для экспортов хука useElectronTranslation.
  */
 
 export { default } from './use-electron-translation';

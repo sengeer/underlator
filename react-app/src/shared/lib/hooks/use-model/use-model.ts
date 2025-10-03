@@ -1,7 +1,7 @@
 /**
  * @module UseModel
- * Основной хук для работы с LLM моделями.
- * Предоставляет единый интерфейс для взаимодействия с различными провайдерами.
+ * Основной хук UseModel для работы с LLM моделями.
+ * Предоставляет единый интерфейс для взаимодействия с LLM.
  * Поддерживает перевод, инструкции, контекстный перевод и streaming ответы.
  */
 
@@ -11,13 +11,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import { addNotification } from '../../../models/notifications-slice/';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
 import { DEFAULT_URL } from '../../constants';
-import provider from './provider';
+import featureProvider from './feature-provider';
 import { Status } from './types/use-model';
 
 /**
  * Хук для работы с LLM моделями.
  * Управляет состоянием генерации, переключением языков и обработкой ответов.
  * Поддерживает различные провайдеры и режимы работы.
+ *
  * @returns Объект с методами и состоянием для работы с моделями.
  */
 function useModel() {
@@ -55,6 +56,7 @@ function useModel() {
   /**
    * Обрабатывает ответы от модели.
    * Обновляет состояние в зависимости от режима ответа (arrayStream/stringStream).
+   *
    * @param response - Ответ от модели (строка или объект с индексом).
    * @param params - Параметры генерации для определения режима.
    */
@@ -85,6 +87,7 @@ function useModel() {
   /**
    * Генерирует текст через активный провайдер.
    * Запускает процесс генерации с параметрами контекста.
+   *
    * @param texts - Текст или массив текстов для обработки.
    * @param params - Параметры генерации.
    * @param options - Дополнительные опции модели, например think.
@@ -103,7 +106,7 @@ function useModel() {
     abortControllerRef.current = controller;
 
     try {
-      await provider.generate({
+      await featureProvider.generate({
         config: {
           id: (providerSettings.settings as any)?.id || 'embedded-ollama',
           url: providerSettings.settings.url || DEFAULT_URL,
@@ -117,6 +120,8 @@ function useModel() {
         params: params,
         options: options,
         signal: controller.signal,
+        t,
+        dispatch,
       });
 
       setStatus('success');
@@ -125,7 +130,7 @@ function useModel() {
       dispatch(
         addNotification({
           type: 'error',
-          message: t`The model is unavailable`,
+          message: t`Request error, check the settings`,
         })
       );
 

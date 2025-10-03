@@ -1,5 +1,5 @@
 /**
- * @module AppConstants
+ * @module SharedConstants
  * Общие константы приложения.
  */
 

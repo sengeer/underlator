@@ -13,6 +13,7 @@ import type {
   OllamaModelInfo,
   CatalogFilters,
   SplashMessages,
+  IpcResponse,
 } from './index';
 
 /**
@@ -22,7 +23,10 @@ import type {
 export interface ElectronAPI {
   updateTranslations: (translations: any) => void;
   ollama: {
-    generate: (request: OllamaGenerateRequest, config?: any) => Promise<string>;
+    generate: (
+      request: OllamaGenerateRequest,
+      config?: any
+    ) => Promise<IpcResponse<string>>;
     stop: () => Promise<void>;
     onGenerateProgress: (
       callback: (progress: OllamaGenerateResponse) => void

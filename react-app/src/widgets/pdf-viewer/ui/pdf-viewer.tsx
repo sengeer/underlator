@@ -158,6 +158,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
   /**
    * Обработчик изменения файла.
    * Устанавливает выбранный PDF файл в состояние компонента.
+   *
    * @param event - Событие изменения input элемента.
    */
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>): void {
@@ -173,6 +174,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
   /**
    * Обработчик успешной загрузки PDF документа.
    * Устанавливает количество страниц документа.
+   *
    * @param param0 - Объект с информацией о загруженном документе.
    * @param param0.numPages - Количество страниц в документе.
    */

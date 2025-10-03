@@ -29,10 +29,8 @@ import './styles/toast.scss';
  * @returns JSX элемент уведомления
  *
  * @example
- * Использование Toast через маппинг уведомлений
- * ```tsx
+ * // Использование Toast через маппинг уведомлений
  * <Toast key={id} id={id} message={message} type={type} />
- * ```
  */
 function Toast({ id, type, message }: ToastProps) {
   const [isShow, setIsShow] = useState<boolean>(false);

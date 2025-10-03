@@ -1,6 +1,6 @@
 /**
  * @module NotificationsSliceIndex
- * Индексный файл для экспорта NotificationsSlice.
+ * Индексный файл для экспортов NotificationsSlice.
  * Предоставляет единую точку доступа к действиям, селекторам и редьюсеру.
  */
 

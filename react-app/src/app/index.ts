@@ -1,6 +1,6 @@
 /**
  * @module AppIndex
- * Индексный файл для экспорта.
+ * Индексный файл для экспортов.
  */
 
 export { useAppDispatch, useAppSelector } from './hooks/use-app';

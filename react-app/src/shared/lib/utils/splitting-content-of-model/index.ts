@@ -1,6 +1,6 @@
 /**
  * @module SplittingContentOfModelIndex
- * Индексный файл для экспорта утилиты разделения контента модели.
+ * Индексный файл для экспортов SplittingContentOfModel.
  * Предоставляет единую точку доступа к функции splittingContentOfModel.
  */
 

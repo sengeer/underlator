@@ -1,6 +1,6 @@
 /**
  * @module UseElectronTranslation
- * Хук для синхронизации переводов между React приложением и Electron main процессом.
+ * Хук UseElectronTranslation для синхронизации переводов между React приложением и Electron main процессом.
  */
 
 import { useLingui } from '@lingui/react/macro';
@@ -18,7 +18,7 @@ import { UseElectronTranslationReturn } from './types/use-electron-translation';
  * @returns Объект с функцией синхронизации переводов и объектом переводов.
  *
  * @example
- * Базовое использование в компоненте
+ * // Базовое использование в компоненте
  * function MyComponent() {
  *   const { translateElectron, translations } = useElectronTranslation();
  *
@@ -30,7 +30,7 @@ import { UseElectronTranslationReturn } from './types/use-electron-translation';
  * }
  *
  * @example
- * Использование при смене языка
+ * // Использование при смене языка
  * function LanguageSelector() {
  *   const { translateElectron } = useElectronTranslation();
  *

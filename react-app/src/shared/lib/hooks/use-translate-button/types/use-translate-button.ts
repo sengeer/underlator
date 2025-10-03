@@ -1,7 +1,6 @@
 /**
  * @module UseTranslateButtonTypes
  * Типы для хука useTranslateButton.
- * Определяет состояния кнопки перевода и конфигурацию хука.
  */
 
 import { RefObject } from 'react';

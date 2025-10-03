@@ -1,12 +1,10 @@
 /**
- * @module Provider
- * Провайдер для реализации возможностей обработки запроса к LLM.
+ * @module FeatureProvider
+ * Feature-провайдер для реализации обработки запроса к LLM.
  * Поддерживает контекстный перевод, инструкции и простой перевод.
  */
 
-import { useLingui } from '@lingui/react/macro';
-import { useDispatch } from 'react-redux';
-import { addNotification } from '../../../models/notifications-slice/';
+import { addNotification } from '../../../models/notifications-slice';
 import { DEFAULT_MODEL } from '../../constants';
 import {
   prepareContextualTranslation,
@@ -21,7 +19,7 @@ import type {
   IpcResponse,
   ContextualTranslationResult,
   ModelRequestContext,
-} from './types/provider';
+} from './types/feature-provider.ts';
 
 /**
  * Обрабатывает контекстный перевод через Electron IPC.
@@ -32,9 +30,6 @@ import type {
 async function handleContextualTranslation(
   props: ModelRequestContext
 ): Promise<ContextualTranslationResult> {
-  const dispatch = useDispatch();
-  const { t } = useLingui();
-
   // Валидация параметров контекстного перевода
   const config = getContextualTranslationConfig('Embedded Ollama');
   const validation = validateContextualTranslationParams(
@@ -43,10 +38,10 @@ async function handleContextualTranslation(
   );
 
   if (!validation.valid) {
-    dispatch(
+    props.dispatch(
       addNotification({
         type: 'error',
-        message: t`Translation error`,
+        message: props.t`Translation error`,
       })
     );
 
@@ -69,10 +64,10 @@ async function handleContextualTranslation(
   );
 
   if (!preparation.success) {
-    dispatch(
+    props.dispatch(
       addNotification({
         type: 'error',
-        message: t`Translation error`,
+        message: props.t`Translation error`,
       })
     );
 
@@ -92,14 +87,18 @@ async function handleContextualTranslation(
     }
 
     if (chunk.error) {
-      dispatch(
+      props.dispatch(
         addNotification({
           type: 'error',
-          message: t`Translation error`,
+          message: props.t`Translation error`,
         })
       );
 
-      throw new Error(`Contextual translation failed: ${chunk.error}`);
+      // Не бросает исключение в callback, так как это не остановит основной промис
+      // Ошибка будет обработана в основном блоке try-catch
+      console.error(
+        `Streaming error in contextual translation: ${chunk.error}`
+      );
     }
   });
 
@@ -122,10 +121,10 @@ async function handleContextualTranslation(
     );
 
     if (!finalResult.success) {
-      dispatch(
+      props.dispatch(
         addNotification({
           type: 'error',
-          message: t`Translation error`,
+          message: props.t`Translation error`,
         })
       );
 
@@ -165,9 +164,6 @@ async function handleContextualTranslation(
 async function handleInstruction(props: ModelRequestContext): Promise<void> {
   const finalPrompt = `${props.params.instruction}: ${props.text}`;
 
-  const dispatch = useDispatch();
-  const { t } = useLingui();
-
   // Подписка на прогресс генерации через IPC
   const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {
     if (chunk.response && props.onModelResponse) {
@@ -175,14 +171,15 @@ async function handleInstruction(props: ModelRequestContext): Promise<void> {
     }
 
     if (chunk.error) {
-      dispatch(
+      props.dispatch(
         addNotification({
           type: 'error',
-          message: t`Failed to generate a response`,
+          message: props.t`Failed to generate a response`,
         })
       );
 
-      throw new Error(`Failed to generate a response: ${chunk.error}`);
+      // Не бросает исключение в callback, так как это не остановит основной промис
+      console.error(`Streaming error in instruction: ${chunk.error}`);
     }
   });
 
@@ -214,9 +211,6 @@ async function handleSimpleTranslation(
   const sourceLanguage = props.translateLanguage.split('-')[0];
   const targetLanguage = props.translateLanguage.split('-')[1];
 
-  const dispatch = useDispatch();
-  const { t } = useLingui();
-
   // Формирование промпта для перевода
   const prompt = Array.isArray(props.text)
     ? `Translate the following ${sourceLanguage} texts to ${targetLanguage}:\n${props.text.join('\n')}`
@@ -229,14 +223,15 @@ async function handleSimpleTranslation(
     }
 
     if (chunk.error) {
-      dispatch(
+      props.dispatch(
         addNotification({
           type: 'error',
-          message: t`Translation error`,
+          message: props.t`Translation error`,
         })
       );
 
-      throw new Error(`Translation error: ${chunk.error}`);
+      // Не бросает исключение в callback, так как это не остановит основной промис
+      console.error(`Streaming error in simple translation: ${chunk.error}`);
     }
   });
 
@@ -256,12 +251,12 @@ async function handleSimpleTranslation(
 }
 
 /**
- * Основной провайдер для запросов к LLM модели.
+ * Feature-провайдер для запросов к LLM модели.
  *
  * @param props - Контекст запроса. Подробнее см. ModelRequestContext.
  * @returns Promise с результатом генерации.
  */
-export const provider = {
+export const featureProvider = {
   generate: async (props: ModelRequestContext) => {
     // Обработка контекстного перевода для массивов
     if (
@@ -281,4 +276,4 @@ export const provider = {
   },
 };
 
-export default provider;
+export default featureProvider;

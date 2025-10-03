@@ -26,22 +26,18 @@ import '../styles/main.scss';
  * @returns JSX элемент.
  *
  * @example
- * Базовое использование в App компоненте
- * ```tsx
+ * // Базовое использование в App компоненте
  * <I18nProvider i18n={i18n}>
  *   <Main />
  * </I18nProvider>
- * ```
  *
  * @example
- * Использование с дополнительными провайдерами
- * ```tsx
+ * // Использование с дополнительными провайдерами
  * <Provider store={store}>
  *   <I18nProvider i18n={i18n}>
  *     <Main />
  *   </I18nProvider>
  * </Provider>
- * ```
  */
 function Main() {
   // Получение состояния видимости TextTranslator из Redux store

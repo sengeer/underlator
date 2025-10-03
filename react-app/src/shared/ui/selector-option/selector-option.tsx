@@ -34,7 +34,7 @@ function defineNeedsComplexMode(state: SelectorOptionState): boolean {
  * />
  *
  * @example
- * //Сложный режим с прогресс-баром
+ * // Сложный режим с прогресс-баром
  * <SelectorOption
  *  state='loading'
  *  text='qwen2.5:7b'

@@ -1,3 +1,8 @@
+/**
+ * @module TestIpc
+ * Компонент для тестирования IPC API.
+ */
+
 import '../styles/settings.scss';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
@@ -20,9 +25,6 @@ import {
   runFullTest,
 } from '../tests/ipc';
 
-/**
- * Компонент для тестирования IPC API
- */
 function TestIpc() {
   const { values, handleChange, setValues } = useFormAndValidation();
 
@@ -126,6 +128,10 @@ function TestIpc() {
                 className='settings__button'>
                 {'Запуск полного тестирования'}
               </TextButton>
+              <p className='settings__description'>
+                {'Кнопки тестирования IPC API. Проверьте результаты в консоли.'}
+              </p>
+              <h2 className='settings__title'>{'Тестирование UI'}</h2>
               <TextButton
                 onClick={() =>
                   dispatch(
@@ -153,9 +159,6 @@ function TestIpc() {
                 {'Вызвать Toast-ошибку'}
               </TextButton>
             </div>
-            <p className='settings__description'>
-              {'Кнопки тестирования IPC API. Проверьте результаты в консоли.'}
-            </p>
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 /**
  * @module UseModelIndex
- * Индексный файл для экспорта хука useModel.
+ * Индексный файл для экспортов хука useModel.
  */
 
 export { default } from './use-model';

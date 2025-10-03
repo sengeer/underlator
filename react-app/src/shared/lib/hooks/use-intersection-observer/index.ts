@@ -1,6 +1,6 @@
 /**
  * @module UseIntersectionObserverIndex
- * Индексный файл для экспорта хука useIntersectionObserver.
+ * Индексный файл для экспортов хука useIntersectionObserver.
  */
 
 export { default } from './use-intersection-observer';

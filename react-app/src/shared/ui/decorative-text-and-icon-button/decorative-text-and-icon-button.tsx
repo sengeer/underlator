@@ -9,12 +9,29 @@ import TextAndIconButton from '../text-and-icon-button';
 import { DecorativeTextAndIconButtonProps } from './types/decorative-text-and-icon-button';
 
 /**
+ * Базовый стилизованный компонент TextAndIconButton.
+ * Определен вне компонента для избежания пересоздания при каждом рендере.
+ * Использует CSS-переменные для динамической смены цвета.
+ */
+const StyledTextAndIconButton = styled(TextAndIconButton)<{
+  $decorativeColor: string;
+}>`
+  gap: 1rem;
+  color: ${(props) => props.$decorativeColor};
+
+  & path {
+    fill: ${(props) => props.$decorativeColor};
+  }
+`;
+
+/**
  * Компонент декоративной кнопки с текстом и иконкой.
  * Создает стилизованную версию TextAndIconButton с возможностью настройки цвета.
  * Автоматически передает все базовые пропсы родительскому компоненту.
  *
  * Реализует паттерн styled-components для динамической стилизации,
  * обеспечивая применение переданного цвета как к тексту, так и к иконке.
+ * Стилизованный компонент создается один раз вне функции для оптимизации производительности.
  *
  * @param props - Пропсы компонента с расширенной функциональностью
  * @param props.decorativeColor - Цвет для текста и иконки в CSS формате
@@ -33,18 +50,14 @@ function DecorativeTextAndIconButton({
   decorativeColor = 'var(--foreground)',
   ...props
 }: DecorativeTextAndIconButtonProps) {
-  // Стилизованная обертка над TextAndIconButton с динамическим цветом
-  const StyledTextAndIconButton = styled(TextAndIconButton)`
-    gap: 1rem;
-    color: ${decorativeColor};
-
-    & path {
-      fill: ${decorativeColor};
-    }
-  `;
-
   // Кнопка всегда остается в отключенном состоянии с переданными пропсами
-  return <StyledTextAndIconButton isDisabled {...props} />;
+  return (
+    <StyledTextAndIconButton
+      isDisabled
+      $decorativeColor={decorativeColor}
+      {...props}
+    />
+  );
 }
 
 export default DecorativeTextAndIconButton;

@@ -1,6 +1,6 @@
 /**
  * @module WithAdaptiveSizeIndex
- * Индексный файл для экспорта HOC WithAdaptiveSize.
+ * Индексный файл для экспортов HOC WithAdaptiveSize.
  */
 
 export { default } from './with-adaptive-size';

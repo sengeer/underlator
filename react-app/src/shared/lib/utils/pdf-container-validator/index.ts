@@ -1,6 +1,6 @@
 /**
  * @module PdfContainerValidatorIndex
- * Индексный файл для экспорта утилит валидации PDF контейнеров.
+ * Индексный файл для экспортов PdfContainerValidator.
  */
 
 export {

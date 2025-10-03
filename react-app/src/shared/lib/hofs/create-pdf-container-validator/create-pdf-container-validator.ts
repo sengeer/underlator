@@ -1,6 +1,6 @@
 /**
  * @module CreatePdfContainerValidator
- * HOF для создания предиката валидации для проверки принадлежности выделения к PDF контейнеру.
+ * HOF CreatePdfContainerValidator для создания предиката валидации для проверки принадлежности выделения к PDF контейнеру.
  */
 
 import { findAncestorWithClass } from '../../utils/pdf-container-validator';
@@ -9,7 +9,7 @@ import { findAncestorWithClass } from '../../utils/pdf-container-validator';
  * Высокоуровневая HOF функция для создания предиката валидации, который проверяет,
  * что выделенный пользователем текст находится внутри указанного PDF контейнера.
  * Используется в системе перевода для обеспечения того, что операции выполняются только
- * с содержимым PDF документов, а не с произвольным текстом на странице.
+ * с содержимым DOM дерева, а не с произвольным текстом на странице.
  *
  * Функция возвращает каррированную функцию, что позволяет создавать специализированные
  * валидаторы для разных типов контейнеров с предустановленными параметрами.
@@ -18,17 +18,17 @@ import { findAncestorWithClass } from '../../utils/pdf-container-validator';
  * @returns {(selection: Selection | null) => boolean} Функция валидации выделения.
  *
  * @example
- * Создание валидатора для стандартного PDF контейнера
+ * // Создание валидатора для стандартного PDF контейнера
  * const isPdfSelection = createPdfContainerValidator();
  * const isValid = isPdfSelection(window.getSelection());
  *
  * @example
- * Создание валидатора для кастомного контейнера
+ * // Создание валидатора для кастомного контейнера
  * const isCustomPdfSelection = createPdfContainerValidator('custom-pdf-container');
  * const isValid = isCustomPdfSelection(window.getSelection());
  *
  * @example
- * Использование в композиции с другими валидаторами
+ * // Использование в композиции с другими валидаторами
  * const isValidPdfSelection = (selection) =>
  *   hasValidTextSelection(selection) && createPdfContainerValidator()(selection);
  */

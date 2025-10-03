@@ -1,8 +1,9 @@
 /**
- * @module ProviderTypes
- * Типы для провайдера.
- * Определяет интерфейсы для работы с LLM моделью через Electron IPC.
+ * @module FeatureProviderTypes
+ * Типы для feature-провайдера.
  */
+
+import { Dispatch } from 'redux';
 
 /**
  * Ответ от LLM модели через Electron IPC.
@@ -37,20 +38,24 @@ export interface ModelRequestContext {
     /** URL провайдера */
     url: string;
   };
-  /** Название модели для использования. */
+  /** Название модели для использования */
   model?: string;
   /** Тип использования модели */
   typeUse?: 'instruction' | 'translation';
-  /** Текст или массив текстов для перевода. */
+  /** Текст или массив текстов для перевода */
   text: string | string[];
   /** Язык перевода */
   translateLanguage: 'en-ru' | 'ru-en';
-  /** Callback для обработки ответов. */
+  /** Callback для обработки ответов */
   onModelResponse?: (response: ModelResponse) => void;
-  /** Параметры генерации. */
+  /** Параметры генерации */
   params: UseModelParams;
   /** Дополнительные опции модели */
   options: GenerateOptions;
-  /** Сигнал для отмены операции. */
+  /** Сигнал для отмены операции */
   signal?: AbortSignal;
+  /** Функция перевода от Lingui */
+  t: (template: TemplateStringsArray, ...args: readonly any[]) => string;
+  /** Функция для обновления состояния */
+  dispatch: Dispatch;
 }
