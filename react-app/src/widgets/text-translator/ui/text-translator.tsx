@@ -78,13 +78,15 @@ function TextTranslator({ isOpened }: TextTranslator) {
       {'en-ru' === translateLanguage ? (
         <DecorativeTextAndIconButton
           text={t`english`}
-          style={{ margin: '1rem auto 0' }}>
+          style={{ margin: '1rem auto 0' }}
+          decorativeColor='var(--foreground)'>
           <GlobeIcon />
         </DecorativeTextAndIconButton>
       ) : (
         <DecorativeTextAndIconButton
           text={t`russian`}
-          style={{ margin: '1rem auto 0' }}>
+          style={{ margin: '1rem auto 0' }}
+          decorativeColor='var(--foreground)'>
           <GlobeUkIcon />
         </DecorativeTextAndIconButton>
       )}
@@ -125,13 +127,15 @@ function TextTranslator({ isOpened }: TextTranslator) {
       {'ru-en' === translateLanguage ? (
         <DecorativeTextAndIconButton
           text={t`english`}
-          style={{ margin: '1rem auto 0' }}>
+          style={{ margin: '1rem auto 0' }}
+          decorativeColor='var(--foreground)'>
           <GlobeIcon />
         </DecorativeTextAndIconButton>
       ) : (
         <DecorativeTextAndIconButton
           text={t`russian`}
-          style={{ margin: '1rem auto 0' }}>
+          style={{ margin: '1rem auto 0' }}
+          decorativeColor='var(--foreground)'>
           <GlobeUkIcon />
         </DecorativeTextAndIconButton>
       )}

@@ -411,7 +411,10 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         className={`pdf-viewer__top-bar${file ? ' pdf-viewer__top-bar_show' : ''}`}>
         <div className='pdf-viewer__btns-container'>
           <div className='pdf-viewer__switch-wrapper'>
-            <DecorativeTextAndIconButton text={t`translation`} />
+            <DecorativeTextAndIconButton
+              text={t`translation`}
+              decorativeColor='var(--foreground)'
+            />
             <Switch
               checked={settings.typeUse === 'instruction'}
               onChange={() =>
@@ -426,17 +429,24 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                 )
               }
             />
-            <DecorativeTextAndIconButton text={t`instruction`} />
+            <DecorativeTextAndIconButton
+              text={t`instruction`}
+              decorativeColor='var(--foreground)'
+            />
           </div>
           <div className='pdf-viewer__translate-btns'>
             {settings.typeUse === 'translation' && (
               <>
                 {'en-ru' === translateLanguage ? (
-                  <DecorativeTextAndIconButton text={t`english`}>
+                  <DecorativeTextAndIconButton
+                    text={t`english`}
+                    decorativeColor='var(--foreground)'>
                     <GlobeIcon />
                   </DecorativeTextAndIconButton>
                 ) : (
-                  <DecorativeTextAndIconButton text={t`russian`}>
+                  <DecorativeTextAndIconButton
+                    text={t`russian`}
+                    decorativeColor='var(--foreground)'>
                     <GlobeUkIcon />
                   </DecorativeTextAndIconButton>
                 )}
@@ -444,11 +454,15 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                   <SyncIcon color='var(--main)' />
                 </IconButton>
                 {'ru-en' === translateLanguage ? (
-                  <DecorativeTextAndIconButton text={t`english`}>
+                  <DecorativeTextAndIconButton
+                    text={t`english`}
+                    decorativeColor='var(--foreground)'>
                     <GlobeIcon />
                   </DecorativeTextAndIconButton>
                 ) : (
-                  <DecorativeTextAndIconButton text={t`russian`}>
+                  <DecorativeTextAndIconButton
+                    text={t`russian`}
+                    decorativeColor='var(--foreground)'>
                     <GlobeUkIcon />
                   </DecorativeTextAndIconButton>
                 )}

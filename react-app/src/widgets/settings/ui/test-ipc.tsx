@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
 import useFormAndValidation from '../../../shared/lib/hooks/use-form-and-validation';
 import { openElement } from '../../../shared/models/element-state-slice';
+import { addNotification } from '../../../shared/models/notifications-slice/';
 import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import TextButton from '../../../shared/ui/text-button/text-button';
@@ -41,7 +42,6 @@ function TestIpc() {
             </h2>
             <ButtonWrapperWithBackground>
               <TextAndIconButton
-                className='text-and-icon-button'
                 text='Модель'
                 style={{ marginLeft: '1rem' }}
                 isDisabled>
@@ -59,7 +59,6 @@ function TestIpc() {
             </ButtonWrapperWithBackground>
             <ButtonWrapperWithBackground>
               <TextAndIconButton
-                className='text-and-icon-button'
                 text='Промпт'
                 style={{ marginLeft: '1rem' }}
                 isDisabled>
@@ -126,6 +125,32 @@ function TestIpc() {
                 onClick={() => runFullTest(values.model, values.prompt)}
                 className='settings__button'>
                 {'Запуск полного тестирования'}
+              </TextButton>
+              <TextButton
+                onClick={() =>
+                  dispatch(
+                    addNotification({
+                      type: 'info',
+
+                      message: 'Сообщение',
+                    })
+                  )
+                }
+                className='settings__button'>
+                {'Вызвать Toast-уведомление'}
+              </TextButton>
+              <TextButton
+                onClick={() =>
+                  dispatch(
+                    addNotification({
+                      type: 'error',
+
+                      message: 'Ошибка',
+                    })
+                  )
+                }
+                className='settings__button'>
+                {'Вызвать Toast-ошибку'}
               </TextButton>
             </div>
             <p className='settings__description'>

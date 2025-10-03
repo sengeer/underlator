@@ -17,6 +17,10 @@
   }
 
   &_disabled {
-    pointer-events: none;
+    cursor: default;
+
+    &:hover {
+      background-color: var(--black-20);
+    }
   }
 }

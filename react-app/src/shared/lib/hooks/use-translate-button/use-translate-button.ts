@@ -75,7 +75,7 @@ function useTranslateButton(config: UseTranslateButtonConfig = {}) {
   });
 
   // Ref для управления таймаутом debounce
-  const timeoutRef = useRef<number | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Обработчик изменений выделения текста с валидацией.

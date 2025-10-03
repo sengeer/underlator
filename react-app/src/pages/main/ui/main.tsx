@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import useElectronTranslation from '../../../shared/lib/hooks/use-electron-translation';
 import { isElementOpen } from '../../../shared/models/element-state-slice';
+import ToastContainer from '../../../shared/ui/toast';
 import PdfViewer from '../../../widgets/pdf-viewer';
 import Settings from '../../../widgets/settings';
 import SideNavigate from '../../../widgets/side-navigate/';
@@ -78,6 +79,8 @@ function Main() {
       {/* Основной интерфейс показывается только после завершения загрузки приложения */}
       {!isSplashVisible && (
         <>
+          {/* Контейнер для отображения toast-уведомлений */}
+          <ToastContainer />
           {/* Навигационная панель для переключения между компонентами */}
           <SideNavigate />
           {/* Виджет перевода текста */}

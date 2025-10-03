@@ -212,7 +212,6 @@ function Settings({ isOpened }: SettingsState) {
           <ButtonWrapperWithBackground
             onClick={() => dispatch(openElement('languageSelectorPopup'))}>
             <TextAndIconButton
-              className='text-and-icon-button'
               text={t`interface language`}
               style={{ marginLeft: '1rem' }}
               isDisabled>
@@ -226,7 +225,6 @@ function Settings({ isOpened }: SettingsState) {
           <ButtonWrapperWithBackground
             onClick={() => dispatch(openElement('providerSelectorPopup'))}>
             <TextAndIconButton
-              className='text-and-icon-button'
               text={t`provider`}
               style={{ marginLeft: '1rem' }}
               isDisabled>
@@ -238,7 +236,6 @@ function Settings({ isOpened }: SettingsState) {
             <>
               <ButtonWrapperWithBackground>
                 <TextAndIconButton
-                  className='text-and-icon-button'
                   text={'url'}
                   style={{ marginLeft: '1rem' }}
                   isDisabled>
@@ -256,7 +253,6 @@ function Settings({ isOpened }: SettingsState) {
               </ButtonWrapperWithBackground>
               <ButtonWrapperWithBackground>
                 <TextAndIconButton
-                  className='text-and-icon-button'
                   text={t`model`}
                   style={{ marginLeft: '1rem' }}
                   isDisabled>
@@ -279,7 +275,6 @@ function Settings({ isOpened }: SettingsState) {
               <ButtonWrapperWithBackground
                 onClick={() => dispatch(openElement('manageModelsPopup'))}>
                 <TextAndIconButton
-                  className='text-and-icon-button'
                   text={t`manage models`}
                   style={{ marginLeft: '1rem' }}
                   isDisabled>

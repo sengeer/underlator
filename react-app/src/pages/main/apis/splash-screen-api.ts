@@ -41,6 +41,7 @@ export class SplashScreenApi {
   /**
    * Получает текущий статус splash screen.
    * Используется для получения актуального состояния инициализации.
+   *
    * @returns Promise с текущим статусом splash screen.
    */
   async getStatus(): Promise<SplashStatusData | null> {
@@ -64,6 +65,7 @@ export class SplashScreenApi {
   /**
    * Подписывается на обновления статуса splash screen.
    * Используется для получения обновлений статуса в реальном времени.
+   *
    * @param callback - Функция обратного вызова для получения обновлений статуса.
    * @returns Функция для отписки от событий.
    */
@@ -82,6 +84,7 @@ export class SplashScreenApi {
   /**
    * Подписывается на обновления прогресса splash screen.
    * Используется для отображения прогресса инициализации.
+   *
    * @param callback - Функция обратного вызова для получения обновлений прогресса.
    * @returns Функция для отписки от событий.
    */
@@ -100,6 +103,7 @@ export class SplashScreenApi {
   /**
    * Подписывается на завершение инициализации.
    * Используется для скрытия splash screen.
+   *
    * @param callback - Функция обратного вызова для уведомления о завершении.
    * @returns Функция для отписки от событий.
    */
@@ -118,6 +122,7 @@ export class SplashScreenApi {
   /**
    * Подписывается на ошибки инициализации.
    * Используется для отображения ошибок в splash screen.
+   *
    * @param callback - Функция обратного вызова для получения ошибок.
    * @returns Функция для отписки от событий.
    */
@@ -170,6 +175,7 @@ export class SplashScreenApi {
   /**
    * Обновляет конфигурацию API клиента.
    * Позволяет изменить настройки во время выполнения.
+   *
    * @param newConfig - Новая конфигурация.
    */
   updateConfig(newConfig: Partial<SplashApiConfig>): void {
@@ -179,6 +185,7 @@ export class SplashScreenApi {
   /**
    * Получает текущую конфигурацию.
    * Возвращает копию текущих настроек.
+   *
    * @returns Текущая конфигурация.
    */
   getConfig(): SplashApiConfig {
@@ -200,6 +207,7 @@ export class SplashScreenApi {
 /**
  * Создает экземпляр API клиента.
  * Фабричная функция для создания настроенного клиента.
+ *
  * @param config - Конфигурация для клиента.
  * @returns Экземпляр API клиента.
  */
