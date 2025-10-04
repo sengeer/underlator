@@ -135,21 +135,18 @@ process.on('uncaughtException', error => {
 });
 
 /**
- * Инициализирует Ollama и создает API клиент.
- * Выполняется при старте приложения для подготовки Ollama к работе.
- * Отправляет статус инициализации в React splash screen через IPC события.
+ * По очереди инициализирует различные компоненты приложения.
+ * Выполняется при старте приложения.
+ * Отправляет статус инициализации в React splash screen через IPC.
  */
-async function initializeOllama(): Promise<void> {
+async function loadPipeline(): Promise<void> {
   try {
     console.log('🚀 Starting initialization of Ollama...');
-
-    const loadingMessage = translations.LOADING_APP || '';
 
     // Отправляет статус проверки Ollama в React splash screen
     sendSplashStatus({
       status: 'checking-ollama',
-      message: loadingMessage,
-      progress: 10,
+      message: translations.LOADING_APP || '',
     });
 
     // Инициализирует OllamaManager
@@ -158,8 +155,7 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус запуска Ollama в React splash screen
     sendSplashStatus({
       status: 'starting-ollama',
-      message: loadingMessage,
-      progress: 25,
+      message: translations.LOADING_APP || '',
     });
 
     // Запускает Ollama сервер
@@ -174,8 +170,8 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус ожидания сервера в React splash screen
     sendSplashStatus({
       status: 'waiting-for-server',
-      message: loadingMessage,
-      progress: 40,
+      message: translations.LOADING_APP || '',
+      progress: 36,
     });
 
     // Создает API клиент для взаимодействия с Ollama
@@ -184,8 +180,8 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус проверки здоровья в React splash screen
     sendSplashStatus({
       status: 'health-check',
-      message: loadingMessage,
-      progress: 60,
+      message: translations.LOADING_APP || '',
+      progress: 48,
     });
 
     // Проверяет доступность сервера
@@ -201,8 +197,8 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус создания API в React splash screen
     sendSplashStatus({
       status: 'creating-api',
-      message: loadingMessage,
-      progress: 75,
+      message: translations.LOADING_APP || '',
+      progress: 60,
     });
 
     // Создает сервис каталога моделей
@@ -211,8 +207,8 @@ async function initializeOllama(): Promise<void> {
     // Отправляет статус создания каталога в React splash screen
     sendSplashStatus({
       status: 'creating-catalog',
-      message: loadingMessage,
-      progress: 90,
+      message: translations.LOADING_APP || '',
+      progress: 72,
     });
 
     // Регистрирует IPC handlers после создания всех сервисов
@@ -221,10 +217,18 @@ async function initializeOllama(): Promise<void> {
     setupCatalogIpcHandlers();
     console.log('✅ IPC handlers are registered');
 
+    sendSplashStatus({
+      status: 'getting-catalog',
+      message: translations.GETTING_CATALOG || '',
+      progress: 84,
+    });
+
+    await modelCatalogService.getAvailableModels(true);
+
     // Отправляет статус готовности в React splash screen
     sendSplashStatus({
       status: 'ready',
-      message: loadingMessage,
+      message: translations.LOADING_APP || '',
       progress: 100,
     });
 
@@ -333,6 +337,9 @@ function createWindow(): void {
     },
   });
 
+  // Регистрирует splash screen handlers
+  setupSplashIpcHandlers();
+
   // Загружает React приложение и инициализирует Ollama
   console.log('🌐 Uploading the React app...');
   loadApp();
@@ -363,9 +370,6 @@ function createWindow(): void {
     cleanupResources();
   });
 
-  // Регистрирует splash screen handlers
-  setupSplashIpcHandlers();
-
   // IPC handlers будут зарегистрированы после инициализации сервисов
   // в функции initializeOllama()
 }
@@ -391,9 +395,9 @@ async function loadApp(): Promise<void> {
     await mainWindow.loadFile(path.join(__dirname, '../react/index.html'));
   }
 
-  initializeOllama().catch(error => {
-    console.error('❌ Ollama initialization error:', error);
-    sendSplashError('❌ Ollama initialization error');
+  loadPipeline().catch(error => {
+    console.error('❌ App initialization error:', error);
+    sendSplashError('❌ App initialization error');
   });
 }
 

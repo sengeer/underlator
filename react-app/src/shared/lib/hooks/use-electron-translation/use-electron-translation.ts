@@ -58,6 +58,7 @@ function useElectronTranslation(): UseElectronTranslationReturn {
     QUIT: t`Quit`,
     DOWNLOADING_OLLAMA: t`Downloading Ollama...`,
     LOADING_APP: t`Loading App...`,
+    GETTING_CATALOG: t`Getting model catalog...`,
   };
 
   /**

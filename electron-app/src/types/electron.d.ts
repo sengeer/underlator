@@ -28,4 +28,5 @@ export interface MenuTranslations {
   QUIT?: string;
   DOWNLOADING_OLLAMA?: string;
   LOADING_APP?: string;
+  GETTING_CATALOG?: string;
 }

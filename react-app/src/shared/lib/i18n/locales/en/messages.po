@@ -139,6 +139,10 @@ msgstr "Failed to translate app"
 msgid "foreground color"
 msgstr "foreground color"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Getting model catalog..."
+msgstr "Getting model catalog..."
+
 #: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 msgid "instruction"
 msgstr "instruction"

@@ -16,7 +16,7 @@ export class OllamaHtmlParser {
 
   // Кэш для тегов моделей
   private tagsCache = new Map<string, string[]>();
-  private cacheTimeout = 10 * 60 * 1000; // 10 минут
+  private cacheTimeout = 720 * 60 * 1000; // 12 часов
   private cacheTimestamps = new Map<string, number>();
 
   /**

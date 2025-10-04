@@ -139,6 +139,10 @@ msgstr "Ошибка локализации приложения"
 msgid "foreground color"
 msgstr "Цвет заголовков"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Getting model catalog..."
+msgstr "Получение каталога моделей..."
+
 #: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 msgid "instruction"
 msgstr "Инструкция"
