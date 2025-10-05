@@ -206,10 +206,7 @@ async function handleSimpleTranslation(
   props: ModelRequestContext
 ): Promise<void> {
   // Формирование промпта для перевода
-  const prompt = Array.isArray(props.text)
-    ? `Translate the following ${props.sourceLanguage} texts to ${props.targetLanguage}:\n${props.text.join('\n')}`
-    : `Translate the following ${props.sourceLanguage} text to ${props.targetLanguage}:\n${props.text}`;
-
+  const prompt = `Translate from ${props.sourceLanguage} to ${props.targetLanguage} the text after the colon, and return only the translated text:${props.text}`;
   // Подписка на прогресс генерации через IPC
   const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {
     if (chunk.response && props.onModelResponse) {

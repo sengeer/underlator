@@ -12,6 +12,7 @@ import { addNotification } from '../../../models/notifications-slice/';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
 import { selectTranslationLanguages } from '../../../models/translation-languages-slice';
 import { DEFAULT_URL } from '../../constants';
+import useTranslationLanguages from '../use-translation-languages/use-translation-languages';
 import featureProvider from './feature-provider';
 import { Status } from './types/use-model';
 
@@ -25,6 +26,7 @@ import { Status } from './types/use-model';
 function useModel() {
   // Контроллер для отмены операций
   const abortControllerRef = useRef<AbortController | null>(null);
+  const { getLanguageInEn } = useTranslationLanguages();
 
   const dispatch = useDispatch();
   const { t } = useLingui();
@@ -93,9 +95,6 @@ function useModel() {
     setGeneratedResponse(params.responseMode === 'arrayStream' ? {} : '');
     setError(null);
 
-    console.log('🚀 sourceLanguage', sourceLanguage);
-    console.log('🚀 targetLanguage', targetLanguage);
-
     // Создание контроллера для отмены операции
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -109,8 +108,8 @@ function useModel() {
         model: providerSettings.settings.model,
         typeUse: providerSettings.settings.typeUse,
         text: texts,
-        sourceLanguage,
-        targetLanguage,
+        sourceLanguage: getLanguageInEn(sourceLanguage),
+        targetLanguage: getLanguageInEn(targetLanguage),
         onModelResponse: (response: ModelResponse) =>
           handleResponse(response, params),
         params: params,
