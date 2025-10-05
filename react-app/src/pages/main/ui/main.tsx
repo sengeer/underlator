@@ -3,10 +3,15 @@
  * Главный компонент приложения Main.
  */
 
+import { useLingui } from '@lingui/react/macro';
 import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import useElectronTranslation from '../../../shared/lib/hooks/use-electron-translation';
 import { isElementOpen } from '../../../shared/models/element-state-slice';
+import {
+  setSourceLanguage,
+  setTargetLanguage,
+} from '../../../shared/models/translation-languages-slice';
 import ToastContainer from '../../../shared/ui/toast';
 import PdfViewer from '../../../widgets/pdf-viewer';
 import Settings from '../../../widgets/settings';
@@ -15,7 +20,6 @@ import TextTranslator from '../../../widgets/text-translator';
 import { selectSplashVisible } from '../models/splash-screen-slice';
 import SplashScreen from './splash-screen';
 import '../styles/main.scss';
-
 /**
  * Главный компонент приложения Main.
  *
@@ -40,6 +44,9 @@ import '../styles/main.scss';
  * </Provider>
  */
 function Main() {
+  const { t } = useLingui();
+  const dispatch = useDispatch();
+
   // Получение состояния видимости TextTranslator из Redux store
   const isOpenTextTranslationSection = useSelector((state) =>
     isElementOpen(state, 'textTranslationSection')
@@ -67,6 +74,11 @@ function Main() {
   useEffect(() => {
     translateElectron();
   }, [translateElectron]);
+
+  useEffect(() => {
+    dispatch(setSourceLanguage(t`english`));
+    dispatch(setTargetLanguage(t`russian`));
+  }, [t]);
 
   return (
     <main className='main'>

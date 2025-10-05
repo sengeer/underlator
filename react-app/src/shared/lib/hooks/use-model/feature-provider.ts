@@ -53,14 +53,11 @@ async function handleContextualTranslation(
     );
   }
 
-  const sourceLanguage = props.translateLanguage.split('-')[0];
-  const targetLanguage = props.translateLanguage.split('-')[1];
-
   // Подготовка контекстного перевода
   const preparation = prepareContextualTranslation(
     Array.isArray(props.text) ? props.text : [props.text],
-    sourceLanguage,
-    targetLanguage
+    props.sourceLanguage,
+    props.targetLanguage
   );
 
   if (!preparation.success) {
@@ -208,13 +205,10 @@ async function handleInstruction(props: ModelRequestContext): Promise<void> {
 async function handleSimpleTranslation(
   props: ModelRequestContext
 ): Promise<void> {
-  const sourceLanguage = props.translateLanguage.split('-')[0];
-  const targetLanguage = props.translateLanguage.split('-')[1];
-
   // Формирование промпта для перевода
   const prompt = Array.isArray(props.text)
-    ? `Translate the following ${sourceLanguage} texts to ${targetLanguage}:\n${props.text.join('\n')}`
-    : `Translate the following ${sourceLanguage} text to ${targetLanguage}:\n${props.text}`;
+    ? `Translate the following ${props.sourceLanguage} texts to ${props.targetLanguage}:\n${props.text.join('\n')}`
+    : `Translate the following ${props.sourceLanguage} text to ${props.targetLanguage}:\n${props.text}`;
 
   // Подписка на прогресс генерации через IPC
   const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {

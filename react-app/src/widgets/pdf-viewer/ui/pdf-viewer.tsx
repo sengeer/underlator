@@ -27,8 +27,14 @@ import useCopying from '../../../shared/lib/hooks/use-copying';
 import useFormAndValidation from '../../../shared/lib/hooks/use-form-and-validation';
 import useModel from '../../../shared/lib/hooks/use-model';
 import useTranslateButton from '../../../shared/lib/hooks/use-translate-button';
+import useTranslationLanguages from '../../../shared/lib/hooks/use-translation-languages';
 import stringifyGenerateResponse from '../../../shared/lib/utils/stringify-generate-response';
 import { createUpdateHandler } from '../../../shared/lib/utils/text-node-manager/text-node-manager';
+import {
+  openElement,
+  closeElement,
+  isElementOpen,
+} from '../../../shared/models/element-state-slice';
 import {
   selectActiveProviderSettings,
   setTypeUse,
@@ -39,7 +45,10 @@ import FileUpload from '../../../shared/ui/file-upload';
 import IconButton from '../../../shared/ui/icon-button';
 import Loader from '../../../shared/ui/loader';
 import MarkdownRenderer from '../../../shared/ui/markdown-renderer';
+import Popup from '../../../shared/ui/popup';
+import SelectorOption from '../../../shared/ui/selector-option/';
 import Switch from '../../../shared/ui/switch';
+import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import CustomErrorMessage from './custom-error-message';
 import CustomLoading from './custom-loading';
 import '../styles/pdf-viewer.scss';
@@ -96,6 +105,17 @@ export interface PdfTranslator {
  * <PdfViewer isOpened={isOpenPdfTranslationSection} />
  */
 function PdfViewer({ isOpened }: PdfTranslator) {
+  // Хук для работы с копированием текста
+  const { isCopied, handleCopy } = useCopying();
+  const {
+    sourceLanguage,
+    targetLanguage,
+    translationLanguages,
+    handleSourceLanguageSelection,
+    handleTargetLanguageSelection,
+    switchLanguages,
+  } = useTranslationLanguages();
+
   // Состояние загруженного PDF файла
   const [file, setFile] = useState<File>();
   // Массив текстовых узлов для перевода
@@ -107,8 +127,13 @@ function PdfViewer({ isOpened }: PdfTranslator) {
   const { provider, settings } = useSelector(selectActiveProviderSettings);
   const dispatch = useDispatch();
 
-  // Хук для работы с копированием текста
-  const { isCopied, handleCopy } = useCopying();
+  const isOpenFirstLangSelectionPopupForViewer = useSelector((state) =>
+    isElementOpen(state, 'firstLangSelectionPopupForViewer')
+  );
+
+  const isOpenSecondLangSelectionPopupForViewer = useSelector((state) =>
+    isElementOpen(state, 'secondLangSelectionPopupForViewer')
+  );
 
   // Ссылка на input элемент для загрузки файлов
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -122,8 +147,6 @@ function PdfViewer({ isOpened }: PdfTranslator) {
     generatedResponse,
     error: translationErrors,
     generate,
-    translateLanguage,
-    toggleTranslateLanguage,
     reset: resetResponse,
     stop,
   } = useModel();
@@ -439,35 +462,23 @@ function PdfViewer({ isOpened }: PdfTranslator) {
           <div className='pdf-viewer__translate-btns'>
             {settings.typeUse === 'translation' && (
               <>
-                {'en-ru' === translateLanguage ? (
-                  <DecorativeTextAndIconButton
-                    text={t`english`}
-                    decorativeColor='var(--foreground)'>
-                    <GlobeIcon />
-                  </DecorativeTextAndIconButton>
-                ) : (
-                  <DecorativeTextAndIconButton
-                    text={t`russian`}
-                    decorativeColor='var(--foreground)'>
-                    <GlobeUkIcon />
-                  </DecorativeTextAndIconButton>
-                )}
-                <IconButton onClick={toggleTranslateLanguage}>
+                <TextAndIconButton
+                  text={sourceLanguage}
+                  onClick={() =>
+                    dispatch(openElement('firstLangSelectionPopupForViewer'))
+                  }>
+                  <GlobeUkIcon />
+                </TextAndIconButton>
+                <IconButton onClick={switchLanguages}>
                   <SyncIcon color='var(--main)' />
                 </IconButton>
-                {'ru-en' === translateLanguage ? (
-                  <DecorativeTextAndIconButton
-                    text={t`english`}
-                    decorativeColor='var(--foreground)'>
-                    <GlobeIcon />
-                  </DecorativeTextAndIconButton>
-                ) : (
-                  <DecorativeTextAndIconButton
-                    text={t`russian`}
-                    decorativeColor='var(--foreground)'>
-                    <GlobeUkIcon />
-                  </DecorativeTextAndIconButton>
-                )}
+                <TextAndIconButton
+                  text={targetLanguage}
+                  onClick={() =>
+                    dispatch(openElement('secondLangSelectionPopupForViewer'))
+                  }>
+                  <GlobeIcon />
+                </TextAndIconButton>
               </>
             )}
           </div>
@@ -603,6 +614,45 @@ function PdfViewer({ isOpened }: PdfTranslator) {
           </Document>
         </div>
       </div>
+
+      <Popup
+        isOpened={isOpenFirstLangSelectionPopupForViewer}
+        setOpened={() =>
+          dispatch(closeElement('firstLangSelectionPopupForViewer'))
+        }
+        styleWrapper={{ minWidth: '30.4352%' }}>
+        {translationLanguages.map(({ language, code }) => (
+          <SelectorOption
+            key={code}
+            state='simple'
+            text={language}
+            isActive={sourceLanguage === language}
+            onClick={() => {
+              handleSourceLanguageSelection(language);
+              dispatch(closeElement('firstLangSelectionPopupForViewer'));
+            }}
+          />
+        ))}
+      </Popup>
+      <Popup
+        isOpened={isOpenSecondLangSelectionPopupForViewer}
+        setOpened={() =>
+          dispatch(closeElement('secondLangSelectionPopupForViewer'))
+        }
+        styleWrapper={{ minWidth: '30.4352%' }}>
+        {translationLanguages.map(({ language, code }) => (
+          <SelectorOption
+            key={code}
+            state='simple'
+            text={language}
+            isActive={targetLanguage === language}
+            onClick={() => {
+              handleTargetLanguageSelection(language);
+              dispatch(closeElement('secondLangSelectionPopupForViewer'));
+            }}
+          />
+        ))}
+      </Popup>
     </section>
   );
 }

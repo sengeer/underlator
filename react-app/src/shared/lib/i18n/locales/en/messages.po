@@ -76,9 +76,29 @@ msgstr "accent color"
 msgid "api configuration"
 msgstr "api configuration"
 
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "arabic"
+msgstr "arabic"
+
 #: src/widgets/settings/ui/settings.tsx
 msgid "background color"
 msgstr "background color"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "bengali"
+msgstr "bengali"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "burmese"
+msgstr "burmese"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "cantonese"
+msgstr "cantonese"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "chinese"
+msgstr "chinese"
 
 #: src/widgets/settings/ui/settings.tsx
 msgid "color scheme"
@@ -91,6 +111,10 @@ msgstr "Copy"
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Cut"
 msgstr "Cut"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "czech"
+msgstr "czech"
 
 #: src/shared/ui/selector-option/complex-mode.tsx
 msgid "Download"
@@ -108,10 +132,12 @@ msgstr "Downloading..."
 msgid "drag and drop your file here"
 msgstr "drag and drop your file here"
 
-#: src/widgets/text-translator/ui/text-translator.tsx
-#: src/widgets/text-translator/ui/text-translator.tsx
-#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
-#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "dutch"
+msgstr "dutch"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+#: src/pages/main/ui/main.tsx
 msgid "english"
 msgstr "english"
 
@@ -135,13 +161,41 @@ msgstr "Failed to stop generation"
 msgid "Failed to translate app"
 msgstr "Failed to translate app"
 
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "filipino"
+msgstr "filipino"
+
 #: src/widgets/settings/ui/settings.tsx
 msgid "foreground color"
 msgstr "foreground color"
 
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "french"
+msgstr "french"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "german"
+msgstr "german"
+
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Getting model catalog..."
 msgstr "Getting model catalog..."
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "gujarati"
+msgstr "gujarati"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "hebrew"
+msgstr "hebrew"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "hindi"
+msgstr "hindi"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "indonesian"
+msgstr "indonesian"
 
 #: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 msgid "instruction"
@@ -150,6 +204,26 @@ msgstr "instruction"
 #: src/widgets/settings/ui/settings.tsx
 msgid "interface language"
 msgstr "interface language"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "italian"
+msgstr "italian"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "japanese"
+msgstr "japanese"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "kazakh"
+msgstr "kazakh"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "khmer"
+msgstr "khmer"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "korean"
+msgstr "korean"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Loading App..."
@@ -163,9 +237,17 @@ msgstr "main color"
 msgid "main settings"
 msgstr "main settings"
 
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "malay"
+msgstr "malay"
+
 #: src/widgets/settings/ui/settings.tsx
 msgid "manage models"
 msgstr "manage models"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "marathi"
+msgstr "marathi"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Menu"
@@ -179,6 +261,10 @@ msgstr "model"
 msgid "Model..."
 msgstr "Model..."
 
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "mongolian"
+msgstr "mongolian"
+
 #: src/widgets/settings/ui/settings.tsx
 msgid "no model selected"
 msgstr "no model selected"
@@ -190,6 +276,18 @@ msgstr "or click"
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Paste"
 msgstr "Paste"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "persian"
+msgstr "persian"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "polish"
+msgstr "polish"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "portuguese"
+msgstr "portuguese"
 
 #: src/widgets/settings/ui/settings.tsx
 msgid "provider"
@@ -211,10 +309,8 @@ msgstr "Remove"
 msgid "Request error, check the settings"
 msgstr "Request error, check the settings"
 
-#: src/widgets/text-translator/ui/text-translator.tsx
-#: src/widgets/text-translator/ui/text-translator.tsx
-#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
-#: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+#: src/pages/main/ui/main.tsx
 msgid "russian"
 msgstr "russian"
 
@@ -222,13 +318,37 @@ msgstr "russian"
 msgid "Select All"
 msgstr "Select All"
 
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "spanish"
+msgstr "spanish"
+
 #: src/widgets/text-translator/ui/text-translator.tsx
 msgid "stop"
 msgstr "stop"
 
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "tamil"
+msgstr "tamil"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "telugu"
+msgstr "telugu"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "thai"
+msgstr "thai"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "tibetan"
+msgstr "tibetan"
+
 #: src/shared/ui/file-upload/file-upload.tsx
 msgid "to select a file!"
 msgstr "to select a file!"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "traditional chinese"
+msgstr "traditional chinese"
 
 #: src/widgets/text-translator/ui/text-translator.tsx
 msgid "translate"
@@ -238,9 +358,29 @@ msgstr "translate"
 msgid "translation"
 msgstr "translation"
 
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "turkish"
+msgstr "turkish"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "ukrainian"
+msgstr "ukrainian"
+
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Undo"
 msgstr "Undo"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "urdu"
+msgstr "urdu"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "uyghur"
+msgstr "uyghur"
+
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
+msgid "vietnamese"
+msgstr "vietnamese"
 
 #: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 #: src/widgets/pdf-viewer/ui/pdf-viewer.tsx

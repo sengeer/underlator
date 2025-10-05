@@ -28,7 +28,6 @@ import { DEFAULT_LOCALE } from '../../../shared/lib/constants';
 import useElectronTranslation from '../../../shared/lib/hooks/use-electron-translation';
 import useFormAndValidation from '../../../shared/lib/hooks/use-form-and-validation';
 import { loadCatalog } from '../../../shared/lib/i18n';
-import MODELS from '../../../shared/lib/mocks/jsons/model-list.json';
 import {
   getStorageWrite,
   setStorageWrite,
@@ -47,13 +46,12 @@ import {
 import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background';
 import ColorPicker from '../../../shared/ui/color-picker';
 import Popup from '../../../shared/ui/popup';
-import PopupWithSearch from '../../../shared/ui/popup-with-search';
 import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import { LANGUAGES, PROVIDERS } from '../constants/settings';
 import { SettingsState } from '../types/settings';
 import ManageModels from './manage-embedded-ollama';
-import TestIpc from './test-ipc';
+import Tests from './tests';
 
 /**
  * Компонент Settings.
@@ -65,7 +63,6 @@ import TestIpc from './test-ipc';
  */
 function Settings({ isOpened }: SettingsState) {
   const { values, handleChange, resetForm, setValues } = useFormAndValidation();
-  const [searchValue, setSearchValue] = useState('');
 
   const dispatch = useDispatch();
   const { provider, settings } = useSelector(selectProviderSettings);
@@ -119,14 +116,6 @@ function Settings({ isOpened }: SettingsState) {
    */
   const isOpenProviderSelectorPopup = useSelector((state) =>
     isElementOpen(state, 'providerSelectorPopup')
-  );
-
-  /**
-   * Состояние открытия модального окна тестового списка моделей.
-   * Получается из Redux store для управления видимостью.
-   */
-  const isOpenTestListModelsPopup = useSelector((state) =>
-    isElementOpen(state, 'testListModelsPopup')
   );
 
   /**
@@ -202,7 +191,7 @@ function Settings({ isOpened }: SettingsState) {
 
   return (
     <section className={`settings${isOpened ? ' settings_open' : ''}`}>
-      <TestIpc />
+      {import.meta.env.DEV && <Tests />}
 
       <div className='settings__container'>
         <div className='settings__column'>
@@ -354,32 +343,6 @@ function Settings({ isOpened }: SettingsState) {
           />
         ))}
       </Popup>
-      <PopupWithSearch
-        isOpened={isOpenTestListModelsPopup && Object.keys(MODELS).length > 1}
-        setOpened={() => dispatch(closeElement('testListModelsPopup'))}
-        styleWrapper={{ minWidth: '30.4352%' }}
-        enableLazyLoading
-        lazyLoadingThreshold={20}
-        lazyLoadingMargin='100px'
-        enableAnimation
-        animationDuration={50}
-        animationDelay={25}
-        animationType='scaleIn'
-        searchPlaceholder='Model...'
-        searchDebounceMs={300}
-        searchValue={searchValue}
-        onSearchChange={setSearchValue}>
-        {MODELS.data.ollama.map(({ name }) => (
-          <SelectorOption
-            key={name}
-            state='available'
-            text={name}
-            onClick={() => {
-              dispatch(closeElement('testListModelsPopup'));
-            }}
-          />
-        ))}
-      </PopupWithSearch>
 
       {/* ManageModels popup для Embedded Ollama */}
       {isOpenManageModelsPopup && (

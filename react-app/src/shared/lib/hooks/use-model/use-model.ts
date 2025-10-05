@@ -10,6 +10,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { addNotification } from '../../../models/notifications-slice/';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
+import { selectTranslationLanguages } from '../../../models/translation-languages-slice';
 import { DEFAULT_URL } from '../../constants';
 import featureProvider from './feature-provider';
 import { Status } from './types/use-model';
@@ -34,24 +35,15 @@ function useModel() {
   const [generatedResponse, setGeneratedResponse] = useState<
     string | Record<number, string>
   >('');
+
   // Ошибка выполнения операции
   const [error, setError] = useState<string | null>(null);
-
-  // Направление перевода
-  const [translateLanguage, setTranslateLanguage] = useState<'en-ru' | 'ru-en'>(
-    'en-ru'
-  );
-
-  /**
-   * Переключает направление перевода.
-   * Меняет язык с en-ru на ru-en и обратно.
-   */
-  function toggleTranslateLanguage() {
-    setTranslateLanguage((prev) => (prev === 'en-ru' ? 'ru-en' : 'en-ru'));
-  }
-
   // Настройки активного провайдера из Redux store
   const providerSettings = useSelector(selectActiveProviderSettings);
+
+  const { sourceLanguage, targetLanguage } = useSelector(
+    selectTranslationLanguages
+  );
 
   /**
    * Обрабатывает ответы от модели.
@@ -101,6 +93,9 @@ function useModel() {
     setGeneratedResponse(params.responseMode === 'arrayStream' ? {} : '');
     setError(null);
 
+    console.log('🚀 sourceLanguage', sourceLanguage);
+    console.log('🚀 targetLanguage', targetLanguage);
+
     // Создание контроллера для отмены операции
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -114,7 +109,8 @@ function useModel() {
         model: providerSettings.settings.model,
         typeUse: providerSettings.settings.typeUse,
         text: texts,
-        translateLanguage,
+        sourceLanguage,
+        targetLanguage,
         onModelResponse: (response: ModelResponse) =>
           handleResponse(response, params),
         params: params,
@@ -178,10 +174,6 @@ function useModel() {
     status,
     /** Сгенерированный ответ от модели */
     generatedResponse,
-    /** Текущее направление перевода */
-    translateLanguage,
-    /** Функция переключения направления перевода */
-    toggleTranslateLanguage,
     /** Ошибка выполнения операции */
     error,
     /** Функция запуска генерации */

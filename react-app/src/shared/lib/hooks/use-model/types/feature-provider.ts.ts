@@ -44,8 +44,10 @@ export interface ModelRequestContext {
   typeUse?: 'instruction' | 'translation';
   /** Текст или массив текстов для перевода */
   text: string | string[];
-  /** Язык перевода */
-  translateLanguage: 'en-ru' | 'ru-en';
+  /** Исходный язык */
+  sourceLanguage: string;
+  /** Целевой язык */
+  targetLanguage: string;
   /** Callback для обработки ответов */
   onModelResponse?: (response: ModelResponse) => void;
   /** Параметры генерации */

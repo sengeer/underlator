@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
 import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CopyIcon from '../../../shared/assets/icons/copy-icon';
@@ -11,12 +11,18 @@ import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import useCopying from '../../../shared/lib/hooks/use-copying';
 import useModel from '../../../shared/lib/hooks/use-model';
+import useTranslationLanguages from '../../../shared/lib/hooks/use-translation-languages';
 import useWindowSize from '../../../shared/lib/hooks/use-window-size';
 import stringifyGenerateResponse from '../../../shared/lib/utils/stringify-generate-response';
-import { selectActiveProviderSettings } from '../../../shared/models/provider-settings-slice';
+import {
+  openElement,
+  closeElement,
+  isElementOpen,
+} from '../../../shared/models/element-state-slice';
 import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
-import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import IconButton from '../../../shared/ui/icon-button';
+import Popup from '../../../shared/ui/popup';
+import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import '../styles/text-translator.scss';
 
@@ -25,38 +31,41 @@ interface TextTranslator {
 }
 
 function TextTranslator({ isOpened }: TextTranslator) {
-  const {
-    status,
-    generatedResponse,
-    generate,
-    translateLanguage,
-    toggleTranslateLanguage,
-    stop,
-  } = useModel();
-
   const { isCopied, handleCopy } = useCopying();
+  const { status, generatedResponse, generate, stop } = useModel();
+  const {
+    sourceLanguage,
+    targetLanguage,
+    translationLanguages,
+    getPlaceholderByLanguage,
+    handleSourceLanguageSelection,
+    handleTargetLanguageSelection,
+    switchLanguages,
+  } = useTranslationLanguages();
+
+  const { t } = useLingui();
+  const dispatch = useDispatch();
+
   const [input, setInput] = useState<string>('');
   const [output, setOutput] = useState<string>('');
 
-  const { provider } = useSelector(selectActiveProviderSettings);
+  const isOpenFirstLangSelectionPopupForTranslator = useSelector((state) =>
+    isElementOpen(state, 'firstLangSelectionPopupForTranslator')
+  );
 
-  const { t } = useLingui();
+  const isOpenSecondLangSelectionPopupForTranslator = useSelector((state) =>
+    isElementOpen(state, 'secondLangSelectionPopupForTranslator')
+  );
 
   function handleClear() {
     setInput('');
   }
 
   function handleTranslation() {
-    const sourceLanguage = translateLanguage.split('-')[0];
-    const targetLanguage = translateLanguage.split('-')[1];
-
     generate(
       input,
       {
         responseMode: 'stringStream',
-        instruction: `Translate from ${sourceLanguage} to ${
-          targetLanguage
-        } the text after the colon, and return only the translated text`,
       },
       {
         think: false,
@@ -75,28 +84,23 @@ function TextTranslator({ isOpened }: TextTranslator) {
   return (
     <section
       className={`text-translator${isOpened ? ' text-translator_open' : ''}`}>
-      {'en-ru' === translateLanguage ? (
-        <DecorativeTextAndIconButton
-          text={t`english`}
-          style={{ margin: '1rem auto 0' }}
-          decorativeColor='var(--foreground)'>
-          <GlobeIcon />
-        </DecorativeTextAndIconButton>
-      ) : (
-        <DecorativeTextAndIconButton
-          text={t`russian`}
-          style={{ margin: '1rem auto 0' }}
-          decorativeColor='var(--foreground)'>
-          <GlobeUkIcon />
-        </DecorativeTextAndIconButton>
-      )}
+      <TextAndIconButton
+        text={sourceLanguage}
+        style={{ margin: '1rem auto 0' }}
+        onClick={() =>
+          dispatch(openElement('firstLangSelectionPopupForTranslator'))
+        }>
+        <GlobeUkIcon />
+      </TextAndIconButton>
       <div className='text-translator__textarea-wrapper'>
         <textarea
           className='text-translator__textarea'
           value={input}
-          placeholder={'en-ru' === translateLanguage ? 'hello' : 'привет'}
+          placeholder={getPlaceholderByLanguage(sourceLanguage)}
           rows={1}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            setInput(e.target.value)
+          }
         />
         <IconButton
           style={{
@@ -109,7 +113,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
           <BackspaceIcon />
         </IconButton>
       </div>
-      <IconButton onClick={toggleTranslateLanguage}>
+      <IconButton onClick={switchLanguages}>
         {hasSizeS ? (
           <SyncIcon
             style={{ transform: 'rotate(0.25turn)' }}
@@ -124,26 +128,19 @@ function TextTranslator({ isOpened }: TextTranslator) {
           />
         )}
       </IconButton>
-      {'ru-en' === translateLanguage ? (
-        <DecorativeTextAndIconButton
-          text={t`english`}
-          style={{ margin: '1rem auto 0' }}
-          decorativeColor='var(--foreground)'>
-          <GlobeIcon />
-        </DecorativeTextAndIconButton>
-      ) : (
-        <DecorativeTextAndIconButton
-          text={t`russian`}
-          style={{ margin: '1rem auto 0' }}
-          decorativeColor='var(--foreground)'>
-          <GlobeUkIcon />
-        </DecorativeTextAndIconButton>
-      )}
+      <TextAndIconButton
+        text={targetLanguage}
+        style={{ margin: '1rem auto 0' }}
+        onClick={() =>
+          dispatch(openElement('secondLangSelectionPopupForTranslator'))
+        }>
+        <GlobeIcon />
+      </TextAndIconButton>
       <div className='text-translator__textarea-wrapper'>
         <textarea
           className='text-translator__textarea'
           value={output}
-          placeholder={'en-ru' === translateLanguage ? 'привет' : 'hello'}
+          placeholder={getPlaceholderByLanguage(targetLanguage)}
           rows={1}
           readOnly
         />
@@ -182,6 +179,44 @@ function TextTranslator({ isOpened }: TextTranslator) {
           <TranslateIcon />
         </TextAndIconButton>
       )}
+      <Popup
+        isOpened={isOpenFirstLangSelectionPopupForTranslator}
+        setOpened={() =>
+          dispatch(closeElement('firstLangSelectionPopupForTranslator'))
+        }
+        styleWrapper={{ minWidth: '30.4352%' }}>
+        {translationLanguages.map(({ language, code }) => (
+          <SelectorOption
+            key={code}
+            state='simple'
+            text={language}
+            isActive={sourceLanguage === language}
+            onClick={() => {
+              handleSourceLanguageSelection(language);
+              dispatch(closeElement('firstLangSelectionPopupForTranslator'));
+            }}
+          />
+        ))}
+      </Popup>
+      <Popup
+        isOpened={isOpenSecondLangSelectionPopupForTranslator}
+        setOpened={() =>
+          dispatch(closeElement('secondLangSelectionPopupForTranslator'))
+        }
+        styleWrapper={{ minWidth: '30.4352%' }}>
+        {translationLanguages.map(({ language, code }) => (
+          <SelectorOption
+            key={code}
+            state='simple'
+            text={language}
+            isActive={targetLanguage === language}
+            onClick={() => {
+              handleTargetLanguageSelection(language);
+              dispatch(closeElement('secondLangSelectionPopupForTranslator'));
+            }}
+          />
+        ))}
+      </Popup>
     </section>
   );
 }
