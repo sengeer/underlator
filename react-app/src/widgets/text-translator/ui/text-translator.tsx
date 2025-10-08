@@ -1,3 +1,25 @@
+/**
+ * @module TextTranslator
+ * Компонент для перевода текста через LLM модели.
+ *
+ * Предоставляет полнофункциональный интерфейс для перевода текста между различными языками.
+ * Интегрируется с системой управления языками, LLM моделями и Redux store для управления состоянием.
+ * Поддерживает выбор языков перевода, ввод текста, генерацию перевода и копирование результата.
+ *
+ * Компонент использует модальные окна для выбора языков и автоматически синхронизирует
+ * состояние с Redux store.
+ *
+ * @example
+ * // Использование в Main компоненте
+ * <TextTranslator isOpened={isOpenTextTranslationSection} />
+ *
+ * @example
+ * // Условное отображение компонента
+ * {isOpenTextTranslationSection && (
+ *   <TextTranslator isOpened={true} />
+ * )}
+ */
+
 import { useLingui } from '@lingui/react/macro';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -26,11 +48,39 @@ import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import '../styles/text-translator.scss';
 
-interface TextTranslator {
+/**
+ * Интерфейс пропсов компонента TextTranslator.
+ * Определяет параметры для управления отображением компонента.
+ */
+interface TextTranslatorProps {
+  /** Открыт ли компонент перевода текста */
   isOpened: boolean;
 }
 
-function TextTranslator({ isOpened }: TextTranslator) {
+/**
+ * Основной компонент TextTranslator.
+ *
+ * Реализует интерфейс для перевода текста между различными языками через LLM модели.
+ * Управляет состоянием ввода и вывода текста, выбором языков перевода и процессом генерации.
+ * Интегрируется с Redux store для управления состоянием модальных окон и языков.
+ *
+ * Основные функции:
+ * - Выбор исходного и целевого языков через модальные окна.
+ * - Ввод текста для перевода с возможностью очистки.
+ * - Генерация перевода через LLM модели с поддержкой streaming.
+ * - Копирование результата перевода в буфер обмена.
+ * - Переключение языков местами.
+ * - Адаптивный дизайн для мобильных устройств.
+ *
+ * Компонент автоматически обновляет выходной текст при получении ответа от модели
+ * и синхронизирует состояние с Redux store для управления видимостью модальных окон.
+ *
+ * @param props - Пропсы компонента.
+ * @param props.isOpened - Открыт ли компонент перевода текста.
+ * @returns JSX элемент с интерфейсом перевода текста.
+ */
+function TextTranslator({ isOpened }: TextTranslatorProps) {
+  // Хуки для управления состоянием и функциональностью
   const { isCopied, handleCopy } = useCopying();
   const { status, generatedResponse, generate, stop } = useModel();
   const {
@@ -46,9 +96,11 @@ function TextTranslator({ isOpened }: TextTranslator) {
   const { t } = useLingui();
   const dispatch = useDispatch();
 
+  // Локальное состояние для текста ввода и вывода
   const [input, setInput] = useState<string>('');
   const [output, setOutput] = useState<string>('');
 
+  // Состояние модальных окон из Redux store
   const isOpenFirstLangSelectionPopupForTranslator = useSelector((state) =>
     isElementOpen(state, 'firstLangSelectionPopupForTranslator')
   );
@@ -57,10 +109,19 @@ function TextTranslator({ isOpened }: TextTranslator) {
     isElementOpen(state, 'secondLangSelectionPopupForTranslator')
   );
 
+  /**
+   * Очищает поле ввода текста.
+   * Сбрасывает локальное состояние input в пустую строку.
+   */
   function handleClear() {
     setInput('');
   }
 
+  /**
+   * Запускает процесс перевода текста.
+   * Вызывает генерацию через LLM модель с настройками для streaming ответа.
+   * Использует режим stringStream для получения текста по частям.
+   */
   function handleTranslation() {
     generate(
       input,
@@ -73,10 +134,15 @@ function TextTranslator({ isOpened }: TextTranslator) {
     );
   }
 
+  // Получение размеров окна для адаптивного дизайна
   const { width } = useWindowSize();
 
   const hasSizeS = width <= 768;
 
+  /**
+   * Автоматическое обновление выходного текста при получении ответа от модели.
+   * Преобразует ответ модели в строковый формат для отображения в UI.
+   */
   useEffect(() => {
     setOutput(stringifyGenerateResponse(generatedResponse));
   }, [generatedResponse]);
@@ -84,6 +150,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
   return (
     <section
       className={`text-translator${isOpened ? ' text-translator_open' : ''}`}>
+      {/* Кнопка выбора исходного языка */}
       <TextAndIconButton
         text={sourceLanguage}
         style={{ margin: '1rem auto 0' }}
@@ -92,6 +159,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
         }>
         <GlobeUkIcon />
       </TextAndIconButton>
+
+      {/* Поле ввода текста для перевода */}
       <div className='text-translator__textarea-wrapper'>
         <textarea
           className='text-translator__textarea'
@@ -102,6 +171,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
             setInput(e.target.value)
           }
         />
+        {/* Кнопка очистки поля ввода */}
         <IconButton
           style={{
             position: 'absolute',
@@ -113,6 +183,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
           <BackspaceIcon />
         </IconButton>
       </div>
+
+      {/* Кнопка переключения языков местами */}
       <IconButton onClick={switchLanguages}>
         {hasSizeS ? (
           <SyncIcon
@@ -128,6 +200,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
           />
         )}
       </IconButton>
+
+      {/* Кнопка выбора целевого языка */}
       <TextAndIconButton
         text={targetLanguage}
         style={{ margin: '1rem auto 0' }}
@@ -136,6 +210,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
         }>
         <GlobeIcon />
       </TextAndIconButton>
+
+      {/* Поле вывода переведенного текста */}
       <div className='text-translator__textarea-wrapper'>
         <textarea
           className='text-translator__textarea'
@@ -144,6 +220,7 @@ function TextTranslator({ isOpened }: TextTranslator) {
           rows={1}
           readOnly
         />
+        {/* Кнопка копирования результата */}
         <IconButton
           style={{
             position: 'absolute',
@@ -160,6 +237,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
           </AnimatingWrapper>
         </IconButton>
       </div>
+
+      {/* Кнопка перевода или остановки процесса */}
       {status === 'process' ? (
         <TextAndIconButton
           text={t`stop`}
@@ -179,6 +258,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
           <TranslateIcon />
         </TextAndIconButton>
       )}
+
+      {/* Модальное окно выбора исходного языка */}
       <Popup
         isOpened={isOpenFirstLangSelectionPopupForTranslator}
         setOpened={() =>
@@ -198,6 +279,8 @@ function TextTranslator({ isOpened }: TextTranslator) {
           />
         ))}
       </Popup>
+
+      {/* Модальное окно выбора целевого языка */}
       <Popup
         isOpened={isOpenSecondLangSelectionPopupForTranslator}
         setOpened={() =>
