@@ -25,8 +25,8 @@ export class Electron {
       throw new Error('Electron API is unavailable');
     }
 
-    import.meta.env.DEV && console.log('🚀 request', request);
-    import.meta.env.DEV && console.log('🚀 config', config);
+    console.log('🚀 request', request);
+    console.log('🚀 config', config);
 
     // Вызывает IPC и проверяет результат
     const response = await window.electron.ollama.generate(request, config);

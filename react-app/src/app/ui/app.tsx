@@ -13,12 +13,20 @@ import { loadCatalog } from '../../shared/lib/i18n';
 import { getStorageWrite } from '../../shared/lib/utils/control-local-storage';
 import { COLOR_VARS } from '../constants/app';
 
-loadPixelperfect({
-  page: 'index',
-  breakpoints: [1920],
-  folder: 'pixelperfect',
-  ext: 'png',
-});
+// Безопасная инициализация pixelperfect-tool с обработкой ошибок localStorage
+import.meta.env.DEV &&
+  (() => {
+    try {
+      loadPixelperfect({
+        page: 'index',
+        breakpoints: [1920],
+        folder: 'pixelperfect',
+        ext: 'png',
+      });
+    } catch (error) {
+      console.warn('pixelperfect-tool failed to initialize:', error);
+    }
+  })();
 
 function App() {
   const localeFromStorage = getStorageWrite('locale');
