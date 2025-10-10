@@ -8,4 +8,6 @@ export interface BaseButtonProps {
   isActiveStyle?: boolean;
   isDisabled?: boolean;
   tooltipText?: string;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }

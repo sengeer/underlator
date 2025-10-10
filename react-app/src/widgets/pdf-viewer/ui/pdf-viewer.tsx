@@ -26,7 +26,7 @@ import UnderlatorIcon from '../../../shared/assets/icons/underlator-icon';
 import useCopying from '../../../shared/lib/hooks/use-copying';
 import useFormAndValidation from '../../../shared/lib/hooks/use-form-and-validation';
 import useModel from '../../../shared/lib/hooks/use-model';
-import useTranslateButton from '../../../shared/lib/hooks/use-translate-button';
+import useModelButton from '../../../shared/lib/hooks/use-model-button';
 import useTranslationLanguages from '../../../shared/lib/hooks/use-translation-languages';
 import stringifyGenerateResponse from '../../../shared/lib/utils/stringify-generate-response';
 import { createUpdateHandler } from '../../../shared/lib/utils/text-node-manager/text-node-manager';
@@ -157,13 +157,16 @@ function PdfViewer({ isOpened }: PdfTranslator) {
   // Хук для управления кнопкой перевода
   const {
     buttonState,
-    handleTranslateClick,
+    handleUseModelClick,
     handleStopClick,
     hideButton,
     isVisible: isTranslateButtonVisible,
     position: positionOfTranslateButton,
-  } = useTranslateButton({
-    onTranslate: onTranslateClick,
+    isAnimating,
+    handleMouseEnter,
+    handleMouseLeave,
+  } = useModelButton({
+    onUseModel: onUseModelClick,
     onStop: stop,
     isProcessing: status === 'process',
     containerRef: topBarRef,
@@ -316,19 +319,18 @@ function PdfViewer({ isOpened }: PdfTranslator) {
   }
 
   /**
-   * Обработчик клика по кнопке перевода.
+   * Обработчик клика по кнопке использования модели.
    * Собирает выделенный текст, определяет режим работы (перевод/инструкция)
    * и запускает соответствующий процесс генерации через LLM модель.
    *
    * Для режима перевода использует контекстный перевод с массивом текстовых фрагментов.
    * Для режима инструкций обрабатывает текст как единую строку с пользовательской инструкцией.
    */
-  async function onTranslateClick() {
+  async function onUseModelClick() {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
 
-    // TODO: Добавить допустимость отображения кнопки перевода только внутри определенного HTML-элемента
     const block = findClosestElement(range.commonAncestorContainer);
     if (!block) return;
 
@@ -563,7 +565,12 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       <div className='pdf-viewer__container'>
         {isTranslateButtonVisible && positionOfTranslateButton && (
           <IconButton
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             isActiveStyle
+            className={`pdf-viewer__translate-button${
+              isAnimating ? ' pdf-viewer__translate-button_moving' : ''
+            }`}
             style={{
               position: 'absolute',
               top: `${positionOfTranslateButton.y}px`,
@@ -575,7 +582,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
             onClick={
               buttonState.type === 'stop'
                 ? handleStopClick
-                : handleTranslateClick
+                : handleUseModelClick
             }>
             {buttonState.type === 'stop' &&
             settings.typeUse !== 'instruction' ? (

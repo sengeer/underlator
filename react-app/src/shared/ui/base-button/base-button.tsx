@@ -11,6 +11,8 @@ function BaseButton({
   isActiveStyle,
   isDisabled,
   tooltipText,
+  onMouseEnter,
+  onMouseLeave,
 }: BaseButtonProps) {
   return (
     <button
@@ -19,7 +21,9 @@ function BaseButton({
       style={style}
       onClick={onClick}
       disabled={isDisabled}
-      title={tooltipText}>
+      title={tooltipText}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}>
       {children && <div className='base-button__icon'>{children}</div>}
       {text && <span className='base-button__text'>{text}</span>}
     </button>

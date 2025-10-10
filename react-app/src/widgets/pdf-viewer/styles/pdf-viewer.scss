@@ -1,3 +1,27 @@
+@keyframes translate-button-appear {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes translate-button-disappear {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+
 .pdf-viewer {
   position: relative;
   display: none;
@@ -123,6 +147,20 @@
 
     &_show {
       display: flex;
+    }
+  }
+
+  // Анимации для кнопки перевода
+  &__translate-button {
+    transition: all 0.2s ease-in-out;
+    animation: translate-button-appear 0.2s ease-in-out;
+
+    &_hidden {
+      animation: translate-button-disappear 0.2s ease-in-out;
+    }
+
+    &_moving {
+      transition: all 0.15s ease-in-out;
     }
   }
 }
