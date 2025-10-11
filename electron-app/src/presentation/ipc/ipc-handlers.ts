@@ -14,6 +14,7 @@ import type { IpcMessage, IpcResponse } from '../../types';
 export class IpcHandler {
   /**
    * Создает успешный IPC ответ.
+   *
    * @param data - Данные ответа.
    * @param id - ID сообщения.
    * @returns Форматированный успешный ответ.
@@ -28,6 +29,7 @@ export class IpcHandler {
 
   /**
    * Создает ответ с ошибкой.
+   *
    * @param error - Сообщение об ошибке.
    * @param id - ID сообщения.
    * @returns Форматированный ответ с ошибкой.
@@ -42,6 +44,7 @@ export class IpcHandler {
 
   /**
    * Создает прогресс сообщение.
+   *
    * @param progress - Данные прогресса.
    * @param id - ID сообщения.
    * @returns Форматированное сообщение прогресса.
@@ -57,6 +60,7 @@ export class IpcHandler {
 
   /**
    * Валидирует входящий IPC запрос.
+   *
    * @param request - Объект запроса.
    * @param requiredFields - Обязательные поля.
    * @returns Результат валидации.
@@ -81,6 +85,7 @@ export class IpcHandler {
 
   /**
    * Логирует IPC операцию.
+   *
    * @param operation - Название операции.
    * @param request - Входящий запрос.
    * @param response - Исходящий ответ.
@@ -105,6 +110,7 @@ export class IpcHandler {
 
   /**
    * Обрабатывает ошибки IPC операций.
+   *
    * @param error - Объект ошибки.
    * @param context - Контекст операции.
    * @returns Форматированная ошибка для IPC.
@@ -120,6 +126,7 @@ export class IpcHandler {
 
   /**
    * Преобразует результат Ollama операции в IPC ответ.
+   *
    * @param result - Результат Ollama операции.
    * @param id - ID сообщения.
    * @returns IPC ответ.
@@ -137,6 +144,7 @@ export class IpcHandler {
 
   /**
    * Создает обертку для IPC обработчика с логированием.
+   *
    * @param handler - Функция обработчика.
    * @param operationName - Название операции для логирования.
    * @returns Обернутый обработчик.
@@ -198,6 +206,7 @@ export class IpcHandler {
 
   /**
    * Создает обработчик для streaming операций.
+   *
    * @param handler - Функция обработчика с callback.
    * @param operationName - Название операции.
    * @returns Обернутый streaming обработчик.

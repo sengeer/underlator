@@ -41,6 +41,7 @@ export class OllamaApi {
 
   /**
    * Создает экземпляр OllamaApi с настройками.
+   *
    * @param config - Конфигурация API клиента.
    */
   constructor(config?: Partial<OllamaApiConfig>) {
@@ -54,6 +55,7 @@ export class OllamaApi {
   /**
    * Генерирует текст с помощью указанной модели.
    * Поддерживает streaming ответы и обработку ошибок.
+   *
    * @param request - Параметры генерации.
    * @param config - Конфигурация для API.
    * @param onChunk - Callback для обработки streaming ответов.
@@ -126,6 +128,7 @@ export class OllamaApi {
 
   /**
    * Получает список доступных моделей.
+   *
    * @param signal - AbortSignal для отмены операции.
    * @returns Promise со списком моделей.
    */
@@ -157,6 +160,7 @@ export class OllamaApi {
   /**
    * Устанавливает модель из реестра.
    * Поддерживает streaming прогресс установки.
+   *
    * @param request - Параметры установки модели.
    * @param onProgress - Callback для обработки прогресса.
    * @param signal - AbortSignal для отмены операции.
@@ -214,6 +218,7 @@ export class OllamaApi {
 
   /**
    * Удаляет модель из системы.
+   *
    * @param request - Параметры удаления модели.
    * @param signal - AbortSignal для отмены операции.
    * @returns Promise с результатом удаления.
@@ -275,6 +280,7 @@ export class OllamaApi {
 
   /**
    * Проверяет доступность Ollama сервера.
+   *
    * @param signal - AbortSignal для отмены операции.
    * @returns Promise с результатом проверки.
    */
@@ -304,6 +310,7 @@ export class OllamaApi {
 
   /**
    * Получает информацию о конкретной модели.
+   *
    * @param modelName - Название модели.
    * @param signal - AbortSignal для отмены операции.
    * @returns Promise с информацией о модели.
@@ -337,6 +344,7 @@ export class OllamaApi {
 
   /**
    * Обновляет конфигурацию API клиента.
+   *
    * @param newConfig - Новая конфигурация.
    */
   updateConfig(newConfig: Partial<OllamaApiConfig>): void {
@@ -349,6 +357,7 @@ export class OllamaApi {
 
   /**
    * Получает текущую конфигурацию API клиента.
+   *
    * @returns Текущая конфигурация.
    */
   getConfig(): OllamaApiConfig {
@@ -357,6 +366,7 @@ export class OllamaApi {
 
   /**
    * Создает новый экземпляр API с другой конфигурацией.
+   *
    * @param config - Новая конфигурация.
    * @returns Новый экземпляр OllamaApi.
    */
@@ -370,6 +380,7 @@ export class OllamaApi {
 
 /**
  * Создает экземпляр OllamaApi с настройками по умолчанию.
+ *
  * @param config - Опциональная конфигурация.
  * @returns Экземпляр OllamaApi.
  */

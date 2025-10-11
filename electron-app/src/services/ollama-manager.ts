@@ -14,6 +14,7 @@ import { isDev } from '../main';
 
 /**
  * @class OllamaManager.
+ *
  * Менеджер для управления Ollama сервером в Electron main process.
  * Обеспечивает автоматическую установку и управление жизненным циклом Ollama.
  */
@@ -28,6 +29,7 @@ class OllamaManager {
   /**
    * Инициализирует OllamaManager и выполняет автоматическую установку Ollama.
    * Проверяет доступность Ollama и устанавливает его при необходимости.
+   *
    * @returns {Promise<void>} Promise, который разрешается после инициализации.
    * @throws {Error} Ошибка инициализации или установки Ollama.
    */
@@ -60,7 +62,8 @@ class OllamaManager {
   }
 
   /**
-   * ообщение.
+   * Форматирует сообщение.
+   *
    * @param {string} msg - Сообщение для форматирования.
    * @returns {string} Форматированное сообщение.
    */
@@ -83,6 +86,8 @@ class OllamaManager {
   /**
    * Запускает Ollama сервер.
    * Проверяет статус сервера и запускает его при необходимости.
+   * Поддерживает офлайн режим - сначала проверяет локальные версии Ollama.
+   *
    * @returns {Promise<boolean>} Promise с результатом запуска (true - успешно, false - уже запущен).
    * @throws {Error} Ошибка запуска Ollama сервера.
    */
@@ -117,11 +122,37 @@ class OllamaManager {
             return false;
           }
 
-          // Получение метаданных последней версии Ollama
-          const metadata = await this.electronOllama.getMetadata('latest');
+          // Сначала проверяет доступные версии Ollama
+          const downloadedVersions =
+            await this.electronOllama.downloadedVersions();
+          console.log(
+            '📦 Available local Ollama versions:',
+            downloadedVersions
+          );
+
+          let versionToServe: any;
+
+          if (downloadedVersions.length > 0) {
+            // Использует последнюю доступную версию
+            const lastVersion =
+              downloadedVersions[downloadedVersions.length - 1];
+            if (lastVersion) {
+              versionToServe = lastVersion;
+              console.log(`✅ Using local Ollama version: ${versionToServe}`);
+            } else {
+              throw new Error('❌ Invalid local version found');
+            }
+          } else {
+            // Если локальных версий нет, пытаемся получить метаданные из интернета
+            console.log(
+              '🌐 No local versions found, attempting to download latest...'
+            );
+            const metadata = await this.electronOllama.getMetadata('latest');
+            versionToServe = metadata.version;
+          }
 
           // Запуск сервера с автоматической загрузкой при необходимости
-          await this.electronOllama.serve(metadata.version, {
+          await this.electronOllama.serve(versionToServe, {
             serverLog: message => console.log('🔌 [Ollama Server]', message),
             downloadLog: (percent, message) =>
               mainWindow.webContents.send('splash:status-update', {
@@ -138,7 +169,49 @@ class OllamaManager {
           return true;
         } catch (error) {
           console.error(`❌ Attempt ${attempt} failed:`, error);
-          console.error(`❌ Attempt ${attempt} failed:`, error);
+
+          // Проверяет, является ли ошибка из-за отсутствия интернета
+          const isNetworkError =
+            error instanceof Error &&
+            (error.message.includes('fetch') ||
+              error.message.includes('network') ||
+              error.message.includes('ECONNREFUSED') ||
+              error.message.includes('ENOTFOUND'));
+
+          if (isNetworkError) {
+            console.warn(
+              '🌐 Network error detected, checking for local Ollama versions...'
+            );
+
+            try {
+              // Проверяет, есть ли локальные версии для запуска
+              const downloadedVersions =
+                await this.electronOllama.downloadedVersions();
+
+              if (downloadedVersions.length > 0) {
+                console.log(
+                  '✅ Found local versions, retrying with local Ollama...'
+                );
+                // Продолжает попытки запуска с локальными версиями
+              } else {
+                console.warn(
+                  '⚠️ No local Ollama versions available and no internet connection'
+                );
+                // Если нет локальных версий и нет интернета, бросает ошибку
+                throw new Error(
+                  '❌ No local Ollama versions available and no internet connection. Please install Ollama manually or connect to the internet.'
+                );
+              }
+            } catch (localCheckError) {
+              console.error(
+                '❌ Error checking local versions:',
+                localCheckError
+              );
+              throw new Error(
+                '❌ Failed to start Ollama: no local versions available and no internet connection'
+              );
+            }
+          }
 
           // Если это последняя попытка - пробрасывает ошибку дальше
           if (attempt >= this.MAX_ATTEMPTS) {
@@ -164,6 +237,7 @@ class OllamaManager {
   /**
    * Останавливает Ollama сервер.
    * Безопасно завершает работу сервера с сохранением состояния.
+   *
    * @returns {Promise<boolean>} Promise с результатом остановки (true - успешно, false - уже остановлен).
    * @throws {Error} Ошибка остановки Ollama сервера.
    */
@@ -203,6 +277,7 @@ class OllamaManager {
   /**
    * Проверяет статус работы Ollama сервера.
    * Выполняет ping запрос к серверу для определения его доступности.
+   *
    * @returns {Promise<boolean>} Promise с результатом проверки (true - сервер работает, false - не работает).
    * @throws {Error} Ошибка проверки статуса сервера.
    */
@@ -223,6 +298,7 @@ class OllamaManager {
 
   /**
    * Получает экземпляр ElectronOllama для прямого взаимодействия.
+   *
    * @returns {ElectronOllama | null} Экземпляр ElectronOllama или null если не инициализирован.
    */
   getElectronOllamaInstance(): ElectronOllama | null {
@@ -231,6 +307,7 @@ class OllamaManager {
 
   /**
    * Проверяет статус инициализации OllamaManager.
+   *
    * @returns {boolean} true если OllamaManager инициализирован, false в противном случае.
    */
   getInitializationStatus(): boolean {
@@ -240,6 +317,7 @@ class OllamaManager {
   /**
    * Выполняет полную очистку ресурсов OllamaManager.
    * Останавливает сервер и освобождает ресурсы.
+   *
    * @returns {Promise<void>} Promise, который разрешается после очистки.
    */
   async cleanup(): Promise<void> {

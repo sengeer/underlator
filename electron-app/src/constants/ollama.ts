@@ -20,8 +20,8 @@ export const OLLAMA_DEFAULT_CONFIG = {
 } as const;
 
 /**
- * Endpoints Ollama API
- * Все доступные endpoints для взаимодействия с Ollama
+ * Endpoints Ollama API.
+ * Все доступные endpoints для взаимодействия с Ollama.
  */
 export const OLLAMA_ENDPOINTS = {
   /** Генерация текста */

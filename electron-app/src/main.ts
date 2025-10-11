@@ -73,6 +73,7 @@ async function cleanupResources(): Promise<void> {
 /**
  * Отправляет статус splash screen в React приложение.
  * Используется для передачи обновлений статуса инициализации.
+ *
  * @param status - Статус для отправки в React splash screen.
  */
 function sendSplashStatus(status: SplashMessages): void {
@@ -98,6 +99,7 @@ function sendSplashComplete(): void {
 /**
  * Отправляет ошибку инициализации в React приложение.
  * Используется для отображения ошибок в splash screen.
+ *
  * @param error - Текст ошибки.
  */
 function sendSplashError(error: string): void {

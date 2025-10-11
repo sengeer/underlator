@@ -21,6 +21,7 @@ export class OllamaHtmlParser {
 
   /**
    * Получает список всех доступных моделей со всеми квантизациями.
+   *
    * @returns Promise со списком моделей включая все квантизации.
    */
   async getAvailableModels(): Promise<ParseResult> {
@@ -123,6 +124,7 @@ export class OllamaHtmlParser {
 
   /**
    * Получает теги для моделей с ограничением concurrency.
+   *
    * @param models - Список моделей для обработки.
    * @param concurrencyLimit - Максимальное количество одновременных запросов.
    * @returns Promise с результатами получения тегов.
@@ -164,6 +166,7 @@ export class OllamaHtmlParser {
 
   /**
    * Получает теги для конкретной модели с кэшированием.
+   *
    * @param modelName - Название модели.
    * @returns Promise со списком тегов.
    */
@@ -200,6 +203,7 @@ export class OllamaHtmlParser {
 
   /**
    * Получает теги из кэша если они еще актуальны.
+   *
    * @param modelName - Название модели.
    * @returns Кэшированные теги или null.
    */
@@ -214,6 +218,7 @@ export class OllamaHtmlParser {
 
   /**
    * Сохраняет теги в кэш.
+   *
    * @param modelName - Название модели.
    * @param tags - Список тегов.
    */
@@ -224,6 +229,7 @@ export class OllamaHtmlParser {
 
   /**
    * Парсит HTML главной страницы библиотеки.
+   *
    * @param html - HTML содержимое страницы.
    * @returns Список моделей.
    */
@@ -267,6 +273,7 @@ export class OllamaHtmlParser {
 
   /**
    * Парсит HTML страницы тегов модели.
+   *
    * @param html - HTML содержимое страницы тегов.
    * @param modelName - Название модели.
    * @returns Список тегов.
@@ -319,6 +326,7 @@ export class OllamaHtmlParser {
 
   /**
    * Быстрое извлечение информации о модели из HTML.
+   *
    * @param html - HTML содержимое страницы.
    * @param modelName - Название модели.
    * @returns Дополнительная информация о модели.
@@ -403,6 +411,7 @@ export class OllamaHtmlParser {
   /**
    * Оценивает размер квантизированной модели.
    * Рассчитывает приблизительный размер на основе уровня квантизации.
+   *
    * @param baseSize - Базовый размер модели.
    * @param tag - Тег квантизации.
    * @returns Оцененный размер квантизированной модели.
@@ -440,10 +449,11 @@ export class OllamaHtmlParser {
   }
 
   /**
-   * Получает полную информацию о модели с тегами
-   * Объединяет базовую информацию с тегами
-   * @param modelName - Название модели
-   * @returns Promise с полной информацией о модели
+   * Получает полную информацию о модели с тегами.
+   * Объединяет базовую информацию с тегами.
+   *
+   * @param modelName - Название модели.
+   * @returns Promise с полной информацией о модели.
    */
   async getFullModelInfo(modelName: string): Promise<ParsedModel | null> {
     try {
@@ -477,6 +487,7 @@ export class OllamaHtmlParser {
 
 /**
  * Создает экземпляр OllamaHtmlParser.
+ *
  * @returns Экземпляр парсера.
  */
 export function createOllamaHtmlParser(): OllamaHtmlParser {

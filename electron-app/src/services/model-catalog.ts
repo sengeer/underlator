@@ -18,6 +18,7 @@ import type {
 
 /**
  * @class ModelCatalogService
+ *
  * Сервис для работы с каталогом моделей Ollama.
  * Предоставляет методы для получения, кэширования и фильтрации моделей.
  */
@@ -29,6 +30,7 @@ export class ModelCatalogService {
 
   /**
    * Создает экземпляр ModelCatalogService.
+   *
    * @param config - Конфигурация сервиса.
    */
   constructor(config?: Partial<ModelCatalogConfig>) {
@@ -43,6 +45,8 @@ export class ModelCatalogService {
   /**
    * Получает полный каталог доступных моделей.
    * Объединяет локально установленные модели с моделями из Ollama Library.
+   * При отсутствии интернета возвращает только локальные модели.
+   *
    * @param forceRefresh - Принудительное обновление кэша.
    * @returns Promise с каталогом моделей.
    */
@@ -87,6 +91,7 @@ export class ModelCatalogService {
 
   /**
    * Получает информацию о конкретной модели.
+   *
    * @param modelName - Название модели.
    * @returns Promise с информацией о модели.
    */
@@ -137,6 +142,7 @@ export class ModelCatalogService {
 
   /**
    * Выполняет поиск моделей по фильтрам.
+   *
    * @param filters - Фильтры для поиска.
    * @returns Promise с отфильтрованным каталогом.
    */
@@ -232,6 +238,7 @@ export class ModelCatalogService {
 
   /**
    * Получает статистику кэша.
+   *
    * @returns Информация о состоянии кэша.
    */
   getCacheStats(): {
@@ -250,6 +257,7 @@ export class ModelCatalogService {
 
   /**
    * Обновляет конфигурацию сервиса.
+   *
    * @param newConfig - Новая конфигурация.
    */
   updateConfig(newConfig: Partial<ModelCatalogConfig>): void {
@@ -261,6 +269,8 @@ export class ModelCatalogService {
 
   /**
    * Получает локально установленные модели из Ollama API.
+   * При недоступности Ollama сервера возвращает пустой список.
+   *
    * @returns Promise со списком локальных моделей.
    */
   private async getLocalModels(): Promise<OllamaModelInfo[]> {
@@ -282,7 +292,12 @@ export class ModelCatalogService {
         tags: ['local', 'installed'],
       }));
     } catch (error) {
-      console.error("❌ Couldn't get local models:", error);
+      // При недоступности Ollama сервера возвращает пустой список
+      // Это позволяет приложению запускаться даже без локальных моделей
+      console.warn(
+        '⚠️ Ollama server unavailable, no local models available:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
       return [];
     }
   }
@@ -290,6 +305,8 @@ export class ModelCatalogService {
   /**
    * Получает модели из Ollama Library через HTML парсинг.
    * Использует квантизированные модели для получения полного каталога.
+   * При отсутствии интернета возвращает пустой список для graceful fallback.
+   *
    * @returns Promise со списком библиотечных моделей.
    */
   private async getLibraryModels(): Promise<OllamaModelInfo[]> {
@@ -350,16 +367,19 @@ export class ModelCatalogService {
       );
       return this.getStaticModels();
     } catch (error) {
-      console.error(
-        '❌ Error getting models from the Ollama Library, using a static list:',
-        error
+      // При сетевых ошибках возвращаем пустой список для graceful fallback
+      // Это позволяет приложению запускаться только с локальными моделями
+      console.warn(
+        '⚠️ Network error getting models from Ollama Library, using only local models:',
+        error instanceof Error ? error.message : 'Unknown error'
       );
-      return this.getStaticModels();
+      return [];
     }
   }
 
   /**
    * Получает статический список моделей как fallback.
+   *
    * @returns Список статических моделей.
    */
   private getStaticModels(): OllamaModelInfo[] {
@@ -382,6 +402,7 @@ export class ModelCatalogService {
 
   /**
    * Создает объединенный каталог из локальных и библиотечных моделей.
+   *
    * @param localModels - Локально установленные модели.
    * @param libraryModels - Модели из Ollama Library.
    * @returns Объединенный каталог моделей.
@@ -407,6 +428,7 @@ export class ModelCatalogService {
 
   /**
    * Извлекает размер параметров из названия модели.
+   *
    * @param modelName - Название модели.
    * @returns Размер параметров.
    */
@@ -421,6 +443,7 @@ export class ModelCatalogService {
 
   /**
    * Извлекает уровень квантизации из названия модели или тега.
+   *
    * @param modelNameOrTag - Название модели или тег квантизации.
    * @returns Уровень квантизации.
    */
@@ -449,6 +472,7 @@ export class ModelCatalogService {
 
   /**
    * Проверяет валидность кэша.
+   *
    * @returns true если кэш действителен.
    */
   private isCacheValid(): boolean {
@@ -462,6 +486,7 @@ export class ModelCatalogService {
 
   /**
    * Обновляет кэш каталога.
+   *
    * @param catalog - Новый каталог для кэширования.
    */
   private updateCache(catalog: ModelCatalog): void {
@@ -476,6 +501,7 @@ export class ModelCatalogService {
 
 /**
  * Создает экземпляр ModelCatalogService с настройками по умолчанию.
+ *
  * @param config - Опциональная конфигурация.
  * @returns Экземпляр ModelCatalogService.
  */
