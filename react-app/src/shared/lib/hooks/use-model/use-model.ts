@@ -155,7 +155,7 @@ function useModel() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
 
-      window.electron.ollama.stop().catch((error: Error) => {
+      window.electron.model.stop().catch((error: Error) => {
         dispatch(
           addNotification({
             type: 'error',

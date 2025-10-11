@@ -154,11 +154,11 @@ export class Electron {
         this.errorCallbacks.set(params.name, onError);
       }
 
-      if (!window.electron?.models) {
+      if (!window.electron?.model) {
         throw new Error('Electron API is unavailable');
       }
 
-      const response = await window.electron.models.install({
+      const response = await window.electron.model.install({
         name: params.name,
         tag: params.tag,
       });
@@ -197,11 +197,11 @@ export class Electron {
    */
   async removeModel(params: RemoveModelParams): Promise<ModelOperationResult> {
     try {
-      if (!window.electron?.models) {
+      if (!window.electron?.model) {
         throw new Error('Electron API is unavailable');
       }
 
-      const response = await window.electron.models.remove({
+      const response = await window.electron.model.remove({
         name: params.name,
       });
 
@@ -225,11 +225,11 @@ export class Electron {
    */
   async listInstalledModels(): Promise<ModelOperationResult> {
     try {
-      if (!window.electron?.models) {
+      if (!window.electron?.model) {
         throw new Error('Electron API is unavailable');
       }
 
-      const response = await window.electron.models.list();
+      const response = await window.electron.model.list();
 
       return response;
     } catch (error) {
@@ -249,7 +249,7 @@ export class Electron {
    */
   private setupProgressListeners(): void {
     // Проверяем доступность Electron API
-    if (!window.electron?.models) {
+    if (!window.electron?.model) {
       console.warn(
         'Electron API is not available for configuring progress listeners'
       );
@@ -257,7 +257,7 @@ export class Electron {
     }
 
     // Подписывается на прогресс установки моделей
-    window.electron.models.onInstallProgress(
+    window.electron.model.onInstallProgress(
       (progress: ModelInstallProgress) => {
         // Вызывает callback для конкретной модели
         const callback = this.progressCallbacks.get(progress.name);

@@ -21,7 +21,7 @@ export class Electron {
     request: GenerateRequest & GenerateOptions,
     config?: ProviderSettings
   ): Promise<string> {
-    if (!window.electron?.ollama) {
+    if (!window.electron?.model) {
       throw new Error('Electron API is unavailable');
     }
 
@@ -29,7 +29,7 @@ export class Electron {
     console.log('🚀 config', config);
 
     // Вызывает IPC и проверяет результат
-    const response = await window.electron.ollama.generate(request, config);
+    const response = await window.electron.model.generate(request, config);
 
     // Проверяет успешность операции IPC
     if (typeof response === 'object' && response !== null) {
@@ -59,11 +59,11 @@ export class Electron {
   onGenerateProgress(
     callback: (progress: GenerateResponse) => void
   ): () => void {
-    if (!window.electron?.ollama) {
+    if (!window.electron?.model) {
       throw new Error('Electron API is unavailable');
     }
 
-    return window.electron.ollama.onGenerateProgress(callback);
+    return window.electron.model.onGenerateProgress(callback);
   }
 }
 

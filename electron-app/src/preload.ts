@@ -27,44 +27,41 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.send('update-translations', translations);
   },
 
-  // API для Ollama генерации
-  ollama: {
+  // API для управления моделями
+  model: {
     generate: (request: OllamaGenerateRequest, config: ElectronApiConfig) =>
-      ipcRenderer.invoke('ollama:generate', request, config),
+      ipcRenderer.invoke('model:generate', request, config),
 
-    stop: () => ipcRenderer.invoke('ollama:stop'),
+    stop: () => ipcRenderer.invoke('model:stop'),
 
     onGenerateProgress: (
       callback: (progress: OllamaGenerateResponse) => void
     ) => {
       const subscription = (_event: any, progress: OllamaGenerateResponse) =>
         callback(progress);
-      ipcRenderer.on('ollama:generate-progress', subscription);
+      ipcRenderer.on('model:generate-progress', subscription);
 
       return () => {
-        ipcRenderer.removeListener('ollama:generate-progress', subscription);
+        ipcRenderer.removeListener('model:generate-progress', subscription);
       };
     },
-  },
 
-  // API для управления моделями
-  models: {
     // Новые методы для Ollama моделей
     install: (request: OllamaPullRequest) =>
-      ipcRenderer.invoke('models:install', request),
+      ipcRenderer.invoke('model:install', request),
 
     remove: (request: OllamaDeleteRequest) =>
-      ipcRenderer.invoke('models:remove', request),
+      ipcRenderer.invoke('model:remove', request),
 
-    list: () => ipcRenderer.invoke('models:list'),
+    list: () => ipcRenderer.invoke('model:list'),
 
     onInstallProgress: (callback: (progress: OllamaPullProgress) => void) => {
       const subscription = (_event: any, progress: OllamaPullProgress) =>
         callback(progress);
-      ipcRenderer.on('models:install-progress', subscription);
+      ipcRenderer.on('model:install-progress', subscription);
 
       return () => {
-        ipcRenderer.removeListener('models:install-progress', subscription);
+        ipcRenderer.removeListener('model:install-progress', subscription);
       };
     },
   },

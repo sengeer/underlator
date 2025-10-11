@@ -53,10 +53,10 @@ async function cleanupResources(): Promise<void> {
   await OllamaManager.stopOllama();
 
   // Удаляет Ollama обработчики
-  ipcMain.removeHandler('ollama:generate');
-  ipcMain.removeHandler('models:install');
-  ipcMain.removeHandler('models:remove');
-  ipcMain.removeHandler('models:list');
+  ipcMain.removeHandler('model:generate');
+  ipcMain.removeHandler('model:install');
+  ipcMain.removeHandler('model:remove');
+  ipcMain.removeHandler('model:list');
 
   // Удаляет обработчики каталога моделей
   ipcMain.removeHandler('catalog:get');
@@ -420,7 +420,7 @@ function setupOllamaIpcHandlers(): void {
    * Использует wrapper для автоматического логирования и обработки ошибок.
    */
   ipcMain.handle(
-    'ollama:generate',
+    'model:generate',
     IpcHandler.createHandlerWrapper(
       async (
         request: OllamaGenerateRequest,
@@ -446,7 +446,7 @@ function setupOllamaIpcHandlers(): void {
             config,
             chunk => {
               // Отправка streaming ответов в renderer процесс
-              mainWindow?.webContents.send('ollama:generate-progress', chunk);
+              mainWindow?.webContents.send('model:generate-progress', chunk);
 
               if (chunk.response) {
                 fullResponse += chunk.response;
@@ -461,7 +461,7 @@ function setupOllamaIpcHandlers(): void {
           currentAbortController = null;
         }
       },
-      'ollama:generate'
+      'model:generate'
     )
   );
 
@@ -471,7 +471,7 @@ function setupOllamaIpcHandlers(): void {
    * Использует streaming wrapper для обработки прогресса.
    */
   ipcMain.handle(
-    'models:install',
+    'model:install',
     IpcHandler.createStreamingHandlerWrapper(
       async (
         request: OllamaPullRequest,
@@ -485,14 +485,14 @@ function setupOllamaIpcHandlers(): void {
 
         const result = await ollamaApi!.installModel(request, progress => {
           // Отправляет прогресс установки в renderer процесс
-          mainWindow?.webContents.send('models:install-progress', progress);
+          mainWindow?.webContents.send('model:install-progress', progress);
           // Вызывает callback для логирования прогресса
           onProgress(progress);
         });
 
         return { success: result.success };
       },
-      'models:install'
+      'model:install'
     )
   );
 
@@ -501,7 +501,7 @@ function setupOllamaIpcHandlers(): void {
    * Использует wrapper для автоматического логирования и обработки ошибок.
    */
   ipcMain.handle(
-    'models:remove',
+    'model:remove',
     IpcHandler.createHandlerWrapper(
       async (request: OllamaDeleteRequest): Promise<{ success: boolean }> => {
         // Валидация входящего запроса
@@ -513,7 +513,7 @@ function setupOllamaIpcHandlers(): void {
         const result = await ollamaApi!.removeModel(request);
         return { success: result.success };
       },
-      'models:remove'
+      'model:remove'
     )
   );
 
@@ -522,11 +522,11 @@ function setupOllamaIpcHandlers(): void {
    * Использует wrapper для автоматического логирования и обработки ошибок.
    */
   ipcMain.handle(
-    'models:list',
+    'model:list',
     IpcHandler.createHandlerWrapper(async (): Promise<any> => {
       const models = await ollamaApi!.listModels();
       return models;
-    }, 'models:list')
+    }, 'model:list')
   );
 
   /**
@@ -534,7 +534,7 @@ function setupOllamaIpcHandlers(): void {
    * Прерывает текущую операцию генерации.
    */
   ipcMain.handle(
-    'ollama:stop',
+    'model:stop',
     IpcHandler.createHandlerWrapper(async (): Promise<void> => {
       if (currentAbortController) {
         currentAbortController.abort();
@@ -543,7 +543,7 @@ function setupOllamaIpcHandlers(): void {
       } else {
         console.log('⚠️ There is no active generation to stop');
       }
-    }, 'ollama:stop')
+    }, 'model:stop')
   );
 }
 

@@ -44,7 +44,7 @@ export async function testGenerateText(
     let fullResponse = '';
     let isFirstChunk = true;
 
-    const unsubscribeProgress = window.electron.ollama.onGenerateProgress(
+    const unsubscribeProgress = window.electron.model.onGenerateProgress(
       (chunk) => {
         if (isFirstChunk) {
           console.log('🤖 Начинаем генерацию...');
@@ -64,7 +64,7 @@ export async function testGenerateText(
     );
 
     // Запуск генерации
-    const response = await window.electron.ollama.generate({
+    const response = await window.electron.model.generate({
       model: model,
       prompt: prompt,
       ...DEFAULT_OPTIONS,

@@ -22,7 +22,7 @@ import type {
  */
 export interface ElectronAPI {
   updateTranslations: (translations: any) => void;
-  ollama: {
+  model: {
     generate: (
       request: OllamaGenerateRequest,
       config?: any
@@ -31,8 +31,6 @@ export interface ElectronAPI {
     onGenerateProgress: (
       callback: (progress: OllamaGenerateResponse) => void
     ) => () => void;
-  };
-  models: {
     install: (request: OllamaPullRequest) => Promise<{ success: boolean }>;
     remove: (request: OllamaDeleteRequest) => Promise<{ success: boolean }>;
     list: () => Promise<any>;

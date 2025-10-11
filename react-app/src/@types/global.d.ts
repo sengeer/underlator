@@ -114,17 +114,14 @@ interface Window {
   electron: {
     /** Обновление переводов */
     updateTranslations: (message: any) => void;
-    /** API для работы с Ollama */
-    ollama: {
+    /** API для работы с моделями */
+    model: {
       /** Генерация текста через модель */
       generate: (request: any, settings?: any) => Promise<any>;
       /** Остановка генерации */
       stop: () => Promise<void>;
       /** Подписка на прогресс генерации */
       onGenerateProgress: (callback: (progress: any) => void) => () => void;
-    };
-    /** API для работы с моделями */
-    models: {
       /** Установка модели */
       install: (request: any) => Promise<{ success: boolean }>;
       /** Удаление модели */
