@@ -16,6 +16,12 @@ import type {
   ElectronAPI,
   SplashMessages,
   ElectronApiConfig,
+  CreateChatRequest,
+  GetChatRequest,
+  UpdateChatRequest,
+  DeleteChatRequest,
+  ListChatsRequest,
+  AddMessageRequest,
 } from './types';
 
 /**
@@ -119,5 +125,25 @@ contextBridge.exposeInMainWorld('electron', {
         ipcRenderer.removeListener('splash:error', subscription);
       };
     },
+  },
+
+  // API для работы с чатами
+  chat: {
+    create: (request: CreateChatRequest) =>
+      ipcRenderer.invoke('chat:create', request),
+
+    get: (request: GetChatRequest) => ipcRenderer.invoke('chat:get', request),
+
+    update: (request: UpdateChatRequest) =>
+      ipcRenderer.invoke('chat:update', request),
+
+    delete: (request: DeleteChatRequest) =>
+      ipcRenderer.invoke('chat:delete', request),
+
+    list: (request: ListChatsRequest = {}) =>
+      ipcRenderer.invoke('chat:list', request),
+
+    addMessage: (request: AddMessageRequest) =>
+      ipcRenderer.invoke('chat:add-message', request),
   },
 } as ElectronAPI);

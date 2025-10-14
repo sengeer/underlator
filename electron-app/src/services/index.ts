@@ -11,3 +11,5 @@ export {
   ModelCatalogService,
   createModelCatalogService,
 } from './model-catalog';
+
+export { FileSystemService, createFileSystemService } from './filesystem';

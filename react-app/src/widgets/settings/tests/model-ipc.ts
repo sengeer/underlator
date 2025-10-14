@@ -1,6 +1,6 @@
 /**
- * @module IpcTest
- * Функции для ручного тестирования IPC API с Ollama.
+ * @module ModelIpcTest
+ * Функции для ручного тестирования IPC API.
  * Используется для проверки работы Electron IPC методов.
  */
 
@@ -211,49 +211,6 @@ export async function testRemoveModel(model = OLLAMA_TEST_MODEL) {
   );
 }
 
-/**
- * Запускает полный цикл тестирования.
- * Выполняет все тесты по порядку.
- */
-export async function runFullTest(model: string, prompt: string) {
-  console.log('🚀 Запуск полного цикла тестирования IPC API...\n');
-
-  try {
-    console.log('🧪 ТЕСТ 1: Получение списка моделей');
-    await testListModels();
-    console.log('');
-
-    console.log('🧪 ТЕСТ 2: Получение каталога моделей');
-    await testGetCatalog();
-    console.log('');
-
-    console.log('🧪 ТЕСТ 3: Поиск моделей');
-    await testSearchModels();
-    console.log('');
-
-    console.log('🧪 ТЕСТ 4: Получение информации о модели');
-    await testGetModelInfo(model);
-    console.log('');
-
-    console.log('🧪 ТЕСТ 5: Скачивание модели');
-    await testInstallModel(model);
-    console.log('');
-
-    console.log('🧪 ТЕСТ 6: Генерация текста');
-    await testGenerateText(model, prompt);
-    console.log('');
-
-    console.log('🧪 ТЕСТ 7: Удаление модели');
-    await testRemoveModel(model);
-    console.log('');
-
-    console.log('✅ Все тесты завершены успешно!');
-  } catch (error) {
-    console.error('❌ Ошибка в тестах:', error);
-    throw error;
-  }
-}
-
 // Экспорты для использования в других модулях
 export default {
   testListModels,
@@ -264,5 +221,4 @@ export default {
   testGetCatalogForceRefresh,
   testSearchModels,
   testGetModelInfo,
-  runFullTest,
 };

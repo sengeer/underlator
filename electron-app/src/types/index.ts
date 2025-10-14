@@ -39,3 +39,34 @@ export type { SplashStatus, SplashMessages } from './splash';
 export type { MenuTranslations, ElectronApiConfig } from './electron';
 
 export type { IpcMessage, IpcResponse } from './ipc-handlers';
+
+export type {
+  FileSystemOperationResult,
+  FileSystemConfig,
+  ChatFileInfo,
+  ChatFileStructure,
+  FileLockStatus,
+  BackupInfo,
+  FileSystemStats,
+} from './filesystem';
+
+export type {
+  ChatMessageRole,
+  ChatOperationStatus,
+  ChatMessage,
+  ChatData,
+  ChatFile,
+  CreateChatRequest,
+  UpdateChatRequest,
+  AddMessageRequest,
+  GetChatRequest,
+  ListChatsRequest,
+  DeleteChatRequest,
+  ChatOperationResult,
+  CreateChatResult,
+  GetChatResult,
+  UpdateChatResult,
+  DeleteChatResult,
+  ListChatsResult,
+  AddMessageResult,
+} from './chat';

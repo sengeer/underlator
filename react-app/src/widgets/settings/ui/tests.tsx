@@ -23,6 +23,15 @@ import SelectorOption from '../../../shared/ui/selector-option';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import TextButton from '../../../shared/ui/text-button/text-button';
 import {
+  testCreateChat,
+  testListChats,
+  testGetChat,
+  testUpdateChat,
+  testAddMessage,
+  testAddAssistantMessage,
+  testDeleteChat,
+} from '../tests/chat-ipc';
+import {
   testListModels,
   testInstallModel,
   testGenerateText,
@@ -31,12 +40,12 @@ import {
   testGetCatalogForceRefresh,
   testSearchModels,
   testGetModelInfo,
-  runFullTest,
-} from '../tests/ipc';
+} from '../tests/model-ipc';
 
 function Tests() {
   const [searchValue, setSearchValue] = useState('');
   const [translationKey, setTranslationKey] = useState('');
+  const [chatId, setChatId] = useState('');
 
   const dispatch = useDispatch();
 
@@ -94,7 +103,22 @@ function Tests() {
               onChange={handleChange}
             />
           </ButtonWrapperWithBackground>
-          <h2 className='settings__title'>{'Тестирование IPC API'}</h2>
+          <ButtonWrapperWithBackground>
+            <TextAndIconButton
+              text='Индентификатор чата'
+              style={{ marginLeft: '1rem' }}
+              isDisabled>
+              <NetworkIntelligenceIcon />
+            </TextAndIconButton>
+            <input
+              className='settings__input settings__text'
+              placeholder='chat_xxxxxxxxxxxxx_xxxxxxxxxxx'
+              type='text'
+              value={chatId}
+              onChange={(e) => setChatId(e.target.value)}
+            />
+          </ButtonWrapperWithBackground>
+          <h2 className='settings__title'>{'Тестирование Model IPC API'}</h2>
           <div className='settings__btns-group'>
             <TextButton
               onClick={() => testListModels()}
@@ -136,13 +160,65 @@ function Tests() {
               className='settings__button'>
               {'Удалить ' + values.model}
             </TextButton>
-            <TextButton
-              onClick={() => runFullTest(values.model, values.prompt)}
-              className='settings__button'>
-              {'Запуск полного тестирования'}
-            </TextButton>
             <p className='settings__description'>
               {'Кнопки тестирования IPC API. Проверьте результаты в консоли.'}
+            </p>
+            <h2 className='settings__title'>{'Тестирование Chat IPC API'}</h2>
+            <TextButton
+              onClick={() => testCreateChat('Тестовый чат', values.model)}
+              className='settings__button'>
+              {'Создать чат'}
+            </TextButton>
+            <TextButton
+              onClick={() => testListChats()}
+              className='settings__button'>
+              {'Список чатов'}
+            </TextButton>
+            <TextButton
+              onClick={() =>
+                chatId ? testGetChat(chatId) : alert('Введите Chat ID')
+              }
+              className='settings__button'>
+              {'Получить чат'}
+            </TextButton>
+            <TextButton
+              onClick={() =>
+                chatId
+                  ? testUpdateChat(chatId, 'Обновленный чат')
+                  : alert('Введите Chat ID')
+              }
+              className='settings__button'>
+              {'Обновить чат'}
+            </TextButton>
+            <TextButton
+              onClick={() =>
+                chatId
+                  ? testAddMessage(chatId, 'Тестовое сообщение')
+                  : alert('Введите Chat ID')
+              }
+              className='settings__button'>
+              {'Добавить сообщение'}
+            </TextButton>
+            <TextButton
+              onClick={() =>
+                chatId
+                  ? testAddAssistantMessage(chatId, 'Тестовый ответ ассистента')
+                  : alert('Введите Chat ID')
+              }
+              className='settings__button'>
+              {'Добавить ответ ассистента'}
+            </TextButton>
+            <TextButton
+              onClick={() =>
+                chatId ? testDeleteChat(chatId, true) : alert('Введите Chat ID')
+              }
+              className='settings__button'>
+              {'Удалить чат'}
+            </TextButton>
+            <p className='settings__description'>
+              {
+                'Кнопки тестирования Chat IPC API. Проверьте результаты в консоли.'
+              }
             </p>
             <h2 className='settings__title'>{'Тестирование UI'}</h2>
             <TextButton

@@ -7,7 +7,13 @@
 
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
-import { OllamaManager, OllamaApi, ModelCatalogService } from './services';
+import {
+  OllamaManager,
+  OllamaApi,
+  ModelCatalogService,
+  FileSystemService,
+} from './services';
+import { ChatHandlers } from './presentation/ipc/chat-handlers';
 import { IpcHandler } from './presentation/ipc/ipc-handlers';
 import type {
   MenuTranslations,
@@ -35,6 +41,8 @@ console.log('🔧 NODE_ENV:', process.env['NODE_ENV']);
 export let mainWindow: typeof BrowserWindow | null = null;
 let ollamaApi: OllamaApi | null = null;
 let modelCatalogService: ModelCatalogService | null = null;
+let fileSystemService: FileSystemService | null = null;
+let chatHandlers: ChatHandlers | null = null;
 let currentAbortController: AbortController | null = null;
 const isMac: boolean = process.platform === 'darwin';
 const isWindows: boolean = process.platform === 'win32';
@@ -65,6 +73,14 @@ async function cleanupResources(): Promise<void> {
 
   // Удаляет обработчики splash screen
   ipcMain.removeHandler('splash:get-status');
+
+  // Удаляет обработчики чатов
+  ipcMain.removeHandler('chat:create');
+  ipcMain.removeHandler('chat:get');
+  ipcMain.removeHandler('chat:update');
+  ipcMain.removeHandler('chat:delete');
+  ipcMain.removeHandler('chat:list');
+  ipcMain.removeHandler('chat:add-message');
 
   mainWindow = null;
   console.log('✅ Resources have been cleared');
@@ -213,10 +229,25 @@ async function loadPipeline(): Promise<void> {
       progress: 72,
     });
 
+    // Создает сервис файловой системы
+    fileSystemService = new FileSystemService();
+    await fileSystemService.initialize();
+
+    // Создает обработчики чатов
+    chatHandlers = new ChatHandlers(fileSystemService);
+
+    // Отправляет статус создания файловой системы в React splash screen
+    sendSplashStatus({
+      status: 'creating-filesystem',
+      message: translations.LOADING_APP || '',
+      progress: 78,
+    });
+
     // Регистрирует IPC handlers после создания всех сервисов
     console.log('🔧 IPC handlers registration...');
     setupOllamaIpcHandlers();
     setupCatalogIpcHandlers();
+    setupChatIpcHandlers();
     console.log('✅ IPC handlers are registered');
 
     sendSplashStatus({
@@ -666,6 +697,25 @@ function setupSplashIpcHandlers(): void {
   });
 
   console.log('✅ Splash IPC handlers are configured');
+}
+
+/**
+ * Настраивает IPC обработчики для работы с чатами.
+ * Создает обработчики для всех операций CRUD с чатами.
+ * Использует централизованные утилиты для валидации, логирования и обработки ошибок.
+ */
+function setupChatIpcHandlers(): void {
+  console.log('🔧 Setting up Chat IPC handlers...');
+  if (!chatHandlers) {
+    console.error('❌ ChatHandlers is not initialized');
+    return;
+  }
+  console.log('✅ ChatHandlers is available, register handlers...');
+
+  // Регистрирует обработчики чатов
+  chatHandlers.registerHandlers();
+
+  console.log('✅ Chat IPC handlers are registered');
 }
 
 /**

@@ -16,6 +16,7 @@ export type SplashStatus =
   | 'health-check'
   | 'creating-api'
   | 'creating-catalog'
+  | 'creating-filesystem'
   | 'getting-catalog'
   | 'ready'
   | 'error';

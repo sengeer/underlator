@@ -14,6 +14,18 @@ import type {
   CatalogFilters,
   SplashMessages,
   IpcResponse,
+  CreateChatRequest,
+  GetChatRequest,
+  UpdateChatRequest,
+  DeleteChatRequest,
+  ListChatsRequest,
+  AddMessageRequest,
+  CreateChatResult,
+  GetChatResult,
+  UpdateChatResult,
+  DeleteChatResult,
+  ListChatsResult,
+  AddMessageResult,
 } from './index';
 
 /**
@@ -51,5 +63,13 @@ export interface ElectronAPI {
     onProgressUpdate: (callback: (progress: number) => void) => () => void;
     onComplete: (callback: () => void) => () => void;
     onError: (callback: (error: string) => void) => () => void;
+  };
+  chat: {
+    create: (request: CreateChatRequest) => Promise<CreateChatResult>;
+    get: (request: GetChatRequest) => Promise<GetChatResult>;
+    update: (request: UpdateChatRequest) => Promise<UpdateChatResult>;
+    delete: (request: DeleteChatRequest) => Promise<DeleteChatResult>;
+    list: (request?: ListChatsRequest) => Promise<ListChatsResult>;
+    addMessage: (request: AddMessageRequest) => Promise<AddMessageResult>;
   };
 }

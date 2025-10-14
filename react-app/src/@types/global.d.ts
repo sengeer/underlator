@@ -153,5 +153,20 @@ interface Window {
       /** Подписка на ошибки */
       onError: (callback: (error: any) => void) => () => void;
     };
+    /** API для работы с чатами */
+    chat: {
+      /** Создание нового чата */
+      create: (request: any) => Promise<any>;
+      /** Получение чата по ID */
+      get: (request: any) => Promise<any>;
+      /** Обновление чата */
+      update: (request: any) => Promise<any>;
+      /** Удаление чата */
+      delete: (request: any) => Promise<any>;
+      /** Получение списка чатов */
+      list: (request?: any) => Promise<any>;
+      /** Добавление сообщения в чат */
+      addMessage: (request: any) => Promise<any>;
+    };
   };
 }

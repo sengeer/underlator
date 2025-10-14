@@ -191,7 +191,8 @@ function Settings({ isOpened }: SettingsState) {
 
   return (
     <section className={`settings${isOpened ? ' settings_open' : ''}`}>
-      {import.meta.env.DEV && <Tests />}
+      {/* {import.meta.env.DEV && <Tests />} */}
+      <Tests />
 
       <div className='settings__container'>
         <div className='settings__column'>
