@@ -1,7 +1,7 @@
 /**
  * @module FileSystemService
- * Сервис для безопасного управления файлами чатов в Electron main процессе.
- * Реализует атомарные операции, резервное копирование и блокировку файлов.
+ * Универсальный сервис для безопасного управления файлами в Electron main процессе.
+ * Поддерживает любые типы файлов через конфигурируемые валидаторы и настройки.
  */
 
 import * as fs from 'fs/promises';
@@ -11,32 +11,37 @@ import {
   DEFAULT_FILESYSTEM_CONFIG,
   FILESYSTEM_PATHS,
   FILE_EXTENSIONS,
-  FILE_FORMAT_VERSIONS,
   FILESYSTEM_ERROR_CODES,
   FILESYSTEM_ERROR_MESSAGES,
   VALIDATION_CONFIG,
   LOGGING_CONFIG,
+  getFileTypeConfig,
+  isFileTypeSupported,
 } from '../constants/filesystem';
+import { FileValidatorFactory } from '../utils/file-validators';
 import type {
   FileSystemConfig,
   FileSystemOperationResult,
-  ChatFileInfo,
-  ChatFileStructure,
+  FileInfo,
+  FileStructure,
   FileLockStatus,
   BackupInfo,
   FileSystemStats,
+  FileOperationOptions,
+  FileSearchParams,
+  FileSearchResult,
 } from '../types/filesystem';
 
 /**
  * @class FileSystemService
  *
- * Сервис для безопасного управления файлами чатов.
- * Обеспечивает атомарные операции, валидацию, резервное копирование и блокировку файлов.
+ * Универсальный сервис для безопасного управления файлами.
+ * Обеспечивает атомарные операции, валидацию, резервное копирование и блокировку файлов
+ * для любых типов файлов через конфигурируемые валидаторы.
  */
 export class FileSystemService {
   private config: FileSystemConfig;
   private basePath: string;
-  private chatsPath: string;
   private backupsPath: string;
   private tempPath: string;
   private locksPath: string;
@@ -54,9 +59,8 @@ export class FileSystemService {
       ...config,
     };
 
-    // Устанавливает базовый путь в userData
+    // Устанавливает базовый путь
     this.basePath = this.config.basePath;
-    this.chatsPath = path.join(this.basePath, FILESYSTEM_PATHS.CHATS_FOLDER);
     this.backupsPath = path.join(this.basePath, FILESYSTEM_PATHS.BACKUP_FOLDER);
     this.tempPath = path.join(this.basePath, FILESYSTEM_PATHS.TEMP_FOLDER);
     this.locksPath = path.join(this.basePath, FILESYSTEM_PATHS.LOCK_FOLDER);
@@ -109,15 +113,475 @@ export class FileSystemService {
   }
 
   /**
+   * Читает файл указанного типа.
+   *
+   * @param fileName - Имя файла.
+   * @param fileType - Тип файла.
+   * @param options - Опции операции.
+   * @returns Promise с содержимым файла.
+   */
+  async readFile<TMetadata = unknown, TData = unknown>(
+    fileName: string,
+    fileType: string,
+    options: FileOperationOptions = {}
+  ): Promise<FileSystemOperationResult<FileStructure<TMetadata, TData>>> {
+    const context = `readFile(${fileName}, ${fileType})`;
+
+    try {
+      if (options.logOperation !== false) {
+        this.logOperation('read', context);
+      }
+
+      // Проверяет поддержку типа файла
+      if (!isFileTypeSupported(fileType)) {
+        return {
+          success: false,
+          error:
+            FILESYSTEM_ERROR_MESSAGES[
+              FILESYSTEM_ERROR_CODES.UNSUPPORTED_FILE_TYPE
+            ],
+          status: 'error',
+        };
+      }
+
+      // Валидирует имя файла
+      const fileNameValidation = this.validateFileName(fileName, fileType);
+      if (!fileNameValidation.valid) {
+        return {
+          success: false,
+          error: fileNameValidation.error,
+          status: 'error',
+        };
+      }
+
+      // Проверяет блокировку файла
+      const lockStatus = await this.checkFileLock(fileName);
+      if (lockStatus.isLocked) {
+        return {
+          success: false,
+          error: FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_LOCKED],
+          status: 'error',
+        };
+      }
+
+      const filePath = this.getFilePath(fileName, fileType);
+
+      // Проверяет существование файла
+      try {
+        await fs.access(filePath);
+      } catch {
+        return {
+          success: false,
+          error:
+            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_NOT_FOUND],
+          status: 'error',
+        };
+      }
+
+      // Читает файл
+      const fileContent = await fs.readFile(filePath, 'utf-8');
+
+      // Проверяет размер файла
+      const fileTypeConfig = getFileTypeConfig(fileType);
+      const maxFileSize =
+        fileTypeConfig?.maxFileSize || this.config.maxFileSize;
+      if (fileContent.length > maxFileSize) {
+        return {
+          success: false,
+          error:
+            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_TOO_LARGE],
+          status: 'error',
+        };
+      }
+
+      // Парсит и валидирует JSON
+      const fileData = JSON.parse(fileContent);
+
+      if (options.validate !== false) {
+        const validationResult = await this.validateFileStructure(
+          fileData,
+          fileType
+        );
+        if (!validationResult.valid) {
+          return {
+            success: false,
+            error: validationResult.error,
+            status: 'error',
+          };
+        }
+      }
+
+      console.log(`✅ File read successfully: ${fileName} (${fileType})`);
+      return {
+        success: true,
+        data: fileData,
+        status: 'success',
+      };
+    } catch (error) {
+      console.error(`❌ Error reading file ${fileName} (${fileType}):`, error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        status: 'error',
+      };
+    }
+  }
+
+  /**
+   * Записывает файл указанного типа с атомарной операцией.
+   *
+   * @param fileName - Имя файла.
+   * @param fileType - Тип файла.
+   * @param fileData - Данные файла для записи.
+   * @param options - Опции операции.
+   * @returns Promise с результатом записи.
+   */
+  async writeFile<TMetadata = unknown, TData = unknown>(
+    fileName: string,
+    fileType: string,
+    fileData: FileStructure<TMetadata, TData>,
+    options: FileOperationOptions = {}
+  ): Promise<FileSystemOperationResult<void>> {
+    const context = `writeFile(${fileName}, ${fileType})`;
+
+    try {
+      if (options.logOperation !== false) {
+        this.logOperation('write', context);
+      }
+
+      // Проверяет поддержку типа файла
+      if (!isFileTypeSupported(fileType)) {
+        return {
+          success: false,
+          error:
+            FILESYSTEM_ERROR_MESSAGES[
+              FILESYSTEM_ERROR_CODES.UNSUPPORTED_FILE_TYPE
+            ],
+          status: 'error',
+        };
+      }
+
+      // Валидирует имя файла
+      const fileNameValidation = this.validateFileName(fileName, fileType);
+      if (!fileNameValidation.valid) {
+        return {
+          success: false,
+          error: fileNameValidation.error,
+          status: 'error',
+        };
+      }
+
+      // Блокирует файл
+      const lockResult = await this.lockFile(fileName);
+      if (!lockResult.success) {
+        return lockResult;
+      }
+
+      try {
+        // Валидирует данные перед записью
+        if (options.validate !== false) {
+          const validationResult = await this.validateFileStructure(
+            fileData,
+            fileType
+          );
+          if (!validationResult.valid) {
+            return {
+              success: false,
+              error: validationResult.error,
+              status: 'error',
+            };
+          }
+        }
+
+        // Создает резервную копию если файл существует
+        const filePath = this.getFilePath(fileName, fileType);
+        const fileExists = await this.fileExists(filePath);
+
+        if (
+          fileExists &&
+          options.createBackup !== false &&
+          this.config.enableBackup
+        ) {
+          await this.createBackup(fileName, fileType);
+        }
+
+        // Выполняет атомарную запись через временный файл
+        await this.atomicWrite(filePath, fileData);
+
+        console.log(`✅ File written successfully: ${fileName} (${fileType})`);
+        return {
+          success: true,
+          status: 'success',
+        };
+      } finally {
+        // Разблокирует файл
+        await this.unlockFile(fileName);
+      }
+    } catch (error) {
+      console.error(`❌ Error writing file ${fileName} (${fileType}):`, error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        status: 'error',
+      };
+    }
+  }
+
+  /**
+   * Удаляет файл указанного типа.
+   *
+   * @param fileName - Имя файла.
+   * @param fileType - Тип файла.
+   * @param options - Опции операции.
+   * @returns Promise с результатом удаления.
+   */
+  async deleteFile(
+    fileName: string,
+    fileType: string,
+    options: FileOperationOptions = {}
+  ): Promise<FileSystemOperationResult<void>> {
+    const context = `deleteFile(${fileName}, ${fileType})`;
+
+    try {
+      if (options.logOperation !== false) {
+        this.logOperation('delete', context);
+      }
+
+      // Проверяет поддержку типа файла
+      if (!isFileTypeSupported(fileType)) {
+        return {
+          success: false,
+          error:
+            FILESYSTEM_ERROR_MESSAGES[
+              FILESYSTEM_ERROR_CODES.UNSUPPORTED_FILE_TYPE
+            ],
+          status: 'error',
+        };
+      }
+
+      // Валидирует имя файла
+      const fileNameValidation = this.validateFileName(fileName, fileType);
+      if (!fileNameValidation.valid) {
+        return {
+          success: false,
+          error: fileNameValidation.error,
+          status: 'error',
+        };
+      }
+
+      // Проверяет блокировку файла
+      const lockStatus = await this.checkFileLock(fileName);
+      if (lockStatus.isLocked) {
+        return {
+          success: false,
+          error: FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_LOCKED],
+          status: 'error',
+        };
+      }
+
+      const filePath = this.getFilePath(fileName, fileType);
+
+      // Проверяет существование файла
+      if (!(await this.fileExists(filePath))) {
+        return {
+          success: false,
+          error:
+            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_NOT_FOUND],
+          status: 'error',
+        };
+      }
+
+      // Создает резервную копию перед удалением
+      if (options.createBackup !== false && this.config.enableBackup) {
+        await this.createBackup(fileName, fileType);
+      }
+
+      // Удаляет файл
+      await fs.unlink(filePath);
+
+      console.log(`✅ File deleted successfully: ${fileName} (${fileType})`);
+      return {
+        success: true,
+        status: 'success',
+      };
+    } catch (error) {
+      console.error(`❌ Error deleting file ${fileName} (${fileType}):`, error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        status: 'error',
+      };
+    }
+  }
+
+  /**
+   * Получает список файлов указанного типа.
+   *
+   * @param fileType - Тип файла (опционально).
+   * @param searchParams - Параметры поиска.
+   * @returns Promise со списком файлов.
+   */
+  async listFiles(
+    fileType?: string,
+    searchParams: FileSearchParams = {}
+  ): Promise<FileSystemOperationResult<FileSearchResult>> {
+    const context = `listFiles(${fileType || 'all'})`;
+
+    try {
+      this.logOperation('read', context);
+
+      const files: FileInfo[] = [];
+
+      if (fileType) {
+        // Получает файлы конкретного типа
+        if (!isFileTypeSupported(fileType)) {
+          return {
+            success: false,
+            error:
+              FILESYSTEM_ERROR_MESSAGES[
+                FILESYSTEM_ERROR_CODES.UNSUPPORTED_FILE_TYPE
+              ],
+            status: 'error',
+          };
+        }
+
+        const folderPath = this.getFolderPath(fileType);
+        const filesInFolder = await this.getFilesInFolder(folderPath, fileType);
+        files.push(...filesInFolder);
+      } else {
+        // Получает файлы всех типов
+        const supportedTypes = ['chat', 'document', 'settings', 'log'];
+        for (const type of supportedTypes) {
+          const folderPath = this.getFolderPath(type);
+          const filesInFolder = await this.getFilesInFolder(folderPath, type);
+          files.push(...filesInFolder);
+        }
+      }
+
+      // Применяет фильтры поиска
+      const filteredFiles = this.applySearchFilters(files, searchParams);
+
+      // Применяет пагинацию
+      const paginatedFiles = this.applyPagination(filteredFiles, searchParams);
+
+      // Создает информацию о пагинации
+      const pagination = this.createPaginationInfo(
+        filteredFiles.length,
+        searchParams.limit || 50,
+        searchParams.offset || 0
+      );
+
+      console.log(`✅ Listed ${paginatedFiles.length} files`);
+      return {
+        success: true,
+        data: {
+          files: paginatedFiles,
+          totalCount: filteredFiles.length,
+          pagination,
+        },
+        status: 'success',
+      };
+    } catch (error) {
+      console.error('❌ Error listing files:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        status: 'error',
+      };
+    }
+  }
+
+  /**
+   * Получает статистику файловой системы.
+   *
+   * @param fileType - Тип файла (опционально).
+   * @returns Promise со статистикой.
+   */
+  async getFileSystemStats(
+    fileType?: string
+  ): Promise<FileSystemOperationResult<FileSystemStats>> {
+    const context = `getFileSystemStats(${fileType || 'all'})`;
+
+    try {
+      this.logOperation('read', context);
+
+      const listResult = await this.listFiles(fileType);
+      if (!listResult.success || !listResult.data) {
+        return {
+          success: false,
+          error: 'Failed to list files',
+          status: 'error',
+        };
+      }
+
+      const files = listResult.data.files;
+      const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+      const lockedFiles = files.filter(file => file.isLocked).length;
+
+      // Получает информацию о резервных копиях
+      const backupFiles = await this.listBackupFiles();
+      const backupCount = backupFiles.success
+        ? backupFiles.data?.length || 0
+        : 0;
+      const backupSize =
+        backupFiles.success && backupFiles.data
+          ? backupFiles.data.reduce((sum, backup) => sum + backup.size, 0)
+          : 0;
+
+      // Создает статистику по типам файлов
+      const fileTypeStats: Record<
+        string,
+        { count: number; totalSize: number }
+      > = {};
+      for (const file of files) {
+        if (!fileTypeStats[file.fileType]) {
+          fileTypeStats[file.fileType] = { count: 0, totalSize: 0 };
+        }
+        const stats = fileTypeStats[file.fileType];
+        if (stats) {
+          stats.count++;
+          stats.totalSize += file.size;
+        }
+      }
+
+      const stats: FileSystemStats = {
+        totalFiles: files.length,
+        totalSize,
+        lockedFiles,
+        backupCount,
+        backupSize,
+        lastCleanup: new Date().toISOString(),
+        fileTypeStats,
+      };
+
+      console.log('✅ File system stats retrieved');
+      return {
+        success: true,
+        data: stats,
+        status: 'success',
+      };
+    } catch (error) {
+      console.error('❌ Error getting file system stats:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        status: 'error',
+      };
+    }
+  }
+
+  /**
    * Создает необходимые директории.
    */
   private async createDirectories(): Promise<void> {
-    const directories = [
-      this.chatsPath,
-      this.backupsPath,
-      this.tempPath,
-      this.locksPath,
-    ];
+    const directories = [this.backupsPath, this.tempPath, this.locksPath];
+
+    // Создает папки для всех поддерживаемых типов файлов
+    const supportedTypes = ['chat', 'document', 'settings', 'log'];
+    for (const fileType of supportedTypes) {
+      const folderPath = this.getFolderPath(fileType);
+      directories.push(folderPath);
+    }
 
     for (const dir of directories) {
       try {
@@ -148,257 +612,58 @@ export class FileSystemService {
   }
 
   /**
-   * Читает файл чата.
+   * Получает путь к папке для указанного типа файла.
    *
-   * @param fileName - Имя файла чата.
-   * @returns Promise с содержимым файла.
+   * @param fileType - Тип файла.
+   * @returns Путь к папке.
    */
-  async readChatFile(
-    fileName: string
-  ): Promise<FileSystemOperationResult<ChatFileStructure>> {
-    const context = `readChatFile(${fileName})`;
-
-    try {
-      this.logOperation('read', context);
-
-      // Валидирует имя файла для предотвращения path traversal
-      const fileNameValidation = this.validateFileName(fileName);
-      if (!fileNameValidation.valid) {
-        return {
-          success: false,
-          error: fileNameValidation.error,
-          status: 'error',
-        };
-      }
-
-      // Проверяет блокировку файла
-      const lockStatus = await this.checkFileLock(fileName);
-      if (lockStatus.isLocked) {
-        return {
-          success: false,
-          error: FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_LOCKED],
-          status: 'error',
-        };
-      }
-
-      const filePath = path.join(this.chatsPath, fileName);
-
-      // Проверяет существование файла
-      try {
-        await fs.access(filePath);
-      } catch {
-        return {
-          success: false,
-          error:
-            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_NOT_FOUND],
-          status: 'error',
-        };
-      }
-
-      // Читает файл
-      const fileContent = await fs.readFile(filePath, 'utf-8');
-
-      // Проверяет размер файла
-      if (fileContent.length > this.config.maxFileSize) {
-        return {
-          success: false,
-          error:
-            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_TOO_LARGE],
-          status: 'error',
-        };
-      }
-
-      // Парсит и валидируем JSON
-      const chatData = JSON.parse(fileContent);
-      const validationResult = await this.validateChatFileStructure(chatData);
-
-      if (!validationResult.success) {
-        return {
-          success: false,
-          error: validationResult.error,
-          status: 'error',
-        };
-      }
-
-      console.log(`✅ Chat file read successfully: ${fileName}`);
-      return {
-        success: true,
-        data: chatData,
-        status: 'success',
-      };
-    } catch (error) {
-      console.error(`❌ Error reading chat file ${fileName}:`, error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status: 'error',
-      };
+  private getFolderPath(fileType: string): string {
+    const fileTypeConfig = getFileTypeConfig(fileType);
+    if (!fileTypeConfig) {
+      throw new Error(`Unsupported file type: ${fileType}`);
     }
+    return path.join(this.basePath, fileTypeConfig.folder);
   }
 
   /**
-   * Записывает файл чата с атомарной операцией.
+   * Получает путь к файлу.
    *
-   * @param fileName - Имя файла чата.
-   * @param chatData - Данные чата для записи.
-   * @returns Promise с результатом записи.
+   * @param fileName - Имя файла.
+   * @param fileType - Тип файла.
+   * @returns Путь к файлу.
    */
-  async writeChatFile(
-    fileName: string,
-    chatData: ChatFileStructure
-  ): Promise<FileSystemOperationResult<void>> {
-    const context = `writeChatFile(${fileName})`;
-
-    try {
-      this.logOperation('write', context);
-
-      // Валидирует имя файла для предотвращения path traversal
-      const fileNameValidation = this.validateFileName(fileName);
-      if (!fileNameValidation.valid) {
-        return {
-          success: false,
-          error: fileNameValidation.error,
-          status: 'error',
-        };
-      }
-
-      // Блокирует файл
-      const lockResult = await this.lockFile(fileName);
-      if (!lockResult.success) {
-        return lockResult;
-      }
-
-      try {
-        // Валидирует данные перед записью
-        const validationResult = await this.validateChatFileStructure(chatData);
-        if (!validationResult.success) {
-          return {
-            success: false,
-            error: validationResult.error,
-            status: 'error',
-          };
-        }
-
-        // Создает резервную копию если файл существует
-        const filePath = path.join(this.chatsPath, fileName);
-        const fileExists = await this.fileExists(filePath);
-
-        if (fileExists && this.config.enableBackup) {
-          await this.createBackup(fileName);
-        }
-
-        // Выполняет атомарную запись через временный файл
-        await this.atomicWrite(filePath, chatData);
-
-        console.log(`✅ Chat file written successfully: ${fileName}`);
-        return {
-          success: true,
-          status: 'success',
-        };
-      } finally {
-        // Разблокирует файл
-        await this.unlockFile(fileName);
-      }
-    } catch (error) {
-      console.error(`❌ Error writing chat file ${fileName}:`, error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status: 'error',
-      };
-    }
+  private getFilePath(fileName: string, fileType: string): string {
+    const folderPath = this.getFolderPath(fileType);
+    return path.join(folderPath, fileName);
   }
 
   /**
-   * Удаляет файл чата.
+   * Получает файлы в указанной папке.
    *
-   * @param fileName - Имя файла чата.
-   * @returns Promise с результатом удаления.
+   * @param folderPath - Путь к папке.
+   * @param fileType - Тип файла.
+   * @returns Массив информации о файлах.
    */
-  async deleteChatFile(
-    fileName: string
-  ): Promise<FileSystemOperationResult<void>> {
-    const context = `deleteChatFile(${fileName})`;
-
+  private async getFilesInFolder(
+    folderPath: string,
+    fileType: string
+  ): Promise<FileInfo[]> {
     try {
-      this.logOperation('delete', context);
+      const files = await fs.readdir(folderPath);
+      const fileInfos: FileInfo[] = [];
 
-      // Валидирует имя файла для предотвращения path traversal
-      const fileNameValidation = this.validateFileName(fileName);
-      if (!fileNameValidation.valid) {
-        return {
-          success: false,
-          error: fileNameValidation.error,
-          status: 'error',
-        };
+      const fileTypeConfig = getFileTypeConfig(fileType);
+      if (!fileTypeConfig) {
+        return fileInfos;
       }
-
-      // Проверяет блокировку файла
-      const lockStatus = await this.checkFileLock(fileName);
-      if (lockStatus.isLocked) {
-        return {
-          success: false,
-          error: FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_LOCKED],
-          status: 'error',
-        };
-      }
-
-      const filePath = path.join(this.chatsPath, fileName);
-
-      // Проверяет существование файла
-      if (!(await this.fileExists(filePath))) {
-        return {
-          success: false,
-          error:
-            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_NOT_FOUND],
-          status: 'error',
-        };
-      }
-
-      // Создает резервную копию перед удалением
-      if (this.config.enableBackup) {
-        await this.createBackup(fileName);
-      }
-
-      // Удаляет файл
-      await fs.unlink(filePath);
-
-      console.log(`✅ Chat file deleted successfully: ${fileName}`);
-      return {
-        success: true,
-        status: 'success',
-      };
-    } catch (error) {
-      console.error(`❌ Error deleting chat file ${fileName}:`, error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status: 'error',
-      };
-    }
-  }
-
-  /**
-   * Получает список файлов чатов.
-   *
-   * @returns Promise со списком файлов чатов.
-   */
-  async listChatFiles(): Promise<FileSystemOperationResult<ChatFileInfo[]>> {
-    const context = 'listChatFiles';
-
-    try {
-      this.logOperation('read', context);
-
-      const files = await fs.readdir(this.chatsPath);
-      const chatFiles: ChatFileInfo[] = [];
 
       for (const file of files) {
-        if (file.endsWith(FILE_EXTENSIONS.CHAT_FILE)) {
-          const filePath = path.join(this.chatsPath, file);
+        if (file.endsWith(fileTypeConfig.extension)) {
+          const filePath = path.join(folderPath, file);
           const stats = await fs.stat(filePath);
           const lockStatus = await this.checkFileLock(file);
 
-          chatFiles.push({
+          fileInfos.push({
             fileName: file,
             filePath,
             size: stats.size,
@@ -406,93 +671,133 @@ export class FileSystemService {
             modifiedAt: stats.mtime.toISOString(),
             isLocked: lockStatus.isLocked,
             lockOwner: lockStatus.owner,
+            fileType,
           });
         }
       }
 
-      // Сортирует по дате изменения (новые сначала)
-      chatFiles.sort(
-        (a, b) =>
-          new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime()
-      );
-
-      console.log(`✅ Listed ${chatFiles.length} chat files`);
-      return {
-        success: true,
-        data: chatFiles,
-        status: 'success',
-      };
+      return fileInfos;
     } catch (error) {
-      console.error('❌ Error listing chat files:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status: 'error',
-      };
+      console.error(`❌ Error reading folder ${folderPath}:`, error);
+      return [];
     }
   }
 
   /**
-   * Получает статистику файловой системы.
+   * Применяет фильтры поиска к списку файлов.
    *
-   * @returns Promise со статистикой.
+   * @param files - Список файлов.
+   * @param searchParams - Параметры поиска.
+   * @returns Отфильтрованный список файлов.
    */
-  async getFileSystemStats(): Promise<
-    FileSystemOperationResult<FileSystemStats>
-  > {
-    const context = 'getFileSystemStats';
+  private applySearchFilters(
+    files: FileInfo[],
+    searchParams: FileSearchParams
+  ): FileInfo[] {
+    let filteredFiles = [...files];
 
-    try {
-      this.logOperation('read', context);
-
-      const chatFiles = await this.listChatFiles();
-      if (!chatFiles.success || !chatFiles.data) {
-        return {
-          success: false,
-          error: 'Failed to list chat files',
-          status: 'error',
-        };
-      }
-
-      const totalSize = chatFiles.data.reduce(
-        (sum, file) => sum + file.size,
-        0
+    // Фильтр по типу файла
+    if (searchParams.fileType) {
+      filteredFiles = filteredFiles.filter(
+        file => file.fileType === searchParams.fileType
       );
-      const lockedFiles = chatFiles.data.filter(file => file.isLocked).length;
-
-      // Получает информацию о резервных копиях
-      const backupFiles = await this.listBackupFiles();
-      const backupCount = backupFiles.success
-        ? backupFiles.data?.length || 0
-        : 0;
-      const backupSize =
-        backupFiles.success && backupFiles.data
-          ? backupFiles.data.reduce((sum, backup) => sum + backup.size, 0)
-          : 0;
-
-      const stats: FileSystemStats = {
-        totalFiles: chatFiles.data.length,
-        totalSize,
-        lockedFiles,
-        backupCount,
-        backupSize,
-        lastCleanup: new Date().toISOString(),
-      };
-
-      console.log('✅ File system stats retrieved');
-      return {
-        success: true,
-        data: stats,
-        status: 'success',
-      };
-    } catch (error) {
-      console.error('❌ Error getting file system stats:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status: 'error',
-      };
     }
+
+    // Фильтр по паттерну имени
+    if (searchParams.namePattern) {
+      const pattern = new RegExp(searchParams.namePattern, 'i');
+      filteredFiles = filteredFiles.filter(file => pattern.test(file.fileName));
+    }
+
+    // Фильтр по размеру
+    if (searchParams.minSize !== undefined) {
+      const minSize = searchParams.minSize;
+      filteredFiles = filteredFiles.filter(file => file.size >= minSize);
+    }
+    if (searchParams.maxSize !== undefined) {
+      const maxSize = searchParams.maxSize;
+      filteredFiles = filteredFiles.filter(file => file.size <= maxSize);
+    }
+
+    // Фильтр по дате создания
+    if (searchParams.createdAfter) {
+      const afterDate = new Date(searchParams.createdAfter);
+      filteredFiles = filteredFiles.filter(
+        file => new Date(file.createdAt) >= afterDate
+      );
+    }
+    if (searchParams.createdBefore) {
+      const beforeDate = new Date(searchParams.createdBefore);
+      filteredFiles = filteredFiles.filter(
+        file => new Date(file.createdAt) <= beforeDate
+      );
+    }
+
+    // Фильтр по дате изменения
+    if (searchParams.modifiedAfter) {
+      const afterDate = new Date(searchParams.modifiedAfter);
+      filteredFiles = filteredFiles.filter(
+        file => new Date(file.modifiedAt) >= afterDate
+      );
+    }
+    if (searchParams.modifiedBefore) {
+      const beforeDate = new Date(searchParams.modifiedBefore);
+      filteredFiles = filteredFiles.filter(
+        file => new Date(file.modifiedAt) <= beforeDate
+      );
+    }
+
+    // Фильтр по статусу блокировки
+    if (searchParams.lockedOnly) {
+      filteredFiles = filteredFiles.filter(file => file.isLocked);
+    }
+    if (searchParams.unlockedOnly) {
+      filteredFiles = filteredFiles.filter(file => !file.isLocked);
+    }
+
+    return filteredFiles;
+  }
+
+  /**
+   * Применяет пагинацию к списку файлов.
+   *
+   * @param files - Список файлов.
+   * @param searchParams - Параметры поиска.
+   * @returns Пагинированный список файлов.
+   */
+  private applyPagination(
+    files: FileInfo[],
+    searchParams: FileSearchParams
+  ): FileInfo[] {
+    const limit = searchParams.limit || 50;
+    const offset = searchParams.offset || 0;
+
+    return files.slice(offset, offset + limit);
+  }
+
+  /**
+   * Создает информацию о пагинации.
+   *
+   * @param totalCount - Общее количество элементов.
+   * @param pageSize - Размер страницы.
+   * @param offset - Смещение.
+   * @returns Информация о пагинации.
+   */
+  private createPaginationInfo(
+    totalCount: number,
+    pageSize: number,
+    offset: number
+  ) {
+    const currentPage = Math.floor(offset / pageSize) + 1;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    return {
+      page: currentPage,
+      pageSize,
+      totalPages,
+      hasNext: currentPage < totalPages,
+      hasPrevious: currentPage > 1,
+    };
   }
 
   /**
@@ -503,7 +808,7 @@ export class FileSystemService {
    */
   private async atomicWrite(
     filePath: string,
-    data: ChatFileStructure
+    data: FileStructure
   ): Promise<void> {
     const tempFilePath = path.join(
       this.tempPath,
@@ -544,155 +849,46 @@ export class FileSystemService {
   }
 
   /**
-   * Валидирует структуру файла чата.
+   * Валидирует структуру файла.
    *
    * @param data - Данные для валидации.
+   * @param fileType - Тип файла.
    * @returns Результат валидации.
    */
-  private async validateChatFileStructure(
-    data: unknown
-  ): Promise<FileSystemOperationResult<void>> {
+  private async validateFileStructure(
+    data: unknown,
+    fileType: string
+  ): Promise<{ valid: boolean; error?: string }> {
     try {
-      // Проверяет базовую структуру
-      if (!data || typeof data !== 'object') {
+      const validator = FileValidatorFactory.getValidator(fileType);
+      if (!validator) {
         return {
-          success: false,
-          error: 'Invalid file structure: not an object',
-          status: 'error',
+          valid: false,
+          error: `No validator found for file type: ${fileType}`,
         };
       }
 
-      const chatData = data as Record<string, unknown>;
-
-      // Проверяет версию
-      const version = chatData['version'] as string;
-      if (
-        !version ||
-        !FILE_FORMAT_VERSIONS.SUPPORTED.includes(
-          version as (typeof FILE_FORMAT_VERSIONS.SUPPORTED)[number]
-        )
-      ) {
+      // Проверяем что у валидатора есть метод validate
+      if (typeof validator.validate !== 'function') {
         return {
-          success: false,
-          error: `Unsupported file version: ${chatData['version']}`,
-          status: 'error',
+          valid: false,
+          error: `Validator for file type ${fileType} does not have validate method`,
         };
       }
 
-      // Проверяет метаданные
-      if (!chatData['metadata'] || typeof chatData['metadata'] !== 'object') {
+      const isValid = validator.validate(data);
+      if (!isValid) {
         return {
-          success: false,
-          error: 'Missing or invalid metadata',
-          status: 'error',
+          valid: false,
+          error: `Validation failed for file type: ${fileType}`,
         };
       }
 
-      const metadata = chatData['metadata'] as Record<string, unknown>;
-
-      // Проверяет обязательные поля метаданных
-      for (const field of VALIDATION_CONFIG.REQUIRED_METADATA_FIELDS) {
-        if (!metadata[field]) {
-          return {
-            success: false,
-            error: `Missing required metadata field: ${field}`,
-            status: 'error',
-          };
-        }
-      }
-
-      // Проверяет длину названия
-      if (
-        typeof metadata['title'] === 'string' &&
-        metadata['title'].length > VALIDATION_CONFIG.MAX_TITLE_LENGTH
-      ) {
-        return {
-          success: false,
-          error: `Title too long: ${metadata['title'].length} characters`,
-          status: 'error',
-        };
-      }
-
-      // Проверяет сообщения
-      if (!Array.isArray(chatData['messages'])) {
-        return {
-          success: false,
-          error: 'Messages must be an array',
-          status: 'error',
-        };
-      }
-
-      const messages = chatData['messages'] as unknown[];
-
-      // Проверяет количество сообщений
-      if (messages.length > VALIDATION_CONFIG.MAX_MESSAGES_COUNT) {
-        return {
-          success: false,
-          error: `Too many messages: ${messages.length}`,
-          status: 'error',
-        };
-      }
-
-      // Проверяет каждое сообщение
-      for (let i = 0; i < messages.length; i++) {
-        const message = messages[i];
-
-        if (!message || typeof message !== 'object') {
-          return {
-            success: false,
-            error: `Invalid message at index ${i}`,
-            status: 'error',
-          };
-        }
-
-        const messageObj = message as Record<string, unknown>;
-
-        // Проверяет обязательные поля сообщения
-        for (const field of VALIDATION_CONFIG.REQUIRED_MESSAGE_FIELDS) {
-          if (!messageObj[field]) {
-            return {
-              success: false,
-              error: `Missing required message field: ${field} at index ${i}`,
-              status: 'error',
-            };
-          }
-        }
-
-        // Проверяет длину содержимого сообщения
-        if (
-          typeof messageObj['content'] === 'string' &&
-          messageObj['content'].length > VALIDATION_CONFIG.MAX_MESSAGE_LENGTH
-        ) {
-          return {
-            success: false,
-            error: `Message content too long at index ${i}: ${messageObj['content'].length} characters`,
-            status: 'error',
-          };
-        }
-
-        // Проверяет тип сообщения
-        if (
-          !['user', 'assistant', 'system'].includes(
-            messageObj['type'] as string
-          )
-        ) {
-          return {
-            success: false,
-            error: `Invalid message type at index ${i}: ${messageObj['type']}`,
-            status: 'error',
-          };
-        }
-      }
-
-      return {
-        success: true,
-        status: 'success',
-      };
+      return { valid: true };
     } catch (error) {
       return {
-        success: false,
+        valid: false,
         error: error instanceof Error ? error.message : 'Validation error',
-        status: 'error',
       };
     }
   }
@@ -855,19 +1051,22 @@ export class FileSystemService {
    * Создает резервную копию файла.
    *
    * @param fileName - Имя файла.
+   * @param fileType - Тип файла.
    * @returns Результат создания резервной копии.
    */
   private async createBackup(
-    fileName: string
+    fileName: string,
+    fileType: string
   ): Promise<FileSystemOperationResult<void>> {
-    const context = `createBackup(${fileName})`;
+    const context = `createBackup(${fileName}, ${fileType})`;
 
     try {
       this.logOperation('backup', context);
 
-      const sourcePath = path.join(this.chatsPath, fileName);
+      const sourcePath = this.getFilePath(fileName, fileType);
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const backupFileName = `${fileName.replace(FILE_EXTENSIONS.CHAT_FILE, '')}_${timestamp}${FILE_EXTENSIONS.BACKUP_FILE}`;
+      const fileTypeConfig = getFileTypeConfig(fileType);
+      const backupFileName = `${fileName.replace(fileTypeConfig?.extension || '', '')}_${timestamp}${FILE_EXTENSIONS.BACKUP_FILE}`;
       const backupPath = path.join(this.backupsPath, backupFileName);
 
       // Копирует файл
@@ -908,10 +1107,21 @@ export class FileSystemService {
           const filePath = path.join(this.backupsPath, file);
           const stats = await fs.stat(filePath);
 
-          // Извлекает имя исходного файла
+          // Извлекает имя исходного файла и тип
           const originalFile = file
             .replace(/_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z/, '')
-            .replace(FILE_EXTENSIONS.BACKUP_FILE, FILE_EXTENSIONS.CHAT_FILE);
+            .replace(FILE_EXTENSIONS.BACKUP_FILE, '');
+
+          // Определяет тип файла по расширению
+          let fileType = 'unknown';
+          const supportedTypes = ['chat', 'document', 'settings', 'log'];
+          for (const type of supportedTypes) {
+            const config = getFileTypeConfig(type);
+            if (config && originalFile.endsWith(config.extension)) {
+              fileType = type.toLowerCase();
+              break;
+            }
+          }
 
           backupFiles.push({
             fileName: file,
@@ -919,6 +1129,7 @@ export class FileSystemService {
             size: stats.size,
             createdAt: stats.birthtime.toISOString(),
             originalFile,
+            fileType,
           });
         }
       }
@@ -991,10 +1202,11 @@ export class FileSystemService {
       // Группирует резервные копии по исходному файлу
       const backupsByFile = new Map<string, BackupInfo[]>();
       for (const backup of backupFiles.data) {
-        if (!backupsByFile.has(backup.originalFile)) {
-          backupsByFile.set(backup.originalFile, []);
+        const key = `${backup.originalFile}_${backup.fileType}`;
+        if (!backupsByFile.has(key)) {
+          backupsByFile.set(key, []);
         }
-        const existingBackups = backupsByFile.get(backup.originalFile);
+        const existingBackups = backupsByFile.get(key);
         if (existingBackups) {
           existingBackups.push(backup);
         }
@@ -1042,9 +1254,13 @@ export class FileSystemService {
    * Валидирует имя файла для предотвращения path traversal атак.
    *
    * @param fileName - Имя файла для валидации.
+   * @param fileType - Тип файла.
    * @returns Результат валидации.
    */
-  private validateFileName(fileName: string): {
+  private validateFileName(
+    fileName: string,
+    fileType: string
+  ): {
     valid: boolean;
     error?: string;
   } {
@@ -1053,22 +1269,17 @@ export class FileSystemService {
     }
 
     // Проверяет на path traversal атаки
-    if (
-      fileName.includes('..') ||
-      fileName.includes('/') ||
-      fileName.includes('\\')
-    ) {
+    if (VALIDATION_CONFIG.GENERAL.PATH_TRAVERSAL_PATTERN.test(fileName)) {
       return { valid: false, error: 'Path traversal detected' };
     }
 
     // Проверяет на опасные символы
-    const dangerousChars = /[<>:"|?*\x00-\x1f]/;
-    if (dangerousChars.test(fileName)) {
+    if (VALIDATION_CONFIG.GENERAL.FORBIDDEN_CHARS.test(fileName)) {
       return { valid: false, error: 'Dangerous characters detected' };
     }
 
     // Проверяет длину имени файла
-    if (fileName.length > 255) {
+    if (fileName.length > VALIDATION_CONFIG.GENERAL.MAX_FILENAME_LENGTH) {
       return { valid: false, error: 'File name too long' };
     }
 
@@ -1078,7 +1289,8 @@ export class FileSystemService {
     }
 
     // Проверяет что файл имеет правильное расширение
-    if (!fileName.endsWith(FILE_EXTENSIONS.CHAT_FILE)) {
+    const fileTypeConfig = getFileTypeConfig(fileType);
+    if (fileTypeConfig && !fileName.endsWith(fileTypeConfig.extension)) {
       return { valid: false, error: 'Invalid file extension' };
     }
 

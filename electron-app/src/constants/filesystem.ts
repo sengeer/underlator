@@ -1,6 +1,7 @@
 /**
  * @module FileSystemConstants
- * Константы для работы с файловой системой чатов.
+ * Константы для работы с файловой системой.
+ * Поддерживает любые типы файлов через конфигурируемые настройки.
  */
 
 import { FileSystemConfig } from '../types/filesystem';
@@ -9,11 +10,11 @@ import { app } from 'electron';
 import * as path from 'path';
 
 /**
- * Конфигурация по умолчанию для FileSystemService.
+ * Конфигурация по умолчанию для универсального FileSystemService.
  */
 export const DEFAULT_FILESYSTEM_CONFIG: FileSystemConfig = {
   basePath: isDev ? app.getPath('userData') : path.dirname(app.getPath('exe')),
-  maxFileSize: 10 * 1024 * 1024, // 10MB
+  maxFileSize: 50 * 1024 * 1024, // 50MB
   lockTimeout: 5 * 60 * 1000, // 5 минут
   enableBackup: true,
   maxBackups: 5,
@@ -21,31 +22,43 @@ export const DEFAULT_FILESYSTEM_CONFIG: FileSystemConfig = {
 };
 
 /**
- * Имена папок и файлов.
+ * Имена папок для разных типов файлов.
  */
 export const FILESYSTEM_PATHS = {
+  /** Папка для чатов */
   CHATS_FOLDER: 'chats',
+  /** Папка для документов */
+  DOCUMENTS_FOLDER: 'documents',
+  /** Папка для настроек */
+  SETTINGS_FOLDER: 'settings',
+  /** Папка для логов */
+  LOGS_FOLDER: 'logs',
+  /** Папка для резервных копий */
   BACKUP_FOLDER: 'backups',
+  /** Папка для временных файлов */
   TEMP_FOLDER: 'temp',
+  /** Папка для блокировок */
   LOCK_FOLDER: 'locks',
 } as const;
 
 /**
- * Расширения файлов.
+ * Расширения файлов для разных типов.
  */
 export const FILE_EXTENSIONS = {
+  /** Файлы чатов */
   CHAT_FILE: '.chat.json',
+  /** Файлы документов */
+  DOCUMENT_FILE: '.doc.json',
+  /** Файлы настроек */
+  SETTINGS_FILE: '.settings.json',
+  /** Файлы логов */
+  LOG_FILE: '.log.json',
+  /** Резервные копии */
   BACKUP_FILE: '.backup.json',
+  /** Блокировки */
   LOCK_FILE: '.lock',
+  /** Временные файлы */
   TEMP_FILE: '.tmp',
-} as const;
-
-/**
- * Версии формата файлов.
- */
-export const FILE_FORMAT_VERSIONS = {
-  CURRENT: '1.0.0',
-  SUPPORTED: ['1.0.0'],
 } as const;
 
 /**
@@ -62,6 +75,9 @@ export const FILESYSTEM_ERROR_CODES = {
   VALIDATION_ERROR: 'VALIDATION_ERROR',
   BACKUP_FAILED: 'BACKUP_FAILED',
   RESTORE_FAILED: 'RESTORE_FAILED',
+  UNSUPPORTED_FILE_TYPE: 'UNSUPPORTED_FILE_TYPE',
+  FILE_TYPE_MISMATCH: 'FILE_TYPE_MISMATCH',
+  MAX_FILES_EXCEEDED: 'MAX_FILES_EXCEEDED',
 } as const;
 
 /**
@@ -78,22 +94,58 @@ export const FILESYSTEM_ERROR_MESSAGES = {
   [FILESYSTEM_ERROR_CODES.VALIDATION_ERROR]: 'Validation error',
   [FILESYSTEM_ERROR_CODES.BACKUP_FAILED]: 'Failed to create backup',
   [FILESYSTEM_ERROR_CODES.RESTORE_FAILED]: 'Failed to restore file',
+  [FILESYSTEM_ERROR_CODES.UNSUPPORTED_FILE_TYPE]: 'Unsupported file type',
+  [FILESYSTEM_ERROR_CODES.FILE_TYPE_MISMATCH]: 'File type mismatch',
+  [FILESYSTEM_ERROR_CODES.MAX_FILES_EXCEEDED]:
+    'Maximum number of files exceeded',
 } as const;
 
 /**
- * Настройки валидации.
+ * Настройки валидации для разных типов файлов.
  */
 export const VALIDATION_CONFIG = {
-  /** Максимальная длина названия чата */
-  MAX_TITLE_LENGTH: 200,
-  /** Максимальная длина содержимого сообщения */
-  MAX_MESSAGE_LENGTH: 50000,
-  /** Максимальное количество сообщений в чате */
-  MAX_MESSAGES_COUNT: 10000,
-  /** Обязательные поля в метаданных */
-  REQUIRED_METADATA_FIELDS: ['id', 'title', 'createdAt', 'updatedAt'],
-  /** Обязательные поля в сообщении */
-  REQUIRED_MESSAGE_FIELDS: ['id', 'type', 'content', 'timestamp'],
+  /** Общие настройки */
+  GENERAL: {
+    /** Максимальная длина имени файла */
+    MAX_FILENAME_LENGTH: 255,
+    /** Максимальная длина пути */
+    MAX_PATH_LENGTH: 4096,
+    /** Запрещенные символы в имени файла */
+    FORBIDDEN_CHARS: /[<>:"|?*\x00-\x1f]/,
+    /** Паттерн для проверки path traversal */
+    PATH_TRAVERSAL_PATTERN: /\.\.|\/|\\/,
+  },
+  /** Настройки для чатов */
+  CHAT: {
+    /** Максимальная длина названия чата */
+    MAX_TITLE_LENGTH: 200,
+    /** Максимальная длина содержимого сообщения */
+    MAX_MESSAGE_LENGTH: 50000,
+    /** Максимальное количество сообщений в чате */
+    MAX_MESSAGES_COUNT: 10000,
+    /** Обязательные поля в метаданных */
+    REQUIRED_METADATA_FIELDS: ['id', 'title', 'createdAt', 'updatedAt'],
+    /** Обязательные поля в сообщении */
+    REQUIRED_MESSAGE_FIELDS: ['id', 'type', 'content', 'timestamp'],
+  },
+  /** Настройки для документов */
+  DOCUMENT: {
+    /** Максимальная длина названия документа */
+    MAX_TITLE_LENGTH: 500,
+    /** Максимальная длина содержимого документа */
+    MAX_CONTENT_LENGTH: 1000000, // 1MB
+    /** Обязательные поля в метаданных */
+    REQUIRED_METADATA_FIELDS: ['id', 'title', 'createdAt', 'updatedAt'],
+  },
+  /** Настройки для настроек */
+  SETTINGS: {
+    /** Максимальная длина названия настройки */
+    MAX_TITLE_LENGTH: 100,
+    /** Максимальная длина значения настройки */
+    MAX_VALUE_LENGTH: 10000,
+    /** Обязательные поля в метаданных */
+    REQUIRED_METADATA_FIELDS: ['id', 'key', 'createdAt', 'updatedAt'],
+  },
 } as const;
 
 /**
@@ -110,4 +162,68 @@ export const LOGGING_CONFIG = {
   LOG_LOCK_OPERATIONS: true,
   /** Логировать операции резервного копирования */
   LOG_BACKUP_OPERATIONS: true,
+  /** Логировать операции валидации */
+  LOG_VALIDATION_OPERATIONS: false,
+  /** Логировать операции поиска */
+  LOG_SEARCH_OPERATIONS: false,
 } as const;
+
+/**
+ * Конфигурация типов файлов.
+ */
+export const FILE_TYPE_CONFIGS = {
+  /** Конфигурация для чатов */
+  CHAT: {
+    folder: FILESYSTEM_PATHS.CHATS_FOLDER,
+    extension: FILE_EXTENSIONS.CHAT_FILE,
+    maxFileSize: 10 * 1024 * 1024, // 10MB
+    maxFiles: 1000,
+    validation: VALIDATION_CONFIG.CHAT,
+  },
+  /** Конфигурация для документов */
+  DOCUMENT: {
+    folder: FILESYSTEM_PATHS.DOCUMENTS_FOLDER,
+    extension: FILE_EXTENSIONS.DOCUMENT_FILE,
+    maxFileSize: 50 * 1024 * 1024, // 50MB
+    maxFiles: 500,
+    validation: VALIDATION_CONFIG.DOCUMENT,
+  },
+  /** Конфигурация для настроек */
+  SETTINGS: {
+    folder: FILESYSTEM_PATHS.SETTINGS_FOLDER,
+    extension: FILE_EXTENSIONS.SETTINGS_FILE,
+    maxFileSize: 1024 * 1024, // 1MB
+    maxFiles: 100,
+    validation: VALIDATION_CONFIG.SETTINGS,
+  },
+  /** Конфигурация для логов */
+  LOG: {
+    folder: FILESYSTEM_PATHS.LOGS_FOLDER,
+    extension: FILE_EXTENSIONS.LOG_FILE,
+    maxFileSize: 5 * 1024 * 1024, // 5MB
+    maxFiles: 100,
+    validation: VALIDATION_CONFIG.GENERAL,
+  },
+} as const;
+
+/**
+ * Получает конфигурацию для указанного типа файла.
+ *
+ * @param fileType - Тип файла.
+ * @returns Конфигурация типа файла или undefined.
+ */
+export function getFileTypeConfig(fileType: string) {
+  return FILE_TYPE_CONFIGS[
+    fileType.toUpperCase() as keyof typeof FILE_TYPE_CONFIGS
+  ];
+}
+
+/**
+ * Проверяет поддерживается ли тип файла.
+ *
+ * @param fileType - Тип файла.
+ * @returns true если тип поддерживается.
+ */
+export function isFileTypeSupported(fileType: string): boolean {
+  return fileType.toUpperCase() in FILE_TYPE_CONFIGS;
+}

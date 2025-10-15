@@ -4,8 +4,8 @@
  * Предоставляет функции для валидации, логирования и форматирования IPC операций.
  */
 
-import type { OllamaOperationResult } from '../../types';
-import type { IpcMessage, IpcResponse } from '../../types';
+import type { OllamaOperationResult } from '../../types/ollama';
+import type { IpcMessage, IpcResponse } from '../../types/ipc-handlers';
 
 /**
  * Класс для обработки IPC сообщений.

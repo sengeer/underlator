@@ -7,14 +7,13 @@
 import { OllamaApi } from './ollama-api';
 import { OllamaHtmlParser, createOllamaHtmlParser } from '../utils/html-parser';
 import { STATIC_MODELS, DEFAULT_CATALOG_CONFIG } from '../constants/catalog';
+import type { ModelCatalogConfig, CachedCatalog } from '../types/catalog';
 import type {
-  ModelCatalogConfig,
-  CachedCatalog,
   ModelCatalog,
   ModelFilters,
   OllamaModelInfo,
-  OllamaOperationResult,
-} from '../types';
+} from '../types/models';
+import type { OllamaOperationResult } from '../types/ollama';
 
 /**
  * @class ModelCatalogService

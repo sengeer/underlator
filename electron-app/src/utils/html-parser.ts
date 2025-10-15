@@ -4,7 +4,7 @@
  */
 
 import { fetchWithErrorHandling } from './error-handler';
-import type { ParsedModel, ParseResult, QuantizedModel } from '../types';
+import type { ParsedModel, ParseResult, QuantizedModel } from '../types/parser';
 
 /**
  * Класс для парсинга HTML страниц Ollama Library.

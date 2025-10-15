@@ -1,6 +1,7 @@
 /**
  * @module FileSystemTypes
- * Типы для работы с файловой системой чатов.
+ * Универсальные типы для работы с файловой системой.
+ * Поддерживает любые типы файлов через конфигурируемые валидаторы.
  */
 
 /**
@@ -14,12 +15,12 @@ export interface FileSystemOperationResult<T = unknown> {
 }
 
 /**
- * Конфигурация FileSystemService.
+ * Конфигурация универсального FileSystemService.
  */
 export interface FileSystemConfig {
-  /** Базовый путь для хранения файлов чатов */
+  /** Базовый путь для хранения файлов */
   basePath: string;
-  /** Максимальный размер файла чата в байтах */
+  /** Максимальный размер файла в байтах */
   maxFileSize: number;
   /** Время жизни блокировки файла в миллисекундах */
   lockTimeout: number;
@@ -32,9 +33,9 @@ export interface FileSystemConfig {
 }
 
 /**
- * Информация о файле чата.
+ * Информация о файле.
  */
-export interface ChatFileInfo {
+export interface FileInfo {
   /** Имя файла */
   fileName: string;
   /** Полный путь к файлу */
@@ -49,47 +50,20 @@ export interface ChatFileInfo {
   isLocked: boolean;
   /** Владелец блокировки */
   lockOwner?: string;
+  /** Тип файла */
+  fileType: string;
 }
 
 /**
- * Структура файла чата.
+ * Универсальная структура файла.
  */
-export interface ChatFileStructure {
+export interface FileStructure<TMetadata = unknown, TData = unknown> {
   /** Версия формата файла */
   version: string;
-  /** Метаданные чата */
-  metadata: {
-    /** ID чата */
-    id: string;
-    /** Название чата */
-    title: string;
-    /** Дата создания */
-    createdAt: string;
-    /** Дата последнего обновления */
-    updatedAt: string;
-    /** Настройки чата */
-    settings: {
-      /** Используемая модель */
-      model: string;
-      /** Провайдер */
-      provider: string;
-      /** Дополнительные параметры */
-      parameters?: Record<string, unknown>;
-    };
-  };
-  /** Сообщения чата */
-  messages: Array<{
-    /** ID сообщения */
-    id: string;
-    /** Тип сообщения */
-    type: 'user' | 'assistant' | 'system';
-    /** Содержимое сообщения */
-    content: string;
-    /** Временная метка */
-    timestamp: string;
-    /** Дополнительные метаданные */
-    metadata?: Record<string, unknown>;
-  }>;
+  /** Метаданные файла */
+  metadata: TMetadata;
+  /** Данные файла */
+  data: TData;
 }
 
 /**
@@ -120,13 +94,15 @@ export interface BackupInfo {
   createdAt: string;
   /** Исходный файл */
   originalFile: string;
+  /** Тип файла */
+  fileType: string;
 }
 
 /**
  * Статистика файловой системы.
  */
 export interface FileSystemStats {
-  /** Общее количество файлов чатов */
+  /** Общее количество файлов */
   totalFiles: number;
   /** Общий размер всех файлов в байтах */
   totalSize: number;
@@ -138,4 +114,107 @@ export interface FileSystemStats {
   backupSize: number;
   /** Время последней очистки */
   lastCleanup?: string;
+  /** Статистика по типам файлов */
+  fileTypeStats: Record<
+    string,
+    {
+      count: number;
+      totalSize: number;
+    }
+  >;
+}
+
+/**
+ * Конфигурация типа файла.
+ */
+export interface FileTypeConfig<TMetadata = unknown, TData = unknown> {
+  /** Папка для хранения файлов этого типа */
+  folder: string;
+  /** Расширение файлов этого типа */
+  extension: string;
+  /** Валидатор структуры файла */
+  validator: (data: unknown) => data is FileStructure<TMetadata, TData>;
+  /** Максимальный размер файла для этого типа */
+  maxFileSize?: number;
+  /** Максимальное количество файлов этого типа */
+  maxFiles?: number;
+}
+
+/**
+ * Результат валидации файла.
+ */
+export interface FileValidationResult {
+  /** Валидность файла */
+  valid: boolean;
+  /** Сообщение об ошибке */
+  error?: string;
+  /** Предупреждения */
+  warnings?: string[];
+}
+
+/**
+ * Опции для операций с файлами.
+ */
+export interface FileOperationOptions {
+  /** Создать резервную копию перед операцией */
+  createBackup?: boolean;
+  /** Принудительно разблокировать файл */
+  forceUnlock?: boolean;
+  /** Валидировать данные перед записью */
+  validate?: boolean;
+  /** Логировать операцию */
+  logOperation?: boolean;
+}
+
+/**
+ * Параметры для поиска файлов.
+ */
+export interface FileSearchParams {
+  /** Тип файла для поиска */
+  fileType?: string;
+  /** Паттерн имени файла */
+  namePattern?: string;
+  /** Минимальный размер файла */
+  minSize?: number;
+  /** Максимальный размер файла */
+  maxSize?: number;
+  /** Дата создания от */
+  createdAfter?: string;
+  /** Дата создания до */
+  createdBefore?: string;
+  /** Дата изменения от */
+  modifiedAfter?: string;
+  /** Дата изменения до */
+  modifiedBefore?: string;
+  /** Только заблокированные файлы */
+  lockedOnly?: boolean;
+  /** Только разблокированные файлы */
+  unlockedOnly?: boolean;
+  /** Максимальное количество файлов для загрузки */
+  limit?: number;
+  /** Смещение для пагинации */
+  offset?: number;
+}
+
+/**
+ * Результат поиска файлов.
+ */
+export interface FileSearchResult {
+  /** Найденные файлы */
+  files: FileInfo[];
+  /** Общее количество найденных файлов */
+  totalCount: number;
+  /** Информация о пагинации */
+  pagination?: {
+    /** Текущая страница */
+    page: number;
+    /** Размер страницы */
+    pageSize: number;
+    /** Общее количество страниц */
+    totalPages: number;
+    /** Есть ли следующая страница */
+    hasNext: boolean;
+    /** Есть ли предыдущая страница */
+    hasPrevious: boolean;
+  };
 }

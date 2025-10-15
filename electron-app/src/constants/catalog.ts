@@ -4,7 +4,7 @@
  * Централизованная конфигурация для всех операций с каталогом моделей Ollama.
  */
 
-import type { ModelCatalogConfig } from '../types';
+import type { ModelCatalogConfig } from '../types/catalog';
 
 /**
  * Статический запасной список моделей Ollama.

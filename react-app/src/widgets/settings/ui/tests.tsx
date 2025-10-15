@@ -112,7 +112,7 @@ function Tests() {
             </TextAndIconButton>
             <input
               className='settings__input settings__text'
-              placeholder='chat_xxxxxxxxxxxxx_xxxxxxxxxxx'
+              placeholder='chat_xxxxxxxxxxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
               type='text'
               value={chatId}
               onChange={(e) => setChatId(e.target.value)}

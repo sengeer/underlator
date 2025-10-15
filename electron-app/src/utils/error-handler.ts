@@ -10,7 +10,7 @@ import {
   OLLAMA_RETRY_CONFIG,
   OLLAMA_HTTP_STATUS,
 } from '../constants/ollama';
-import type { OllamaOperationResult } from '../types';
+import type { OllamaOperationResult } from '../types/ollama';
 
 /**
  * Класс для обработки ошибок Ollama API.

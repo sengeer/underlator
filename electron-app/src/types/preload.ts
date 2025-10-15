@@ -9,11 +9,12 @@ import type {
   OllamaPullRequest,
   OllamaPullProgress,
   OllamaDeleteRequest,
-  ModelCatalog,
-  OllamaModelInfo,
-  CatalogFilters,
-  SplashMessages,
-  IpcResponse,
+} from './ollama';
+import type { CatalogFilters } from './catalog';
+import type { ModelCatalog, OllamaModelInfo } from './models';
+import type { SplashMessages } from './splash';
+import type { IpcResponse } from './ipc-handlers';
+import type {
   CreateChatRequest,
   GetChatRequest,
   UpdateChatRequest,
@@ -26,7 +27,7 @@ import type {
   DeleteChatResult,
   ListChatsResult,
   AddMessageResult,
-} from './index';
+} from './chat';
 
 /**
  * Интерфейс для API Electron, доступного в renderer процессе.

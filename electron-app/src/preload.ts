@@ -12,17 +12,19 @@ import type {
   OllamaPullRequest,
   OllamaPullProgress,
   OllamaDeleteRequest,
-  CatalogFilters,
-  ElectronAPI,
-  SplashMessages,
-  ElectronApiConfig,
+} from './types/ollama';
+import type { CatalogFilters } from './types/catalog';
+import type { ElectronApiConfig } from './types/electron';
+import type { SplashMessages } from './types/splash';
+import type {
   CreateChatRequest,
   GetChatRequest,
   UpdateChatRequest,
   DeleteChatRequest,
   ListChatsRequest,
   AddMessageRequest,
-} from './types';
+} from './types/chat';
+import type { ElectronAPI } from './types/preload';
 
 /**
  * Здесь используется API `contextBridge` для экспозиции кастомного API в renderer процесс.

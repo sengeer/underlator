@@ -27,8 +27,8 @@ import type {
   OllamaStreamCallback,
   OllamaProgressCallback,
   OllamaOperationResult,
-  ElectronApiConfig,
-} from '../types';
+} from '../types/ollama';
+import type { ElectronApiConfig } from '../types/electron';
 
 /**
  * @class OllamaApi

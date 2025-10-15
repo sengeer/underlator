@@ -6,7 +6,7 @@
 
 import { ipcMain } from 'electron';
 import { IpcHandler } from './ipc-handlers';
-import { FileSystemService } from '../../services/filesystem';
+import { ChatFileSystemService } from '../../services/filesystem-chat';
 import type {
   CreateChatRequest,
   GetChatRequest,
@@ -25,7 +25,7 @@ import type {
   ChatMessage,
   ChatFile,
 } from '../../types/chat';
-import type { ChatFileStructure } from '../../types/filesystem';
+import type { ChatFileStructure } from '../../types/filesystem-chat';
 
 /**
  * @class ChatHandlers
@@ -34,15 +34,15 @@ import type { ChatFileStructure } from '../../types/filesystem';
  * Обеспечивает безопасное взаимодействие между frontend и файловой системой.
  */
 export class ChatHandlers {
-  private fileSystemService: FileSystemService;
+  private chatFileSystemService: ChatFileSystemService;
 
   /**
    * Создает экземпляр ChatHandlers.
    *
-   * @param fileSystemService - Сервис для работы с файловой системой.
+   * @param chatFileSystemService - Сервис для работы с файлами чатов.
    */
-  constructor(fileSystemService: FileSystemService) {
-    this.fileSystemService = fileSystemService;
+  constructor(chatFileSystemService: ChatFileSystemService) {
+    this.chatFileSystemService = chatFileSystemService;
   }
 
   /**
@@ -123,7 +123,13 @@ export class ChatHandlers {
         ): Promise<{
           chats: ChatFile[];
           totalCount: number;
-          pagination: any;
+          pagination: {
+            page: number;
+            pageSize: number;
+            totalPages: number;
+            hasNext: boolean;
+            hasPrevious: boolean;
+          };
         }> => {
           const result = await this.handleListChats(request);
           if (!result.success || !result.data) {
@@ -132,7 +138,13 @@ export class ChatHandlers {
           return {
             chats: result.data,
             totalCount: result.totalCount || 0,
-            pagination: result.pagination,
+            pagination: result.pagination || {
+              page: 1,
+              pageSize: 50,
+              totalPages: 1,
+              hasNext: false,
+              hasPrevious: false,
+            },
           };
         },
         'chat:list'
@@ -231,7 +243,7 @@ export class ChatHandlers {
       const fileName = this.getChatFileName(chatId);
 
       // Записывает файл чата
-      const writeResult = await this.fileSystemService.writeChatFile(
+      const writeResult = await this.chatFileSystemService.writeChatFile(
         fileName,
         chatFile
       );
@@ -249,7 +261,7 @@ export class ChatHandlers {
         createdAt: now,
         updatedAt: now,
         defaultModel: (() => {
-          const model: any = {
+          const model: ChatData['defaultModel'] = {
             name: request.defaultModel.name,
             provider: request.defaultModel.provider || 'ollama',
           };
@@ -261,7 +273,7 @@ export class ChatHandlers {
           return model;
         })(),
         context: (() => {
-          const context: any = {};
+          const context: Partial<ChatData['context']> = {};
 
           if (request.systemPrompt) {
             context.systemPrompt = request.systemPrompt;
@@ -314,7 +326,8 @@ export class ChatHandlers {
       const fileName = this.getChatFileName(request.chatId);
 
       // Читает файл чата
-      const readResult = await this.fileSystemService.readChatFile(fileName);
+      const readResult =
+        await this.chatFileSystemService.readChatFile(fileName);
       if (!readResult.success) {
         return this.createErrorResult<ChatData>(
           readResult.error || 'Failed to read chat file'
@@ -327,7 +340,8 @@ export class ChatHandlers {
       }
 
       // Преобразует структуру файла в объект чата
-      const chatData = this.convertFileToChatData(chatFile);
+      const chatData =
+        this.chatFileSystemService.convertFileToChatData(chatFile);
 
       // Применяет ограничения на количество сообщений если указаны
       if (request.messageLimit && request.messageLimit > 0) {
@@ -371,7 +385,8 @@ export class ChatHandlers {
       const fileName = this.getChatFileName(request.chatId);
 
       // Читает существующий файл чата
-      const readResult = await this.fileSystemService.readChatFile(fileName);
+      const readResult =
+        await this.chatFileSystemService.readChatFile(fileName);
       if (!readResult.success) {
         return this.createErrorResult<ChatData>(
           readResult.error || 'Failed to read chat file'
@@ -424,7 +439,7 @@ export class ChatHandlers {
       chatFile.metadata.updatedAt = now;
 
       // Записывает обновленный файл чата
-      const writeResult = await this.fileSystemService.writeChatFile(
+      const writeResult = await this.chatFileSystemService.writeChatFile(
         fileName,
         chatFile
       );
@@ -435,7 +450,8 @@ export class ChatHandlers {
       }
 
       // Преобразует структуру файла в объект чата
-      const chatData = this.convertFileToChatData(chatFile);
+      const chatData =
+        this.chatFileSystemService.convertFileToChatData(chatFile);
 
       console.log(`✅ Chat updated successfully: ${request.chatId}`);
       return this.createSuccessResult(chatData, 'updating');
@@ -476,16 +492,17 @@ export class ChatHandlers {
 
       // Создает резервную копию если требуется
       if (request.createBackup) {
-        const readResult = await this.fileSystemService.readChatFile(fileName);
+        const readResult =
+          await this.chatFileSystemService.readChatFile(fileName);
         if (readResult.success) {
-          // Резервная копия создается автоматически в FileSystemService
+          // Резервная копия создается автоматически в ChatFileSystemService
           console.log(`📋 Backup will be created for chat: ${request.chatId}`);
         }
       }
 
       // Удаляет файл чата
       const deleteResult =
-        await this.fileSystemService.deleteChatFile(fileName);
+        await this.chatFileSystemService.deleteChatFile(fileName);
       if (!deleteResult.success) {
         return this.createErrorResult<void>(
           deleteResult.error || 'Failed to delete chat file'
@@ -516,37 +533,14 @@ export class ChatHandlers {
   ): Promise<ListChatsResult> {
     try {
       // Получает список файлов чатов
-      const listResult = await this.fileSystemService.listChatFiles();
+      const listResult = await this.chatFileSystemService.getChatFiles();
       if (!listResult.success) {
         return this.createErrorResult<ChatFile[]>(
           listResult.error || 'Failed to list chat files'
         );
       }
 
-      const chatFiles: ChatFile[] = [];
-
-      // Преобразует информацию о файлах в объекты чатов
-      for (const fileInfo of listResult.data || []) {
-        try {
-          // Читает файл чата для получения метаданных
-          const readResult = await this.fileSystemService.readChatFile(
-            fileInfo.fileName
-          );
-          if (readResult.success && readResult.data) {
-            const chatFile = this.convertFileToChatFile(
-              readResult.data,
-              fileInfo
-            );
-            chatFiles.push(chatFile);
-          }
-        } catch (error) {
-          console.warn(
-            `⚠️ Failed to read chat file ${fileInfo.fileName}:`,
-            error
-          );
-          // Продолжает обработку других файлов
-        }
-      }
+      const chatFiles = listResult.data || [];
 
       // Применяет фильтры и сортировку
       const filteredChats = this.applyChatFilters(chatFiles, request);
@@ -598,7 +592,8 @@ export class ChatHandlers {
       const fileName = this.getChatFileName(request.chatId);
 
       // Читает существующий файл чата
-      const readResult = await this.fileSystemService.readChatFile(fileName);
+      const readResult =
+        await this.chatFileSystemService.readChatFile(fileName);
       if (!readResult.success) {
         return this.createErrorResult<ChatMessage>(
           readResult.error || 'Failed to read chat file'
@@ -639,7 +634,7 @@ export class ChatHandlers {
       chatFile.metadata.updatedAt = now;
 
       // Записывает обновленный файл чата
-      const writeResult = await this.fileSystemService.writeChatFile(
+      const writeResult = await this.chatFileSystemService.writeChatFile(
         fileName,
         chatFile
       );
@@ -650,7 +645,8 @@ export class ChatHandlers {
       }
 
       // Преобразует структуру файла в объект чата
-      const updatedChat = this.convertFileToChatData(chatFile);
+      const updatedChat =
+        this.chatFileSystemService.convertFileToChatData(chatFile);
 
       console.log(`✅ Message added successfully to chat: ${request.chatId}`);
       return this.createSuccessResult(newMessage, 'updating', { updatedChat });
@@ -697,165 +693,6 @@ export class ChatHandlers {
    */
   private getChatFileName(chatId: string): string {
     return `${chatId}.chat.json`;
-  }
-
-  /**
-   * Преобразует структуру файла чата в объект ChatData.
-   *
-   * @param chatFile - Структура файла чата.
-   * @returns Объект чата.
-   */
-  private convertFileToChatData(chatFile: ChatFileStructure): ChatData {
-    return {
-      id: chatFile.metadata.id,
-      title: chatFile.metadata.title,
-      messages: chatFile.messages.map(msg => {
-        // Извлекает модель и контекст из метаданных сообщения
-        const messageModel = msg.metadata?.['model'] as
-          | { name: string; version?: string; provider?: string }
-          | undefined;
-        const messageContext = msg.metadata?.['context'] as
-          | { previousMessages?: string[]; metadata?: Record<string, unknown> }
-          | undefined;
-
-        // Создает копию метаданных без model и context
-        const messageMetadata = { ...msg.metadata };
-        if (messageMetadata) {
-          delete messageMetadata['model'];
-          delete messageMetadata['context'];
-        }
-
-        const result: any = {
-          id: msg.id,
-          role: msg.type as 'user' | 'assistant' | 'system',
-          content: msg.content,
-          timestamp: msg.timestamp,
-        };
-
-        // Добавляет model только если он существует
-        if (messageModel) {
-          result.model = messageModel;
-        }
-
-        // Добавляет context только если он существует
-        if (messageContext) {
-          result.context = messageContext;
-        }
-
-        // Добавляет metadata только если он существует
-        if (messageMetadata && Object.keys(messageMetadata).length > 0) {
-          result.metadata = messageMetadata;
-        }
-
-        return result;
-      }),
-      createdAt: chatFile.metadata.createdAt,
-      updatedAt: chatFile.metadata.updatedAt,
-      defaultModel: (() => {
-        const model: any = {
-          name: chatFile.metadata.settings.model,
-          provider: chatFile.metadata.settings.provider,
-        };
-
-        const version = chatFile.metadata.settings.parameters?.['version'] as
-          | string
-          | undefined;
-        if (version) {
-          model.version = version;
-        }
-
-        return model;
-      })(),
-      context: (() => {
-        const context: any = {};
-
-        const systemPrompt = chatFile.metadata.settings.parameters?.[
-          'systemPrompt'
-        ] as string | undefined;
-        if (systemPrompt) {
-          context.systemPrompt = systemPrompt;
-        }
-
-        const generationSettings = chatFile.metadata.settings.parameters?.[
-          'generationSettings'
-        ] as
-          | {
-              temperature?: number;
-              maxTokens?: number;
-              parameters?: Record<string, unknown>;
-            }
-          | undefined;
-        if (generationSettings) {
-          context.generationSettings = generationSettings;
-        }
-
-        const metadata = chatFile.metadata.settings.parameters;
-        if (metadata && Object.keys(metadata).length > 0) {
-          context.metadata = metadata;
-        }
-
-        return Object.keys(context).length > 0 ? context : undefined;
-      })(),
-      metadata:
-        chatFile.metadata.settings.parameters &&
-        Object.keys(chatFile.metadata.settings.parameters).length > 0
-          ? chatFile.metadata.settings.parameters
-          : undefined,
-    };
-  }
-
-  /**
-   * Преобразует структуру файла чата в объект ChatFile для списка.
-   *
-   * @param chatFile - Структура файла чата.
-   * @param fileInfo - Информация о файле.
-   * @returns Объект чата для списка.
-   */
-  private convertFileToChatFile(
-    chatFile: ChatFileStructure,
-    fileInfo: { size: number; isLocked: boolean }
-  ): ChatFile {
-    const lastMessage =
-      chatFile.messages.length > 0
-        ? chatFile.messages[chatFile.messages.length - 1]
-        : undefined;
-
-    return {
-      id: chatFile.metadata.id,
-      title: chatFile.metadata.title,
-      messageCount: chatFile.messages.length,
-      createdAt: chatFile.metadata.createdAt,
-      updatedAt: chatFile.metadata.updatedAt,
-      defaultModel: (() => {
-        const model: any = {
-          name: chatFile.metadata.settings.model,
-          provider: chatFile.metadata.settings.provider,
-        };
-
-        const version = chatFile.metadata.settings.parameters?.['version'] as
-          | string
-          | undefined;
-        if (version) {
-          model.version = version;
-        }
-
-        return model;
-      })(),
-      lastMessage: lastMessage
-        ? {
-            role: lastMessage.type as 'user' | 'assistant' | 'system',
-            preview: lastMessage.content.substring(0, 100),
-            timestamp: lastMessage.timestamp,
-          }
-        : undefined,
-      fileSize: fileInfo.size,
-      isLocked: fileInfo.isLocked,
-      metadata:
-        chatFile.metadata.settings.parameters &&
-        Object.keys(chatFile.metadata.settings.parameters).length > 0
-          ? chatFile.metadata.settings.parameters
-          : undefined,
-    };
   }
 
   /**
@@ -1179,11 +1016,11 @@ export class ChatHandlers {
 /**
  * Создает экземпляр ChatHandlers.
  *
- * @param fileSystemService - Сервис для работы с файловой системой.
+ * @param chatFileSystemService - Сервис для работы с файлами чатов.
  * @returns Экземпляр ChatHandlers.
  */
 export function createChatHandlers(
-  fileSystemService: FileSystemService
+  chatFileSystemService: ChatFileSystemService
 ): ChatHandlers {
-  return new ChatHandlers(fileSystemService);
+  return new ChatHandlers(chatFileSystemService);
 }

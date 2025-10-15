@@ -7,25 +7,25 @@
 
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
-import {
-  OllamaManager,
-  OllamaApi,
-  ModelCatalogService,
-  FileSystemService,
-} from './services';
+import { OllamaApi } from './services/ollama-api';
+import { ollamaManager } from './services/ollama-manager';
+import { ModelCatalogService } from './services/model-catalog';
+import { ChatFileSystemService } from './services/filesystem-chat';
 import { ChatHandlers } from './presentation/ipc/chat-handlers';
 import { IpcHandler } from './presentation/ipc/ipc-handlers';
 import type {
-  MenuTranslations,
   OllamaGenerateRequest,
   OllamaPullRequest,
+  OllamaPullProgress,
   OllamaDeleteRequest,
-  ModelCatalog,
-  OllamaModelInfo,
-  CatalogFilters,
-  SplashMessages,
-  ElectronApiConfig,
-} from './types';
+  OllamaModelsResponse,
+} from './types/ollama';
+import type { MenuTranslations } from './types/electron';
+import type { SplashMessages } from './types/splash';
+import type { OllamaModelInfo } from './types/models';
+import type { CatalogFilters } from './types/catalog';
+import type { ElectronApiConfig } from './types/electron';
+import type { ModelCatalog } from './types/models';
 
 if (require('electron-squirrel-startup')) {
   app.quit();
@@ -41,7 +41,7 @@ console.log('🔧 NODE_ENV:', process.env['NODE_ENV']);
 export let mainWindow: typeof BrowserWindow | null = null;
 let ollamaApi: OllamaApi | null = null;
 let modelCatalogService: ModelCatalogService | null = null;
-let fileSystemService: FileSystemService | null = null;
+let chatFileSystemService: ChatFileSystemService | null = null;
 let chatHandlers: ChatHandlers | null = null;
 let currentAbortController: AbortController | null = null;
 const isMac: boolean = process.platform === 'darwin';
@@ -58,7 +58,7 @@ async function cleanupResources(): Promise<void> {
   console.log('🧹 Cleaning up application resources...');
 
   // Останавливает Ollama
-  await OllamaManager.stopOllama();
+  await ollamaManager.stopOllama();
 
   // Удаляет Ollama обработчики
   ipcMain.removeHandler('model:generate');
@@ -168,7 +168,7 @@ async function loadPipeline(): Promise<void> {
     });
 
     // Инициализирует OllamaManager
-    await OllamaManager.initialize();
+    await ollamaManager.initialize();
 
     // Отправляет статус запуска Ollama в React splash screen
     sendSplashStatus({
@@ -177,7 +177,7 @@ async function loadPipeline(): Promise<void> {
     });
 
     // Запускает Ollama сервер
-    const isStarted = await OllamaManager.startOllama();
+    const isStarted = await ollamaManager.startOllama();
 
     if (isStarted) {
       console.log('✅ Ollama server is running successfully');
@@ -229,12 +229,12 @@ async function loadPipeline(): Promise<void> {
       progress: 72,
     });
 
-    // Создает сервис файловой системы
-    fileSystemService = new FileSystemService();
-    await fileSystemService.initialize();
+    // Создает сервис файловой системы для чатов
+    chatFileSystemService = new ChatFileSystemService();
+    await chatFileSystemService.initialize();
 
     // Создает обработчики чатов
-    chatHandlers = new ChatHandlers(fileSystemService);
+    chatHandlers = new ChatHandlers(chatFileSystemService);
 
     // Отправляет статус создания файловой системы в React splash screen
     sendSplashStatus({
@@ -287,7 +287,7 @@ async function loadPipeline(): Promise<void> {
  */
 ipcMain.on(
   'update-translations',
-  (_event: any, newTranslations: MenuTranslations) => {
+  (_event: Electron.IpcMainEvent, newTranslations: MenuTranslations) => {
     translations = newTranslations;
     buildMenu();
   }
@@ -299,7 +299,7 @@ ipcMain.on(
  */
 function buildMenu(): void {
   // Шаблон кросс-платформенного меню
-  const template: any[] = [
+  const template: Electron.MenuItemConstructorOptions[] = [
     {
       label: translations.MENU || 'Menu',
       submenu: [
@@ -312,7 +312,7 @@ function buildMenu(): void {
         { role: 'cut', label: translations.CUT || 'Cut' },
         { role: 'copy', label: translations.COPY || 'Copy' },
         { role: 'paste', label: translations.PASTE || 'Paste' },
-        { role: 'selectall', label: translations.SELECT_ALL || 'Select All' },
+        { role: 'selectAll', label: translations.SELECT_ALL || 'Select All' },
         {
           role: 'quit',
           label: translations.QUIT || 'Quit',
@@ -508,7 +508,7 @@ function setupOllamaIpcHandlers(): void {
     IpcHandler.createStreamingHandlerWrapper(
       async (
         request: OllamaPullRequest,
-        onProgress: (progress: any) => void
+        onProgress: (progress: OllamaPullProgress) => void
       ): Promise<{ success: boolean }> => {
         // Валидация входящего запроса
         const validation = IpcHandler.validateRequest(request, ['name']);
@@ -556,7 +556,7 @@ function setupOllamaIpcHandlers(): void {
    */
   ipcMain.handle(
     'model:list',
-    IpcHandler.createHandlerWrapper(async (): Promise<any> => {
+    IpcHandler.createHandlerWrapper(async (): Promise<OllamaModelsResponse> => {
       const models = await ollamaApi!.listModels();
       return models;
     }, 'model:list')
@@ -788,7 +788,7 @@ app.on('before-quit', async () => {
 
   // Останавливает Ollama при принудительном закрытии
   try {
-    await OllamaManager.stopOllama();
+    await ollamaManager.stopOllama();
     console.log('✅️ Ollama server is stopped when the application is closed');
   } catch (error) {
     console.error('❌ Error stopping Ollama when closing:', error);
