@@ -10,6 +10,7 @@ export {
   setProvider,
   updateProviderSettings,
   setTypeUse,
+  setTypeUseBySection,
 } from './provider-settings-slice';
 
 export { default } from './provider-settings-slice';

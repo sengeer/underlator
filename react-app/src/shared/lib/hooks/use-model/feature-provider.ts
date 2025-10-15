@@ -250,10 +250,7 @@ async function handleSimpleTranslation(
 export const featureProvider = {
   generate: async (props: ModelRequestContext) => {
     // Обработка контекстного перевода для массивов
-    if (
-      props.params.useContextualTranslation &&
-      props.typeUse === 'translation'
-    ) {
+    if (props.typeUse === 'contextualTranslation') {
       return await handleContextualTranslation(props);
     }
 
@@ -263,7 +260,9 @@ export const featureProvider = {
     }
 
     // Обработка простого перевода
-    return await handleSimpleTranslation(props);
+    if (props.typeUse === 'translation') {
+      return await handleSimpleTranslation(props);
+    }
   },
 };
 

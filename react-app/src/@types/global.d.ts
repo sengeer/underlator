@@ -9,6 +9,11 @@
 type ProviderType = 'Ollama' | 'Embedded Ollama';
 
 /**
+ * Типы использования модели.
+ */
+type TypeUse = 'instruction' | 'translation' | 'contextualTranslation' | 'chat';
+
+/**
  * Настройки конекретного провайдера.
  * Интерфейс для хранения специфичных настроек каждого провайдера.
  */
@@ -20,7 +25,7 @@ interface ProviderSettings {
   /** Название модели для использования */
   model?: string;
   /** Тип использования модели */
-  typeUse?: 'instruction' | 'translation';
+  typeUse?: TypeUse;
 }
 
 /**
@@ -86,8 +91,6 @@ interface UseModelParams {
   responseMode: 'arrayStream' | 'stringStream' | string;
   /** Инструкция для модели */
   instruction?: string;
-  /** Использовать контекстный перевод */
-  useContextualTranslation?: boolean;
 }
 
 /**

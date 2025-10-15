@@ -359,7 +359,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
           think: true,
         }
       );
-    } else {
+    } else if (settings.typeUse === 'contextualTranslation') {
       collectedTextInfos.forEach(({ element }) => {
         element.style.backgroundColor = 'var(--background)';
         element.style.color = 'var(--foreground)';
@@ -370,7 +370,6 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         payloadArray,
         {
           responseMode: 'arrayStream',
-          useContextualTranslation: true,
         },
         {
           think: false,
@@ -385,7 +384,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
    * Использует функциональную утилиту createUpdateHandler для безопасного обновления текстовых узлов.
    */
   useEffect(() => {
-    if (settings.typeUse === 'translation') {
+    if (settings.typeUse === 'contextualTranslation') {
       if (Object.keys(generatedResponse).length === 0) return;
 
       // Функциональная утилита для обновления текстовых узлов
@@ -402,7 +401,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
           span.textContent = `Ошибка перевода: ${translationErrors}`;
         }
 
-        if (settings.typeUse === 'translation') {
+        if (settings.typeUse === 'contextualTranslation') {
           setTextInfos([]);
           resetResponse();
         }
@@ -444,17 +443,18 @@ function PdfViewer({ isOpened }: PdfTranslator) {
             />
             <Switch
               checked={settings.typeUse === 'instruction'}
-              onChange={() =>
+              onChange={() => {
+                const newTypeUse =
+                  settings.typeUse === 'instruction'
+                    ? 'contextualTranslation'
+                    : 'instruction';
                 dispatch(
                   setTypeUse({
                     provider,
-                    typeUse:
-                      settings.typeUse === 'instruction'
-                        ? 'translation'
-                        : 'instruction',
+                    typeUse: newTypeUse,
                   })
-                )
-              }
+                );
+              }}
             />
             <DecorativeTextAndIconButton
               text={t`instruction`}
@@ -462,7 +462,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
             />
           </div>
           <div className='pdf-viewer__translate-btns'>
-            {settings.typeUse === 'translation' && (
+            {settings.typeUse === 'contextualTranslation' && (
               <>
                 <TextAndIconButton
                   text={sourceLanguage}

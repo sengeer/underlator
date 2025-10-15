@@ -12,10 +12,10 @@ import SettingsIcon from '../../../shared/assets/icons/settings-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import WithAdaptiveSize from '../../../shared/lib/hocs/with-adaptive-size/with-adaptive-size';
 import {
-  openElement,
-  closeElement,
+  openElementOnly,
   isElementOpen,
 } from '../../../shared/models/element-state-slice';
+import { setTypeUseBySection } from '../../../shared/models/provider-settings-slice/provider-settings-slice';
 import IconButton from '../../../shared/ui/icon-button';
 import '../styles/side-navigate.scss';
 
@@ -66,9 +66,10 @@ function SideNavigate() {
       <IconButton
         isActiveStyle={isOpenTextTranslationSection}
         onClick={() => {
-          dispatch(openElement('textTranslationSection'));
-          dispatch(closeElement('pdfTranslationSection'));
-          dispatch(closeElement('settingsSection'));
+          dispatch(openElementOnly('textTranslationSection'));
+          dispatch(
+            setTypeUseBySection({ sectionName: 'textTranslationSection' })
+          );
         }}>
         <WithAdaptiveSize WrappedComponent={TranslateIcon} />
       </IconButton>
@@ -77,9 +78,10 @@ function SideNavigate() {
       <IconButton
         isActiveStyle={isOpenPdfTranslationSection}
         onClick={() => {
-          dispatch(openElement('pdfTranslationSection'));
-          dispatch(closeElement('textTranslationSection'));
-          dispatch(closeElement('settingsSection'));
+          dispatch(openElementOnly('pdfTranslationSection'));
+          dispatch(
+            setTypeUseBySection({ sectionName: 'pdfTranslationSection' })
+          );
         }}>
         <WithAdaptiveSize WrappedComponent={PdfIcon} />
       </IconButton>
@@ -88,9 +90,8 @@ function SideNavigate() {
       <IconButton
         isActiveStyle={isOpenSettingsSection}
         onClick={() => {
-          dispatch(openElement('settingsSection'));
-          dispatch(closeElement('textTranslationSection'));
-          dispatch(closeElement('pdfTranslationSection'));
+          dispatch(openElementOnly('settingsSection'));
+          dispatch(setTypeUseBySection({ sectionName: 'settingsSection' }));
         }}>
         <WithAdaptiveSize WrappedComponent={SettingsIcon} />
       </IconButton>

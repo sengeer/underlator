@@ -11,6 +11,7 @@ import {
   getStorageWrite,
   setStorageWrite,
 } from '../../lib/utils/control-local-storage';
+import { SECTION_TYPEUSE_MAPPING } from './constants/provider-settings-slice';
 import { ProviderSettingsState, State } from './types/provider-settings-slice';
 
 /**
@@ -101,7 +102,7 @@ export const providerSettingsSlice = createSlice({
       state,
       action: PayloadAction<{
         provider: ProviderType;
-        typeUse: 'instruction' | 'translation';
+        typeUse: TypeUse;
       }>
     ) {
       const { provider, typeUse } = action.payload;
@@ -110,11 +111,37 @@ export const providerSettingsSlice = createSlice({
         setStorageWrite('providerSettings', JSON.stringify(state));
       }
     },
+    /**
+     * Автоматически переключает тип использования на основе активной секции.
+     * Использует маппинг SECTION_TYPEUSE_MAPPING для определения правильного режима.
+     *
+     * @param state - Текущее состояние настроек провайдеров.
+     * @param action - Действие с названием секции для переключения.
+     */
+    setTypeUseBySection(
+      state,
+      action: PayloadAction<{
+        sectionName: string;
+      }>
+    ) {
+      const { sectionName } = action.payload;
+      const targetTypeUse =
+        SECTION_TYPEUSE_MAPPING[sectionName] || 'instruction';
+
+      if (targetTypeUse && state.settings[state.provider]) {
+        state.settings[state.provider]!.typeUse = targetTypeUse;
+        setStorageWrite('providerSettings', JSON.stringify(state));
+      }
+    },
   },
 });
 
-export const { setProvider, updateProviderSettings, setTypeUse } =
-  providerSettingsSlice.actions;
+export const {
+  setProvider,
+  updateProviderSettings,
+  setTypeUse,
+  setTypeUseBySection,
+} = providerSettingsSlice.actions;
 
 /**
  * Селектор для получения всех настроек провайдеров.

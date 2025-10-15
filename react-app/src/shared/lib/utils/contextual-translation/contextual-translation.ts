@@ -27,8 +27,7 @@ import {
  * // Определение необходимости контекстного перевода для массива текстов
  * const decision = shouldUseContextualTranslation(
  *   ['Hello world', 'How are you?'],
- *   { useContextualTranslation: true },
- *   'translation'
+ *   'contextualTranslation'
  * );
  * console.log(decision); // { useContextual: true, reason: 'multiple_chunks' }
  *
@@ -36,23 +35,16 @@ import {
  * // Отключение контекстного перевода для режима инструкций
  * const decision = shouldUseContextualTranslation(
  *   ['Text to process'],
- *   { useContextualTranslation: true },
- *   'instruction'
+ *   'contextualTranslation'
  * );
  * console.log(decision); // { useContextual: false, reason: 'instruction_mode' }
  */
 export const shouldUseContextualTranslation = (
   text: string | string[],
-  params: UseModelParams,
   typeUse?: string
 ): ContextualTranslationDecision => {
   // Не использовать контекстный перевод для режима инструкций
-  if (typeUse === 'instruction') {
-    return { useContextual: false, reason: 'instruction_mode' };
-  }
-
-  // Не использовать, если явно отключен
-  if (params.useContextualTranslation === false) {
+  if (typeUse !== 'contextualTranslation') {
     return { useContextual: false, reason: 'disabled' };
   }
 

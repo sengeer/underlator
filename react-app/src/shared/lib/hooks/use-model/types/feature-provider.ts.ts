@@ -41,7 +41,7 @@ export interface ModelRequestContext {
   /** Название модели для использования */
   model?: string;
   /** Тип использования модели */
-  typeUse?: 'instruction' | 'translation';
+  typeUse?: TypeUse;
   /** Текст или массив текстов для перевода */
   text: string | string[];
   /** Исходный язык */
