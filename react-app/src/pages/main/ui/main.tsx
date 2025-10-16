@@ -17,7 +17,7 @@ import PdfViewer from '../../../widgets/pdf-viewer';
 import Settings from '../../../widgets/settings';
 import SideNavigate from '../../../widgets/side-navigate/';
 import TextTranslator from '../../../widgets/text-translator';
-import { selectSplashVisible } from '../models/splash-screen-slice';
+import { selectSplashVisible } from '../models/splash-screen-ipc-slice';
 import SplashScreen from './splash-screen';
 import '../styles/main.scss';
 /**

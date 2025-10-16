@@ -1,12 +1,12 @@
 /**
- * @module SplashScreenSlice
+ * @module SplashScreenIpcSlice
  * Redux slice для управления состоянием splash screen.
  */
 
 import { i18n } from '@lingui/core';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { addNotification } from '../../../shared/models/notifications-slice/';
-import { splashScreenApi } from '../apis/splash-screen-api';
+import { splashScreenApi } from '../apis/splash-screen-ipc';
 import type {
   SplashStatusData,
   SplashScreenState,

@@ -34,12 +34,12 @@ import {
   installModel,
   removeModel,
   setSearchQuery,
-} from '../models/electron-slice';
+} from '../models/model-ipc-slice';
 import {
   selectCatalogState,
   selectInstallationState,
   selectSearchState,
-} from '../models/electron-slice';
+} from '../models/model-ipc-slice';
 import type {
   OllamaModelInfo,
   InstallModelPayload,
@@ -47,7 +47,7 @@ import type {
   ManageModelsProps,
   ModelDisplayState,
   ModelEventCallbacks,
-} from '../types/electron';
+} from '../types/model-ipc';
 import ModelItem from './model-item';
 
 /**

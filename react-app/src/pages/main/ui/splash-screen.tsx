@@ -9,7 +9,7 @@ import { useAppDispatch } from '../../../app/';
 import logo from '../../../shared/assets/images/logo.svg';
 import useElectronTranslation from '../../../shared/lib/hooks/use-electron-translation';
 import ProgressBar from '../../../shared/ui/progress-bar';
-import { splashScreenApi } from '../apis/splash-screen-api';
+import { splashScreenApi } from '../apis/splash-screen-ipc';
 import {
   setStatus,
   setProgress,
@@ -18,7 +18,7 @@ import {
   complete,
   fetchSplashStatus,
   selectSplashScreenState,
-} from '../models/splash-screen-slice';
+} from '../models/splash-screen-ipc-slice';
 import type {
   SplashScreenProps,
   SplashStatusData,

@@ -5,7 +5,7 @@
  */
 
 import { DEFAULT_OPTIONS } from '../../../shared/lib/constants';
-import { electron } from '../apis/electron';
+import { electron } from '../apis/model-ipc';
 import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../constants/ipc';
 
 /**

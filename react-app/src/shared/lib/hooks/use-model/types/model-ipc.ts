@@ -1,11 +1,11 @@
 /**
- * @module ElectronTypes
- * Типы для работы с Electron IPC.
- * Определяет интерфейсы для работы с LLM моделью через Electron IPC.
+ * @module ModelIpcTypes
+ * Типы для работы с Model IPC.
+ * Определяет интерфейсы для работы с LLM моделью через Model IPC.
  */
 
 /**
- * Ответ от LLM модели API при генерации через Electron IPC.
+ * Ответ от LLM модели API при генерации через Model IPC.
  * Структура streaming ответа от /api/generate.
  */
 export interface GenerateResponse {

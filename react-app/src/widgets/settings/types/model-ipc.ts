@@ -1,6 +1,6 @@
 /**
- * @module ElectronTypes
- * Типы для работы с Electron API.
+ * @module ModelIpcTypes
+ * Типы для работы с Model IPC API.
  */
 
 /**

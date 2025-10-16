@@ -4,7 +4,7 @@
  * Настройки для оптимальной работы с Electron IPC.
  */
 
-import type { SettingsApiConfig } from '../types/electron';
+import type { SettingsApiConfig } from '../types/model-ipc';
 
 export const DEFAULT_CONFIG: SettingsApiConfig = {
   timeout: 30000,

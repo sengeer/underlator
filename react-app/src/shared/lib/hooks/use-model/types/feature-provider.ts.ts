@@ -4,6 +4,7 @@
  */
 
 import { Dispatch } from 'redux';
+import { ChatMessage, ChatContext, ChatMessageRole } from './use-model';
 
 /**
  * Ответ от LLM модели через Electron IPC.
@@ -60,4 +61,10 @@ export interface ModelRequestContext {
   t: (template: TemplateStringsArray, ...args: readonly any[]) => string;
   /** Функция для обновления состояния */
   dispatch: Dispatch;
+  /** Идентификатор чата для режима чата */
+  chatId?: string;
+  /** Контекст чата с историей сообщений */
+  chatContext?: ChatContext;
+  /** Флаг сохранения истории сообщений в чате */
+  saveHistory?: boolean;
 }

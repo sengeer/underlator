@@ -1,6 +1,6 @@
 /**
- * @module ElectronSlice
- * Redux slice для управления моделями в Settings виджете.
+ * @module ModelIpcSlice
+ * Redux slice для управления Model IPC в Settings виджете.
  * Обеспечивает управление каталогом моделей, установкой, удалением и поиском моделей.
  */
 
@@ -8,7 +8,7 @@ import { i18n } from '@lingui/core';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { addNotification } from '../../../shared/models/notifications-slice/';
 import { updateProviderSettings } from '../../../shared/models/provider-settings-slice';
-import { electron } from '../apis/electron';
+import { electron } from '../apis/model-ipc';
 import type {
   ManageModelsState,
   CatalogState,
@@ -20,7 +20,7 @@ import type {
   InstallModelParams,
   RemoveModelParams,
   GetModelInfoParams,
-} from '../types/electron';
+} from '../types/model-ipc';
 
 /**
  * Начальное состояние каталога моделей.

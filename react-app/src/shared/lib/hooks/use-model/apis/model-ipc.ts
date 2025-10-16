@@ -1,17 +1,17 @@
 /**
- * @module ElectronApi
- * API клиент для взаимодействия с Electron IPC.
+ * @module ModelIpcApi
+ * API клиент для взаимодействия с Model IPC.
  */
 
-import type { GenerateResponse, GenerateRequest } from '../types/electron';
+import type { GenerateResponse, GenerateRequest } from '../types/model-ipc';
 
 /**
- * Класс для работы с Electron API.
- * Инкапсулирует Electron IPC функционал для генерации текста.
+ * Класс для работы с Model IPC API.
+ * Инкапсулирует Model IPC функционал для генерации текста.
  */
 export class Electron {
   /**
-   * Генерирует текст через Electron IPC.
+   * Генерирует текст через Model IPC.
    *
    * @param request - Сформированный запрос для генерации.
    * @param config - Конфигурация для API.
@@ -51,7 +51,7 @@ export class Electron {
   }
 
   /**
-   * Подписывается на прогресс генерации через Electron IPC.
+   * Подписывается на прогресс генерации через Model IPC.
    *
    * @param callback - Callback для обработки streaming ответов.
    * @returns Функция для отписки.

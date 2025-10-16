@@ -1,10 +1,10 @@
 /**
- * @module SplashScreenApi
- * API клиент для взаимодействия с Electron IPC в splash screen.
+ * @module SplashScreenIpcApi
+ * API клиент для взаимодействия с Splash Screen IPC.
  * Предоставляет функции для получения статуса и подписки на обновления splash screen.
  */
 
-import { DEFAULT_CONFIG } from '../constants/splash-screen-api';
+import { DEFAULT_CONFIG } from '../constants/splash-screen-ipc';
 import type {
   SplashStatusData,
   SplashApiConfig,

@@ -28,7 +28,7 @@ import type {
   OllamaModelInfo,
   ModelDisplayState,
   ModelEventCallbacks,
-} from '../types/electron';
+} from '../types/model-ipc';
 
 /**
  * Компонент ModelItem.

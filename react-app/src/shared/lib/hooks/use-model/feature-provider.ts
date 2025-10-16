@@ -14,7 +14,7 @@ import {
   getContextualTranslationConfig,
   validateContextualTranslationParams,
 } from '../../utils/contextual-translation';
-import { electron } from './apis/electron';
+import { electron } from './apis/model-ipc';
 import type {
   IpcResponse,
   ContextualTranslationResult,

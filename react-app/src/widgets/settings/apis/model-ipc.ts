@@ -1,6 +1,6 @@
 /**
- * @module ElectronApi
- * API клиент для взаимодействия с Electron IPC в Settings виджете.
+ * @module ModelIpcApi
+ * API клиент для взаимодействия с Model IPC в Settings виджете.
  * Предоставляет функции для управления каталогом моделей.
  */
 
@@ -16,7 +16,7 @@ import type {
   ModelProgressCallback,
   ModelErrorCallback,
   SettingsApiConfig,
-} from '../types/electron';
+} from '../types/model-ipc';
 
 /**
  * @class Electron
