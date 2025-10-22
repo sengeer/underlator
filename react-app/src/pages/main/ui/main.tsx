@@ -13,6 +13,7 @@ import {
   setTargetLanguage,
 } from '../../../shared/models/translation-languages-slice';
 import ToastContainer from '../../../shared/ui/toast';
+import Chat from '../../../widgets/chat';
 import PdfViewer from '../../../widgets/pdf-viewer';
 import Settings from '../../../widgets/settings';
 import SideNavigate from '../../../widgets/side-navigate/';
@@ -20,6 +21,7 @@ import TextTranslator from '../../../widgets/text-translator';
 import { selectSplashVisible } from '../models/splash-screen-ipc-slice';
 import SplashScreen from './splash-screen';
 import '../styles/main.scss';
+
 /**
  * Главный компонент приложения Main.
  *
@@ -65,6 +67,11 @@ function Main() {
   // Получение состояния видимости SplashScreen из Redux store
   const isSplashVisible = useSelector(selectSplashVisible);
 
+  // Получение состояния видимости Chat из Redux store
+  const isOpenChatSection = useSelector((state) =>
+    isElementOpen(state, 'chatSection')
+  );
+
   // Хук для работы с переводами Electron
   // Предоставляет функцию синхронизации переводов с main процессом
   const { translateElectron } = useElectronTranslation();
@@ -91,6 +98,8 @@ function Main() {
           <ToastContainer />
           {/* Навигационная панель для переключения между компонентами */}
           <SideNavigate />
+          {/* Виджет чата */}
+          <Chat isOpened={isOpenChatSection} />
           {/* Виджет перевода текста */}
           <TextTranslator isOpened={isOpenTextTranslationSection} />
           {/* Виджет просмотра и перевода PDF */}

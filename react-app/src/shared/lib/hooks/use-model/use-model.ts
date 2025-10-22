@@ -106,7 +106,7 @@ function useModel() {
           url: providerSettings.settings.url || DEFAULT_URL,
         },
         model: providerSettings.settings.model,
-        typeUse: providerSettings.settings.typeUse,
+        typeUse: params.typeUse || providerSettings.settings.typeUse,
         text: texts,
         sourceLanguage: getLanguageInEn(sourceLanguage),
         targetLanguage: getLanguageInEn(targetLanguage),
@@ -117,6 +117,8 @@ function useModel() {
         signal: controller.signal,
         t,
         dispatch,
+        chatId: params.chatId,
+        saveHistory: params.saveHistory,
       });
 
       setStatus('success');

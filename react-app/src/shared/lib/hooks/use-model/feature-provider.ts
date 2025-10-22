@@ -1,9 +1,10 @@
 /**
  * @module FeatureProvider
- * Feature-провайдер для реализации обработки запроса к LLM.
- * Поддерживает контекстный перевод, инструкции и простой перевод.
+ * Feature-провайдер для реализации специфичной обработки запроса к LLM.
+ * Поддерживает контекстный перевод, инструкции, чат и простой перевод.
  */
 
+import { electron as chatElectron } from '../../../apis/chat-ipc/chat-ipc';
 import { addNotification } from '../../../models/notifications-slice';
 import { DEFAULT_MODEL } from '../../constants';
 import {
@@ -20,6 +21,13 @@ import type {
   ContextualTranslationResult,
   ModelRequestContext,
 } from './types/feature-provider.ts';
+import type { ChatMessage, ChatContext } from './types/use-model';
+import {
+  buildChatPrompt,
+  getProviderTokenLimits,
+  calculateChatContextTokens,
+  validateChatContext,
+} from './utils/chat-context';
 
 /**
  * Обрабатывает контекстный перевод через Electron IPC.
@@ -242,6 +250,235 @@ async function handleSimpleTranslation(
 }
 
 /**
+ * Обрабатывает чат через Electron IPC с поддержкой контекста и суммирования.
+ * Загружает историю сообщений, строит контекстный промпт и сохраняет ответ в чат.
+ *
+ * @param props - Контекст запроса. Подробнее см. ModelRequestContext.
+ * @returns Promise с результатом обработки чата.
+ */
+async function handleChat(props: ModelRequestContext): Promise<void> {
+  // Валидация обязательных параметров для режима чата
+  if (!props.chatId) {
+    props.dispatch(
+      addNotification({
+        type: 'error',
+        message: props.t`Chat ID is required for chat mode`,
+      })
+    );
+    throw new Error('Chat ID is required for chat mode');
+  }
+
+  let chatContext: ChatContext;
+
+  // Загрузка контекста чата через IPC API
+  if (props.chatContext) {
+    // Используем переданный контекст
+    chatContext = props.chatContext;
+  } else {
+    // Загружаем контекст из файловой системы
+    try {
+      const chatResult = await chatElectron.getChat({ chatId: props.chatId });
+
+      if (!chatResult.success || !chatResult.data) {
+        props.dispatch(
+          addNotification({
+            type: 'error',
+            message: props.t`Failed to load chat context`,
+          })
+        );
+        throw new Error(`Failed to load chat: ${chatResult.error}`);
+      }
+
+      chatContext = {
+        messages: chatResult.data.messages || [],
+        maxContextMessages: 50,
+        systemPrompt:
+          'Ты полезный ассистент. Отвечай на вопросы пользователя, используя контекст предыдущих сообщений.',
+        generationSettings: {
+          temperature: 0.7,
+          maxTokens: 2048,
+        },
+      };
+    } catch (error) {
+      props.dispatch(
+        addNotification({
+          type: 'error',
+          message: props.t`Failed to load chat context`,
+        })
+      );
+      throw new Error(
+        `Chat context loading failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  // Валидация контекста чата
+  const contextValidation = validateChatContext(chatContext);
+  if (!contextValidation.success) {
+    props.dispatch(
+      addNotification({
+        type: 'error',
+        message: props.t`Invalid chat context`,
+      })
+    );
+    throw new Error(`Invalid chat context: ${contextValidation.error}`);
+  }
+
+  // Создание сообщения пользователя
+  const userMessage: ChatMessage = {
+    id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    role: 'user',
+    content: typeof props.text === 'string' ? props.text : props.text.join(' '),
+    timestamp: new Date().toISOString(),
+  };
+
+  // Добавление сообщения пользователя в контекст
+  const updatedContext: ChatContext = {
+    ...chatContext,
+    messages: [...chatContext.messages, userMessage],
+  };
+
+  // Получение лимитов токенов для провайдера
+  const providerLimits = getProviderTokenLimits(props.config.id);
+  const currentTokens = calculateChatContextTokens(updatedContext);
+
+  // Проверка превышения лимитов и применение суммирования при необходимости
+  if (currentTokens > providerLimits.maxContextTokens) {
+    console.warn(
+      `Context tokens (${currentTokens}) exceed limit (${providerLimits.maxContextTokens}). Applying summarization.`
+    );
+
+    // Применяем суммирование контекста
+    const summarizationResult = buildChatPrompt(updatedContext, {
+      provider: props.config.id,
+      maxContextTokens: providerLimits.maxContextTokens,
+      enableSummarization: true,
+      preserveRecentMessages: 5,
+    });
+
+    if (!summarizationResult.success) {
+      props.dispatch(
+        addNotification({
+          type: 'error',
+          message: props.t`Failed to process chat context`,
+        })
+      );
+      throw new Error(
+        `Context summarization failed: ${summarizationResult.error}`
+      );
+    }
+  }
+
+  // Построение промпта для чата
+  const promptResult = buildChatPrompt(updatedContext, {
+    provider: props.config.id,
+    systemPrompt: updatedContext.systemPrompt,
+    maxContextTokens: providerLimits.maxContextTokens,
+    enableSummarization: true,
+    preserveRecentMessages: 5,
+  });
+
+  if (!promptResult.success) {
+    props.dispatch(
+      addNotification({
+        type: 'error',
+        message: props.t`Failed to build chat prompt`,
+      })
+    );
+    throw new Error(`Prompt building failed: ${promptResult.error}`);
+  }
+
+  const prompt = promptResult.data;
+
+  let fullResponse = '';
+
+  // Подписка на прогресс генерации через IPC
+  const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {
+    if (chunk.response) {
+      fullResponse += chunk.response;
+
+      // Передаем частичный ответ в callback для streaming отображения
+      if (props.onModelResponse) {
+        props.onModelResponse(chunk.response);
+      }
+    }
+
+    if (chunk.error) {
+      props.dispatch(
+        addNotification({
+          type: 'error',
+          message: props.t`Chat generation error`,
+        })
+      );
+      console.error(`Streaming error in chat: ${chunk.error}`);
+    }
+  });
+
+  try {
+    // Запуск генерации через Electron IPC
+    await electron.generate(
+      {
+        model: props.model || DEFAULT_MODEL,
+        prompt,
+        ...props.options,
+      },
+      props.config
+    );
+
+    // Создание сообщения ассистента
+    const assistantMessage: ChatMessage = {
+      id: `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      role: 'assistant',
+      content: fullResponse,
+      timestamp: new Date().toISOString(),
+      model: {
+        name: props.model || DEFAULT_MODEL,
+        provider: props.config.id,
+      },
+    };
+
+    // Сохранение ответа в контексте чата через IPC API
+    if (props.saveHistory !== false) {
+      try {
+        // Добавляем сообщение пользователя
+        const addUserMessageResult = await chatElectron.addMessage({
+          chatId: props.chatId,
+          role: 'user',
+          content: userMessage.content,
+        });
+
+        if (!addUserMessageResult.success) {
+          console.warn(
+            `Failed to save user message: ${addUserMessageResult.error}`
+          );
+        }
+
+        // Добавляем сообщение ассистента
+        const addAssistantMessageResult = await chatElectron.addMessage({
+          chatId: props.chatId,
+          role: 'assistant',
+          content: assistantMessage.content,
+          model: assistantMessage.model,
+        });
+
+        if (!addAssistantMessageResult.success) {
+          console.warn(
+            `Failed to save assistant message: ${addAssistantMessageResult.error}`
+          );
+        }
+      } catch (error) {
+        // Не прерываем выполнение при ошибках сохранения, только логируем
+        console.warn(
+          `Failed to save chat messages: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
+    }
+  } finally {
+    unsubscribe();
+  }
+}
+
+/**
  * Feature-провайдер для запросов к LLM модели.
  *
  * @param props - Контекст запроса. Подробнее см. ModelRequestContext.
@@ -249,6 +486,11 @@ async function handleSimpleTranslation(
  */
 export const featureProvider = {
   generate: async (props: ModelRequestContext) => {
+    // Обработка чата с контекстом
+    if (props.typeUse === 'chat') {
+      return await handleChat(props);
+    }
+
     // Обработка контекстного перевода для массивов
     if (props.typeUse === 'contextualTranslation') {
       return await handleContextualTranslation(props);

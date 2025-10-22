@@ -91,6 +91,12 @@ interface UseModelParams {
   responseMode: 'arrayStream' | 'stringStream' | string;
   /** Инструкция для модели */
   instruction?: string;
+  /** Тип использования модели */
+  typeUse?: TypeUse;
+  /** ID чата для режима чата */
+  chatId?: string;
+  /** Флаг сохранения истории в чате */
+  saveHistory?: boolean;
 }
 
 /**

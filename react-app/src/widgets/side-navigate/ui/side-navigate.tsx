@@ -7,6 +7,7 @@
  */
 
 import { useDispatch, useSelector } from 'react-redux';
+import ForumIcon from '../../../shared/assets/icons/forum-icon';
 import PdfIcon from '../../../shared/assets/icons/pdf-icon';
 import SettingsIcon from '../../../shared/assets/icons/settings-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
@@ -60,8 +61,23 @@ function SideNavigate() {
     isElementOpen(state, 'settingsSection')
   );
 
+  // Получение состояния видимости секции чата из Redux store
+  const isOpenChatSection = useSelector((state) =>
+    isElementOpen(state, 'chatSection')
+  );
+
   return (
     <aside className='side-navigate'>
+      {/* Кнопка переключения на секцию чата */}
+      <IconButton
+        isActiveStyle={isOpenChatSection}
+        onClick={() => {
+          dispatch(openElementOnly('chatSection'));
+          dispatch(setTypeUseBySection({ sectionName: 'chatSection' }));
+        }}>
+        <WithAdaptiveSize WrappedComponent={ForumIcon} />
+      </IconButton>
+
       {/* Кнопка переключения на секцию перевода текста */}
       <IconButton
         isActiveStyle={isOpenTextTranslationSection}

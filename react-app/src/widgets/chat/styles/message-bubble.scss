@@ -1,0 +1,280 @@
+/**
+ * @module MessageBubbleStyles
+ * Стили для компонента MessageBubble.
+ * Обеспечивает отображение сообщений в стиле monkeytype design.
+ */
+
+.message-bubble {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--black-20);
+  }
+
+  &__content {
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+
+    // Стили для markdown контента
+    .markdown-content {
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        margin: 0.5rem 0;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0.5rem 0;
+      }
+
+      code {
+        padding: 0.125rem 0.25rem;
+        border-radius: 0.25rem;
+        background-color: var(--black-20);
+        font-size: 0.875rem;
+        font-family: 'Courier New', monospace;
+      }
+
+      pre {
+        overflow-x: auto;
+        margin: 0.5rem 0;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        background-color: var(--black-20);
+
+        code {
+          padding: 0;
+          background: none;
+        }
+      }
+
+      blockquote {
+        margin: 0.5rem 0;
+        padding-left: 1rem;
+        border-left: 3px solid var(--accent);
+        font-style: italic;
+      }
+
+      ul,
+      ol {
+        margin: 0.5rem 0;
+        padding-left: 1.5rem;
+      }
+
+      li {
+        margin: 0.25rem 0;
+      }
+    }
+  }
+
+  &__timestamp {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  &_user {
+    align-self: flex-end;
+    margin-left: 2rem;
+    background-color: var(--main);
+    color: var(--white);
+
+    .message-bubble__content {
+      color: var(--white);
+    }
+
+    .message-bubble__timestamp {
+      color: rgb(255 255 255 / 70%);
+    }
+  }
+
+  &_assistant {
+    align-self: flex-start;
+    margin-right: 2rem;
+    border: 1px solid var(--black-20);
+    background-color: var(--background);
+    color: var(--foreground);
+
+    .message-bubble__content {
+      color: var(--foreground);
+    }
+
+    .message-bubble__timestamp {
+      color: var(--black-40);
+    }
+  }
+
+  &_system {
+    align-self: center;
+    margin: 0 1rem;
+    background-color: var(--accent);
+    color: var(--white);
+    font-style: italic;
+    text-align: center;
+
+    .message-bubble__content {
+      color: var(--white);
+    }
+
+    .message-bubble__timestamp {
+      color: rgb(255 255 255 / 70%);
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &__role {
+    color: var(--main);
+    font-weight: 500;
+    font-style: medium;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    .message-bubble:hover & {
+      opacity: 1;
+    }
+  }
+
+  &__action-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.25rem;
+    border: none;
+    border-radius: 0.25rem;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--black-20);
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  &__model-info {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+    font-size: 0.75rem;
+    opacity: 0.7;
+
+    svg {
+      width: 0.75rem;
+      height: 0.75rem;
+    }
+  }
+
+  &__edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  &__edit-textarea {
+    min-height: 3rem;
+    padding: 0.5rem;
+    border: 1px solid var(--black-20);
+    border-radius: 0.25rem;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-size: 0.875rem;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: vertical;
+
+    &:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+  }
+
+  &__edit-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  &__edit-button {
+    padding: 0.25rem 0.75rem;
+    border: none;
+    border-radius: 0.25rem;
+    background-color: var(--accent);
+    color: var(--white);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--main);
+    }
+
+    &_cancel {
+      background-color: var(--black-40);
+      color: var(--foreground);
+
+      &:hover {
+        background-color: var(--black-20);
+      }
+    }
+  }
+
+  &__copy-indicator {
+    position: absolute;
+    top: -0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    background-color: var(--accent);
+    color: var(--white);
+    font-weight: 600;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: all 0.2s ease;
+    transform: translateY(-0.5rem);
+
+    &_visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
