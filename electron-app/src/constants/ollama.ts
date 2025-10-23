@@ -39,52 +39,6 @@ export const OLLAMA_ENDPOINTS = {
 } as const;
 
 /**
- * HTTP статус коды для обработки ошибок.
- * Используются для определения типа ошибки.
- */
-export const OLLAMA_HTTP_STATUS = {
-  /** Успешный запрос */
-  OK: 200,
-  /** Создан ресурс */
-  CREATED: 201,
-  /** Нет содержимого */
-  NO_CONTENT: 204,
-  /** Неверный запрос */
-  BAD_REQUEST: 400,
-  /** Не авторизован */
-  UNAUTHORIZED: 401,
-  /** Запрещено */
-  FORBIDDEN: 403,
-  /** Не найдено */
-  NOT_FOUND: 404,
-  /** Конфликт */
-  CONFLICT: 409,
-  /** Внутренняя ошибка сервера */
-  INTERNAL_ERROR: 500,
-  /** Сервис недоступен */
-  SERVICE_UNAVAILABLE: 503,
-} as const;
-
-/**
- * Типы ошибок Ollama.
- * Категории ошибок для централизованной обработки.
- */
-export const OLLAMA_ERROR_TYPES = {
-  /** Ошибка сети */
-  NETWORK_ERROR: 'NETWORK_ERROR',
-  /** Ошибка API */
-  API_ERROR: 'API_ERROR',
-  /** Ошибка модели */
-  MODEL_ERROR: 'MODEL_ERROR',
-  /** Ошибка таймаута */
-  TIMEOUT_ERROR: 'TIMEOUT_ERROR',
-  /** Ошибка валидации */
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  /** Неизвестная ошибка */
-  UNKNOWN_ERROR: 'UNKNOWN_ERROR',
-} as const;
-
-/**
  * Заголовки HTTP запросов.
  * Стандартные заголовки для всех запросов к Ollama API.
  */
@@ -110,47 +64,4 @@ export const OLLAMA_DEFAULT_OPTIONS = {
   // num_predict: 1,
   /** Включить режим рассуждения */
   think: false,
-} as const;
-
-/**
- * Сообщения об ошибках.
- * Стандартизированные сообщения для различных типов ошибок.
- */
-export const OLLAMA_ERROR_MESSAGES = {
-  /** Сервер недоступен */
-  SERVER_UNAVAILABLE:
-    '❌ The Ollama server is unavailable. Check that Ollama is running.',
-  /** Модель не найдена */
-  MODEL_NOT_FOUND: '❌ The model was not found. Check the model name.',
-  /** Недостаточно места */
-  INSUFFICIENT_SPACE: '❌ There is not enough disk space to install the model.',
-  /** Ошибка сети */
-  NETWORK_ERROR: '❌ Network error when connecting to the Ollama server.',
-  /** Таймаут операции */
-  TIMEOUT_ERROR: '❌ The operation exceeded the waiting time.',
-  /** Неверные параметры */
-  INVALID_PARAMS: '❌ Invalid request parameters.',
-  /** Неизвестная ошибка */
-  UNKNOWN_ERROR: '❌ An unknown error has occurred.',
-} as const;
-
-/**
- * Настройки для retry логики.
- * Параметры для повторных попыток при ошибках.
- */
-export const OLLAMA_RETRY_CONFIG = {
-  /** Максимальное количество попыток */
-  MAX_ATTEMPTS: 3,
-  /** Базовая задержка между попытками */
-  BASE_DELAY: 1000,
-  /** Максимальная задержка */
-  MAX_DELAY: 5000,
-  /** Множитель задержки */
-  BACKOFF_MULTIPLIER: 2,
-  /** Статус коды для retry */
-  RETRY_STATUS_CODES: [
-    OLLAMA_HTTP_STATUS.INTERNAL_ERROR,
-    OLLAMA_HTTP_STATUS.SERVICE_UNAVAILABLE,
-    OLLAMA_HTTP_STATUS.BAD_REQUEST,
-  ],
 } as const;

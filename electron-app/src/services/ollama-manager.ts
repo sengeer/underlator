@@ -11,6 +11,8 @@ import { app } from 'electron';
 import { mainWindow } from '../main';
 import { translations } from '../main';
 import { isDev } from '../main';
+import { errorHandler } from '../utils/error-handler';
+import type { OperationContext } from '../types/error-handler';
 
 /**
  * @class OllamaManager.
@@ -39,6 +41,11 @@ class OllamaManager {
       return;
     }
 
+    const context: OperationContext = {
+      module: 'OllamaManager',
+      operation: 'initialize',
+    };
+
     try {
       console.log('🔄 Initialization of the OllamaManager...');
 
@@ -53,7 +60,7 @@ class OllamaManager {
       this.isInitialized = true;
       console.log('✅ OllamaManager initialized successfully');
     } catch (error) {
-      console.error('❌ Error initializing the OllamaManager:', error);
+      errorHandler.logError(error, context);
       this.isInitialized = false;
       throw new Error(
         `❌ Failed to initialize the OllamaManager: ${(error as Error).message}`

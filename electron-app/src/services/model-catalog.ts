@@ -7,6 +7,7 @@
 import { OllamaApi } from './ollama-api';
 import { OllamaHtmlParser, createOllamaHtmlParser } from '../utils/html-parser';
 import { STATIC_MODELS, DEFAULT_CATALOG_CONFIG } from '../constants/catalog';
+import { executeWithErrorHandling } from '../utils/error-handler';
 import type { ModelCatalogConfig, CachedCatalog } from '../types/catalog';
 import type {
   ModelCatalog,
@@ -14,6 +15,7 @@ import type {
   OllamaModelInfo,
 } from '../types/models';
 import type { OllamaOperationResult } from '../types/ollama';
+import type { OperationContext } from '../types/error-handler';
 
 /**
  * @class ModelCatalogService
@@ -52,40 +54,37 @@ export class ModelCatalogService {
   async getAvailableModels(
     forceRefresh = false
   ): Promise<OllamaOperationResult<ModelCatalog>> {
-    try {
-      if (!forceRefresh && this.isCacheValid() && this.cache) {
-        return {
-          success: true,
-          data: this.cache.catalog,
-          status: 'success',
-        };
+    const context: OperationContext = {
+      module: 'ModelCatalogService',
+      operation: 'getAvailableModels',
+      details: `forceRefresh: ${forceRefresh}`,
+    };
+
+    return executeWithErrorHandling(
+      async () => {
+        if (!forceRefresh && this.isCacheValid() && this.cache) {
+          return this.cache.catalog;
+        }
+
+        // Получает локально установленные модели
+        const localModels = await this.getLocalModels();
+
+        // Получает модели из Ollama Library через HTML парсинг
+        const libraryModels = await this.getLibraryModels();
+
+        // Создает каталог, объединяя локальные и библиотечные модели
+        const catalog = this.createCombinedCatalog(localModels, libraryModels);
+
+        // Сохраняет в кэш
+        this.updateCache(catalog);
+
+        return catalog;
+      },
+      {
+        context,
+        returnErrorAsResult: true,
       }
-
-      // Получает локально установленные модели
-      const localModels = await this.getLocalModels();
-
-      // Получает модели из Ollama Library через HTML парсинг
-      const libraryModels = await this.getLibraryModels();
-
-      // Создает каталог, объединяя локальные и библиотечные модели
-      const catalog = this.createCombinedCatalog(localModels, libraryModels);
-
-      // Сохраняет в кэш
-      this.updateCache(catalog);
-
-      return {
-        success: true,
-        data: catalog,
-        status: 'success',
-      };
-    } catch (error) {
-      console.error('❌ Error getting the model catalog:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : '❌ Unknown error',
-        status: 'error',
-      };
-    }
+    ) as Promise<OllamaOperationResult<ModelCatalog>>;
   }
 
   /**

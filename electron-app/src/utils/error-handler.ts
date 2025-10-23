@@ -1,22 +1,42 @@
 /**
- * @module OllamaErrorHandler
- * Утилиты для обработки ошибок Ollama API.
- * Реализует retry логику и централизованную обработку ошибок.
+ * @module ErrorHandler
+ * Утилиты для обработки ошибок в Electron приложении.
+ * Реализует retry логику и централизованную обработку ошибок для всех модулей.
  */
 
 import {
-  OLLAMA_ERROR_TYPES,
-  OLLAMA_ERROR_MESSAGES,
-  OLLAMA_RETRY_CONFIG,
-  OLLAMA_HTTP_STATUS,
-} from '../constants/ollama';
-import type { OllamaOperationResult } from '../types/ollama';
+  ERROR_TYPES,
+  ERROR_MESSAGES,
+  DEFAULT_RETRY_CONFIG,
+  DEFAULT_ERROR_HANDLER_CONFIG,
+  RETRYABLE_ERROR_TYPES,
+  HTTP_STATUS_TO_ERROR_TYPE,
+  ERROR_NAME_TO_TYPE,
+} from '../constants/error-handler';
+import type {
+  OperationResult,
+  ClassifiedError,
+  OperationContext,
+  RetryConfig,
+  ErrorHandlerConfig,
+  ErrorHandlingOptions,
+  OperationStatus,
+} from '../types/error-handler';
 
 /**
- * Класс для обработки ошибок Ollama API.
+ * Класс для обработки ошибок в Electron приложении.
  * Предоставляет методы для классификации и обработки различных типов ошибок.
  */
-export class OllamaErrorHandler {
+export class ErrorHandler {
+  private config: ErrorHandlerConfig;
+
+  constructor(config?: Partial<ErrorHandlerConfig>) {
+    this.config = {
+      ...DEFAULT_ERROR_HANDLER_CONFIG,
+      ...config,
+    };
+  }
+
   /**
    * Классифицирует ошибку по типу.
    * Определяет категорию ошибки для правильной обработки.
@@ -24,64 +44,63 @@ export class OllamaErrorHandler {
    * @param error - Объект ошибки.
    * @returns Классифицированная ошибка с типом и сообщением.
    */
-  static classifyError(error: any): {
-    type: string;
-    message: string;
-    originalError: any;
-  } {
+  classifyError(error: unknown): ClassifiedError {
+    const errorObj = error as any;
+
     // Ошибки сети
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    if (errorObj.name === 'TypeError' && errorObj.message?.includes('fetch')) {
       return {
-        type: OLLAMA_ERROR_TYPES.NETWORK_ERROR,
-        message: OLLAMA_ERROR_MESSAGES.NETWORK_ERROR,
+        type: 'network',
+        message: ERROR_MESSAGES.network,
         originalError: error,
+        retryable: true,
       };
     }
 
     // Ошибки таймаута
-    if (error.name === 'AbortError' || error.message.includes('timeout')) {
+    if (
+      errorObj.name === 'AbortError' ||
+      errorObj.message?.includes('timeout')
+    ) {
       return {
-        type: OLLAMA_ERROR_TYPES.TIMEOUT_ERROR,
-        message: OLLAMA_ERROR_MESSAGES.TIMEOUT_ERROR,
+        type: 'timeout',
+        message: ERROR_MESSAGES.timeout,
         originalError: error,
+        retryable: true,
       };
     }
 
     // HTTP ошибки
-    if (error.status) {
-      switch (error.status) {
-        case OLLAMA_HTTP_STATUS.NOT_FOUND:
-          return {
-            type: OLLAMA_ERROR_TYPES.MODEL_ERROR,
-            message: OLLAMA_ERROR_MESSAGES.MODEL_NOT_FOUND,
-            originalError: error,
-          };
-        case OLLAMA_HTTP_STATUS.SERVICE_UNAVAILABLE:
-          return {
-            type: OLLAMA_ERROR_TYPES.NETWORK_ERROR,
-            message: OLLAMA_ERROR_MESSAGES.SERVER_UNAVAILABLE,
-            originalError: error,
-          };
-        case OLLAMA_HTTP_STATUS.BAD_REQUEST:
-          return {
-            type: OLLAMA_ERROR_TYPES.VALIDATION_ERROR,
-            message: OLLAMA_ERROR_MESSAGES.INVALID_PARAMS,
-            originalError: error,
-          };
-        default:
-          return {
-            type: OLLAMA_ERROR_TYPES.API_ERROR,
-            message: error.message || OLLAMA_ERROR_MESSAGES.UNKNOWN_ERROR,
-            originalError: error,
-          };
+    if (errorObj.status) {
+      const errorType = HTTP_STATUS_TO_ERROR_TYPE[errorObj.status] || 'unknown';
+      return {
+        type: errorType,
+        message: ERROR_MESSAGES[errorType],
+        originalError: error,
+        statusCode: errorObj.status,
+        retryable: RETRYABLE_ERROR_TYPES.includes(errorType),
+      };
+    }
+
+    // Ошибки по имени
+    if (errorObj.name && ERROR_NAME_TO_TYPE[errorObj.name]) {
+      const errorType = ERROR_NAME_TO_TYPE[errorObj.name];
+      if (errorType) {
+        return {
+          type: errorType,
+          message: ERROR_MESSAGES[errorType],
+          originalError: error,
+          retryable: RETRYABLE_ERROR_TYPES.includes(errorType),
+        };
       }
     }
 
     // Неизвестные ошибки
     return {
-      type: OLLAMA_ERROR_TYPES.UNKNOWN_ERROR,
-      message: OLLAMA_ERROR_MESSAGES.UNKNOWN_ERROR,
+      type: 'unknown',
+      message: ERROR_MESSAGES.unknown,
       originalError: error,
+      retryable: false,
     };
   }
 
@@ -92,30 +111,55 @@ export class OllamaErrorHandler {
    * @param error - Объект ошибки.
    * @returns true если операцию стоит повторить.
    */
-  static shouldRetry(error: any): boolean {
-    const { type } = this.classifyError(error);
-
-    // Повторяем только сетевые ошибки и временные ошибки сервера
-    return [
-      OLLAMA_ERROR_TYPES.NETWORK_ERROR,
-      OLLAMA_ERROR_TYPES.TIMEOUT_ERROR,
-    ].includes(type as any);
+  shouldRetry(error: unknown): boolean {
+    const classified = this.classifyError(error);
+    return classified.retryable;
   }
 
   /**
    * Создает результат операции с ошибкой.
-   * Форматирует ошибку в стандартный формат результата.
    *
    * @param error - Объект ошибки.
-   * @returns Результат операции с информацией об ошибке.
+   * @param context - Контекст операции.
+   * @param status - Статус операции.
+   * @returns Результат операции с ошибкой.
    */
-  static createErrorResult<T>(error: any): OllamaOperationResult<T> {
-    const { message } = this.classifyError(error);
+  createErrorResult<T>(
+    error: unknown,
+    context?: OperationContext,
+    status: OperationStatus = 'error'
+  ): OperationResult<T> {
+    const classified = this.classifyError(error);
 
     return {
       success: false,
-      error: message,
-      status: 'error',
+      error: classified.message,
+      errorType: classified.type,
+      status,
+      context,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Создает успешный результат операции.
+   *
+   * @param data - Данные результата.
+   * @param context - Контекст операции.
+   * @param status - Статус операции.
+   * @returns Успешный результат операции.
+   */
+  createSuccessResult<T>(
+    data: T,
+    context?: OperationContext,
+    status: OperationStatus = 'success'
+  ): OperationResult<T> {
+    return {
+      success: true,
+      data,
+      status,
+      context,
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -127,22 +171,74 @@ export class OllamaErrorHandler {
    * @param context - Контекст операции.
    * @param attempt - Номер попытки (для retry).
    */
-  static logError(error: any, context?: string, attempt?: number): void {
-    const { type, message } = this.classifyError(error);
+  logError(error: unknown, context?: OperationContext, attempt?: number): void {
+    const classified = this.classifyError(error);
 
     const logMessage = [
-      `[Ollama Error] ${type}`,
-      context && `Context: ${context}`,
+      `${this.config.logPrefix} ${ERROR_TYPES[classified.type]}`,
+      context?.module && `Module: ${context.module}`,
+      context?.operation && `Operation: ${context.operation}`,
       attempt && `Attempt: ${attempt}`,
-      `Message: ${message}`,
-      `Original: ${error.message || error}`,
+      `Message: ${classified.message}`,
+      `Original: ${(error as any).message || error}`,
     ]
       .filter(Boolean)
       .join(' | ');
 
-    console.error(`❌ Error: ${logMessage}`);
+    console.error(`❌ ${logMessage}`);
+
+    if (this.config.enableStackLogging && (error as any).stack) {
+      console.error('Stack trace:', (error as any).stack);
+    }
+  }
+
+  /**
+   * Логирует успешную операцию.
+   *
+   * @param context - Контекст операции.
+   * @param duration - Время выполнения в миллисекундах.
+   */
+  logSuccess(context?: OperationContext, duration?: number): void {
+    if (!this.config.enableVerboseLogging) return;
+
+    const logMessage = [
+      `${this.config.logPrefix} SUCCESS`,
+      context?.module && `Module: ${context.module}`,
+      context?.operation && `Operation: ${context.operation}`,
+      duration && `Duration: ${duration}ms`,
+    ]
+      .filter(Boolean)
+      .join(' | ');
+
+    console.log(`✅ ${logMessage}`);
+  }
+
+  /**
+   * Обновляет конфигурацию обработчика ошибок.
+   *
+   * @param newConfig - Новая конфигурация.
+   */
+  updateConfig(newConfig: Partial<ErrorHandlerConfig>): void {
+    this.config = {
+      ...this.config,
+      ...newConfig,
+    };
+  }
+
+  /**
+   * Получает текущую конфигурацию.
+   *
+   * @returns Текущая конфигурация.
+   */
+  getConfig(): ErrorHandlerConfig {
+    return { ...this.config };
   }
 }
+
+/**
+ * Глобальный экземпляр обработчика ошибок.
+ */
+export const errorHandler = new ErrorHandler();
 
 /**
  * Утилита для выполнения операций с retry логикой.
@@ -155,40 +251,46 @@ export class OllamaErrorHandler {
  */
 export async function withRetry<T>(
   operation: () => Promise<T>,
-  config = OLLAMA_RETRY_CONFIG,
-  context?: string
+  config: Partial<RetryConfig> = {},
+  context?: OperationContext
 ): Promise<T> {
-  let lastError: any;
+  const retryConfig = {
+    ...DEFAULT_RETRY_CONFIG,
+    ...config,
+  };
 
-  for (let attempt = 1; attempt <= config.MAX_ATTEMPTS; attempt++) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= retryConfig.maxAttempts; attempt++) {
     try {
       return await operation();
     } catch (error) {
       lastError = error;
 
-      // Логируем ошибку
-      OllamaErrorHandler.logError(error, context, attempt);
+      // Логирует ошибку
+      errorHandler.logError(error, context, attempt);
 
-      // Проверяем, нужно ли повторить
+      // Проверяет, нужно ли повторить
       if (
-        !OllamaErrorHandler.shouldRetry(error) ||
-        attempt === config.MAX_ATTEMPTS
+        !errorHandler.shouldRetry(error) ||
+        attempt === retryConfig.maxAttempts
       ) {
         break;
       }
 
-      // Вычисляем задержку с экспоненциальным backoff
+      // Вычисляет задержку с экспоненциальным backoff
       const delay = Math.min(
-        config.BASE_DELAY * Math.pow(config.BACKOFF_MULTIPLIER, attempt - 1),
-        config.MAX_DELAY
+        retryConfig.baseDelay *
+          Math.pow(retryConfig.backoffMultiplier, attempt - 1),
+        retryConfig.maxDelay
       );
 
-      // Ждем перед следующей попыткой
+      // Ждет перед следующей попыткой
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
 
-  // Если все попытки исчерпаны, выбрасываем последнюю ошибку
+  // Если все попытки исчерпаны, выбрасывает последнюю ошибку
   throw lastError;
 }
 
@@ -204,12 +306,12 @@ export async function withRetry<T>(
 export async function fetchWithErrorHandling(
   url: string,
   options: RequestInit = {},
-  context?: string
+  context?: OperationContext
 ): Promise<Response> {
   try {
     const response = await fetch(url, options);
 
-    // Проверяем статус ответа
+    // Проверяет статус ответа
     if (!response.ok) {
       const error = new Error(
         `HTTP ${response.status}: ${response.statusText}`
@@ -220,8 +322,7 @@ export async function fetchWithErrorHandling(
 
     return response;
   } catch (error) {
-    // Классифицируем и логируем ошибку
-    OllamaErrorHandler.logError(error, context);
+    errorHandler.logError(error, context);
     throw error;
   }
 }
@@ -233,52 +334,130 @@ export async function fetchWithErrorHandling(
  * @param response - HTTP ответ.
  * @param onChunk - Callback для обработки чанков.
  * @param onError - Callback для обработки ошибок.
+ * @param context - Контекст операции.
  * @returns Promise с полным ответом.
  */
 export async function processStreamResponse(
   response: Response,
-  onChunk: (chunk: any) => void,
-  onError?: (error: string) => void
+  onChunk: (chunk: unknown) => void,
+  onError?: (error: string) => void,
+  context?: OperationContext
 ): Promise<string> {
-  if (!response.body) {
-    throw new Error('❌ Response body is null');
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let fullResponse = '';
-
   try {
-    while (true) {
-      const { done, value } = await reader.read();
+    if (!response.body) {
+      throw new Error('Response body is null');
+    }
 
-      if (done) break;
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullResponse = '';
 
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n').filter(line => line.trim());
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
 
-      for (const line of lines) {
-        try {
-          const data = JSON.parse(line);
-          onChunk(data);
+        if (done) break;
 
-          if (data.response) {
-            fullResponse += data.response;
+        const chunk = decoder.decode(value, { stream: true });
+        fullResponse += chunk;
+
+        // Пытается парсить JSON чанки
+        const lines = chunk.split('\n');
+        for (const line of lines) {
+          if (line.trim()) {
+            try {
+              const data = JSON.parse(line);
+              onChunk(data);
+            } catch {
+              // Игнорирует ошибки парсинга отдельных строк
+            }
           }
-        } catch {
-          // Игнорируем ошибки парсинга отдельных строк
-          console.warn('⚠️ Failed to parse streaming chunk:', line);
         }
       }
+    } finally {
+      reader.releaseLock();
     }
+
+    return fullResponse;
   } catch (error) {
     const errorMessage =
-      error instanceof Error ? error.message : '❌ Unknown streaming error';
-    onError?.(errorMessage);
-    throw error;
-  } finally {
-    reader.releaseLock();
-  }
+      error instanceof Error ? error.message : 'Unknown streaming error';
+    errorHandler.logError(error, context);
 
-  return fullResponse;
+    if (onError) {
+      onError(errorMessage);
+    }
+
+    throw error;
+  }
 }
+
+/**
+ * Утилита для выполнения операции с обработкой ошибок.
+ * Обертка для автоматического создания результатов операций.
+ *
+ * @param operation - Функция для выполнения.
+ * @param options - Опции обработки ошибок.
+ * @returns Promise с результатом операции.
+ */
+export async function executeWithErrorHandling<T>(
+  operation: () => Promise<T>,
+  options: ErrorHandlingOptions = {}
+): Promise<OperationResult<T>> {
+  const startTime = Date.now();
+  const context = options.context;
+
+  try {
+    if (options.logOperation !== false) {
+      errorHandler.logSuccess(context, 0);
+    }
+
+    const result = await operation();
+
+    if (options.logSuccess !== false) {
+      errorHandler.logSuccess(context, Date.now() - startTime);
+    }
+
+    return errorHandler.createSuccessResult(result, context);
+  } catch (error) {
+    errorHandler.logError(error, context);
+
+    if (options.returnErrorAsResult) {
+      return errorHandler.createErrorResult(error, context);
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Утилита для выполнения операции с retry и обработкой ошибок.
+ * Комбинирует retry логику с обработкой ошибок.
+ *
+ * @param operation - Функция для выполнения.
+ * @param options - Опции обработки ошибок.
+ * @returns Promise с результатом операции.
+ */
+export async function executeWithRetryAndErrorHandling<T>(
+  operation: () => Promise<T>,
+  options: ErrorHandlingOptions = {}
+): Promise<OperationResult<T>> {
+  const context = options.context;
+
+  try {
+    const result = await withRetry(operation, options.retryConfig, context);
+
+    return errorHandler.createSuccessResult(result, context);
+  } catch (error) {
+    errorHandler.logError(error, context);
+
+    if (options.returnErrorAsResult) {
+      return errorHandler.createErrorResult(error, context);
+    }
+
+    throw error;
+  }
+}
+
+// Экспорт для обратной совместимости
+export { ErrorHandler as OllamaErrorHandler };

@@ -14,11 +14,11 @@ import {
   FILESYSTEM_ERROR_CODES,
   FILESYSTEM_ERROR_MESSAGES,
   VALIDATION_CONFIG,
-  LOGGING_CONFIG,
   getFileTypeConfig,
   isFileTypeSupported,
 } from '../constants/filesystem';
 import { FileValidatorFactory } from '../utils/file-validators';
+import { executeWithErrorHandling } from '../utils/error-handler';
 import type {
   FileSystemConfig,
   FileSystemOperationResult,
@@ -31,6 +31,7 @@ import type {
   FileSearchParams,
   FileSearchResult,
 } from '../types/filesystem';
+import type { OperationContext } from '../types/error-handler';
 
 /**
  * @class FileSystemService
@@ -125,106 +126,83 @@ export class FileSystemService {
     fileType: string,
     options: FileOperationOptions = {}
   ): Promise<FileSystemOperationResult<FileStructure<TMetadata, TData>>> {
-    const context = `readFile(${fileName}, ${fileType})`;
+    const context: OperationContext = {
+      module: 'FileSystemService',
+      operation: 'readFile',
+      details: `${fileName} (${fileType})`,
+    };
 
-    try {
-      if (options.logOperation !== false) {
-        this.logOperation('read', context);
-      }
-
-      // Проверяет поддержку типа файла
-      if (!isFileTypeSupported(fileType)) {
-        return {
-          success: false,
-          error:
+    return executeWithErrorHandling(
+      async () => {
+        // Проверяет поддержку типа файла
+        if (!isFileTypeSupported(fileType)) {
+          throw new Error(
             FILESYSTEM_ERROR_MESSAGES[
               FILESYSTEM_ERROR_CODES.UNSUPPORTED_FILE_TYPE
-            ],
-          status: 'error',
-        };
-      }
-
-      // Валидирует имя файла
-      const fileNameValidation = this.validateFileName(fileName, fileType);
-      if (!fileNameValidation.valid) {
-        return {
-          success: false,
-          error: fileNameValidation.error,
-          status: 'error',
-        };
-      }
-
-      // Проверяет блокировку файла
-      const lockStatus = await this.checkFileLock(fileName);
-      if (lockStatus.isLocked) {
-        return {
-          success: false,
-          error: FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_LOCKED],
-          status: 'error',
-        };
-      }
-
-      const filePath = this.getFilePath(fileName, fileType);
-
-      // Проверяет существование файла
-      try {
-        await fs.access(filePath);
-      } catch {
-        return {
-          success: false,
-          error:
-            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_NOT_FOUND],
-          status: 'error',
-        };
-      }
-
-      // Читает файл
-      const fileContent = await fs.readFile(filePath, 'utf-8');
-
-      // Проверяет размер файла
-      const fileTypeConfig = getFileTypeConfig(fileType);
-      const maxFileSize =
-        fileTypeConfig?.maxFileSize || this.config.maxFileSize;
-      if (fileContent.length > maxFileSize) {
-        return {
-          success: false,
-          error:
-            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_TOO_LARGE],
-          status: 'error',
-        };
-      }
-
-      // Парсит и валидирует JSON
-      const fileData = JSON.parse(fileContent);
-
-      if (options.validate !== false) {
-        const validationResult = await this.validateFileStructure(
-          fileData,
-          fileType
-        );
-        if (!validationResult.valid) {
-          return {
-            success: false,
-            error: validationResult.error,
-            status: 'error',
-          };
+            ]
+          );
         }
-      }
 
-      console.log(`✅ File read successfully: ${fileName} (${fileType})`);
-      return {
-        success: true,
-        data: fileData,
-        status: 'success',
-      };
-    } catch (error) {
-      console.error(`❌ Error reading file ${fileName} (${fileType}):`, error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status: 'error',
-      };
-    }
+        // Валидирует имя файла
+        const fileNameValidation = this.validateFileName(fileName, fileType);
+        if (!fileNameValidation.valid) {
+          throw new Error(fileNameValidation.error);
+        }
+
+        // Проверяет блокировку файла
+        const lockStatus = await this.checkFileLock(fileName);
+        if (lockStatus.isLocked) {
+          throw new Error(
+            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_LOCKED]
+          );
+        }
+
+        const filePath = this.getFilePath(fileName, fileType);
+
+        // Проверяет существование файла
+        try {
+          await fs.access(filePath);
+        } catch {
+          throw new Error(
+            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_NOT_FOUND]
+          );
+        }
+
+        // Читает файл
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+
+        // Проверяет размер файла
+        const fileTypeConfig = getFileTypeConfig(fileType);
+        const maxFileSize =
+          fileTypeConfig?.maxFileSize || this.config.maxFileSize;
+        if (fileContent.length > maxFileSize) {
+          throw new Error(
+            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_TOO_LARGE]
+          );
+        }
+
+        // Парсит и валидирует JSON
+        const fileData = JSON.parse(fileContent);
+
+        if (options.validate !== false) {
+          const validationResult = await this.validateFileStructure(
+            fileData,
+            fileType
+          );
+          if (!validationResult.valid) {
+            throw new Error(validationResult.error);
+          }
+        }
+
+        console.log(`✅ File read successfully: ${fileName} (${fileType})`);
+        return fileData;
+      },
+      {
+        context,
+        logOperation: options.logOperation !== false,
+        returnErrorAsResult: true,
+      }
+    ) as Promise<FileSystemOperationResult<FileStructure<TMetadata, TData>>>;
   }
 
   /**
@@ -242,89 +220,76 @@ export class FileSystemService {
     fileData: FileStructure<TMetadata, TData>,
     options: FileOperationOptions = {}
   ): Promise<FileSystemOperationResult<void>> {
-    const context = `writeFile(${fileName}, ${fileType})`;
+    const context: OperationContext = {
+      module: 'FileSystemService',
+      operation: 'writeFile',
+      details: `${fileName} (${fileType})`,
+    };
 
-    try {
-      if (options.logOperation !== false) {
-        this.logOperation('write', context);
-      }
-
-      // Проверяет поддержку типа файла
-      if (!isFileTypeSupported(fileType)) {
-        return {
-          success: false,
-          error:
+    return executeWithErrorHandling(
+      async () => {
+        // Проверяет поддержку типа файла
+        if (!isFileTypeSupported(fileType)) {
+          throw new Error(
             FILESYSTEM_ERROR_MESSAGES[
               FILESYSTEM_ERROR_CODES.UNSUPPORTED_FILE_TYPE
-            ],
-          status: 'error',
-        };
-      }
-
-      // Валидирует имя файла
-      const fileNameValidation = this.validateFileName(fileName, fileType);
-      if (!fileNameValidation.valid) {
-        return {
-          success: false,
-          error: fileNameValidation.error,
-          status: 'error',
-        };
-      }
-
-      // Блокирует файл
-      const lockResult = await this.lockFile(fileName);
-      if (!lockResult.success) {
-        return lockResult;
-      }
-
-      try {
-        // Валидирует данные перед записью
-        if (options.validate !== false) {
-          const validationResult = await this.validateFileStructure(
-            fileData,
-            fileType
+            ]
           );
-          if (!validationResult.valid) {
-            return {
-              success: false,
-              error: validationResult.error,
-              status: 'error',
-            };
+        }
+
+        // Валидирует имя файла
+        const fileNameValidation = this.validateFileName(fileName, fileType);
+        if (!fileNameValidation.valid) {
+          throw new Error(fileNameValidation.error);
+        }
+
+        // Блокирует файл
+        const lockResult = await this.lockFile(fileName);
+        if (!lockResult.success) {
+          throw new Error(lockResult.error);
+        }
+
+        try {
+          // Валидирует данные перед записью
+          if (options.validate !== false) {
+            const validationResult = await this.validateFileStructure(
+              fileData,
+              fileType
+            );
+            if (!validationResult.valid) {
+              throw new Error(validationResult.error);
+            }
           }
+
+          // Создает резервную копию если файл существует
+          const filePath = this.getFilePath(fileName, fileType);
+          const fileExists = await this.fileExists(filePath);
+
+          if (
+            fileExists &&
+            options.createBackup !== false &&
+            this.config.enableBackup
+          ) {
+            await this.createBackup(fileName, fileType);
+          }
+
+          // Выполняет атомарную запись через временный файл
+          await this.atomicWrite(filePath, fileData);
+
+          console.log(
+            `✅ File written successfully: ${fileName} (${fileType})`
+          );
+        } finally {
+          // Разблокирует файл
+          await this.unlockFile(fileName);
         }
-
-        // Создает резервную копию если файл существует
-        const filePath = this.getFilePath(fileName, fileType);
-        const fileExists = await this.fileExists(filePath);
-
-        if (
-          fileExists &&
-          options.createBackup !== false &&
-          this.config.enableBackup
-        ) {
-          await this.createBackup(fileName, fileType);
-        }
-
-        // Выполняет атомарную запись через временный файл
-        await this.atomicWrite(filePath, fileData);
-
-        console.log(`✅ File written successfully: ${fileName} (${fileType})`);
-        return {
-          success: true,
-          status: 'success',
-        };
-      } finally {
-        // Разблокирует файл
-        await this.unlockFile(fileName);
+      },
+      {
+        context,
+        logOperation: options.logOperation !== false,
+        returnErrorAsResult: true,
       }
-    } catch (error) {
-      console.error(`❌ Error writing file ${fileName} (${fileType}):`, error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status: 'error',
-      };
-    }
+    ) as Promise<FileSystemOperationResult<void>>;
   }
 
   /**
@@ -340,78 +305,62 @@ export class FileSystemService {
     fileType: string,
     options: FileOperationOptions = {}
   ): Promise<FileSystemOperationResult<void>> {
-    const context = `deleteFile(${fileName}, ${fileType})`;
+    const context: OperationContext = {
+      module: 'FileSystemService',
+      operation: 'deleteFile',
+      details: `${fileName} (${fileType})`,
+    };
 
-    try {
-      if (options.logOperation !== false) {
-        this.logOperation('delete', context);
-      }
-
-      // Проверяет поддержку типа файла
-      if (!isFileTypeSupported(fileType)) {
-        return {
-          success: false,
-          error:
+    return executeWithErrorHandling(
+      async () => {
+        // Проверяет поддержку типа файла
+        if (!isFileTypeSupported(fileType)) {
+          throw new Error(
             FILESYSTEM_ERROR_MESSAGES[
               FILESYSTEM_ERROR_CODES.UNSUPPORTED_FILE_TYPE
-            ],
-          status: 'error',
-        };
+            ]
+          );
+        }
+
+        // Валидирует имя файла
+        const fileNameValidation = this.validateFileName(fileName, fileType);
+        if (!fileNameValidation.valid) {
+          throw new Error(fileNameValidation.error);
+        }
+
+        // Проверяет блокировку файла
+        const lockStatus = await this.checkFileLock(fileName);
+        if (lockStatus.isLocked) {
+          throw new Error(
+            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_LOCKED]
+          );
+        }
+
+        const filePath = this.getFilePath(fileName, fileType);
+
+        // Проверяет существование файла
+        if (!(await this.fileExists(filePath))) {
+          throw new Error(
+            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_NOT_FOUND]
+          );
+        }
+
+        // Создает резервную копию перед удалением
+        if (options.createBackup !== false && this.config.enableBackup) {
+          await this.createBackup(fileName, fileType);
+        }
+
+        // Удаляет файл
+        await fs.unlink(filePath);
+
+        console.log(`✅ File deleted successfully: ${fileName} (${fileType})`);
+      },
+      {
+        context,
+        logOperation: options.logOperation !== false,
+        returnErrorAsResult: true,
       }
-
-      // Валидирует имя файла
-      const fileNameValidation = this.validateFileName(fileName, fileType);
-      if (!fileNameValidation.valid) {
-        return {
-          success: false,
-          error: fileNameValidation.error,
-          status: 'error',
-        };
-      }
-
-      // Проверяет блокировку файла
-      const lockStatus = await this.checkFileLock(fileName);
-      if (lockStatus.isLocked) {
-        return {
-          success: false,
-          error: FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_LOCKED],
-          status: 'error',
-        };
-      }
-
-      const filePath = this.getFilePath(fileName, fileType);
-
-      // Проверяет существование файла
-      if (!(await this.fileExists(filePath))) {
-        return {
-          success: false,
-          error:
-            FILESYSTEM_ERROR_MESSAGES[FILESYSTEM_ERROR_CODES.FILE_NOT_FOUND],
-          status: 'error',
-        };
-      }
-
-      // Создает резервную копию перед удалением
-      if (options.createBackup !== false && this.config.enableBackup) {
-        await this.createBackup(fileName, fileType);
-      }
-
-      // Удаляет файл
-      await fs.unlink(filePath);
-
-      console.log(`✅ File deleted successfully: ${fileName} (${fileType})`);
-      return {
-        success: true,
-        status: 'success',
-      };
-    } catch (error) {
-      console.error(`❌ Error deleting file ${fileName} (${fileType}):`, error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status: 'error',
-      };
-    }
+    ) as Promise<FileSystemOperationResult<void>>;
   }
 
   /**
@@ -425,70 +374,70 @@ export class FileSystemService {
     fileType?: string,
     searchParams: FileSearchParams = {}
   ): Promise<FileSystemOperationResult<FileSearchResult>> {
-    const context = `listFiles(${fileType || 'all'})`;
+    const context: OperationContext = {
+      module: 'FileSystemService',
+      operation: 'listFiles',
+      details: `${fileType || 'all'}`,
+    };
 
-    try {
-      this.logOperation('read', context);
+    return executeWithErrorHandling(
+      async () => {
+        const files: FileInfo[] = [];
 
-      const files: FileInfo[] = [];
-
-      if (fileType) {
-        // Получает файлы конкретного типа
-        if (!isFileTypeSupported(fileType)) {
-          return {
-            success: false,
-            error:
+        if (fileType) {
+          // Получает файлы конкретного типа
+          if (!isFileTypeSupported(fileType)) {
+            throw new Error(
               FILESYSTEM_ERROR_MESSAGES[
                 FILESYSTEM_ERROR_CODES.UNSUPPORTED_FILE_TYPE
-              ],
-            status: 'error',
-          };
-        }
+              ]
+            );
+          }
 
-        const folderPath = this.getFolderPath(fileType);
-        const filesInFolder = await this.getFilesInFolder(folderPath, fileType);
-        files.push(...filesInFolder);
-      } else {
-        // Получает файлы всех типов
-        const supportedTypes = ['chat', 'document', 'settings', 'log'];
-        for (const type of supportedTypes) {
-          const folderPath = this.getFolderPath(type);
-          const filesInFolder = await this.getFilesInFolder(folderPath, type);
+          const folderPath = this.getFolderPath(fileType);
+          const filesInFolder = await this.getFilesInFolder(
+            folderPath,
+            fileType
+          );
           files.push(...filesInFolder);
+        } else {
+          // Получает файлы всех типов
+          const supportedTypes = ['chat', 'document', 'settings', 'log'];
+          for (const type of supportedTypes) {
+            const folderPath = this.getFolderPath(type);
+            const filesInFolder = await this.getFilesInFolder(folderPath, type);
+            files.push(...filesInFolder);
+          }
         }
-      }
 
-      // Применяет фильтры поиска
-      const filteredFiles = this.applySearchFilters(files, searchParams);
+        // Применяет фильтры поиска
+        const filteredFiles = this.applySearchFilters(files, searchParams);
 
-      // Применяет пагинацию
-      const paginatedFiles = this.applyPagination(filteredFiles, searchParams);
+        // Применяет пагинацию
+        const paginatedFiles = this.applyPagination(
+          filteredFiles,
+          searchParams
+        );
 
-      // Создает информацию о пагинации
-      const pagination = this.createPaginationInfo(
-        filteredFiles.length,
-        searchParams.limit || 50,
-        searchParams.offset || 0
-      );
+        // Создает информацию о пагинации
+        const pagination = this.createPaginationInfo(
+          filteredFiles.length,
+          searchParams.limit || 50,
+          searchParams.offset || 0
+        );
 
-      console.log(`✅ Listed ${paginatedFiles.length} files`);
-      return {
-        success: true,
-        data: {
+        console.log(`✅ Listed ${paginatedFiles.length} files`);
+        return {
           files: paginatedFiles,
           totalCount: filteredFiles.length,
           pagination,
-        },
-        status: 'success',
-      };
-    } catch (error) {
-      console.error('❌ Error listing files:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status: 'error',
-      };
-    }
+        };
+      },
+      {
+        context,
+        returnErrorAsResult: true,
+      }
+    ) as Promise<FileSystemOperationResult<FileSearchResult>>;
   }
 
   /**
@@ -500,74 +449,67 @@ export class FileSystemService {
   async getFileSystemStats(
     fileType?: string
   ): Promise<FileSystemOperationResult<FileSystemStats>> {
-    const context = `getFileSystemStats(${fileType || 'all'})`;
+    const context: OperationContext = {
+      module: 'FileSystemService',
+      operation: 'getFileSystemStats',
+      details: `${fileType || 'all'}`,
+    };
 
-    try {
-      this.logOperation('read', context);
+    return executeWithErrorHandling(
+      async () => {
+        const listResult = await this.listFiles(fileType);
+        if (!listResult.success || !listResult.data) {
+          throw new Error('Failed to list files');
+        }
 
-      const listResult = await this.listFiles(fileType);
-      if (!listResult.success || !listResult.data) {
-        return {
-          success: false,
-          error: 'Failed to list files',
-          status: 'error',
-        };
-      }
+        const files = listResult.data.files;
+        const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+        const lockedFiles = files.filter(file => file.isLocked).length;
 
-      const files = listResult.data.files;
-      const totalSize = files.reduce((sum, file) => sum + file.size, 0);
-      const lockedFiles = files.filter(file => file.isLocked).length;
-
-      // Получает информацию о резервных копиях
-      const backupFiles = await this.listBackupFiles();
-      const backupCount = backupFiles.success
-        ? backupFiles.data?.length || 0
-        : 0;
-      const backupSize =
-        backupFiles.success && backupFiles.data
-          ? backupFiles.data.reduce((sum, backup) => sum + backup.size, 0)
+        // Получает информацию о резервных копиях
+        const backupFiles = await this.listBackupFiles();
+        const backupCount = backupFiles.success
+          ? backupFiles.data?.length || 0
           : 0;
+        const backupSize =
+          backupFiles.success && backupFiles.data
+            ? backupFiles.data.reduce((sum, backup) => sum + backup.size, 0)
+            : 0;
 
-      // Создает статистику по типам файлов
-      const fileTypeStats: Record<
-        string,
-        { count: number; totalSize: number }
-      > = {};
-      for (const file of files) {
-        if (!fileTypeStats[file.fileType]) {
-          fileTypeStats[file.fileType] = { count: 0, totalSize: 0 };
+        // Создает статистику по типам файлов
+        const fileTypeStats: Record<
+          string,
+          { count: number; totalSize: number }
+        > = {};
+        for (const file of files) {
+          if (!fileTypeStats[file.fileType]) {
+            fileTypeStats[file.fileType] = { count: 0, totalSize: 0 };
+          }
+          const stats = fileTypeStats[file.fileType];
+          if (stats) {
+            stats.count++;
+            stats.totalSize += file.size;
+          }
         }
-        const stats = fileTypeStats[file.fileType];
-        if (stats) {
-          stats.count++;
-          stats.totalSize += file.size;
-        }
+
+        const stats: FileSystemStats = {
+          totalFiles: files.length,
+          totalSize,
+          lockedFiles,
+          backupCount,
+          backupSize,
+          lastCleanup: new Date().toISOString(),
+          fileTypeStats,
+        };
+
+        console.log('✅ File system stats retrieved');
+        return stats;
+      },
+      {
+        context,
+        returnErrorAsResult: true,
       }
-
-      const stats: FileSystemStats = {
-        totalFiles: files.length,
-        totalSize,
-        lockedFiles,
-        backupCount,
-        backupSize,
-        lastCleanup: new Date().toISOString(),
-        fileTypeStats,
-      };
-
-      console.log('✅ File system stats retrieved');
-      return {
-        success: true,
-        data: stats,
-        status: 'success',
-      };
-    } catch (error) {
-      console.error('❌ Error getting file system stats:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status: 'error',
-      };
-    }
+    ) as Promise<FileSystemOperationResult<FileSystemStats>>;
   }
 
   /**
@@ -1058,36 +1000,33 @@ export class FileSystemService {
     fileName: string,
     fileType: string
   ): Promise<FileSystemOperationResult<void>> {
-    const context = `createBackup(${fileName}, ${fileType})`;
+    const context: OperationContext = {
+      module: 'FileSystemService',
+      operation: 'createBackup',
+      details: `${fileName} (${fileType})`,
+    };
 
-    try {
-      this.logOperation('backup', context);
+    return executeWithErrorHandling(
+      async () => {
+        const sourcePath = this.getFilePath(fileName, fileType);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const fileTypeConfig = getFileTypeConfig(fileType);
+        const backupFileName = `${fileName.replace(fileTypeConfig?.extension || '', '')}_${timestamp}${FILE_EXTENSIONS.BACKUP_FILE}`;
+        const backupPath = path.join(this.backupsPath, backupFileName);
 
-      const sourcePath = this.getFilePath(fileName, fileType);
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const fileTypeConfig = getFileTypeConfig(fileType);
-      const backupFileName = `${fileName.replace(fileTypeConfig?.extension || '', '')}_${timestamp}${FILE_EXTENSIONS.BACKUP_FILE}`;
-      const backupPath = path.join(this.backupsPath, backupFileName);
+        // Копирует файл
+        await fs.copyFile(sourcePath, backupPath);
 
-      // Копирует файл
-      await fs.copyFile(sourcePath, backupPath);
+        // Очищает старые резервные копии
+        await this.cleanupOldBackups();
 
-      // Очищает старые резервные копии
-      await this.cleanupOldBackups();
-
-      console.log(`✅ Backup created: ${backupFileName}`);
-      return {
-        success: true,
-        status: 'success',
-      };
-    } catch (error) {
-      console.error(`❌ Error creating backup for ${fileName}:`, error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Backup error',
-        status: 'error',
-      };
-    }
+        console.log(`✅ Backup created: ${backupFileName}`);
+      },
+      {
+        context,
+        returnErrorAsResult: true,
+      }
+    ) as Promise<FileSystemOperationResult<void>>;
   }
 
   /**
@@ -1295,18 +1234,6 @@ export class FileSystemService {
     }
 
     return { valid: true };
-  }
-
-  /**
-   * Логирует операции файловой системы.
-   *
-   * @param operation - Тип операции.
-   * @param context - Контекст операции.
-   */
-  private logOperation(operation: string, context: string): void {
-    if (LOGGING_CONFIG.ENABLE_VERBOSE_LOGGING) {
-      console.log(`📁 [FileSystem] ${operation}: ${context}`);
-    }
   }
 
   /**
