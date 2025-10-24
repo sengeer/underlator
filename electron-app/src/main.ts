@@ -11,6 +11,7 @@ import { OllamaApi } from './services/ollama-api';
 import { ollamaManager } from './services/ollama-manager';
 import { ModelCatalogService } from './services/model-catalog';
 import { ChatFileSystemService } from './services/filesystem-chat';
+import { VectorStoreService } from './services/vector-store';
 import { ChatHandlers } from './presentation/ipc/chat-handlers';
 import { IpcHandler } from './presentation/ipc/ipc-handlers';
 import type {
@@ -42,6 +43,7 @@ export let mainWindow: typeof BrowserWindow | null = null;
 let ollamaApi: OllamaApi | null = null;
 let modelCatalogService: ModelCatalogService | null = null;
 let chatFileSystemService: ChatFileSystemService | null = null;
+let vectorStoreService: VectorStoreService | null = null;
 let chatHandlers: ChatHandlers | null = null;
 let currentAbortController: AbortController | null = null;
 const isMac: boolean = process.platform === 'darwin';
@@ -81,6 +83,12 @@ async function cleanupResources(): Promise<void> {
   ipcMain.removeHandler('chat:delete');
   ipcMain.removeHandler('chat:list');
   ipcMain.removeHandler('chat:add-message');
+
+  // Очищает ресурсы векторного хранилища
+  if (vectorStoreService) {
+    await vectorStoreService.cleanup();
+    vectorStoreService = null;
+  }
 
   mainWindow = null;
   console.log('✅ Resources have been cleared');
@@ -232,6 +240,10 @@ async function loadPipeline(): Promise<void> {
     // Создает сервис файловой системы для чатов
     chatFileSystemService = new ChatFileSystemService();
     await chatFileSystemService.initialize();
+
+    // Создает сервис векторного хранилища
+    vectorStoreService = new VectorStoreService();
+    await vectorStoreService.initialize();
 
     // Создает обработчики чатов
     chatHandlers = new ChatHandlers(chatFileSystemService);
