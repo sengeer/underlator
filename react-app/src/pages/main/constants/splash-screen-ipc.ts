@@ -3,7 +3,7 @@
  * Константы для работы с Splash Screen IPC.
  */
 
-import type { SplashApiConfig } from '../types/splash-screen.types';
+import type { SplashApiConfig } from '../types/splash-screen';
 
 /**
  * Конфигурация по умолчанию для Splash Screen IPC API клиента.

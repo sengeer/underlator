@@ -26,6 +26,8 @@ export const OLLAMA_DEFAULT_CONFIG = {
 export const OLLAMA_ENDPOINTS = {
   /** Генерация текста */
   GENERATE: '/api/generate',
+  /** Генерация эмбеддингов */
+  EMBEDDINGS: '/api/embeddings',
   /** Получение списка моделей */
   LIST_MODELS: '/api/tags',
   /** Установка модели */

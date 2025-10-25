@@ -168,17 +168,17 @@ export class IpcHandler {
       });
 
       try {
-        // Логируем входящий запрос
+        // Логирует входящий запрос
         this.logOperation(operationName, request, undefined, undefined);
 
-        // Выполняем обработчик
+        // Выполняет обработчик
         const result = await handler(request, ...args);
         const duration = Date.now() - startTime;
 
-        // Создаем успешный ответ
+        // Создает успешный ответ
         const response = this.createSuccessResponse(result, requestId);
 
-        // Логируем успешный ответ
+        // Логирует успешный ответ
         this.logOperation(operationName, request, response, duration);
 
         console.log(`✅ IPC Handler completed successfully: ${operationName}`, {
@@ -191,7 +191,7 @@ export class IpcHandler {
         const errorMessage = this.handleError(error, operationName);
         const response = this.createErrorResponse(errorMessage, requestId);
 
-        // Логируем ошибку
+        // Логирует ошибку
         this.logOperation(operationName, request, response, duration);
 
         console.error(`❌ IPC Handler error: ${operationName}`, {
@@ -220,10 +220,10 @@ export class IpcHandler {
       const requestId = Math.random().toString(36).substr(2, 9);
 
       try {
-        // Логируем входящий запрос
+        // Логирует входящий запрос
         this.logOperation(operationName, request, undefined, undefined);
 
-        // Создаем callback для прогресса
+        // Создает callback для прогресса
         const onProgress = (progress: any) => {
           const progressMessage = this.createProgressMessage(
             progress,
@@ -232,14 +232,14 @@ export class IpcHandler {
           event.sender.send(`${operationName}:progress`, progressMessage);
         };
 
-        // Выполняем обработчик
+        // Выполняет обработчик
         const result = await handler(request, onProgress);
         const duration = Date.now() - startTime;
 
-        // Создаем успешный ответ
+        // Создает успешный ответ
         const response = this.createSuccessResponse(result, requestId);
 
-        // Логируем успешный ответ
+        // Логирует успешный ответ
         this.logOperation(operationName, request, response, duration);
 
         return response;
@@ -248,7 +248,7 @@ export class IpcHandler {
         const errorMessage = this.handleError(error, operationName);
         const response = this.createErrorResponse(errorMessage, requestId);
 
-        // Логируем ошибку
+        // Логирует ошибку
         this.logOperation(operationName, request, response, duration);
 
         return response;

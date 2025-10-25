@@ -12,6 +12,7 @@ import { ollamaManager } from './services/ollama-manager';
 import { ModelCatalogService } from './services/model-catalog';
 import { ChatFileSystemService } from './services/filesystem-chat';
 import { VectorStoreService } from './services/vector-store';
+import { EmbeddingService } from './services/embedding';
 import { ChatHandlers } from './presentation/ipc/chat-handlers';
 import { IpcHandler } from './presentation/ipc/ipc-handlers';
 import type {
@@ -44,6 +45,7 @@ let ollamaApi: OllamaApi | null = null;
 let modelCatalogService: ModelCatalogService | null = null;
 let chatFileSystemService: ChatFileSystemService | null = null;
 let vectorStoreService: VectorStoreService | null = null;
+let embeddingService: EmbeddingService | null = null;
 let chatHandlers: ChatHandlers | null = null;
 let currentAbortController: AbortController | null = null;
 const isMac: boolean = process.platform === 'darwin';
@@ -203,11 +205,30 @@ async function loadPipeline(): Promise<void> {
     // Создает API клиент для взаимодействия с Ollama
     ollamaApi = new OllamaApi();
 
+    // Отправляет статус создания сервиса эмбеддингов в React splash screen
+    sendSplashStatus({
+      status: 'creating-api',
+      message: 'Initializing embedding service...',
+      progress: 52,
+    });
+
+    // Создает сервис эмбеддингов
+    embeddingService = new EmbeddingService(ollamaApi);
+    const embeddingInitResult = await embeddingService.initialize();
+
+    if (embeddingInitResult.success) {
+      console.log('✅ Embedding service successfully initialized');
+    } else {
+      console.warn(
+        `❌ Error initializing embedding service: ${embeddingInitResult.error}`
+      );
+    }
+
     // Отправляет статус проверки здоровья в React splash screen
     sendSplashStatus({
       status: 'health-check',
       message: translations.LOADING_APP || '',
-      progress: 48,
+      progress: 60,
     });
 
     // Проверяет доступность сервера

@@ -22,7 +22,7 @@ import {
 import type {
   SplashScreenProps,
   SplashStatusData,
-} from '../types/splash-screen.types';
+} from '../types/splash-screen';
 import '../styles/splash-screen.scss';
 
 /**

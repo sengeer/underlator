@@ -10,7 +10,7 @@ import { splashScreenApi } from '../apis/splash-screen-ipc';
 import type {
   SplashStatusData,
   SplashScreenState,
-} from '../types/splash-screen.types';
+} from '../types/splash-screen';
 
 /**
  * Начальное состояние splash screen.

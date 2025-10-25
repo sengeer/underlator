@@ -27,6 +27,8 @@ import type {
   OllamaStreamCallback,
   OllamaProgressCallback,
   OllamaOperationResult,
+  OllamaEmbeddingRequest,
+  OllamaEmbeddingResponse,
 } from '../types/ollama';
 import type { ElectronApiConfig } from '../types/electron';
 
@@ -346,6 +348,281 @@ export class OllamaApi {
       undefined,
       { module: 'OllamaApi', operation: 'getModelInfo', details: context }
     );
+  }
+
+  /**
+   * Генерирует эмбеддинг для указанного текста.
+   * Использует модель эмбеддингов для создания векторного представления текста.
+   *
+   * @param request - Параметры генерации эмбеддинга.
+   * @param config - Конфигурация для API.
+   * @param signal - AbortSignal для отмены операции.
+   * @returns Promise с эмбеддингом.
+   */
+  async generateEmbedding(
+    request: OllamaEmbeddingRequest,
+    config: ElectronApiConfig,
+    signal?: AbortSignal
+  ): Promise<OllamaOperationResult<OllamaEmbeddingResponse>> {
+    const context = `generateEmbedding(${request.model})`;
+
+    try {
+      // Валидирует параметры запроса
+      const validationResult = this.validateEmbeddingRequest(request);
+      if (!validationResult.valid) {
+        return {
+          success: false,
+          error: validationResult.error,
+          status: 'error',
+        };
+      }
+
+      const result = await withRetry(
+        async () => {
+          // Создает сигнал отмены
+          const abortController = new AbortController();
+          if (signal) {
+            signal.addEventListener('abort', () => abortController.abort());
+          }
+
+          try {
+            const response = await fetchWithErrorHandling(
+              `${config.url || this.baseUrl}${OLLAMA_ENDPOINTS.EMBEDDINGS}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': OLLAMA_HEADERS.CONTENT_TYPE,
+                  Accept: OLLAMA_HEADERS.ACCEPT,
+                  'User-Agent': OLLAMA_HEADERS.USER_AGENT,
+                },
+                body: JSON.stringify(request),
+                signal: abortController.signal,
+              },
+              {
+                module: 'OllamaApi',
+                operation: 'generateEmbedding',
+                details: context,
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(
+                `HTTP ${response.status}: ${response.statusText}`
+              );
+            }
+
+            const embeddingResponse: OllamaEmbeddingResponse =
+              (await response.json()) as OllamaEmbeddingResponse;
+
+            console.log(
+              `✅ Embedding generated for the model: ${request.model}`
+            );
+            return embeddingResponse;
+          } catch (error) {
+            console.error(`❌ Error generating embedding:`, error);
+            throw error;
+          }
+        },
+        {
+          maxAttempts: this.config.retryAttempts,
+          baseDelay: this.config.retryDelay,
+          backoffMultiplier: 2,
+          maxDelay: 10000,
+          retryableErrors: ['network', 'timeout', 'service_unavailable'],
+        },
+        {
+          module: 'OllamaApi',
+          operation: 'generateEmbedding',
+          details: context,
+        }
+      );
+
+      return {
+        success: true,
+        data: result,
+        status: 'success',
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error(`❌ Critical error generating embedding:`, errorMessage);
+
+      return {
+        success: false,
+        error: errorMessage,
+        status: 'error',
+      };
+    }
+  }
+
+  /**
+   * Генерирует эмбеддинги для множественных текстов.
+   * Оптимизирует производительность через батчевую обработку.
+   *
+   * @param requests - Массив параметров генерации эмбеддингов.
+   * @param config - Конфигурация для API.
+   * @param signal - AbortSignal для отмены операции.
+   * @returns Promise с массивом эмбеддингов.
+   */
+  async generateEmbeddings(
+    requests: OllamaEmbeddingRequest[],
+    config: ElectronApiConfig,
+    signal?: AbortSignal
+  ): Promise<OllamaOperationResult<OllamaEmbeddingResponse[]>> {
+    try {
+      // Валидирует все запросы
+      for (const request of requests) {
+        const validationResult = this.validateEmbeddingRequest(request);
+        if (!validationResult.valid) {
+          return {
+            success: false,
+            error: `Validation error: ${validationResult.error}`,
+            status: 'error',
+          };
+        }
+      }
+
+      const results: OllamaEmbeddingResponse[] = [];
+
+      // Обрабатывает запросы батчами для оптимизации производительности
+      const batchSize = 5; // Оптимальный размер батча
+      for (let i = 0; i < requests.length; i += batchSize) {
+        const batch = requests.slice(i, i + batchSize);
+
+        // Обрабатывает батч параллельно
+        const batchPromises = batch.map(request =>
+          this.generateEmbedding(request, config, signal)
+        );
+
+        const batchResults = await Promise.all(batchPromises);
+
+        // Проверяет результаты батча
+        for (const result of batchResults) {
+          if (!result.success) {
+            return {
+              success: false,
+              error: `Batch error: ${result.error}`,
+              status: 'error',
+            };
+          }
+          if (result.data) {
+            results.push(result.data);
+          }
+        }
+
+        // Небольшая задержка между батчами для снижения нагрузки
+        if (i + batchSize < requests.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+
+      console.log(`✅ Generated ${results.length} embeddings`);
+
+      return {
+        success: true,
+        data: results,
+        status: 'success',
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error(
+        `❌ A critical error in batch embedding generation:`,
+        errorMessage
+      );
+
+      return {
+        success: false,
+        error: errorMessage,
+        status: 'error',
+      };
+    }
+  }
+
+  /**
+   * Валидирует параметры запроса для генерации эмбеддинга.
+   * Проверяет корректность входных данных перед отправкой запроса.
+   *
+   * @param request - Параметры запроса для валидации.
+   * @returns Результат валидации.
+   */
+  private validateEmbeddingRequest(request: OllamaEmbeddingRequest): {
+    valid: boolean;
+    error?: string;
+  } {
+    // Проверяет наличие обязательных полей
+    if (!request.model || typeof request.model !== 'string') {
+      return {
+        valid: false,
+        error: 'Embedding model not specified or has an invalid format',
+      };
+    }
+
+    if (!request.prompt || typeof request.prompt !== 'string') {
+      return {
+        valid: false,
+        error: 'Text for vectorization not specified or has an invalid format',
+      };
+    }
+
+    // Проверяет длину входного текста
+    if (request.prompt.length === 0) {
+      return {
+        valid: false,
+        error: 'Text for vectorization cannot be empty',
+      };
+    }
+
+    // Проверяет максимальную длину текста (общий лимит для большинства моделей)
+    const maxLength = 8192;
+    if (request.prompt.length > maxLength) {
+      return {
+        valid: false,
+        error: `Text is too long. Maximum length: ${maxLength} characters`,
+      };
+    }
+
+    // Валидирует дополнительные опции
+    if (request.options) {
+      if (request.options.temperature !== undefined) {
+        if (
+          typeof request.options.temperature !== 'number' ||
+          request.options.temperature < 0 ||
+          request.options.temperature > 1
+        ) {
+          return {
+            valid: false,
+            error: 'Temperature must be a number between 0 and 1',
+          };
+        }
+      }
+
+      if (request.options.max_tokens !== undefined) {
+        if (
+          typeof request.options.max_tokens !== 'number' ||
+          request.options.max_tokens <= 0
+        ) {
+          return {
+            valid: false,
+            error: 'Maximum number of tokens must be a positive number',
+          };
+        }
+      }
+
+      if (request.options.num_threads !== undefined) {
+        if (
+          typeof request.options.num_threads !== 'number' ||
+          request.options.num_threads <= 0
+        ) {
+          return {
+            valid: false,
+            error: 'Number of threads must be a positive number',
+          };
+        }
+      }
+    }
+
+    return { valid: true };
   }
 
   /**

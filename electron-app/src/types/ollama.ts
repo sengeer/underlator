@@ -55,7 +55,7 @@ export interface OllamaGenerateResponse {
   /** Контекст для продолжения генерации */
   context?: number[];
   /** Дополнительные данные от модели */
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -187,10 +187,107 @@ export type OllamaOperationStatus =
   | 'success';
 
 /**
+ * Параметры для генерации эмбеддингов через Ollama.
+ * Соответствует API endpoint /api/embeddings.
+ */
+export interface OllamaEmbeddingRequest {
+  /** Название модели эмбеддингов для использования */
+  model: string;
+  /** Текст для векторизации */
+  prompt: string;
+  /** Дополнительные параметры генерации */
+  options?: {
+    /** Температура генерации (0.0 - 1.0) */
+    temperature?: number;
+    /** Максимальное количество токенов */
+    max_tokens?: number;
+    /** Использовать GPU для вычислений */
+    use_gpu?: boolean;
+    /** Количество потоков для обработки */
+    num_threads?: number;
+  };
+}
+
+/**
+ * Ответ от Ollama API при генерации эмбеддингов.
+ * Структура ответа от /api/embeddings.
+ */
+export interface OllamaEmbeddingResponse {
+  /** Название использованной модели */
+  model: string;
+  /** Массив эмбеддингов (векторов) */
+  embedding: number[];
+  /** Размерность векторов */
+  dimensions?: number;
+  /** Временная метка создания */
+  created_at: string;
+  /** Время генерации эмбеддинга в миллисекундах */
+  total_duration?: number;
+  /** Время загрузки модели */
+  load_duration?: number;
+  /** Время генерации эмбеддинга */
+  prompt_eval_duration?: number;
+  /** Количество токенов в промпте */
+  prompt_eval_count?: number;
+  /** Метаданные модели */
+  metadata?: {
+    /** Формат модели */
+    format?: string;
+    /** Размер параметров модели */
+    parameter_size?: string;
+    /** Уровень квантизации */
+    quantization_level?: string;
+  };
+}
+
+/**
+ * Конфигурация для сервиса эмбеддингов.
+ * Настройки для различных моделей эмбеддингов.
+ */
+export interface OllamaEmbeddingConfig {
+  /** Основная модель эмбеддингов по умолчанию */
+  defaultModel: string;
+  /** Альтернативные модели эмбеддингов */
+  fallbackModels: string[];
+  /** Настройки для различных моделей */
+  modelSettings: Record<
+    string,
+    {
+      /** Размерность векторов модели */
+      dimensions: number;
+      /** Максимальная длина входного текста */
+      maxInputLength: number;
+      /** Оптимальный размер батча */
+      optimalBatchSize: number;
+      /** Поддерживает ли модель батчевую обработку */
+      supportsBatchProcessing: boolean;
+    }
+  >;
+  /** Настройки кэширования */
+  cacheSettings: {
+    /** Включить кэширование эмбеддингов */
+    enabled: boolean;
+    /** Время жизни кэша в миллисекундах */
+    ttl: number;
+    /** Максимальный размер кэша в байтах */
+    maxSize: number;
+  };
+  /** Настройки производительности */
+  performanceSettings: {
+    /** Максимальное количество одновременных запросов */
+    maxConcurrentRequests: number;
+    /** Таймаут для запросов эмбеддингов */
+    requestTimeout: number;
+    /** Задержка между батчевыми запросами */
+    batchDelay: number;
+  };
+}
+
+/**
  * Результат операции с Ollama.
  * Универсальный тип для результатов всех операций.
  */
-export interface OllamaOperationResult<T = any> {
+export interface OllamaOperationResult<T = unknown> {
   /** Успешность операции */
   success: boolean;
   /** Результат операции */

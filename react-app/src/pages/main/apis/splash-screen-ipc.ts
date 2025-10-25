@@ -12,7 +12,7 @@ import type {
   SplashProgressCallback,
   SplashCompleteCallback,
   SplashErrorCallback,
-} from '../types/splash-screen.types';
+} from '../types/splash-screen';
 
 /**
  * @class Класс для работы с Electron API splash screen.
