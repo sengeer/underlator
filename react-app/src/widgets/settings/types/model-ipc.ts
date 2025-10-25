@@ -60,7 +60,7 @@ export interface ModelSearchFilters {
   /** Теги модели */
   tags?: string[];
   /** Тип модели */
-  type?: 'ollama';
+  type?: 'embedding' | 'ollama';
   /** Сортировка результатов */
   sortBy?: 'name' | 'size' | 'downloads' | 'rating' | 'lastUpdated';
   /** Порядок сортировки */

@@ -100,18 +100,19 @@ export class OllamaApi {
               body: JSON.stringify(requestBody),
               signal: abortController.signal,
             },
-            context
+            { module: 'OllamaApi', operation: 'listModels' }
           );
 
           // Обрабатывает streaming ответ
           return await processStreamResponse(
             response,
-            (chunk: OllamaGenerateResponse) => {
-              onChunk?.(chunk);
+            (chunk: unknown) => {
+              onChunk?.(chunk as OllamaGenerateResponse);
             },
             (error: string) => {
               console.error(`❌ Streaming error in ${context}:`, error);
-            }
+            },
+            { module: 'OllamaApi', operation: 'listModels' }
           );
         } catch (error) {
           // Обрабатывает ошибки отмены
@@ -122,7 +123,7 @@ export class OllamaApi {
         }
       },
       undefined,
-      context
+      { module: 'OllamaApi', operation: 'listModels' }
     );
   }
 
@@ -133,8 +134,6 @@ export class OllamaApi {
    * @returns Promise со списком моделей.
    */
   async listModels(signal?: AbortSignal): Promise<OllamaModelsResponse> {
-    const context = 'listModels';
-
     return withRetry(
       async () => {
         const response = await fetchWithErrorHandling(
@@ -147,13 +146,13 @@ export class OllamaApi {
             },
             signal,
           },
-          context
+          { module: 'OllamaApi', operation: 'listModels' }
         );
 
         return (await response.json()) as OllamaModelsResponse;
       },
       undefined,
-      context
+      { module: 'OllamaApi', operation: 'listModels' }
     );
   }
 
@@ -187,23 +186,29 @@ export class OllamaApi {
             body: JSON.stringify(request),
             signal,
           },
-          context
+          { module: 'OllamaApi', operation: 'installModel', details: context }
         );
 
         // Обрабатывает streaming прогресс установки
         await processStreamResponse(
           response,
-          (chunk: OllamaPullProgress) => {
-            onProgress?.({ ...chunk, name: request.name });
+          (chunk: unknown) => {
+            onProgress?.({
+              ...(chunk as OllamaPullProgress),
+              name: request.name,
+            });
 
             // Проверяет на ошибки установки
-            if (chunk.error) {
-              throw new Error(`❌ Model installation failed: ${chunk.error}`);
+            if ((chunk as OllamaPullProgress).error) {
+              throw new Error(
+                `❌ Model installation failed: ${(chunk as OllamaPullProgress).error}`
+              );
             }
           },
           (error: string) => {
             console.error(`❌ Installation error in ${context}:`, error);
-          }
+          },
+          { module: 'OllamaApi', operation: 'installModel', details: context }
         );
 
         return {
@@ -212,7 +217,7 @@ export class OllamaApi {
         };
       },
       undefined,
-      context
+      { module: 'OllamaApi', operation: 'installModel', details: context }
     );
   }
 
@@ -243,7 +248,7 @@ export class OllamaApi {
             body: JSON.stringify(request),
             signal,
           },
-          context
+          { module: 'OllamaApi', operation: 'removeModel', details: context }
         );
 
         // Ollama API для удаления модели возвращает пустой ответ при успехе
@@ -274,7 +279,7 @@ export class OllamaApi {
         }
       },
       undefined,
-      context
+      { module: 'OllamaApi', operation: 'removeModel', details: context }
     );
   }
 
@@ -285,8 +290,6 @@ export class OllamaApi {
    * @returns Promise с результатом проверки.
    */
   async healthCheck(signal?: AbortSignal): Promise<boolean> {
-    const context = 'healthCheck';
-
     try {
       const response = await fetchWithErrorHandling(
         `${this.baseUrl}${OLLAMA_ENDPOINTS.LIST_MODELS}`,
@@ -298,7 +301,7 @@ export class OllamaApi {
           },
           signal,
         },
-        context
+        { module: 'OllamaApi', operation: 'healthCheck' }
       );
 
       return response.ok;
@@ -315,7 +318,10 @@ export class OllamaApi {
    * @param signal - AbortSignal для отмены операции.
    * @returns Promise с информацией о модели.
    */
-  async getModelInfo(modelName: string, signal?: AbortSignal): Promise<any> {
+  async getModelInfo(
+    modelName: string,
+    signal?: AbortSignal
+  ): Promise<unknown> {
     const context = `getModelInfo(${modelName})`;
 
     return withRetry(
@@ -332,13 +338,13 @@ export class OllamaApi {
             body: JSON.stringify({ name: modelName }),
             signal,
           },
-          context
+          { module: 'OllamaApi', operation: 'getModelInfo', details: context }
         );
 
         return await response.json();
       },
       undefined,
-      context
+      { module: 'OllamaApi', operation: 'getModelInfo', details: context }
     );
   }
 

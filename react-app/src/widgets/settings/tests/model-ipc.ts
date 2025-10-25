@@ -121,13 +121,13 @@ export async function testSearchModels() {
     console.log('🧪 Тестирование API поиска моделей...');
 
     // Тест 1: Поиск по названию
-    console.log('🔍 Поиск моделей с "llama" в названии...');
+    console.log('🔍 Поиск моделей с "embed" в названии...');
     const nameSearchResponse = await electron.searchModels({
-      search: 'llama',
+      search: 'embed',
       type: 'ollama',
     });
 
-    console.log('✅ Результат поиска "llama":', nameSearchResponse);
+    console.log('✅ Результат поиска "embed":', nameSearchResponse);
     if (
       nameSearchResponse &&
       nameSearchResponse.data &&
