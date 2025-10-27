@@ -169,18 +169,22 @@
 - Реализовать метод `onProcessingProgress` для подписки на события прогресса обработки документов
 - Использовать `ipcRenderer.invoke` для асинхронного взаимодействия с main процессом
 - Обновить файл типов `electron-app/src/types/preload.ts` для добавления типов RAG в интерфейс `ElectronAPI`
-- Добавить объект `rag` с типизированными методами для всех операций RAG
-- Определить интерфейсы для параметров всех методов RAG API с полной типизацией
-- Определить интерфейсы для возвращаемых значений всех методов RAG API
-- Добавить типы для событий прогресса обработки документов
-- Обеспечить совместимость с существующими типами preload API
-- Добавить поддержку всех операций CRUD для документов и коллекций
-- Интегрироваться с существующей системой типов проекта
-- Обеспечить типобезопасность при использовании RAG API в renderer процессе
-- Добавить типы для обработки ошибок и исключений RAG системы
-- Включить правильную типизацию параметров и возвращаемых значений для всех методов
-- Обеспечить безопасность через contextBridge и валидацию входных данных
-- Интегрироваться с существующей структурой API и следовать паттернам именования
+- Создать модуль `electron-app/src/services/rag.ts`
+- Добавить метод rag.processDocument(pdfFile: File): Promise<ProcessDocumentResult> для обработки PDF
+- Добавить метод rag.queryDocuments(query: string, chatId: string): Promise<RAGResponse> для поиска
+- Добавить метод rag.deleteDocumentCollection(chatId: string): Promise<DeleteCollectionResult> для удаления коллекции
+- Добавить метод rag.getCollectionStats(chatId: string): Promise<CollectionStats> для статистики
+- Добавить метод rag.onProcessingProgress(callback): () => void для событий прогресса
+- Определить интерфейс ProcessDocumentRequest с полями filePath: string, chatId: string
+- Определить интерфейс RAGQueryRequest с полями query: string, chatId: string, topK?: number, similarityThreshold?: number
+- Определить интерфейс DeleteCollectionRequest с полем chatId: string
+- Определить интерфейс ProcessDocumentResult с полями success: boolean, chunks: DocumentChunk[], totalChunks: number
+- Определить интерфейс RAGResponse (уже в rag.ts)
+- Определить интерфейс DeleteCollectionResult с полями success: boolean, deletedChatId: string
+- Определить интерфейс RAGProcessingProgress с полями stage: 'reading' | 'parsing' | 'chunking' | 'embedding', progress: number, message: string
+- Импортировать типы из electron-app/src/types/rag.ts (DocumentChunk, RAGQuery, RAGResponse)
+- Следовать структуре интерфейса ElectronAPI из electron-app/src/types/preload.ts
+- Определить RAGError с полями type: 'processing' | 'embedding' | 'search' | 'collection', message: string, details?: unknown
 
 **Ожидаемый результат:** Полнофункциональный IPC API для RAG системы с унифицированной обработкой ошибок, логированием и полной типизацией в preload скрипте.
 
