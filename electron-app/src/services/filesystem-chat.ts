@@ -479,26 +479,6 @@ export class ChatFileSystemService {
 }
 
 /**
- * Интерфейс для информации о файле чата (совместимость с существующим кодом).
- */
-export interface ChatFileInfo {
-  /** Имя файла */
-  fileName: string;
-  /** Полный путь к файлу */
-  filePath: string;
-  /** Размер файла в байтах */
-  size: number;
-  /** Дата создания */
-  createdAt: string;
-  /** Дата последнего изменения */
-  modifiedAt: string;
-  /** Статус блокировки */
-  isLocked: boolean;
-  /** Владелец блокировки */
-  lockOwner?: string;
-}
-
-/**
  * Создает экземпляр ChatFileSystemService с настройками по умолчанию.
  *
  * @param config - Опциональная конфигурация.

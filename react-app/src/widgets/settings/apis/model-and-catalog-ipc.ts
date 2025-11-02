@@ -1,7 +1,7 @@
 /**
  * @module ModelIpcApi
- * API клиент для взаимодействия с Model IPC в Settings виджете.
- * Предоставляет функции для управления каталогом моделей.
+ * API клиент для взаимодействия с Model и Catalog IPC в Settings виджете.
+ * Предоставляет функции для управления каталогом моделей и непосредственно моделями.
  */
 
 import { DEFAULT_CONFIG } from '../constants/electron';

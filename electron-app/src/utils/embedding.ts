@@ -1,3 +1,5 @@
+// NOTE: Архитектурная заготовка для оптимизации работы с эмбеддингами
+
 /**
  * @module EmbeddingUtils
  * Утилиты для работы с эмбеддингами в RAG системе.
@@ -685,7 +687,7 @@ export class EmbeddingUtils {
    * Создает уникальный идентификатор для кэширования векторов.
    */
   private generateCacheKey(embedding: number[], model?: string): string {
-    const hash = embedding.slice(0, 10).join(','); // Используем первые 10 значений для хэша
+    const hash = embedding.slice(0, 10).join(','); // Использует первые 10 значений для хэша
     return `${model || 'unknown'}_${hash}`;
   }
 
@@ -730,7 +732,7 @@ export class EmbeddingUtils {
     if (times) {
       times.push(time);
 
-      // Ограничиваем количество записей для предотвращения утечек памяти
+      // Ограничивает количество записей для предотвращения утечек памяти
       if (times.length > 1000) {
         times.splice(0, times.length - 1000);
       }
@@ -805,7 +807,6 @@ export class EmbeddingUtils {
     };
   }
 }
-
 /**
  * Создает экземпляр EmbeddingUtils с настройками по умолчанию.
  * Фабричная функция для упрощения создания утилит эмбеддингов.

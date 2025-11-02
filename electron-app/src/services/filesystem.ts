@@ -84,10 +84,10 @@ export class FileSystemService {
     try {
       console.log('🔄 Initializing FileSystemService...');
 
-      // Создает необходимые папки
+      // Создание необходимых папок
       await this.createDirectories();
 
-      // Проверяет доступность файловой системы
+      // Проверка доступности файловой системы
       await this.checkFileSystemAccess();
 
       // Очищает устаревшие блокировки
@@ -518,7 +518,7 @@ export class FileSystemService {
   private async createDirectories(): Promise<void> {
     const directories = [this.backupsPath, this.tempPath, this.locksPath];
 
-    // Создает папки для всех поддерживаемых типов файлов
+    // Создание папок для всех поддерживаемых типов файлов
     const supportedTypes = ['chat', 'document', 'settings', 'log'];
     for (const fileType of supportedTypes) {
       const folderPath = this.getFolderPath(fileType);

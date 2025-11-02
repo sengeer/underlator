@@ -1,7 +1,7 @@
 /**
  * @module ChatIpcTest
  * Функции для ручного тестирования Chat IPC API.
- * Используется для проверки работы Chat Electron IPC методов.
+ * Используется для проверки работы Chat Electron IPC энпоинтов.
  */
 
 import { electron } from '../../../shared/apis/chat-ipc';

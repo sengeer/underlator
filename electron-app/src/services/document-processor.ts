@@ -16,10 +16,94 @@ import type {
   PDFProcessingResult,
   PDFMetadata,
   PDFPageInfo,
-  TextBlock,
 } from '../types/document-processor';
-const pdfParse = require('pdf-parse');
 import { PDFUtils } from '../utils/document-processor';
+
+/**
+ * Устанавливает polyfills для DOM API, которые требуются pdf-parse в Node.js окружении.
+ */
+function setupDOMPolyfills() {
+  const globalObj = globalThis as Record<string, unknown>;
+
+  // Устанавливаем polyfills только если они еще не установлены
+  if (typeof globalObj['DOMMatrix'] === 'undefined') {
+    globalObj['DOMMatrix'] = class DOMMatrix {
+      a = 1;
+      b = 0;
+      c = 0;
+      d = 1;
+      e = 0;
+      f = 0;
+      m11 = 1;
+      m12 = 0;
+      m13 = 0;
+      m14 = 0;
+      m21 = 0;
+      m22 = 1;
+      m23 = 0;
+      m24 = 0;
+      m31 = 0;
+      m32 = 0;
+      m33 = 1;
+      m34 = 0;
+      m41 = 0;
+      m42 = 0;
+      m43 = 0;
+      m44 = 1;
+
+      constructor(_init?: string | number[]) {
+        // Инициализация матрицы
+      }
+    };
+  }
+
+  if (typeof globalObj['ImageData'] === 'undefined') {
+    globalObj['ImageData'] = class ImageData {
+      data: Uint8ClampedArray;
+      width: number;
+      height: number;
+
+      constructor(widthOrData: number | Uint8ClampedArray, height?: number) {
+        if (typeof widthOrData === 'number') {
+          this.width = widthOrData;
+          this.height = height || widthOrData;
+          this.data = new Uint8ClampedArray(this.width * this.height * 4);
+        } else {
+          this.data = widthOrData;
+          this.width = height || 0;
+          this.height = 0;
+        }
+      }
+    };
+  }
+
+  if (typeof globalObj['Path2D'] === 'undefined') {
+    globalObj['Path2D'] = class Path2D {
+      constructor(_path?: unknown) {
+        // Инициализация пути
+      }
+    };
+  }
+}
+
+// Lazy require для pdf-parse, чтобы избежать загрузки в Node.js окружении
+let pdfParseLib: any = null;
+function getPdfParse() {
+  if (!pdfParseLib) {
+    // Устанавливаем polyfills перед загрузкой pdf-parse
+    setupDOMPolyfills();
+
+    try {
+      pdfParseLib = require('pdf-parse');
+      console.log('📄 pdf-parse module loaded, type:', typeof pdfParseLib);
+    } catch (error) {
+      console.error('❌ Failed to load pdf-parse:', error);
+      throw new Error('pdf-parse не может быть загружен');
+    }
+  }
+
+  return pdfParseLib;
+}
 
 /**
  * Основной сервис для обработки PDF документов.
@@ -167,7 +251,6 @@ export class DocumentProcessorService {
         const textChunks = PDFUtils.createTextChunks(pages, {
           chunkSize,
           overlapSize: overlap,
-          preservePageStructure: true,
         });
 
         let chunkIndex = 0;
@@ -502,63 +585,45 @@ class PDFProcessor implements DocumentProcessor<Buffer, PDFProcessingResult> {
       async () => {
         const startTime = Date.now();
 
-        // Кастомный рендерер для извлечения координат текста
+        // Кастомный рендерер для извлечения текста
         const customPageRenderer = async (pageData: unknown) => {
           const renderOptions = {
-            normalizeWhitespace: false,
+            normalizeWhitespace: true,
             disableCombineTextItems: false,
           };
 
           const page = pageData as {
             getTextContent: (options: unknown) => Promise<{ items: unknown[] }>;
           };
+
           return page.getTextContent(renderOptions).then(textContent => {
-            let lastY: number | null = null;
             let text = '';
-            const textBlocks: TextBlock[] = [];
 
             for (const item of textContent.items) {
-              const textItem = item as {
-                str?: string;
-                transform?: number[];
-                width?: number;
-                height?: number;
-                fontName?: string;
-              };
-              if (textItem.str && textItem.str.trim().length > 0) {
-                // Добавляет блок текста с координатами
-                textBlocks.push({
-                  content: textItem.str,
-                  coordinates: {
-                    x: textItem.transform?.[4] || 0,
-                    y: textItem.transform?.[5] || 0,
-                    width: textItem.width || 0,
-                    height: textItem.height || 0,
-                  },
-                  fontSize: textItem.transform?.[0] || 12,
-                  fontFamily: textItem.fontName || 'Arial',
-                });
-
-                // Формирует текст страницы
-                if (lastY === textItem.transform?.[5] || !lastY) {
-                  text += textItem.str;
-                } else {
-                  text += '\n' + textItem.str;
-                }
-                lastY = textItem.transform?.[5] || null;
+              const textItem = item as { str?: string };
+              if (textItem.str) {
+                text += textItem.str + ' ';
               }
             }
 
-            return { text, textBlocks };
+            // Обрезаем последний пробел
+            return text.trim();
           });
         };
 
         // Парсим PDF с помощью pdf-parse с кастомным рендерером
-        const pdfData = await pdfParse(input, {
+        const pdfParseLib = getPdfParse();
+
+        const pdfData = await pdfParseLib(input, {
           max: 0, // Все страницы
           version: 'v1.10.100',
           pagerender: customPageRenderer,
         });
+
+        console.log('✅ PDF parsed, pages:', pdfData.numpages);
+        console.log(
+          `📝 Extracted ${pdfData.pageData && Array.isArray(pdfData.pageData) ? pdfData.pageData.length : 0} pages with text`
+        );
 
         // Извлекает метаданные
         const metadata: PDFMetadata = {
@@ -582,12 +647,18 @@ class PDFProcessor implements DocumentProcessor<Buffer, PDFProcessingResult> {
         let totalCharacterCount = 0;
         let totalWordCount = 0;
 
-        // Если есть данные о страницах из кастомного рендерера
-        if (pdfData.pages && Array.isArray(pdfData.pages)) {
-          for (let i = 0; i < pdfData.pages.length; i++) {
-            const page = pdfData.pages[i];
-            const pageText = page.text || '';
-            const textBlocks = page.textBlocks || [];
+        const numPages = pdfData.numpages || 1;
+
+        // pdf-parse с pagerender возвращает массив pageData со строками
+        if (
+          pdfData.pageData &&
+          Array.isArray(pdfData.pageData) &&
+          pdfData.pageData.length > 0
+        ) {
+          // Каждая страница - это строка из pagerender
+          for (let i = 0; i < pdfData.pageData.length; i++) {
+            const pageText = String(pdfData.pageData[i] || '').trim();
+
             const words = pageText
               .split(/\s+/)
               .filter((word: string) => word.length > 0);
@@ -595,11 +666,8 @@ class PDFProcessor implements DocumentProcessor<Buffer, PDFProcessingResult> {
             const pageInfo: PDFPageInfo = {
               pageNumber: i + 1,
               text: pageText,
-              dimensions: {
-                width: page.width || 595,
-                height: page.height || 842,
-              },
-              textBlocks,
+              dimensions: { width: 595, height: 842 },
+              textBlocks: [] as any[],
               characterCount: pageText.length,
               wordCount: words.length,
             };
@@ -608,37 +676,58 @@ class PDFProcessor implements DocumentProcessor<Buffer, PDFProcessingResult> {
             totalCharacterCount += pageText.length;
             totalWordCount += words.length;
 
-            // Обновляет прогресс
             if (options.onProgress) {
               const progress: ProcessingProgress = {
                 stage: 'parsing',
-                progress: Math.round(((i + 1) / pdfData.pages.length) * 100),
+                progress: Math.round(((i + 1) / pdfData.pageData.length) * 100),
                 currentPage: i + 1,
-                totalPages: pdfData.pages.length,
-                message: `Pages processed: ${i + 1}/${pdfData.pages.length}`,
+                totalPages: pdfData.pageData.length,
+                message: `Pages processed: ${i + 1}/${pdfData.pageData.length}`,
               };
               options.onProgress(progress);
             }
           }
         } else {
-          // Если нет данных о страницах, создает одну страницу с общим текстом
-          const pageText = pdfData.text || '';
-          const words = pageText
-            .split(/\s+/)
-            .filter((word: string) => word.length > 0);
+          // Fallback: разбиваем весь текст на страницы
+          const fullText = pdfData.text || '';
+          const textPerPage = Math.ceil(fullText.length / numPages);
 
-          const pageInfo: PDFPageInfo = {
-            pageNumber: 1,
-            text: pageText,
-            dimensions: { width: 595, height: 842 },
-            textBlocks: [],
-            characterCount: pageText.length,
-            wordCount: words.length,
-          };
+          for (let i = 0; i < numPages; i++) {
+            const startIndex = i * textPerPage;
+            const endIndex = Math.min(
+              startIndex + textPerPage,
+              fullText.length
+            );
+            const pageText = fullText.substring(startIndex, endIndex);
 
-          pages.push(pageInfo);
-          totalCharacterCount = pageText.length;
-          totalWordCount = words.length;
+            const words = pageText
+              .split(/\s+/)
+              .filter((word: string) => word.length > 0);
+
+            const pageInfo: PDFPageInfo = {
+              pageNumber: i + 1,
+              text: pageText,
+              dimensions: { width: 595, height: 842 },
+              textBlocks: [] as any[],
+              characterCount: pageText.length,
+              wordCount: words.length,
+            };
+
+            pages.push(pageInfo);
+            totalCharacterCount += pageText.length;
+            totalWordCount += words.length;
+
+            if (options.onProgress) {
+              const progress: ProcessingProgress = {
+                stage: 'parsing',
+                progress: Math.round(((i + 1) / numPages) * 100),
+                currentPage: i + 1,
+                totalPages: numPages,
+                message: `Pages processed: ${i + 1}/${numPages}`,
+              };
+              options.onProgress(progress);
+            }
+          }
         }
 
         const processingTime = Date.now() - startTime;
@@ -694,7 +783,8 @@ class PDFProcessor implements DocumentProcessor<Buffer, PDFProcessingResult> {
     return executeWithErrorHandling(
       async () => {
         // Извлекает метаданные с помощью pdf-parse
-        const pdfData = await pdfParse(input, {
+        const pdfParseLib = getPdfParse();
+        const pdfData = await pdfParseLib(input, {
           max: 0, // Только метаданные, не парсит страницы
           version: 'v1.10.100',
         });

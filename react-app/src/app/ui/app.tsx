@@ -1,6 +1,6 @@
 /**
  * @module AppComponent
- * Основной компонент приложения
+ * Основной компонент приложения.
  */
 
 import { i18n } from '@lingui/core';

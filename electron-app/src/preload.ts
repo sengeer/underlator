@@ -25,6 +25,20 @@ import type {
   AddMessageRequest,
 } from './types/chat';
 import type { ElectronAPI } from './types/preload';
+import type {
+  RagResponse,
+  VectorCollection,
+  CollectionStats,
+} from './types/rag';
+import type {
+  ProcessDocumentRequest,
+  ProcessDocumentResult,
+  UploadAndProcessDocumentRequest,
+  RagQueryRequest,
+  DeleteCollectionRequest,
+  DeleteCollectionResult,
+  RagProcessingProgress,
+} from './types/rag-handlers';
 
 /**
  * Здесь используется API `contextBridge` для экспозиции кастомного API в renderer процесс.
@@ -147,5 +161,46 @@ contextBridge.exposeInMainWorld('electron', {
 
     addMessage: (request: AddMessageRequest) =>
       ipcRenderer.invoke('chat:add-message', request),
+  },
+
+  // API для работы с RAG системой
+  rag: {
+    processDocument: (
+      request: ProcessDocumentRequest
+    ): Promise<ProcessDocumentResult> =>
+      ipcRenderer.invoke('rag:process-document', request),
+
+    uploadAndProcessDocument: (
+      request: UploadAndProcessDocumentRequest
+    ): Promise<ProcessDocumentResult> =>
+      ipcRenderer.invoke('rag:upload-and-process-document', request),
+
+    queryDocuments: (request: RagQueryRequest): Promise<RagResponse> =>
+      ipcRenderer.invoke('rag:query-documents', request),
+
+    deleteDocumentCollection: (
+      request: DeleteCollectionRequest
+    ): Promise<DeleteCollectionResult> =>
+      ipcRenderer.invoke('rag:delete-collection', request),
+
+    getCollectionStats: (chatId: string): Promise<CollectionStats> =>
+      ipcRenderer.invoke('rag:get-collection-stats', { chatId }),
+
+    listCollections: async (): Promise<VectorCollection[]> => {
+      const response = await ipcRenderer.invoke('rag:list-collections');
+      return (response as any).data || [];
+    },
+
+    onProcessingProgress: (
+      callback: (progress: RagProcessingProgress) => void
+    ): (() => void) => {
+      const subscription = (_event: any, progress: RagProcessingProgress) =>
+        callback(progress);
+      ipcRenderer.on('rag:processing-progress', subscription);
+
+      return () => {
+        ipcRenderer.removeListener('rag:processing-progress', subscription);
+      };
+    },
   },
 } as ElectronAPI);

@@ -1,11 +1,11 @@
 /**
  * @module ModelIpcTest
- * Функции для ручного тестирования IPC API.
- * Используется для проверки работы Electron IPC методов.
+ * Функции для ручного тестирования Model IPC API.
+ * Используется для проверки работы Model Electron IPC энпоинтов.
  */
 
 import { DEFAULT_OPTIONS } from '../../../shared/lib/constants';
-import { electron } from '../apis/model-ipc';
+import { electron } from '../apis/model-and-catalog-ipc';
 import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../constants/ipc';
 
 /**

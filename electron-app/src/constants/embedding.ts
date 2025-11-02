@@ -11,8 +11,8 @@ import type { OllamaEmbeddingConfig } from '../types/ollama';
  * Список проверенных и оптимизированных моделей для генерации векторных представлений.
  */
 export const EMBEDDING_MODELS = {
-  /** Основная модель эмбеддингов - nomic-embed-text */
-  PRIMARY: 'nomic-embed-text',
+  /** Основная модель эмбеддингов - embeddinggemma */
+  PRIMARY: 'embeddinggemma',
   /** Альтернативная модель - mxbai-embed-large */
   FALLBACK_1: 'mxbai-embed-large',
   /** Дополнительная модель - all-minilm */

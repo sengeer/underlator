@@ -33,13 +33,16 @@ export class ModelCatalogService {
    * Создает экземпляр ModelCatalogService.
    *
    * @param config - Конфигурация сервиса.
+   * @param ollamaApi - Существующий экземпляр OllamaApi (опционально).
    */
-  constructor(config?: Partial<ModelCatalogConfig>) {
+  constructor(config?: Partial<ModelCatalogConfig>, ollamaApi?: OllamaApi) {
     this.config = {
       ...DEFAULT_CATALOG_CONFIG,
       ...config,
     };
-    this.ollamaApi = new OllamaApi({ baseUrl: this.config.ollamaUrl });
+    // Используется переданный OllamaApi, инициализируется новый при отсутствии
+    this.ollamaApi =
+      ollamaApi || new OllamaApi({ baseUrl: this.config.ollamaUrl });
     this.htmlParser = createOllamaHtmlParser();
   }
 

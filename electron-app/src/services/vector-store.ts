@@ -1,11 +1,14 @@
 /**
- * @module VectorStoreService
- * Сервис для управления векторными эмбеддингами с использованием Qdrant.
- * Обеспечивает CRUD операции с векторными коллекциями и поиск по документам.
+ * @module VectorStoreService (SQLite Implementation)
+ * Сервис для управления векторными эмбеддингами с использованием SQLite.
+ * Полностью локальное решение без внешних зависимостей.
  */
 
 import * as crypto from 'crypto';
-import { QdrantClient } from '@qdrant/js-client-rest';
+import * as fs from 'fs';
+import * as path from 'path';
+import { app } from 'electron';
+import Database from 'better-sqlite3';
 import {
   DocumentChunk,
   VectorCollection,
@@ -14,25 +17,27 @@ import {
   VectorStoreResult,
   CachedCollection,
   VectorStoreOptions,
-  RAGQuery,
-  RAGResponse,
+  RagQuery,
+  RagResponse,
   DocumentSource,
   DistanceMetric,
 } from '../types/rag';
+import type { ChunkRow, StatsRow, CollectionRow } from '../types/vector-store';
 
 /**
- * Сервис векторного хранилища на основе Qdrant.
- * Управляет коллекциями векторов для RAG системы с поддержкой кэширования и оптимизации.
+ * Сервис векторного хранилища на основе SQLite.
+ * Управляет коллекциями векторов для RAG системы без внешних зависимостей.
  */
 export class VectorStoreService {
   private config: VectorStoreConfig;
-  private qdrantClient: QdrantClient;
+  private db: Database.Database | null = null;
+  private dbPath: string;
   private collectionCache: Map<string, CachedCollection> = new Map();
   private isInitialized: boolean = false;
 
   constructor(config?: Partial<VectorStoreConfig>) {
     this.config = {
-      defaultVectorSize: 768, // Размерность для nomic-embed-text
+      defaultVectorSize: 768, // Размерность для embeddinggemma
       defaultDistanceMetric: 'cosine',
       defaultIndexParams: {
         indexType: 'hnsw',
@@ -48,11 +53,15 @@ export class VectorStoreService {
       ...config,
     };
 
-    // Инициализирует Qdrant клиент
-    this.qdrantClient = new QdrantClient({
-      url: 'http://127.0.0.1:6333',
-      timeout: 30000,
-    });
+    // Определяем путь к базе данных
+    const userDataPath = app.getPath('userData');
+    const dbDir = path.join(userDataPath, 'rag-vectors');
+
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+    }
+
+    this.dbPath = path.join(dbDir, 'vectors.db');
   }
 
   /**
@@ -95,18 +104,53 @@ export class VectorStoreService {
 
   /**
    * Инициализирует сервис векторного хранилища.
-   * Проверяет доступность Qdrant и настраивает соединение.
+   * Создает SQLite базу данных и необходимые таблицы.
    */
   async initialize(): Promise<VectorStoreResult<void>> {
     try {
-      console.log('🔧 VectorStoreService: Initializing Qdrant connection...');
+      console.log('🔧 VectorStoreService: Initializing SQLite database...');
 
-      // Проверяет доступность Qdrant сервера
-      await this.qdrantClient.getCollections();
-      console.log('✅ Qdrant server is available');
+      // Создаем SQLite базу данных
+      this.db = new Database(this.dbPath);
+
+      // Включаем WAL режим для лучшей производительности
+      this.db.pragma('journal_mode = WAL');
+
+      // Создаем таблицу для чанков
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS chunks (
+          id TEXT PRIMARY KEY,
+          collection_name TEXT NOT NULL,
+          chat_id TEXT NOT NULL,
+          content TEXT NOT NULL,
+          embedding TEXT NOT NULL,
+          metadata TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        )
+      `);
+
+      // Создаем индексы для быстрого поиска
+      this.db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_collection ON chunks(collection_name);
+        CREATE INDEX IF NOT EXISTS idx_chat_id ON chunks(chat_id);
+      `);
+
+      // Создаем таблицу для коллекций
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS collections (
+          name TEXT PRIMARY KEY,
+          chat_id TEXT NOT NULL,
+          vector_size INTEGER NOT NULL,
+          distance_metric TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        )
+      `);
 
       this.isInitialized = true;
       console.log('✅ VectorStoreService initialized successfully');
+      console.log(`📁 Database location: ${this.dbPath}`);
 
       return this.createSuccessResult(undefined, 'success');
     } catch (error) {
@@ -117,14 +161,13 @@ export class VectorStoreService {
 
   /**
    * Создает коллекцию для конкретного чата.
-   * Генерирует уникальное имя коллекции и настраивает параметры Qdrant.
    */
   async createCollection(
     chatId: string,
     _options: VectorStoreOptions = {}
   ): Promise<VectorStoreResult<VectorCollection>> {
     try {
-      if (!this.isInitialized) {
+      if (!this.isInitialized || !this.db) {
         throw new Error('VectorStoreService is not initialized');
       }
 
@@ -133,55 +176,54 @@ export class VectorStoreService {
         `🔧 VectorStoreService: Creating collection '${collectionName}'...`
       );
 
-      // Проверяет, существует ли коллекция
-      try {
-        const existingCollection =
-          await this.qdrantClient.getCollection(collectionName);
+      // Проверяем, существует ли коллекция
+      const existing = this.db
+        .prepare('SELECT * FROM collections WHERE name = ?')
+        .get(collectionName);
+
+      if (existing) {
         console.log(`⚠️ Collection '${collectionName}' already exists`);
 
-        // Возвращает информацию о существующей коллекции
+        const stats = await this.getCollectionStats(chatId);
+        const defaultStats: CollectionStats = {
+          pointsCount: 0,
+          sizeBytes: 0,
+          indexesCount: 1,
+          indexingStatus: 'completed',
+          lastIndexedAt: new Date().toISOString(),
+        };
+
         const collection: VectorCollection = {
           name: collectionName,
           chatId,
           vectorSize: this.config.defaultVectorSize,
           distanceMetric: this.config.defaultDistanceMetric,
           indexParams: this.config.defaultIndexParams,
-          stats: {
-            pointsCount: existingCollection.points_count || 0,
-            sizeBytes: existingCollection.vectors_count || 0,
-            indexesCount: 1,
-            indexingStatus: 'completed',
-            lastIndexedAt: new Date().toISOString(),
-          },
+          stats: stats.success && stats.data ? stats.data : defaultStats,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
 
         this.cacheCollection(collection);
         return this.createSuccessResult(collection, 'success');
-      } catch {
-        // Коллекция не существует, создает новую
       }
 
-      // Создает новую коллекцию
-      await this.qdrantClient.createCollection(collectionName, {
-        vectors: {
-          size: this.config.defaultVectorSize,
-          distance: this.mapDistanceMetric(this.config.defaultDistanceMetric),
-        } as any,
-        hnsw_config: {
-          m: this.config.defaultIndexParams.hnswConfig?.m || 16,
-          ef_construct:
-            this.config.defaultIndexParams.hnswConfig?.efConstruct || 200,
-          full_scan_threshold:
-            this.config.defaultIndexParams.hnswConfig?.fullScanThreshold ||
-            10000,
-        },
-      });
+      // Создаем новую коллекцию
+      this.db
+        .prepare(
+          'INSERT INTO collections (name, chat_id, vector_size, distance_metric, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
+        )
+        .run(
+          collectionName,
+          chatId,
+          this.config.defaultVectorSize,
+          this.config.defaultDistanceMetric,
+          new Date().toISOString(),
+          new Date().toISOString()
+        );
 
       console.log(`✅ Collection '${collectionName}' created successfully`);
 
-      // Создает объект коллекции
       const collection: VectorCollection = {
         name: collectionName,
         chatId,
@@ -212,7 +254,6 @@ export class VectorStoreService {
 
   /**
    * Добавляет чанки документов в коллекцию.
-   * Конвертирует DocumentChunk в формат Qdrant и выполняет upsert.
    */
   async addChunks(
     chatId: string,
@@ -220,7 +261,7 @@ export class VectorStoreService {
     _options: VectorStoreOptions = {}
   ): Promise<VectorStoreResult<number>> {
     try {
-      if (!this.isInitialized) {
+      if (!this.isInitialized || !this.db) {
         throw new Error('VectorStoreService is not initialized');
       }
 
@@ -229,36 +270,42 @@ export class VectorStoreService {
         `🔧 VectorStoreService: Adding ${chunks.length} chunks to collection '${collectionName}'...`
       );
 
-      // Конвертирует чанки в формат Qdrant
-      const points = chunks.map((chunk, index) => ({
-        id: chunk.id || `${chatId}_${index}`,
-        vector: chunk.embedding || [],
-        payload: {
-          content: chunk.content,
-          metadata: chunk.metadata,
-          createdAt: chunk.createdAt,
-          updatedAt: chunk.updatedAt,
-        },
-      }));
+      const insert = this.db.prepare(`
+        INSERT INTO chunks (id, collection_name, chat_id, content, embedding, metadata, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
 
-      // Выполняет upsert в Qdrant
-      await this.qdrantClient.upsert(collectionName, {
-        wait: true,
-        points,
+      const insertMany = this.db.transaction((chunks: DocumentChunk[]) => {
+        let count = 0;
+        for (const chunk of chunks) {
+          // Проверяем что content это строка
+          const contentStr =
+            typeof chunk.content === 'string'
+              ? chunk.content
+              : String(chunk.content);
+
+          insert.run(
+            chunk.id || `${chatId}_${chunk.metadata?.chunkIndex || count}`,
+            collectionName,
+            chatId,
+            contentStr,
+            JSON.stringify(chunk.embedding || []),
+            JSON.stringify(chunk.metadata || {}),
+            chunk.createdAt || new Date().toISOString(),
+            chunk.updatedAt || new Date().toISOString()
+          );
+          count++;
+        }
+        return count;
       });
 
+      const count = insertMany(chunks);
+
       console.log(
-        `✅ Successfully added ${chunks.length} chunks to collection '${collectionName}'`
+        `✅ Successfully added ${count} chunks to collection '${collectionName}'`
       );
 
-      // Обновляет кэш коллекции
-      const cachedCollection = this.collectionCache.get(collectionName);
-      if (cachedCollection) {
-        cachedCollection.collection.stats.pointsCount += chunks.length;
-        cachedCollection.collection.updatedAt = new Date().toISOString();
-      }
-
-      return this.createSuccessResult(chunks.length, 'success');
+      return this.createSuccessResult(count, 'success');
     } catch (error) {
       console.error(
         `❌ Failed to add chunks to collection for chat ${chatId}:`,
@@ -270,14 +317,19 @@ export class VectorStoreService {
 
   /**
    * Выполняет поиск релевантных чанков по текстовому запросу.
-   * Использует векторный поиск в Qdrant с фильтрацией по метаданным.
+   * Использует косинусное расстояние для расчета схожести.
+   *
+   * @param query - Параметры запроса
+   * @param queryEmbedding - Эмбеддинг запроса для семантического поиска
+   * @param _options - Опции выполнения запроса
    */
   async query(
-    query: RAGQuery,
+    query: RagQuery,
+    queryEmbedding?: number[],
     _options: VectorStoreOptions = {}
-  ): Promise<VectorStoreResult<RAGResponse>> {
+  ): Promise<VectorStoreResult<RagResponse>> {
     try {
-      if (!this.isInitialized) {
+      if (!this.isInitialized || !this.db) {
         throw new Error('VectorStoreService is not initialized');
       }
 
@@ -286,72 +338,152 @@ export class VectorStoreService {
         `🔧 VectorStoreService: Searching in collection '${collectionName}'...`
       );
 
-      // Создает фильтры для поиска
-      const mustFilters: Array<Record<string, unknown>> = [
-        {
-          key: 'metadata.chatId',
-          match: { value: query.chatId },
-        },
-      ];
+      // Получаем все чанки из коллекции
+      const chunks = this.db
+        .prepare(
+          'SELECT * FROM chunks WHERE collection_name = ? AND chat_id = ?'
+        )
+        .all(collectionName, query.chatId);
 
-      if (query.filters?.source) {
-        mustFilters.push({
-          key: 'metadata.source',
-          match: { value: query.filters.source },
-        });
+      console.log(`📊 Found ${chunks.length} chunks in collection`);
+
+      if (chunks.length > 0 && chunks[0]) {
+        const firstChunk = chunks[0] as ChunkRow;
+        console.log(`📝 First chunk content type:`, typeof firstChunk.content);
+        console.log(
+          `📝 First chunk content preview:`,
+          String(firstChunk.content || '').substring(0, 200)
+        );
       }
 
-      if (query.filters?.pageNumber !== undefined) {
-        mustFilters.push({
-          key: 'metadata.pageNumber',
-          match: { value: query.filters.pageNumber },
+      // Если есть эмбеддинг запроса - используем семантический поиск
+      let sources: DocumentSource[];
+      if (queryEmbedding && queryEmbedding.length > 0) {
+        console.log('🔍 Using semantic search with embeddings');
+
+        // Вычисляем косинусное расстояние для каждого чанка
+        const chunksWithSimilarity = (chunks as ChunkRow[]).map(chunk => {
+          const metadata = JSON.parse(chunk.metadata || '{}');
+          const chunkEmbedding: number[] = JSON.parse(chunk.embedding || '[]');
+
+          // Вычисляем косинусное расстояние (cosine similarity)
+          const similarity = this.cosineSimilarity(
+            queryEmbedding,
+            chunkEmbedding
+          );
+
+          let content = '';
+          if (typeof chunk.content === 'string') {
+            content = chunk.content;
+          } else {
+            content = String(chunk.content || '');
+          }
+
+          // Гибридный поиск: применение бонуса за точное совпадение ключевых слов из запроса
+          let boostedSimilarity = similarity;
+          const queryLower = query.query.toLowerCase();
+          const contentLower = content.toLowerCase();
+
+          // Ищем точные совпадения в тексте (особенно для пунктов типа "7.1", "III" и т.д.)
+          if (contentLower.includes(queryLower)) {
+            boostedSimilarity += 0.3; // Бонус за точное совпадение
+          }
+
+          // Бонус за точное совпадение номеров пунктов (например, "7.1")
+          const pointRegex = /\d+\.\d+/g;
+          const matches = query.query.match(pointRegex);
+          if (matches) {
+            matches.forEach(match => {
+              if (contentLower.includes(match.toLowerCase())) {
+                boostedSimilarity += 0.2; // Дополнительный бонус за номер пункта
+              }
+            });
+          }
+
+          return {
+            chunk,
+            similarity: Math.min(boostedSimilarity, 1.0), // Ограничиваем максимум
+            content,
+            metadata,
+          };
         });
-      }
 
-      // Выполняет поиск в Qdrant
-      const searchResult = await this.qdrantClient.search(collectionName, {
-        vector: [], // NOTE: Здесь должен быть вектор запроса, но пока используем пустой
-        limit: query.topK || 10,
-        score_threshold: query.similarityThreshold || 0.7,
-        with_payload: true,
-        filter: {
-          must: mustFilters,
-        },
-      });
+        // Сортируем по релевантности (от наибольшего к наименьшему)
+        chunksWithSimilarity.sort((a, b) => b.similarity - a.similarity);
 
-      // Конвертирует результаты в формат RAGResponse
-      const sources: DocumentSource[] = searchResult.map(hit => {
-        const payload = hit.payload as Record<string, unknown> | undefined;
-        const metadata = payload?.['metadata'] as
-          | Record<string, unknown>
-          | undefined;
-        return {
-          chunkId: hit.id as string,
-          content: (payload?.['content'] as string) || '',
-          relevance: hit.score || 0,
+        // Фильтруем по порогу схожести
+        const threshold = query.similarityThreshold ?? 0.7;
+        const filteredChunks = chunksWithSimilarity.filter(
+          item => item.similarity >= threshold
+        );
+
+        // Если ничего не прошло порог — берём topK лучших по сходству
+        const effectiveChunks =
+          filteredChunks.length > 0
+            ? filteredChunks
+            : chunksWithSimilarity.slice(0, query.topK || 5);
+
+        console.log(
+          `✅ Relevant chunks: ${effectiveChunks.length} (filtered=${filteredChunks.length}, threshold=${threshold})`
+        );
+
+        // Формируем источники
+        sources = effectiveChunks.map(item => ({
+          chunkId: item.chunk.id,
+          content: item.content,
+          relevance: item.similarity,
           metadata: {
-            source: (metadata?.['source'] as string) || '',
-            pageNumber: (metadata?.['pageNumber'] as number) || 0,
-            chunkIndex: (metadata?.['chunkIndex'] as number) || 0,
+            source: item.metadata.source || '',
+            pageNumber: item.metadata.pageNumber || 0,
+            chunkIndex: item.metadata.chunkIndex || 0,
           },
-        };
-      });
+        }));
+      } else {
+        // Fallback: если нет эмбеддинга, возвращаем все чанки
+        console.log('⚠️ No query embedding provided, using simple search');
+        sources = (chunks as ChunkRow[]).map((chunk, index) => {
+          const metadata = JSON.parse(chunk.metadata || '{}');
 
-      const response: RAGResponse = {
-        answer: '', // Будет заполнено в feature-provider
-        sources,
-        confidence: sources.length > 0 ? sources[0]?.relevance || 0 : 0,
+          let content = '';
+          if (typeof chunk.content === 'string') {
+            content = chunk.content;
+          } else {
+            content = String(chunk.content || '');
+          }
+
+          return {
+            chunkId: chunk.id,
+            content: content,
+            relevance: 1.0 - index * 0.1,
+            metadata: {
+              source: metadata.source || '',
+              pageNumber: metadata.pageNumber || 0,
+              chunkIndex: metadata.chunkIndex || index,
+            },
+          };
+        });
+      }
+
+      // Ограничиваем результаты
+      const limitedSources = sources.slice(0, query.topK || 10);
+
+      const response: RagResponse = {
+        answer: '',
+        sources: limitedSources,
+        confidence:
+          limitedSources.length > 0 ? limitedSources[0]?.relevance || 0 : 0,
         searchMetadata: {
-          searchTime: 0, // Будет заполнено в feature-provider
-          chunksFound: sources.length,
+          searchTime: 0,
+          chunksFound: limitedSources.length,
           averageSimilarity:
-            sources.reduce((sum, s) => sum + s.relevance, 0) / sources.length,
+            limitedSources.reduce((sum, s) => sum + s.relevance, 0) /
+            limitedSources.length,
           distanceMetric: this.config.defaultDistanceMetric,
         },
         timestamp: new Date().toISOString(),
       };
 
-      console.log(`✅ Found ${sources.length} relevant chunks`);
+      console.log(`✅ Found ${limitedSources.length} relevant chunks`);
 
       return this.createSuccessResult(response, 'success');
     } catch (error) {
@@ -364,15 +496,42 @@ export class VectorStoreService {
   }
 
   /**
+   * Вычисляет косинусное сходство между двумя векторами.
+   * @param vec1 - Первый вектор
+   * @param vec2 - Второй вектор
+   * @returns Косинусное сходство (0-1)
+   */
+  private cosineSimilarity(vec1: number[], vec2: number[]): number {
+    if (vec1.length !== vec2.length) {
+      console.warn('⚠️ Vector dimensions mismatch:', vec1.length, vec2.length);
+      return 0;
+    }
+
+    let dotProduct = 0;
+    let norm1 = 0;
+    let norm2 = 0;
+
+    for (let i = 0; i < vec1.length; i++) {
+      const v1 = vec1[i] ?? 0;
+      const v2 = vec2[i] ?? 0;
+      dotProduct += v1 * v2;
+      norm1 += v1 * v1;
+      norm2 += v2 * v2;
+    }
+
+    const denominator = Math.sqrt(norm1) * Math.sqrt(norm2);
+    return denominator > 0 ? dotProduct / denominator : 0;
+  }
+
+  /**
    * Удаляет коллекцию при удалении чата.
-   * Очищает все данные и освобождает ресурсы.
    */
   async deleteCollection(
     chatId: string,
     _options: VectorStoreOptions = {}
   ): Promise<VectorStoreResult<void>> {
     try {
-      if (!this.isInitialized) {
+      if (!this.isInitialized || !this.db) {
         throw new Error('VectorStoreService is not initialized');
       }
 
@@ -381,10 +540,17 @@ export class VectorStoreService {
         `🔧 VectorStoreService: Deleting collection '${collectionName}'...`
       );
 
-      // Удаляет коллекцию из Qdrant
-      await this.qdrantClient.deleteCollection(collectionName);
+      // Удаляем чанки
+      this.db
+        .prepare('DELETE FROM chunks WHERE collection_name = ?')
+        .run(collectionName);
 
-      // Удаляет из кэша
+      // Удаляем коллекцию
+      this.db
+        .prepare('DELETE FROM collections WHERE name = ?')
+        .run(collectionName);
+
+      // Удаляем из кэша
       this.collectionCache.delete(collectionName);
 
       console.log(`✅ Collection '${collectionName}' deleted successfully`);
@@ -401,14 +567,13 @@ export class VectorStoreService {
 
   /**
    * Получает статистику по коллекции.
-   * Возвращает информацию о количестве точек, размере и индексах.
    */
   async getCollectionStats(
     chatId: string,
     _options: VectorStoreOptions = {}
   ): Promise<VectorStoreResult<CollectionStats>> {
     try {
-      if (!this.isInitialized) {
+      if (!this.isInitialized || !this.db) {
         throw new Error('VectorStoreService is not initialized');
       }
 
@@ -417,23 +582,25 @@ export class VectorStoreService {
         `🔧 VectorStoreService: Getting stats for collection '${collectionName}'...`
       );
 
-      // Получает информацию о коллекции из Qdrant
-      const collectionInfo =
-        await this.qdrantClient.getCollection(collectionName);
+      const stats = this.db
+        .prepare(
+          'SELECT COUNT(*) as count, SUM(LENGTH(embedding)) as size FROM chunks WHERE collection_name = ?'
+        )
+        .get(collectionName) as StatsRow;
 
-      const stats: CollectionStats = {
-        pointsCount: collectionInfo.points_count || 0,
-        sizeBytes: collectionInfo.vectors_count || 0,
+      const statsObj: CollectionStats = {
+        pointsCount: stats?.count || 0,
+        sizeBytes: stats?.size || 0,
         indexesCount: 1,
         indexingStatus: 'completed',
         lastIndexedAt: new Date().toISOString(),
       };
 
       console.log(
-        `✅ Collection stats: ${stats.pointsCount} points, ${stats.sizeBytes} bytes`
+        `✅ Collection stats: ${statsObj.pointsCount} points, ${statsObj.sizeBytes} bytes`
       );
 
-      return this.createSuccessResult(stats, 'success');
+      return this.createSuccessResult(statsObj, 'success');
     } catch (error) {
       console.error(
         `❌ Failed to get collection stats for chat ${chatId}:`,
@@ -444,8 +611,46 @@ export class VectorStoreService {
   }
 
   /**
+   * Получает список всех коллекций.
+   */
+  async listCollections(): Promise<VectorStoreResult<VectorCollection[]>> {
+    try {
+      if (!this.isInitialized || !this.db) {
+        throw new Error('VectorStoreService is not initialized');
+      }
+
+      const collections = this.db
+        .prepare('SELECT * FROM collections')
+        .all() as CollectionRow[];
+
+      const result: VectorCollection[] = collections.map(col => {
+        return {
+          name: col.name,
+          chatId: col.chat_id,
+          vectorSize: col.vector_size,
+          distanceMetric: col.distance_metric as DistanceMetric,
+          indexParams: this.config.defaultIndexParams,
+          stats: {
+            pointsCount: 0,
+            sizeBytes: 0,
+            indexesCount: 1,
+            indexingStatus: 'completed',
+            lastIndexedAt: new Date().toISOString(),
+          },
+          createdAt: col.created_at,
+          updatedAt: col.updated_at,
+        };
+      });
+
+      return this.createSuccessResult(result, 'success');
+    } catch (error) {
+      console.error('❌ Failed to list collections:', error);
+      return this.createErrorResult((error as Error).message);
+    }
+  }
+
+  /**
    * Генерирует уникальное имя коллекции для чата.
-   * Использует crypto для создания детерминированного имени.
    */
   private generateCollectionName(chatId: string): string {
     const hash = crypto
@@ -488,6 +693,11 @@ export class VectorStoreService {
   async cleanup(): Promise<void> {
     console.log('🧹 VectorStoreService: Cleaning up resources...');
 
+    if (this.db) {
+      this.db.close();
+      this.db = null;
+    }
+
     this.collectionCache.clear();
     this.isInitialized = false;
 
@@ -513,22 +723,6 @@ export class VectorStoreService {
    */
   isServiceInitialized(): boolean {
     return this.isInitialized;
-  }
-
-  /**
-   * Маппинг метрик расстояния для Qdrant.
-   */
-  private mapDistanceMetric(metric: DistanceMetric): string {
-    switch (metric) {
-      case 'cosine':
-        return 'Cosine';
-      case 'euclidean':
-        return 'Euclid';
-      case 'dot':
-        return 'Dot';
-      default:
-        return 'Cosine';
-    }
   }
 }
 

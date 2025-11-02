@@ -1,8 +1,8 @@
 /**
  * @module MainProcess
- * В этом файле можно включить остальной специфичный для приложения
- * код основного процесса. Также можно поместить их в отдельные файлы
- * и импортировать сюда.
+ * В этом главном модуле можно включить остальной специфичный
+ * для приложения код основного процесса.
+ * Также можно поместить их в отдельные файлы и импортировать сюда.
  */
 
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
@@ -13,21 +13,13 @@ import { ModelCatalogService } from './services/model-catalog';
 import { ChatFileSystemService } from './services/filesystem-chat';
 import { VectorStoreService } from './services/vector-store';
 import { EmbeddingService } from './services/embedding';
+import { SplashHandlers } from './presentation/ipc/splash-handlers';
 import { ChatHandlers } from './presentation/ipc/chat-handlers';
-import { IpcHandler } from './presentation/ipc/ipc-handlers';
-import type {
-  OllamaGenerateRequest,
-  OllamaPullRequest,
-  OllamaPullProgress,
-  OllamaDeleteRequest,
-  OllamaModelsResponse,
-} from './types/ollama';
+import { ModelHandlers } from './presentation/ipc/model-handlers';
+import { CatalogHandlers } from './presentation/ipc/catalog-handlers';
 import type { MenuTranslations } from './types/electron';
 import type { SplashMessages } from './types/splash';
-import type { OllamaModelInfo } from './types/models';
-import type { CatalogFilters } from './types/catalog';
-import type { ElectronApiConfig } from './types/electron';
-import type { ModelCatalog } from './types/models';
+import { RagHandlers } from './presentation/ipc/rag-handlers';
 
 if (require('electron-squirrel-startup')) {
   app.quit();
@@ -41,13 +33,17 @@ export const isDev: boolean = process.env['NODE_ENV'] === 'development';
 console.log('🔧 NODE_ENV:', process.env['NODE_ENV']);
 
 export let mainWindow: typeof BrowserWindow | null = null;
-let ollamaApi: OllamaApi | null = null;
-let modelCatalogService: ModelCatalogService | null = null;
+export let ollamaApi: OllamaApi | null = null;
+export let modelCatalogService: ModelCatalogService | null = null;
 let chatFileSystemService: ChatFileSystemService | null = null;
 let vectorStoreService: VectorStoreService | null = null;
 let embeddingService: EmbeddingService | null = null;
+let splashHandlers: SplashHandlers | null = null;
 let chatHandlers: ChatHandlers | null = null;
-let currentAbortController: AbortController | null = null;
+let modelHandlers: ModelHandlers | null = null;
+let catalogHandlers: CatalogHandlers | null = null;
+let ragHandlers: RagHandlers | null = null;
+export let currentAbortController: AbortController | null = null;
 const isMac: boolean = process.platform === 'darwin';
 const isWindows: boolean = process.platform === 'win32';
 
@@ -56,7 +52,7 @@ let isQuitting: boolean = false; // Флаг для отслеживания н�
 
 /**
  * Очищает ресурсы при закрытии приложения.
- * Удаляет все IPC обработчики и завершает worker процессы.
+ * Удаляет все IPC обработчики и ресурсы.
  */
 async function cleanupResources(): Promise<void> {
   console.log('🧹 Cleaning up application resources...');
@@ -64,27 +60,20 @@ async function cleanupResources(): Promise<void> {
   // Останавливает Ollama
   await ollamaManager.stopOllama();
 
-  // Удаляет Ollama обработчики
-  ipcMain.removeHandler('model:generate');
-  ipcMain.removeHandler('model:install');
-  ipcMain.removeHandler('model:remove');
-  ipcMain.removeHandler('model:list');
+  // Удаляет обработчики управления моделями
+  modelHandlers?.removeHandlers();
 
   // Удаляет обработчики каталога моделей
-  ipcMain.removeHandler('catalog:get');
-  ipcMain.removeHandler('catalog:search');
-  ipcMain.removeHandler('catalog:get-model-info');
+  catalogHandlers?.removeHandlers();
 
   // Удаляет обработчики splash screen
-  ipcMain.removeHandler('splash:get-status');
+  splashHandlers?.removeHandlers();
 
   // Удаляет обработчики чатов
-  ipcMain.removeHandler('chat:create');
-  ipcMain.removeHandler('chat:get');
-  ipcMain.removeHandler('chat:update');
-  ipcMain.removeHandler('chat:delete');
-  ipcMain.removeHandler('chat:list');
-  ipcMain.removeHandler('chat:add-message');
+  chatHandlers?.removeHandlers();
+
+  // Удаляет обработчики RAG системы
+  ragHandlers?.removeHandlers();
 
   // Очищает ресурсы векторного хранилища
   if (vectorStoreService) {
@@ -163,13 +152,13 @@ process.on('uncaughtException', error => {
 });
 
 /**
- * По очереди инициализирует различные компоненты приложения.
- * Выполняется при старте приложения.
+ * По очереди инициализирует различные модули Electron приложения.
+ * Выполняется при старте.
  * Отправляет статус инициализации в React splash screen через IPC.
  */
 async function loadPipeline(): Promise<void> {
   try {
-    console.log('🚀 Starting initialization of Ollama...');
+    console.log('🚀 Starting initialization of app...');
 
     // Отправляет статус проверки Ollama в React splash screen
     sendSplashStatus({
@@ -241,6 +230,12 @@ async function loadPipeline(): Promise<void> {
       );
     }
 
+    // Создаёт экземпляр IPC обработчиков для управления моделями
+    modelHandlers = new ModelHandlers();
+
+    // Создает экземпляр IPC обработчиков для каталога моделей
+    catalogHandlers = new CatalogHandlers();
+
     // Отправляет статус создания API в React splash screen
     sendSplashStatus({
       status: 'creating-api',
@@ -248,8 +243,8 @@ async function loadPipeline(): Promise<void> {
       progress: 60,
     });
 
-    // Создает сервис каталога моделей
-    modelCatalogService = new ModelCatalogService();
+    // Создает сервис каталога моделей с использованием существующего OllamaApi
+    modelCatalogService = new ModelCatalogService(undefined, ollamaApi);
 
     // Отправляет статус создания каталога в React splash screen
     sendSplashStatus({
@@ -262,9 +257,21 @@ async function loadPipeline(): Promise<void> {
     chatFileSystemService = new ChatFileSystemService();
     await chatFileSystemService.initialize();
 
-    // Создает сервис векторного хранилища
+    // Создает сервис векторного хранилища (полностью локальное SQLite решение)
     vectorStoreService = new VectorStoreService();
-    await vectorStoreService.initialize();
+    const vectorStoreInitResult = await vectorStoreService.initialize();
+
+    if (vectorStoreInitResult.success) {
+      console.log('✅ VectorStoreService initialized successfully');
+    } else {
+      console.error(
+        '❌ Failed to initialize VectorStoreService:',
+        vectorStoreInitResult.error
+      );
+      console.log(
+        '⚠️ RAG functionality will be limited until Qdrant is started'
+      );
+    }
 
     // Создает обработчики чатов
     chatHandlers = new ChatHandlers(chatFileSystemService);
@@ -281,7 +288,27 @@ async function loadPipeline(): Promise<void> {
     setupOllamaIpcHandlers();
     setupCatalogIpcHandlers();
     setupChatIpcHandlers();
-    console.log('✅ IPC handlers are registered');
+
+    // RAG handlers регистрируются только после инициализации всех зависимостей
+    // Важно: setupRAGIpcHandlers будет вызван позже, когда все сервисы готовы
+    console.log('✅ IPC handlers registration started');
+
+    // Инициализирует RAG handlers после завершения загрузки каталога
+    // NOTE: было обёрнуто в setTimeout(async () => { }, 2000); для задержки инициализации
+    try {
+      // Проверяет, что все сервисы инициализированы
+      if (!vectorStoreService || !embeddingService) {
+        console.warn('⚠️ VectorStoreService or EmbeddingService not ready');
+        console.log('⚠️ RAG functionality will be limited');
+        return;
+      }
+
+      await setupRAGIpcHandlers();
+      console.log('✅ RAG IPC handlers registered successfully');
+    } catch (error) {
+      console.error('❌ Failed to setup RAG handlers:', error);
+      console.log('⚠️ RAG functionality may not be fully available');
+    }
 
     sendSplashStatus({
       status: 'getting-catalog',
@@ -303,14 +330,12 @@ async function loadPipeline(): Promise<void> {
     // Отправляет сигнал завершения инициализации в React splash screen
     sendSplashComplete();
   } catch (error) {
-    console.error('❌ Ollama initialization error:', error);
+    console.error('❌ App initialization error:', error);
 
     // Отправляет ошибку в React splash screen
-    sendSplashError('❌ Failed to initialize Ollama');
+    sendSplashError('❌ Failed to initialize app');
 
-    throw new Error(
-      `❌ Failed to initialize Ollama: ${(error as Error).message}`
-    );
+    throw new Error(`❌ Failed to initialize app: ${(error as Error).message}`);
   }
 }
 
@@ -403,11 +428,13 @@ function createWindow(): void {
     },
   });
 
+  // Создаёт экземпляр SplashHandlers
+  splashHandlers = new SplashHandlers();
+
   // Регистрирует splash screen handlers
   setupSplashIpcHandlers();
 
-  // Загружает React приложение и инициализирует Ollama
-  console.log('🌐 Uploading the React app...');
+  // Загружает React и Electron приложение
   loadApp();
 
   /**
@@ -441,7 +468,7 @@ function createWindow(): void {
 }
 
 /**
- * Загружает React приложение и инициализирует Ollama.
+ * Загружает React и модули Electron приложения.
  * Используется для загрузки приложения после создания окна.
  */
 async function loadApp(): Promise<void> {
@@ -474,143 +501,12 @@ async function loadApp(): Promise<void> {
  */
 function setupOllamaIpcHandlers(): void {
   console.log('🔧 Setting up Ollama IPC handlers...');
-  if (!ollamaApi) {
+  if (!ollamaApi || !modelHandlers) {
     console.error('❌ OllamaApi is not initialized');
     return;
   }
   console.log('✅ OllamaApi is available, register handlers...');
-
-  /**
-   * Обработчик для генерации текста через Ollama.
-   * Поддерживает streaming ответы и отправляет прогресс в renderer процесс.
-   * Использует wrapper для автоматического логирования и обработки ошибок.
-   */
-  ipcMain.handle(
-    'model:generate',
-    IpcHandler.createHandlerWrapper(
-      async (
-        request: OllamaGenerateRequest,
-        config: ElectronApiConfig
-      ): Promise<string> => {
-        // Создает новый AbortController для этой операции
-        currentAbortController = new AbortController();
-
-        // Валидация входящего запроса
-        const validation = IpcHandler.validateRequest(request, [
-          'model',
-          'prompt',
-        ]);
-        if (!validation.valid) {
-          throw new Error(validation.error);
-        }
-
-        let fullResponse = '';
-
-        try {
-          await ollamaApi!.generate(
-            request,
-            config,
-            chunk => {
-              // Отправка streaming ответов в renderer процесс
-              mainWindow?.webContents.send('model:generate-progress', chunk);
-
-              if (chunk.response) {
-                fullResponse += chunk.response;
-              }
-            },
-            currentAbortController.signal
-          );
-
-          return fullResponse;
-        } finally {
-          // Очищает AbortController после завершения
-          currentAbortController = null;
-        }
-      },
-      'model:generate'
-    )
-  );
-
-  /**
-   * Обработчик для установки модели через Ollama.
-   * Отправляет прогресс установки в renderer процесс.
-   * Использует streaming wrapper для обработки прогресса.
-   */
-  ipcMain.handle(
-    'model:install',
-    IpcHandler.createStreamingHandlerWrapper(
-      async (
-        request: OllamaPullRequest,
-        onProgress: (progress: OllamaPullProgress) => void
-      ): Promise<{ success: boolean }> => {
-        // Валидация входящего запроса
-        const validation = IpcHandler.validateRequest(request, ['name']);
-        if (!validation.valid) {
-          throw new Error(validation.error);
-        }
-
-        const result = await ollamaApi!.installModel(request, progress => {
-          // Отправляет прогресс установки в renderer процесс
-          mainWindow?.webContents.send('model:install-progress', progress);
-          // Вызывает callback для логирования прогресса
-          onProgress(progress);
-        });
-
-        return { success: result.success };
-      },
-      'model:install'
-    )
-  );
-
-  /**
-   * Обработчик для удаления модели через Ollama.
-   * Использует wrapper для автоматического логирования и обработки ошибок.
-   */
-  ipcMain.handle(
-    'model:remove',
-    IpcHandler.createHandlerWrapper(
-      async (request: OllamaDeleteRequest): Promise<{ success: boolean }> => {
-        // Валидация входящего запроса
-        const validation = IpcHandler.validateRequest(request, ['name']);
-        if (!validation.valid) {
-          throw new Error(validation.error);
-        }
-
-        const result = await ollamaApi!.removeModel(request);
-        return { success: result.success };
-      },
-      'model:remove'
-    )
-  );
-
-  /**
-   * Обработчик для получения списка моделей через Ollama.
-   * Использует wrapper для автоматического логирования и обработки ошибок.
-   */
-  ipcMain.handle(
-    'model:list',
-    IpcHandler.createHandlerWrapper(async (): Promise<OllamaModelsResponse> => {
-      const models = await ollamaApi!.listModels();
-      return models;
-    }, 'model:list')
-  );
-
-  /**
-   * Обработчик для остановки генерации через Ollama.
-   * Прерывает текущую операцию генерации.
-   */
-  ipcMain.handle(
-    'model:stop',
-    IpcHandler.createHandlerWrapper(async (): Promise<void> => {
-      if (currentAbortController) {
-        currentAbortController.abort();
-        currentAbortController = null;
-        console.log('✅ Generation stopped');
-      } else {
-        console.log('⚠️ There is no active generation to stop');
-      }
-    }, 'model:stop')
-  );
+  modelHandlers.registerHandlers();
 }
 
 /**
@@ -620,94 +516,12 @@ function setupOllamaIpcHandlers(): void {
  */
 function setupCatalogIpcHandlers(): void {
   console.log('🔧 Setting up Catalog IPC handlers...');
-  if (!modelCatalogService) {
+  if (!modelCatalogService || !catalogHandlers) {
     console.error('❌ ModelCatalogService is not initialized');
     return;
   }
   console.log('✅ ModelCatalogService is available, register handlers...');
-
-  /**
-   * Обработчик для получения полного каталога моделей.
-   * Поддерживает принудительное обновление кэша.
-   * Использует wrapper для автоматического логирования и обработки ошибок.
-   */
-  ipcMain.handle(
-    'catalog:get',
-    IpcHandler.createHandlerWrapper(
-      async (
-        params: { forceRefresh?: boolean } = {}
-      ): Promise<ModelCatalog> => {
-        const result = await modelCatalogService!.getAvailableModels(
-          params.forceRefresh || false
-        );
-
-        if (!result.success || !result.data) {
-          throw new Error(result.error || 'Failed to get catalog');
-        }
-
-        return result.data;
-      },
-      'catalog:get'
-    )
-  );
-
-  /**
-   * Обработчик для поиска моделей по фильтрам.
-   * Поддерживает различные параметры фильтрации и поиска.
-   * Использует wrapper для автоматического логирования и обработки ошибок.
-   */
-  ipcMain.handle(
-    'catalog:search',
-    IpcHandler.createHandlerWrapper(
-      async (filters: CatalogFilters): Promise<ModelCatalog> => {
-        // Валидация входящих фильтров
-        const validation = IpcHandler.validateRequest(filters, []);
-        if (!validation.valid) {
-          throw new Error(validation.error);
-        }
-
-        const result = await modelCatalogService!.searchModels(filters);
-
-        if (!result.success || !result.data) {
-          throw new Error(result.error || '❌ Failed to search models');
-        }
-
-        return result.data;
-      },
-      'catalog:search'
-    )
-  );
-
-  /**
-   * Обработчик для получения информации о конкретной модели.
-   * Возвращает детальную информацию о модели из каталога.
-   * Использует wrapper для автоматического логирования и обработки ошибок.
-   */
-  ipcMain.handle(
-    'catalog:get-model-info',
-    IpcHandler.createHandlerWrapper(
-      async (params: {
-        modelName: string;
-      }): Promise<OllamaModelInfo | null> => {
-        // Валидация входящего запроса
-        const validation = IpcHandler.validateRequest(params, ['modelName']);
-        if (!validation.valid) {
-          throw new Error(validation.error);
-        }
-
-        const result = await modelCatalogService!.getModelInfo(
-          params.modelName
-        );
-
-        if (!result.success) {
-          throw new Error(result.error || '❌ Failed to get model info');
-        }
-
-        return result.data || null;
-      },
-      'catalog:get-model-info'
-    )
-  );
+  catalogHandlers.registerHandlers();
 }
 
 /**
@@ -717,18 +531,12 @@ function setupCatalogIpcHandlers(): void {
 function setupSplashIpcHandlers(): void {
   console.log('🔧 Configuring Splash IPC handlers...');
 
-  /**
-   * Обработчик для получения текущего статуса splash screen.
-   * React приложение использует это для получения актуального состояния.
-   */
-  ipcMain.handle('splash:get-status', async () => {
-    // Возвращает базовый статус инициализации
-    return {
-      status: 'initializing',
-      progress: 0,
-    };
-  });
+  if (!splashHandlers) {
+    console.error('❌ SplashScreen is not initialized');
+    return;
+  }
 
+  splashHandlers.registerHandlers();
   console.log('✅ Splash IPC handlers are configured');
 }
 
@@ -749,6 +557,50 @@ function setupChatIpcHandlers(): void {
   chatHandlers.registerHandlers();
 
   console.log('✅ Chat IPC handlers are registered');
+}
+
+/**
+ * Настраивает IPC обработчики для работы с RAG системой.
+ * Создает обработчики для всех операций с документами и векторным хранилищем.
+ * Использует централизованные утилиты для валидации, логирования и обработки ошибок.
+ */
+async function setupRAGIpcHandlers(): Promise<void> {
+  console.log('🔧 Setting up RAG IPC handlers...');
+
+  try {
+    // Динамический импорт для избежания загрузки pdf-parse при старте
+    const { RagHandlers } = await import('./presentation/ipc/rag-handlers');
+
+    // Ленивая инициализация DocumentProcessorService будет происходить при первом использовании
+    // Для создания RAGHandlers передается null
+    if (!ragHandlers) {
+      console.log('🔧 Creating RagHandlers...');
+      if (!vectorStoreService || !embeddingService) {
+        console.error(
+          '❌ VectorStoreService or EmbeddingService is not initialized'
+        );
+        return;
+      }
+
+      // DocumentProcessorService будет инициализирован при первом вызове
+      ragHandlers = new RagHandlers(
+        vectorStoreService,
+        null as any, // Будет инициализирован при первом использовании
+        embeddingService
+      );
+      console.log('✅ RagHandlers created');
+    }
+
+    console.log('✅ RagHandlers is available, register handlers...');
+
+    // Регистрирует обработчики RAG
+    ragHandlers.registerHandlers();
+
+    console.log('✅ RAG IPC handlers are registered');
+  } catch (error) {
+    console.error('❌ Failed to setup RAG handlers:', error);
+    // Ошибка не пробрасывается, чтобы приложение запускалось в любых случаях
+  }
 }
 
 /**

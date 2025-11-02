@@ -222,6 +222,28 @@ export default (argv: { mode: string }) => {
        * необходимый для многопоточности в Electron.
        */
       worker_threads: 'commonjs worker_threads',
+
+      /**
+       * Исключает better-sqlite3 из bundle
+       *
+       * @description better-sqlite3 - нативный модуль, который должен
+       * быть исключен из bundle и загружаться как внешняя зависимость.
+       *
+       * Обоснование: better-sqlite3 использует нативные bindings,
+       * которые не должны быть обработаны webpack.
+       */
+      'better-sqlite3': 'commonjs better-sqlite3',
+
+      /**
+       * Исключает pdf-parse из bundle
+       *
+       * @description pdf-parse - модуль с зависимостями от DOM API,
+       * который должен быть исключен из bundle и загружаться как внешняя зависимость.
+       *
+       * Обоснование: pdf-parse требует специальных polyfills и не должен
+       * быть обработан webpack для корректной работы.
+       */
+      'pdf-parse': 'commonjs pdf-parse',
     },
 
     /**

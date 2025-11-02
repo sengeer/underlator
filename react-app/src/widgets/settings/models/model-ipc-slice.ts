@@ -8,7 +8,7 @@ import { i18n } from '@lingui/core';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { addNotification } from '../../../shared/models/notifications-slice/';
 import { updateProviderSettings } from '../../../shared/models/provider-settings-slice';
-import { electron } from '../apis/model-ipc';
+import { electron } from '../apis/model-and-catalog-ipc';
 import type {
   ManageModelsState,
   CatalogState,

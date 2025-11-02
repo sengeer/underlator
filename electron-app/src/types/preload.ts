@@ -28,6 +28,16 @@ import type {
   ListChatsResult,
   AddMessageResult,
 } from './chat';
+import type { RagResponse, VectorCollection, CollectionStats } from './rag';
+import type {
+  ProcessDocumentRequest,
+  ProcessDocumentResult,
+  UploadAndProcessDocumentRequest,
+  RagQueryRequest,
+  DeleteCollectionRequest,
+  DeleteCollectionResult,
+  RagProcessingProgress,
+} from './rag-handlers';
 
 /**
  * Интерфейс для API Electron, доступного в renderer процессе.
@@ -72,5 +82,22 @@ export interface ElectronAPI {
     delete: (request: DeleteChatRequest) => Promise<DeleteChatResult>;
     list: (request?: ListChatsRequest) => Promise<ListChatsResult>;
     addMessage: (request: AddMessageRequest) => Promise<AddMessageResult>;
+  };
+  rag: {
+    processDocument: (
+      request: ProcessDocumentRequest
+    ) => Promise<ProcessDocumentResult>;
+    uploadAndProcessDocument: (
+      request: UploadAndProcessDocumentRequest
+    ) => Promise<ProcessDocumentResult>;
+    queryDocuments: (request: RagQueryRequest) => Promise<RagResponse>;
+    deleteDocumentCollection: (
+      request: DeleteCollectionRequest
+    ) => Promise<DeleteCollectionResult>;
+    getCollectionStats: (chatId: string) => Promise<CollectionStats>;
+    listCollections: () => Promise<VectorCollection[]>;
+    onProcessingProgress: (
+      callback: (progress: RagProcessingProgress) => void
+    ) => () => void;
   };
 }

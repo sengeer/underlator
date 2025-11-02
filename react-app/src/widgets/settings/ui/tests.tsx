@@ -6,6 +6,7 @@
 import '../styles/settings.scss';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import ForumIcon from '../../../shared/assets/icons/forum-icon';
 import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
 import useFormAndValidation from '../../../shared/lib/hooks/use-form-and-validation';
 import useTranslationLanguages from '../../../shared/lib/hooks/use-translation-languages';
@@ -16,6 +17,7 @@ import {
   isElementOpen,
 } from '../../../shared/models/element-state-slice';
 import { addNotification } from '../../../shared/models/notifications-slice';
+import { selectProviderSettings } from '../../../shared/models/provider-settings-slice';
 import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background';
 import Popup from '../../../shared/ui/popup';
 import PopupWithSearch from '../../../shared/ui/popup-with-search';
@@ -41,6 +43,16 @@ import {
   testSearchModels,
   testGetModelInfo,
 } from '../tests/model-ipc';
+import {
+  testUploadAndProcessDocument,
+  testProcessDocument,
+  testQueryDocuments,
+  testGetCollectionStats,
+  testListCollections,
+  testDeleteCollection,
+  testProcessingProgress,
+  testGenerateWithRagContext,
+} from '../tests/rag-ipc';
 
 function Tests() {
   const [searchValue, setSearchValue] = useState('');
@@ -48,6 +60,8 @@ function Tests() {
   const [chatId, setChatId] = useState('');
 
   const dispatch = useDispatch();
+
+  const { provider, settings } = useSelector(selectProviderSettings);
 
   const { translationLanguages } = useTranslationLanguages();
   const { values, handleChange, setValues } = useFormAndValidation();
@@ -61,7 +75,7 @@ function Tests() {
   );
 
   useEffect(() => {
-    setValues({ model: 'qwen3:0.6b', prompt: 'Сколько будет 2 + 2?' });
+    setValues({ prompt: 'Сколько будет 2 + 2?' });
   }, [setValues]);
 
   return (
@@ -69,23 +83,6 @@ function Tests() {
       <div className='settings__container'>
         <div className='settings__column'>
           <h2 className='settings__title'>{'Поля ввода для тестов IPC API'}</h2>
-          <ButtonWrapperWithBackground>
-            <TextAndIconButton
-              text='Модель'
-              style={{ marginLeft: '1rem' }}
-              isDisabled>
-              <NetworkIntelligenceIcon />
-            </TextAndIconButton>
-            <input
-              className='settings__input settings__text'
-              placeholder='qwen3:0.6b'
-              type='text'
-              id='model'
-              name='model'
-              value={values.model || ''}
-              onChange={handleChange}
-            />
-          </ButtonWrapperWithBackground>
           <ButtonWrapperWithBackground>
             <TextAndIconButton
               text='Промпт'
@@ -108,7 +105,7 @@ function Tests() {
               text='Индентификатор чата'
               style={{ marginLeft: '1rem' }}
               isDisabled>
-              <NetworkIntelligenceIcon />
+              <ForumIcon />
             </TextAndIconButton>
             <input
               className='settings__input settings__text'
@@ -126,6 +123,31 @@ function Tests() {
               {'Список установленных моделей'}
             </TextButton>
             <TextButton
+              onClick={() => testInstallModel(settings[provider]?.model)}
+              className='settings__button'>
+              {'Установить ' + settings[provider]?.model}
+            </TextButton>
+            <TextButton
+              onClick={() =>
+                testGenerateText(settings[provider]?.model, values.prompt)
+              }
+              className='settings__button'>
+              {`Генерация «${values.prompt}»`}
+            </TextButton>
+            <TextButton
+              onClick={() => testRemoveModel(settings[provider]?.model)}
+              className='settings__button'>
+              {'Удалить ' + settings[provider]?.model}
+            </TextButton>
+            <p className='settings__description'>
+              {
+                'Кнопки тестирования Model IPC API. Проверьте результаты в консоли.'
+              }
+            </p>
+            <h2 className='settings__title'>
+              {'Тестирование Catalog IPC API'}
+            </h2>
+            <TextButton
               onClick={() => testGetCatalog()}
               className='settings__button'>
               {'Получить каталог'}
@@ -141,31 +163,20 @@ function Tests() {
               {'Поиск моделей'}
             </TextButton>
             <TextButton
-              onClick={() => testGetModelInfo(values.model)}
+              onClick={() => testGetModelInfo(settings[provider]?.model)}
               className='settings__button'>
               {'Получить информацию о модели'}
             </TextButton>
-            <TextButton
-              onClick={() => testInstallModel(values.model)}
-              className='settings__button'>
-              {'Установить ' + values.model}
-            </TextButton>
-            <TextButton
-              onClick={() => testGenerateText(values.model, values.prompt)}
-              className='settings__button'>
-              {'Генерация ' + values.prompt}
-            </TextButton>
-            <TextButton
-              onClick={() => testRemoveModel(values.model)}
-              className='settings__button'>
-              {'Удалить ' + values.model}
-            </TextButton>
             <p className='settings__description'>
-              {'Кнопки тестирования IPC API. Проверьте результаты в консоли.'}
+              {
+                'Кнопки тестирования Catalog IPC API. Проверьте результаты в консоли.'
+              }
             </p>
             <h2 className='settings__title'>{'Тестирование Chat IPC API'}</h2>
             <TextButton
-              onClick={() => testCreateChat('Тестовый чат', values.model)}
+              onClick={() =>
+                testCreateChat('Тестовый чат', settings[provider]?.model)
+              }
               className='settings__button'>
               {'Создать чат'}
             </TextButton>
@@ -218,6 +229,69 @@ function Tests() {
             <p className='settings__description'>
               {
                 'Кнопки тестирования Chat IPC API. Проверьте результаты в консоли.'
+              }
+            </p>
+            <h2 className='settings__title'>{'Тестирование RAG IPC API'}</h2>
+            <TextButton
+              onClick={() =>
+                chatId
+                  ? testUploadAndProcessDocument(chatId)
+                  : alert('Введите Chat ID')
+              }
+              className='settings__button'>
+              {'Загрузить и обработать PDF'}
+            </TextButton>
+            <TextButton
+              onClick={() => testListCollections()}
+              className='settings__button'>
+              {'Список коллекций'}
+            </TextButton>
+            <TextButton
+              onClick={() =>
+                chatId
+                  ? testGetCollectionStats(chatId)
+                  : alert('Введите Chat ID')
+              }
+              className='settings__button'>
+              {'Статистика коллекции'}
+            </TextButton>
+            <TextButton
+              onClick={() =>
+                chatId
+                  ? testQueryDocuments('тестовый запрос', chatId)
+                  : alert('Введите Chat ID')
+              }
+              className='settings__button'>
+              {'Поиск документов'}
+            </TextButton>
+            <TextButton
+              onClick={() =>
+                chatId
+                  ? testGenerateWithRagContext(
+                      values.prompt || 'тестовый запрос',
+                      chatId,
+                      settings[provider]?.model
+                    )
+                  : alert('Введите Chat ID')
+              }
+              className='settings__button'>
+              {`Генерация «${values.prompt}» с RAG контекстом`}
+            </TextButton>
+            <TextButton
+              onClick={() =>
+                chatId ? testDeleteCollection(chatId) : alert('Введите Chat ID')
+              }
+              className='settings__button'>
+              {'Удалить коллекцию'}
+            </TextButton>
+            <TextButton
+              onClick={() => testProcessingProgress()}
+              className='settings__button'>
+              {'Подписка на прогресс обработки'}
+            </TextButton>
+            <p className='settings__description'>
+              {
+                'Кнопки тестирования RAG IPC API. Проверьте результаты в консоли.'
               }
             </p>
             <h2 className='settings__title'>{'Тестирование UI'}</h2>

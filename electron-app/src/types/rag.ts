@@ -36,7 +36,7 @@ export interface DocumentChunk {
  * Запрос для поиска в векторном хранилище.
  * Определяет параметры поиска релевантных документов.
  */
-export interface RAGQuery {
+export interface RagQuery {
   /** Текст запроса для поиска */
   query: string;
   /** Идентификатор чата для фильтрации */
@@ -67,7 +67,7 @@ export interface RAGQuery {
  * Ответ RAG системы.
  * Содержит результаты поиска и контекстную информацию.
  */
-export interface RAGResponse {
+export interface RagResponse {
   /** Ответ модели на основе найденных документов */
   answer: string;
   /** Массив источников документов */
@@ -110,9 +110,6 @@ export interface DocumentSource {
     chunkIndex: number;
   };
 }
-
-// Типы для обработки документов удалены как неиспользуемые в текущей реализации
-// Они будут добавлены в следующих этапах при реализации DocumentProcessorService
 
 /**
  * Коллекция в векторном хранилище.
