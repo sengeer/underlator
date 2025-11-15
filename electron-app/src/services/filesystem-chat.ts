@@ -292,7 +292,7 @@ export class ChatFileSystemService {
       lastMessage: lastMessage
         ? {
             role: lastMessage.type as 'user' | 'assistant' | 'system',
-            preview: lastMessage.content.substring(0, 100),
+            content: lastMessage.content,
             timestamp: lastMessage.timestamp,
           }
         : undefined,

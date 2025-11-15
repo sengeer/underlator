@@ -5,6 +5,7 @@
  */
 
 import { electron as chatElectron } from '../../../apis/chat-ipc/chat-ipc';
+import { electron as ragElectron } from '../../../apis/rag-ipc/';
 import { addNotification } from '../../../models/notifications-slice';
 import { DEFAULT_MODEL } from '../../constants';
 import {
@@ -268,48 +269,95 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
     throw new Error('Chat ID is required for chat mode');
   }
 
-  let chatContext: ChatContext;
+  const message =
+    typeof props.text === 'string' ? props.text : props.text.join(' ');
 
-  // Загрузка контекста чата через IPC API
-  if (props.chatContext) {
-    // Используем переданный контекст
-    chatContext = props.chatContext;
-  } else {
-    // Загружаем контекст из файловой системы
-    try {
-      const chatResult = await chatElectron.getChat({ chatId: props.chatId });
+  let ragContext: string;
 
-      if (!chatResult.success || !chatResult.data) {
+  try {
+    const result = await ragElectron.getCollectionStats(props.chatId);
+
+    if (result.sizeBytes > 0) {
+      try {
+        const searchResult = await ragElectron.queryDocuments({
+          query: message,
+          chatId: props.chatId,
+          // NOTE: порог схожести и количество результатов можно изменить в зависимости от задачи
+          topK: 3, // Количество результатов уменьщено для более точного поиска
+          similarityThreshold: 0.3, // Порог схожести снижен для лучшего поиска
+        });
+
+        // Формирует промпт с контекстом из документов
+        const context = searchResult.sources
+          .map((source: any, index: number) => {
+            // Извлекает текстовое содержимое из source
+            const content =
+              typeof source === 'string'
+                ? source
+                : source.content || JSON.stringify(source);
+            return `${index + 1}. ${content}`;
+          })
+          .join('\n\n');
+
+        ragContext = context;
+      } catch (error) {
         props.dispatch(
           addNotification({
             type: 'error',
-            message: props.t`Failed to load chat context`,
+            message: props.t`Failed getting RAG context`,
           })
         );
-        throw new Error(`Failed to load chat: ${chatResult.error}`);
+        throw new Error(`Failed getting RAG context: ${error}`);
       }
+    } else {
+      return;
+    }
+  } catch (error) {
+    props.dispatch(
+      addNotification({
+        type: 'error',
+        message: props.t`Failed getting RAG stats`,
+      })
+    );
+    throw new Error(`Failed getting RAG stats: ${error}`);
+  }
 
-      chatContext = {
-        messages: chatResult.data.messages || [],
-        maxContextMessages: 50,
-        systemPrompt:
-          'Ты полезный ассистент. Отвечай на вопросы пользователя, используя контекст предыдущих сообщений.',
-        generationSettings: {
-          temperature: 0.7,
-          maxTokens: 2048,
-        },
-      };
-    } catch (error) {
+  let chatContext: ChatContext;
+
+  // Загружает контекст из файловой системы
+  try {
+    const chatResult = await chatElectron.getChat({ chatId: props.chatId });
+
+    if (!chatResult.success || !chatResult.data) {
       props.dispatch(
         addNotification({
           type: 'error',
           message: props.t`Failed to load chat context`,
         })
       );
-      throw new Error(
-        `Chat context loading failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      throw new Error(`Failed to load chat: ${chatResult.error}`);
     }
+
+    chatContext = {
+      messages: chatResult.data.messages || [],
+      maxContextMessages: 50,
+      systemPrompt:
+        'You are a helpful assistant. Answer the user’s questions using the context of previous messages.',
+      generationSettings: {
+        temperature: 0.7,
+        maxTokens: 2048,
+      },
+    };
+  } catch (error) {
+    props.dispatch(
+      addNotification({
+        type: 'error',
+        message: props.t`Failed to load chat context`,
+      })
+    );
+    throw new Error(
+      `Chat context loading failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 
   // Валидация контекста чата
@@ -328,7 +376,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
   const userMessage: ChatMessage = {
     id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     role: 'user',
-    content: typeof props.text === 'string' ? props.text : props.text.join(' '),
+    content: message,
     timestamp: new Date().toISOString(),
   };
 
@@ -349,7 +397,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
     );
 
     // Применяем суммирование контекста
-    const summarizationResult = buildChatPrompt(updatedContext, {
+    const summarizationResult = buildChatPrompt(updatedContext, ragContext, {
       provider: props.config.id,
       maxContextTokens: providerLimits.maxContextTokens,
       enableSummarization: true,
@@ -370,7 +418,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
   }
 
   // Построение промпта для чата
-  const promptResult = buildChatPrompt(updatedContext, {
+  const promptResult = buildChatPrompt(updatedContext, ragContext, {
     provider: props.config.id,
     systemPrompt: updatedContext.systemPrompt,
     maxContextTokens: providerLimits.maxContextTokens,
@@ -397,7 +445,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
     if (chunk.response) {
       fullResponse += chunk.response;
 
-      // Передаем частичный ответ в callback для streaming отображения
+      // Передает частичный ответ в callback для streaming отображения
       if (props.onModelResponse) {
         props.onModelResponse(chunk.response);
       }
@@ -413,6 +461,8 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
       console.error(`Streaming error in chat: ${chunk.error}`);
     }
   });
+
+  console.log('Cобранный окончательный промпт: ', prompt);
 
   try {
     // Запуск генерации через Electron IPC
@@ -440,7 +490,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
     // Сохранение ответа в контексте чата через IPC API
     if (props.saveHistory !== false) {
       try {
-        // Добавляем сообщение пользователя
+        // Добавляет сообщение пользователя
         const addUserMessageResult = await chatElectron.addMessage({
           chatId: props.chatId,
           role: 'user',
@@ -453,7 +503,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
           );
         }
 
-        // Добавляем сообщение ассистента
+        // Добавляет сообщение ассистента
         const addAssistantMessageResult = await chatElectron.addMessage({
           chatId: props.chatId,
           role: 'assistant',
@@ -467,7 +517,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
           );
         }
       } catch (error) {
-        // Не прерываем выполнение при ошибках сохранения, только логируем
+        // Не прерывает выполнение при ошибках сохранения, только логирует
         console.warn(
           `Failed to save chat messages: ${error instanceof Error ? error.message : 'Unknown error'}`
         );
@@ -480,32 +530,27 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
 
 /**
  * Feature-провайдер для запросов к LLM модели.
- *
- * @param props - Контекст запроса. Подробнее см. ModelRequestContext.
- * @returns Promise с результатом генерации.
  */
 export const featureProvider = {
-  generate: async (props: ModelRequestContext) => {
-    // Обработка чата с контекстом
-    if (props.typeUse === 'chat') {
-      return await handleChat(props);
-    }
+  /**
+   * Обрабатывает чат через Electron IPC.
+   */
+  chat: handleChat,
 
-    // Обработка контекстного перевода для массивов
-    if (props.typeUse === 'contextualTranslation') {
-      return await handleContextualTranslation(props);
-    }
+  /**
+   * Обрабатывает контекстный перевод через Electron IPC.
+   */
+  contextualTranslate: handleContextualTranslation,
 
-    // Обработка инструкций
-    if (props.typeUse === 'instruction') {
-      return await handleInstruction(props);
-    }
+  /**
+   * Обрабатывает инструкции через Electron IPC.
+   */
+  instruct: handleInstruction,
 
-    // Обработка простого перевода
-    if (props.typeUse === 'translation') {
-      return await handleSimpleTranslation(props);
-    }
-  },
+  /**
+   * Обрабатывает простой перевод через Electron IPC.
+   */
+  translate: handleSimpleTranslation,
 };
 
 export default featureProvider;

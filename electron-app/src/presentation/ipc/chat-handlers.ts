@@ -744,7 +744,7 @@ export class ChatHandlers {
       filteredChats = filteredChats.filter(
         chat =>
           chat.title.toLowerCase().includes(query) ||
-          chat.lastMessage?.preview.toLowerCase().includes(query)
+          chat.lastMessage?.content.toLowerCase().includes(query)
       );
     }
 

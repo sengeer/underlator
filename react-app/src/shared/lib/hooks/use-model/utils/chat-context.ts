@@ -567,6 +567,7 @@ export function processChatContext(
  */
 export function buildChatPrompt(
   context: ChatContext,
+  ragContext: string,
   config: ChatPromptConfig = {}
 ): ChatContextResult<string> {
   try {
@@ -593,22 +594,24 @@ export function buildChatPrompt(
     let prompt = '';
 
     // Добавляет системный промпт
-    const systemPrompt =
-      config.systemPrompt ||
-      processed.systemPrompt ||
-      'Ты полезный ассистент. Отвечай на вопросы пользователя, используя контекст предыдущих сообщений.';
+    const systemPrompt = config.systemPrompt || processed.systemPrompt;
 
     if (systemPrompt) {
-      prompt += `Система: ${systemPrompt}\n\n`;
+      prompt += `[SYSTEM]\n${systemPrompt}\n\n`;
     }
 
     // Добавляет историю сообщений
     if (formattedMessages) {
-      prompt += `История сообщений:\n${formattedMessages}\n\n`;
+      prompt += `[HISTORY MESSAGE]\n${formattedMessages}\n\n`;
     }
 
     // Добавляет инструкцию для продолжения диалога
-    prompt += 'Продолжи диалог, отвечая на последнее сообщение пользователя.';
+    prompt +=
+      '[RULES]\n- Continue the dialogue by responding to the user’s latest message.\n- STRICTLY: Your response must be strictly in the same language that the user is communicating in "[HISTORY MESSAGE]".\n\n';
+
+    if (ragContext) {
+      prompt += `[RAG CONTEXT]\nUse the following information from the documents to answer the latest question from "[HISTORY MESSAGE]":\n${ragContext}\n\n`;
+    }
 
     return {
       success: true,

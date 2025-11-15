@@ -46,6 +46,7 @@ import IconButton from '../../../shared/ui/icon-button';
 import Popup from '../../../shared/ui/popup';
 import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
+import TextButton from '../../../shared/ui/text-button';
 import '../styles/text-translator.scss';
 
 /**
@@ -131,7 +132,7 @@ function TextTranslator({ isOpened }: TextTranslatorProps) {
       {
         think: false,
       }
-    );
+    ).translate();
   }
 
   // Получение размеров окна для адаптивного дизайна
@@ -268,15 +269,18 @@ function TextTranslator({ isOpened }: TextTranslatorProps) {
         styleWrapper={{ minWidth: '30.4352%' }}>
         {translationLanguages.map(({ language, code }) => (
           <SelectorOption
+            type='simple'
             key={code}
-            state='simple'
-            text={language}
-            isActive={sourceLanguage === language}
             onClick={() => {
               handleSourceLanguageSelection(language);
               dispatch(closeElement('firstLangSelectionPopupForTranslator'));
-            }}
-          />
+            }}>
+            <TextButton
+              text={language}
+              isDisabled
+              isActiveStyle={sourceLanguage === language}
+            />
+          </SelectorOption>
         ))}
       </Popup>
 
@@ -289,15 +293,18 @@ function TextTranslator({ isOpened }: TextTranslatorProps) {
         styleWrapper={{ minWidth: '30.4352%' }}>
         {translationLanguages.map(({ language, code }) => (
           <SelectorOption
+            type='simple'
             key={code}
-            state='simple'
-            text={language}
-            isActive={targetLanguage === language}
             onClick={() => {
               handleTargetLanguageSelection(language);
               dispatch(closeElement('secondLangSelectionPopupForTranslator'));
-            }}
-          />
+            }}>
+            <TextButton
+              text={language}
+              isDisabled
+              isActiveStyle={targetLanguage === language}
+            />
+          </SelectorOption>
         ))}
       </Popup>
     </section>

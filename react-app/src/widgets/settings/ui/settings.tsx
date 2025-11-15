@@ -48,6 +48,7 @@ import ColorPicker from '../../../shared/ui/color-picker';
 import Popup from '../../../shared/ui/popup';
 import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
+import TextButton from '../../../shared/ui/text-button';
 import { LANGUAGES, PROVIDERS } from '../constants/settings';
 import { SettingsState } from '../types/settings';
 import ManageModels from './manage-embedded-ollama';
@@ -313,16 +314,19 @@ function Settings({ isOpened }: SettingsState) {
         styleWrapper={{ minWidth: '30.4352%' }}>
         {Object.entries(LANGUAGES).map(([key, value]) => (
           <SelectorOption
+            type='simple'
             key={value}
-            state='simple'
-            text={key}
-            isActive={language === value}
             onClick={() => {
               setLanguageKey(key);
               handleLanguageChange(value);
               dispatch(closeElement('languageSelectorPopup'));
-            }}
-          />
+            }}>
+            <TextButton
+              text={key}
+              isDisabled
+              isActiveStyle={language === value}
+            />
+          </SelectorOption>
         ))}
       </Popup>
       <Popup
@@ -333,15 +337,18 @@ function Settings({ isOpened }: SettingsState) {
         styleWrapper={{ minWidth: '30.4352%' }}>
         {Object.entries(PROVIDERS).map(([key, value]) => (
           <SelectorOption
+            type='simple'
             key={value}
-            state='simple'
-            text={key}
-            isActive={provider === value}
             onClick={() => {
               handleProviderChange(value);
               dispatch(closeElement('providerSelectorPopup'));
-            }}
-          />
+            }}>
+            <TextButton
+              text={key}
+              isDisabled
+              isActiveStyle={provider === value}
+            />
+          </SelectorOption>
         ))}
       </Popup>
 

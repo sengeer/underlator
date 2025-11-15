@@ -4,20 +4,23 @@
  */
 
 import './styles/selector-option.scss';
-import ComplexMode from './complex-mode';
+import BarMode from './bar-mode';
 import SimpleMode from './simple-mode';
-import {
-  SelectorOptionProps,
-  SelectorOptionState,
-} from './types/selector-option';
+import { SelectorOptionProps } from './types/selector-option';
 
 /**
- * Определяет нужен ли сложный режим на основе состояния.
- * @param state - Состояние компонента.
- * @returns true если нужен complex режим.
+ * Определяет тип компонента.
+ * @returns JSX элемент.
  */
-function defineNeedsComplexMode(state: SelectorOptionState): boolean {
-  return state === 'loading' || state === 'installed' || state === 'available';
+function defineType(props: SelectorOptionProps): React.ReactElement {
+  switch (props.type) {
+    case 'simple':
+      return <SimpleMode {...props} />;
+    case 'bar':
+      return <BarMode {...props} />;
+    default:
+      return <SimpleMode {...props} />;
+  }
 }
 
 /**
@@ -28,16 +31,15 @@ function defineNeedsComplexMode(state: SelectorOptionState): boolean {
  * @example
  * // Простой режим
  * <SelectorOption
- *  state='available'
- *  text='Model 1'
+ *  type='simple'
  *  onClick={() => {}}
  * />
  *
  * @example
- * // Сложный режим с прогресс-баром
+ * // Сложный режим с прогресс-баром b
  * <SelectorOption
+ *  type='bar'
  *  state='loading'
- *  text='qwen2.5:7b'
  *  progressInfo={{
  *    percentage: 65,
  *    currentSize: 3.1 * 1024 * 1024 * 1024,
@@ -48,24 +50,18 @@ function defineNeedsComplexMode(state: SelectorOptionState): boolean {
  * @example
  * // Сложный режим с кнопками действий
  * <SelectorOption
+ *  type='bar'
  *  state='installed'
- *  text='llama3.1:8b'
- *  isActive={true}
  *  actionHandlers={{
  *    onRemove: () => {},
  *  }}
  * />
  */
 function SelectorOption(props: SelectorOptionProps) {
-  const { state } = props;
-
-  // Определяет нужен ли сложный режим
-  const isComplexMode = defineNeedsComplexMode(state);
-
   // Выбирает компонент для рендеринга
-  const Component = isComplexMode ? ComplexMode : SimpleMode;
+  const Component = defineType(props);
 
-  return <Component {...props} />;
+  return Component;
 }
 
 export default SelectorOption;

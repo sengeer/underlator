@@ -24,6 +24,7 @@
 import { useLingui } from '@lingui/react/macro';
 import { useMemo } from 'react';
 import SelectorOption from '../../../shared/ui/selector-option';
+import TextButton from '../../../shared/ui/text-button';
 import type {
   OllamaModelInfo,
   ModelDisplayState,
@@ -128,9 +129,8 @@ function ModelItem({
 
   return (
     <SelectorOption
+      type='bar'
       state={displayState.state}
-      text={displayState.name}
-      isActive={displayState.isActive}
       progressInfo={progressInfo}
       actionHandlers={actionHandlers}
       onClick={() => {
@@ -139,8 +139,13 @@ function ModelItem({
         } else if (displayState.state === 'available') {
           eventCallbacks.onModelInstall?.(model.name);
         }
-      }}
-    />
+      }}>
+      <TextButton
+        text={displayState.name}
+        isDisabled
+        isActiveStyle={displayState.isActive}
+      />
+    </SelectorOption>
   );
 }
 

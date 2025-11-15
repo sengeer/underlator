@@ -15,8 +15,6 @@ import type {
 export interface ChatProps {
   /** Флаг видимости компонента чата */
   isOpened: boolean;
-  /** Callback для закрытия чата */
-  onClose?: () => void;
   /** Дополнительные CSS классы */
   className?: string;
 }

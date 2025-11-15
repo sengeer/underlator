@@ -14,14 +14,6 @@ export interface ChatMessagesProps {
   messages: ChatMessage[];
   /** Флаг генерации ответа */
   isGenerating?: boolean;
-  /** Callback для прокрутки к последнему сообщению */
-  onScrollToBottom?: () => void;
-  /** Callback для копирования текста сообщения */
-  onCopyMessage?: (text: string) => void;
-  /** Callback для редактирования сообщения */
-  onEditMessage?: (messageId: string, newContent: string) => void;
-  /** Callback для удаления сообщения */
-  onDeleteMessage?: (messageId: string) => void;
   /** Дополнительные CSS классы */
   className?: string;
 }

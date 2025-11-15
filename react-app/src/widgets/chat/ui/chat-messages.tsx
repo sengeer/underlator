@@ -5,22 +5,24 @@
  */
 
 import { useLingui } from '@lingui/react/macro';
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import KeyboardDoubleArrowDownIcon from '../../../shared/assets/icons/keyboard-double-arrow-down';
+import WithAdaptiveSize from '../../../shared/lib/hocs/with-adaptive-size';
 import useIntersectionObserver from '../../../shared/lib/hooks/use-intersection-observer';
+import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
+import IconButton from '../../../shared/ui/icon-button';
+import Loader from '../../../shared/ui/loader';
 import type {
   ChatMessagesProps,
   ChatMessagesState,
 } from '../types/chat-messages';
 import MessageBubble from './message-bubble';
 import '../styles/chat-messages.scss';
+import '../styles/empty-state.scss';
 
 function ChatMessages({
   messages,
   isGenerating = false,
-  onScrollToBottom,
-  onCopyMessage,
-  onEditMessage,
-  onDeleteMessage,
   className = '',
 }: ChatMessagesProps) {
   const { t } = useLingui();
@@ -36,6 +38,38 @@ function ChatMessages({
     threshold: 0.1,
     rootMargin: '100px',
   });
+
+  /**
+   * Прокручивает к последнему сообщению.
+   */
+  function scrollToBottom() {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  /**
+   * Обрабатывает прокрутку контейнера.
+   */
+  const handleScroll = useCallback(() => {
+    if (!scrollContainerRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } =
+      scrollContainerRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+
+    setState((prev) => ({
+      ...prev,
+      autoScroll: isNearBottom,
+    }));
+  }, []);
+
+  /**
+   * Обрабатывает клик по кнопке прокрутки.
+   */
+  const handleScrollToBottomClick = useCallback(() => {
+    scrollToBottom();
+  }, [scrollToBottom]);
 
   // Обновление состояния при изменении количества сообщений
   useEffect(() => {
@@ -63,167 +97,83 @@ function ChatMessages({
   }, []);
 
   /**
-   * Прокручивает к последнему сообщению.
-   */
-  const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, []);
-
-  /**
-   * Обрабатывает прокрутку контейнера.
-   */
-  const handleScroll = useCallback(() => {
-    if (!scrollContainerRef.current) return;
-
-    const { scrollTop, scrollHeight, clientHeight } =
-      scrollContainerRef.current;
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-
-    setState((prev) => ({
-      ...prev,
-      autoScroll: isNearBottom,
-    }));
-  }, []);
-
-  /**
-   * Обрабатывает копирование сообщения.
-   */
-  const handleCopyMessage = useCallback(
-    (text: string) => {
-      onCopyMessage?.(text);
-    },
-    [onCopyMessage]
-  );
-
-  /**
-   * Обрабатывает редактирование сообщения.
-   */
-  const handleEditMessage = useCallback(
-    (messageId: string, newContent: string) => {
-      onEditMessage?.(messageId, newContent);
-    },
-    [onEditMessage]
-  );
-
-  /**
-   * Обрабатывает удаление сообщения.
-   */
-  const handleDeleteMessage = useCallback(
-    (messageId: string) => {
-      onDeleteMessage?.(messageId);
-    },
-    [onDeleteMessage]
-  );
-
-  /**
-   * Обрабатывает клик по кнопке прокрутки.
-   */
-  const handleScrollToBottomClick = useCallback(() => {
-    scrollToBottom();
-    onScrollToBottom?.();
-  }, [scrollToBottom, onScrollToBottom]);
-
-  /**
    * Рендерит индикатор генерации ответа.
    */
-  const renderGeneratingIndicator = () => {
+  function renderGeneratingIndicator() {
     if (!isGenerating) return null;
 
     return (
-      <div className='chat-messages__generating-indicator'>
-        <div className='chat-messages__generating-indicator-dot' />
-        <div className='chat-messages__generating-indicator-dot' />
-        <div className='chat-messages__generating-indicator-dot' />
-        <span>{t`Generating response...`}</span>
-      </div>
+      <DecorativeTextAndIconButton
+        style={{ padding: '0 0 2rem' }}
+        text={t`generating...`}
+        decorativeColor='var(--main)'>
+        <Loader />
+      </DecorativeTextAndIconButton>
     );
-  };
+  }
+
+  useEffect(() => {
+    if (isGenerating) {
+      scrollToBottom();
+    }
+  }, [isGenerating]);
 
   /**
    * Рендерит пустое состояние.
    */
-  const renderEmptyState = () => {
+  function renderEmptyState() {
     if (messages.length > 0) return null;
 
     return (
-      <div className='chat-messages__empty-state'>
-        <div className='chat-messages__empty-state-icon'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            width='100%'
-            height='100%'
-            viewBox='0 -960 960 960'
-            fill='currentColor'>
-            <path d='M880-80 720-240H320q-33 0-56.5-23.5T240-320v-40h440q33 0 56.5-23.5T760-440v-280h40q33 0 56.5 23.5T880-640v560ZM160-473l47-47h393v-280H160v327ZM80-280v-520q0-33 23.5-56.5T160-880h440q33 0 56.5 23.5T680-800v280q0 33-23.5 56.5T600-440H240L80-280Zm80-240v-280 280Z' />
-          </svg>
-        </div>
-        <h3 className='chat-messages__empty-state-title'>
-          {t`Start a new conversation`}
-        </h3>
-        <p className='chat-messages__empty-state-description'>
+      <div className='empty-state'>
+        <h2 className='empty-state__title'>{t`start a new conversation`}</h2>
+        <p className='empty-state__description'>
           {t`Send a message to start chatting with the assistant`}
         </p>
       </div>
     );
-  };
+  }
 
   /**
    * Рендерит кнопку прокрутки к низу.
    */
-  const renderScrollToBottomButton = () => {
+  function renderScrollToBottomButton() {
     if (state.autoScroll || messages.length === 0) return null;
 
     return (
-      <button
-        className={`chat-messages__scroll-to-bottom ${
-          !state.autoScroll ? 'chat-messages__scroll-to-bottom_visible' : ''
-        }`}
-        onClick={handleScrollToBottomClick}
-        title='Прокрутить к последнему сообщению'
-        type='button'>
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          width='100%'
-          height='100%'
-          viewBox='0 -960 960 960'
-          fill='currentColor'>
-          <path d='M480-160 160-480l56-57 224 224 224-224 56 57-320 320Zm0-320L160-800l56-57 224 224 224-224 56 57-320 320Z' />
-        </svg>
-      </button>
+      <>
+        <IconButton
+          className='chat-messages__scroll-to-bottom'
+          onClick={handleScrollToBottomClick}>
+          <WithAdaptiveSize WrappedComponent={KeyboardDoubleArrowDownIcon} />
+        </IconButton>
+      </>
     );
-  };
+  }
 
   return (
-    <div className={`chat-messages ${className}`}>
-      <div
-        ref={scrollContainerRef}
-        className='chat-messages__container'
-        onScroll={handleScroll}>
-        <div className='chat-messages__messages-list'>
-          {renderEmptyState()}
+    <div
+      ref={scrollContainerRef}
+      className={`chat-messages ${className}`}
+      onScroll={handleScroll}>
+      {renderEmptyState()}
 
-          {messages.map((message, index) => (
-            <div
-              key={message.id}
-              ref={index === messages.length - 1 ? intersectionRef : undefined}>
-              <MessageBubble
-                message={message}
-                isVisible={isVisible || index >= messages.length - 10}
-                onCopy={handleCopyMessage}
-                onEdit={handleEditMessage}
-                onDelete={handleDeleteMessage}
-              />
-            </div>
-          ))}
-
-          {renderGeneratingIndicator()}
-
-          {/* Невидимый элемент для прокрутки */}
-          <div ref={messagesEndRef} />
+      {messages.map((message, index) => (
+        <div
+          className='chat-messages__item'
+          key={message.id}
+          ref={index === messages.length - 1 ? intersectionRef : undefined}>
+          <MessageBubble
+            message={message}
+            isVisible={isVisible || index >= messages.length - 10}
+          />
         </div>
-      </div>
+      ))}
+
+      {renderGeneratingIndicator()}
+
+      {/* Невидимый элемент для прокрутки */}
+      <div ref={messagesEndRef} />
 
       {renderScrollToBottomButton()}
     </div>

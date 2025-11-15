@@ -10,6 +10,8 @@ import type { ChatFile } from '../../../shared/apis/chat-ipc/types/chat-ipc';
  * Пропсы компонента ChatSidebar.
  */
 export interface ChatSidebarProps {
+  /** Флаг видимости боковой панели */
+  isOpened: boolean;
   /** Список чатов для отображения */
   chats: ChatFile[];
   /** ID активного чата */
@@ -24,8 +26,6 @@ export interface ChatSidebarProps {
   onDeleteChat?: (chatId: string) => void;
   /** Callback для обновления списка чатов */
   onRefreshChats?: () => void;
-  /** Дополнительные CSS классы */
-  className?: string;
 }
 
 /**

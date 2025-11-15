@@ -14,7 +14,9 @@ export type SelectorOptionState =
   /** Установлено и доступно */
   | 'installed'
   /** Простой режим */
-  | 'simple';
+  | 'simple'
+  /** Не определено */
+  | undefined;
 
 /**
  * Информация о прогрессе загрузки.
@@ -43,20 +45,19 @@ export interface ActionHandlers {
  * Основные пропсы компонента SelectorOption.
  */
 export interface SelectorOptionProps {
-  /** Основной текст элемента */
-  text: string;
+  type: 'simple' | 'bar';
   /** Состояние компонента */
-  state: SelectorOptionState;
+  state?: SelectorOptionState;
   /** Дополнительные CSS классы */
   className?: string;
   /** Инлайн стили */
   style?: React.CSSProperties;
   /** Обработчик клика по элементу */
   onClick?: () => void;
-  /** Активен ли элемент (выбран) */
-  isActive?: boolean;
   /** Данные для состояния loading */
   progressInfo?: ProgressInfo;
   /** Обработчики действий */
   actionHandlers?: ActionHandlers;
+  /** Дочерний(ие) элемент(ы) */
+  children: React.JSX.Element;
 }

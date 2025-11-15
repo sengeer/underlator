@@ -1,10 +1,9 @@
 /**
- * @module FeatureProviderTypes
+ * @module FeatureProviderTypeUses
  * Типы для feature-провайдера.
  */
 
 import { Dispatch } from 'redux';
-import { ChatMessage, ChatContext, ChatMessageRole } from './use-model';
 
 /**
  * Ответ от LLM модели через Electron IPC.
@@ -41,8 +40,6 @@ export interface ModelRequestContext {
   };
   /** Название модели для использования */
   model?: string;
-  /** Тип использования модели */
-  typeUse?: TypeUse;
   /** Текст или массив текстов для перевода */
   text: string | string[];
   /** Исходный язык */
@@ -63,8 +60,6 @@ export interface ModelRequestContext {
   dispatch: Dispatch;
   /** Идентификатор чата для режима чата */
   chatId?: string;
-  /** Контекст чата с историей сообщений */
-  chatContext?: ChatContext;
   /** Флаг сохранения истории сообщений в чате */
   saveHistory?: boolean;
 }

@@ -127,8 +127,8 @@ export interface ChatFile {
   lastMessage?: {
     /** Роль отправителя */
     role: ChatMessageRole;
-    /** Краткое содержимое (первые 100 символов) */
-    preview: string;
+    /** Текст сообщения */
+    content: string;
     /** Временная метка */
     timestamp: string;
   };

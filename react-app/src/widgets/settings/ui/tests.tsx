@@ -352,13 +352,14 @@ function Tests() {
         onSearchChange={setSearchValue}>
         {MODELS.data.ollama.map(({ name }) => (
           <SelectorOption
+            type='bar'
             key={name}
             state='available'
-            text={name}
             onClick={() => {
               dispatch(closeElement('testListModelsPopup'));
-            }}
-          />
+            }}>
+            <TextButton text={name} isDisabled />
+          </SelectorOption>
         ))}
       </PopupWithSearch>
       <Popup
@@ -367,15 +368,18 @@ function Tests() {
         styleWrapper={{ minWidth: '30.4352%' }}>
         {translationLanguages.map(({ language, code }) => (
           <SelectorOption
+            type='simple'
             key={code}
-            state='simple'
-            text={language}
-            isActive={translationKey === language}
             onClick={() => {
               setTranslationKey(language);
               dispatch(closeElement('testListLanguagesPopup'));
-            }}
-          />
+            }}>
+            <TextButton
+              text={language}
+              isDisabled
+              isActiveStyle={translationKey === language}
+            />
+          </SelectorOption>
         ))}
       </Popup>
     </>

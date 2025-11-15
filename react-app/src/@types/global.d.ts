@@ -9,11 +9,6 @@
 type ProviderType = 'Ollama' | 'Embedded Ollama';
 
 /**
- * Типы использования модели.
- */
-type TypeUse = 'instruction' | 'translation' | 'contextualTranslation' | 'chat';
-
-/**
  * Настройки конекретного провайдера.
  * Интерфейс для хранения специфичных настроек каждого провайдера.
  */
@@ -91,8 +86,6 @@ interface UseModelParams {
   responseMode: 'arrayStream' | 'stringStream' | string;
   /** Инструкция для модели */
   instruction?: string;
-  /** Тип использования модели */
-  typeUse?: TypeUse;
   /** ID чата для режима чата */
   chatId?: string;
   /** Флаг сохранения истории в чате */

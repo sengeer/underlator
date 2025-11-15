@@ -1,10 +1,13 @@
-import { Trans } from '@lingui/react/macro';
-import { useEffect, useRef } from 'react';
+import { useLingui } from '@lingui/react/macro';
+import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
+import KeyboardArrowDownIcon from '../../assets/icons/keyboard-arrow-down-icon';
 import processThinkTags from '../../lib/utils/process-think-tags';
 import splittingContentOfModel from '../../lib/utils/splitting-content-of-model';
+import DecorativeTextAndIconButton from '../decorative-text-and-icon-button';
+import TextAndIconButton from '../text-and-icon-button';
 import './styles/markdown-renderer.scss';
 import { MarkdownRendererProps } from './types/markdown-renderer';
 
@@ -12,8 +15,13 @@ function MarkdownRenderer({
   content,
   className,
   showThinking = true,
+  text,
 }: MarkdownRendererProps) {
   if (!content) return null;
+
+  const [isShowThinking, setIsShowThinking] = useState<boolean>(false);
+
+  const { t } = useLingui();
 
   const processedContent = processThinkTags(content);
 
@@ -45,11 +53,29 @@ function MarkdownRenderer({
 
   return (
     <div className={`markdown-renderer ${className || ''}`}>
-      {showThinking && thinkingParts.length > 0 && (
-        <div className='markdown-thinking-section'>
-          <div className='markdown-think__header'>
-            <Trans>🤔 thinking:</Trans>
-          </div>
+      <div className='markdown-renderer__header'>
+        {showThinking && thinkingParts.length > 0 && (
+          <TextAndIconButton
+            text={t`thinking`}
+            onClick={() => setIsShowThinking(!isShowThinking)}>
+            <KeyboardArrowDownIcon
+              style={{
+                transform: `rotateX(${isShowThinking ? '0deg' : '180deg'})`,
+              }}
+            />
+          </TextAndIconButton>
+        )}
+        {text && (
+          <DecorativeTextAndIconButton
+            style={{ paddingRight: '2rem' }}
+            text={text}
+            decorativeColor='var(--main)'
+          />
+        )}
+        <div />
+      </div>
+      {showThinking && thinkingParts.length > 0 && isShowThinking && (
+        <div className='markdown-think'>
           <div className='markdown-think__content'>
             {thinkingParts.map((thinking, index) => (
               <div key={index} className='markdown-think__paragraph'>

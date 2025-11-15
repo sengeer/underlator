@@ -14,7 +14,11 @@ import { selectTranslationLanguages } from '../../../models/translation-language
 import { DEFAULT_URL } from '../../constants';
 import useTranslationLanguages from '../use-translation-languages/use-translation-languages';
 import featureProvider from './feature-provider';
+import { ModelRequestContext } from './types/feature-provider';
 import { Status } from './types/use-model';
+
+// Определяет тип для ключей фич
+type FeatureType = keyof typeof featureProvider;
 
 /**
  * Хук для работы с LLM моделями.
@@ -79,34 +83,35 @@ function useModel() {
   );
 
   /**
-   * Генерирует текст через активный провайдер.
-   * Запускает процесс генерации с параметрами контекста.
+   * Функция для выполнения генерации.
+   * Принимает `featureType` для динамического вызова метода из `featureProvider`.
    *
    * @param texts - Текст или массив текстов для обработки.
    * @param params - Параметры генерации.
-   * @param options - Дополнительные опции модели, например think.
+   * @param options - Дополнительные опции модели.
+   * @param featureType - Тип использования.
    */
-  async function generate(
+  async function executeGeneration(
     texts: string[] | string,
     params: UseModelParams,
-    options: GenerateOptions
+    options: GenerateOptions,
+    featureType: FeatureType
   ) {
     setStatus('process');
     setGeneratedResponse(params.responseMode === 'arrayStream' ? {} : '');
     setError(null);
 
-    // Создание контроллера для отмены операции
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
     try {
-      await featureProvider.generate({
+      // Собирает контекст запроса
+      const requestContext: ModelRequestContext = {
         config: {
           id: (providerSettings.settings as any)?.id || 'embedded-ollama',
           url: providerSettings.settings.url || DEFAULT_URL,
         },
         model: providerSettings.settings.model,
-        typeUse: params.typeUse || providerSettings.settings.typeUse,
         text: texts,
         sourceLanguage: getLanguageInEn(sourceLanguage),
         targetLanguage: getLanguageInEn(targetLanguage),
@@ -119,7 +124,15 @@ function useModel() {
         dispatch,
         chatId: params.chatId,
         saveHistory: params.saveHistory,
-      });
+      };
+
+      const featureMethod = featureProvider[featureType];
+
+      if (typeof featureMethod !== 'function') {
+        throw new Error(`Invalid feature type: ${featureType}`);
+      }
+
+      await featureMethod(requestContext);
 
       setStatus('success');
     } catch (e) {
@@ -137,6 +150,50 @@ function useModel() {
     } finally {
       abortControllerRef.current = null;
     }
+  }
+
+  /**
+   * Функция для запуска процесса генерации с параметрами контекста.
+   * Принимает аргументы и возвращает объект с асинхронными методами
+   * для запуска конкретной фичи.
+   *
+   * @param texts - Текст или массив текстов для обработки.
+   * @param params - Параметры генерации.
+   * @param options - Дополнительные опции модели.
+   * @returns Объект с методами (chat, translate, instruct, contextualTranslate).
+   */
+  function generate(
+    texts: string[] | string,
+    params: UseModelParams,
+    options: GenerateOptions
+  ) {
+    // Возвращает "fluent" API
+    return {
+      /**
+       * Выполняет генерацию в режиме чата.
+       */
+      chat: async () => {
+        await executeGeneration(texts, params, options, 'chat');
+      },
+      /**
+       * Выполняет простой перевод.
+       */
+      translate: async () => {
+        await executeGeneration(texts, params, options, 'translate');
+      },
+      /**
+       * Выполняет генерацию по инструкции.
+       */
+      instruct: async () => {
+        await executeGeneration(texts, params, options, 'instruct');
+      },
+      /**
+       * Выполняет контекстный перевод.
+       */
+      contextualTranslate: async () => {
+        await executeGeneration(texts, params, options, 'contextualTranslate');
+      },
+    };
   }
 
   /**

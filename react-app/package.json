@@ -19,6 +19,7 @@
     "react-pdf": "^9.1.1",
     "react-redux": "^9.2.0",
     "react-resize-detector": "^12.0.2",
+    "react-textarea-autosize": "^8.5.9",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "sass": "^1.70.0",

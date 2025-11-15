@@ -1,5 +1,5 @@
 /**
- * @module ComplexMode
+ * @module BarMode
  * Минималистичный компонент для сложного отображения SelectorOption.
  */
 
@@ -60,21 +60,21 @@ function renderActionButtons(state: SelectorOptionState, actionHandlers: any) {
     case 'available':
       return (
         <div className='selector-option__actions'>
-          <TextButton text={t`Download`} onClick={actionHandlers?.onInstall} />
+          <TextButton text={t`download`} onClick={actionHandlers?.onInstall} />
         </div>
       );
 
     case 'loading':
       return (
         <div className='selector-option__actions'>
-          <TextButton text={t`Downloading...`} isDisabled />
+          <TextButton text={t`downloading...`} isDisabled />
         </div>
       );
 
     case 'installed':
       return (
         <div className='selector-option__actions'>
-          <TextButton text={t`Remove`} onClick={actionHandlers?.onRemove} />
+          <TextButton text={t`remove`} onClick={actionHandlers?.onRemove} />
         </div>
       );
 
@@ -83,15 +83,14 @@ function renderActionButtons(state: SelectorOptionState, actionHandlers: any) {
   }
 }
 
-function ComplexMode({
-  text,
+function BarMode({
   state,
   className,
   style,
   onClick,
-  isActive,
   progressInfo,
   actionHandlers,
+  children,
 }: SelectorOptionProps) {
   const [isHoveringActions, setIsHoveringActions] = useState(false);
 
@@ -112,11 +111,11 @@ function ComplexMode({
 
   return (
     <div
-      className={`selector-option selector-option_complex selector-option_${state} ${isHoveringActions ? 'selector-option_no-hover' : ''} ${!isSelectable ? 'selector-option_no-hover' : ''} ${className || ''}`}
+      className={`selector-option selector-option_bar selector-option_${state} ${isHoveringActions ? 'selector-option_no-hover' : ''} ${!isSelectable ? 'selector-option_no-hover' : ''} ${className || ''}`}
       style={style}
       onClick={handleContainerClick}>
-      {/* Первый элемент: TextButton */}
-      <TextButton text={text} isDisabled isActiveStyle={isActive} />
+      {/* Первый(ые) элемент(ы): children */}
+      {children}
 
       {/* Второй элемент: ProgressBar (только для loading) */}
       {state === 'loading' && progressInfo && renderProgressBar(progressInfo)}
@@ -131,4 +130,4 @@ function ComplexMode({
   );
 }
 
-export default ComplexMode;
+export default BarMode;

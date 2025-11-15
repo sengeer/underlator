@@ -14,26 +14,6 @@ export interface MessageBubbleProps {
   message: ChatMessage;
   /** Флаг видимости компонента для ленивой загрузки */
   isVisible?: boolean;
-  /** Callback для копирования текста сообщения */
-  onCopy?: (text: string) => void;
-  /** Callback для редактирования сообщения */
-  onEdit?: (messageId: string, newContent: string) => void;
-  /** Callback для удаления сообщения */
-  onDelete?: (messageId: string) => void;
   /** Дополнительные CSS классы */
   className?: string;
-}
-
-/**
- * Состояние компонента MessageBubble.
- */
-export interface MessageBubbleState {
-  /** Флаг показа меню действий */
-  showActions: boolean;
-  /** Флаг режима редактирования */
-  isEditing: boolean;
-  /** Текст для редактирования */
-  editText: string;
-  /** Флаг копирования текста */
-  isCopied: boolean;
 }

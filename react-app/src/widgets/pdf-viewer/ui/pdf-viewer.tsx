@@ -42,6 +42,7 @@ import {
 import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import FileUpload from '../../../shared/ui/file-upload';
+import Gradient from '../../../shared/ui/gradient';
 import IconButton from '../../../shared/ui/icon-button';
 import Loader from '../../../shared/ui/loader';
 import MarkdownRenderer from '../../../shared/ui/markdown-renderer';
@@ -49,6 +50,7 @@ import Popup from '../../../shared/ui/popup';
 import SelectorOption from '../../../shared/ui/selector-option/';
 import Switch from '../../../shared/ui/switch';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
+import TextButton from '../../../shared/ui/text-button';
 import CustomErrorMessage from './custom-error-message';
 import CustomLoading from './custom-loading';
 import '../styles/pdf-viewer.scss';
@@ -358,7 +360,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         {
           think: true,
         }
-      );
+      ).instruct();
     } else if (settings.typeUse === 'contextualTranslation') {
       collectedTextInfos.forEach(({ element }) => {
         element.style.backgroundColor = 'var(--background)';
@@ -374,7 +376,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         {
           think: false,
         }
-      );
+      ).contextualTranslate();
     }
   }
 
@@ -594,7 +596,13 @@ function PdfViewer({ isOpened }: PdfTranslator) {
             )}
           </IconButton>
         )}
-        <div className='pdf-viewer__gradient' />
+        <Gradient
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
         <FileUpload
           isOpened={!file}
           onChange={onFileChange}
@@ -630,15 +638,18 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         styleWrapper={{ minWidth: '30.4352%' }}>
         {translationLanguages.map(({ language, code }) => (
           <SelectorOption
+            type='simple'
             key={code}
-            state='simple'
-            text={language}
-            isActive={sourceLanguage === language}
             onClick={() => {
               handleSourceLanguageSelection(language);
               dispatch(closeElement('firstLangSelectionPopupForViewer'));
-            }}
-          />
+            }}>
+            <TextButton
+              text={language}
+              isDisabled
+              isActiveStyle={sourceLanguage === language}
+            />
+          </SelectorOption>
         ))}
       </Popup>
       <Popup
@@ -649,15 +660,18 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         styleWrapper={{ minWidth: '30.4352%' }}>
         {translationLanguages.map(({ language, code }) => (
           <SelectorOption
+            type='simple'
             key={code}
-            state='simple'
-            text={language}
-            isActive={targetLanguage === language}
             onClick={() => {
               handleTargetLanguageSelection(language);
               dispatch(closeElement('secondLangSelectionPopupForViewer'));
-            }}
-          />
+            }}>
+            <TextButton
+              text={language}
+              isDisabled
+              isActiveStyle={targetLanguage === language}
+            />
+          </SelectorOption>
         ))}
       </Popup>
     </section>

@@ -1,3 +1,15 @@
+.markdown-renderer {
+  position: relative;
+
+  &__header {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+  }
+}
+
 .markdown-h1 {
   margin: 2rem 0 1rem;
   color: var(--accent);
@@ -21,7 +33,7 @@
 
 .markdown-paragraph {
   margin: 0.75rem 0;
-  color: var(--text);
+  color: var(--foreground);
   font-size: 1.5rem;
   line-height: 1.2;
 }
@@ -40,7 +52,7 @@
   padding: 1rem;
   border-radius: 8px;
   background: var(--black-20);
-  color: var(--text);
+  color: var(--foreground);
 
   .markdown-code {
     padding: 0;
@@ -52,7 +64,7 @@
   margin: 1rem 0;
   padding-left: 1rem;
   border-left: 4px solid var(--main);
-  color: var(--text);
+  color: var(--foreground);
   font-style: italic;
 }
 
@@ -68,12 +80,12 @@
 .markdown-list-item {
   overflow: visible;
   margin: 0 0 0 0.75em;
-  color: var(--text);
+  color: var(--foreground);
   font-size: 1.5rem;
   line-height: 1.2;
 
   &::marker {
-    color: var(--main);
+    color: var(--foreground);
   }
 }
 
@@ -85,22 +97,10 @@
   text-align: center;
 }
 
-.markdown-thinking-section {
-  margin: 1rem 0;
-  padding: 1rem 0 0 1rem;
-  border-left: 4px solid var(--main);
-}
-
 .markdown-think {
-  &__header {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    margin: 0 0 1rem;
-    color: var(--text);
-    font-weight: 600;
-    font-size: 1rem;
-  }
+  margin: 1rem 0 0 11px;
+  padding: 0 0 0 1rem;
+  border-left: 2px solid var(--main);
 
   &__content {
     display: flex;
@@ -110,9 +110,7 @@
 
   &__paragraph {
     margin: 0;
-    padding: 0.5rem;
     border-radius: 0.5rem;
-    background: var(--black-20);
     color: var(--main);
     font-style: italic;
     font-size: 1rem;

@@ -14,55 +14,55 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
 msgid "Error getting the models catalog"
 msgstr "Ошибка получения каталога моделей"
 
 #. js-lingui-explicit-id
-#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
 msgid "Error getting the catalog"
 msgstr "Ошибка при получении каталога моделей"
 
 #. js-lingui-explicit-id
-#: src/widgets/settings/models/electron-slice.ts
-#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
 msgid "Error searching models"
 msgstr "Ошибка поиска модели"
 
 #. js-lingui-explicit-id
-#: src/widgets/settings/models/electron-slice.ts
-#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
 msgid "Error getting model info"
 msgstr "Ошибка получения информации о модели"
 
 #. js-lingui-explicit-id
-#: src/widgets/settings/models/electron-slice.ts
-#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
 msgid "Model installation error"
 msgstr "Ошибка установки модели"
 
 #. js-lingui-explicit-id
-#: src/widgets/settings/models/electron-slice.ts
-#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
 msgid "Model removal error"
 msgstr "Ошибка удаления модели"
 
 #. js-lingui-explicit-id
-#: src/widgets/settings/models/electron-slice.ts
-#: src/widgets/settings/models/electron-slice.ts
-#: src/widgets/settings/models/electron-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
+#: src/widgets/settings/models/model-ipc-slice.ts
 msgid "Error getting list of models"
 msgstr "Ошибка при получении списка моделей"
 
 #. js-lingui-explicit-id
-#: src/pages/main/models/splash-screen-slice.ts
-#: src/pages/main/models/splash-screen-slice.ts
+#: src/pages/main/models/splash-screen-ipc-slice.ts
+#: src/pages/main/models/splash-screen-ipc-slice.ts
 msgid "Internal application error"
 msgstr "Внутренняя ошибка приложения"
 
-#: src/shared/ui/markdown-renderer/markdown-renderer.tsx
-msgid "🤔 thinking:"
-msgstr "🤔 Рассуждение модели:"
+#: src/widgets/chat/ui/chat.tsx
+msgid "..."
+msgstr "..."
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "About Underlator"
@@ -80,6 +80,18 @@ msgstr "Конфигурация API"
 msgid "arabic"
 msgstr "Арабский"
 
+#: src/widgets/chat/ui/chat.tsx
+msgid "ask "
+msgstr "Спросить "
+
+#: src/widgets/chat/ui/message-bubble.tsx
+msgid "assistant"
+msgstr "Ассистент"
+
+#: src/widgets/chat/ui/chat.tsx
+msgid "attach file"
+msgstr "Прикрепить файл"
+
 #: src/widgets/settings/ui/settings.tsx
 msgid "background color"
 msgstr "Цвет фона"
@@ -96,6 +108,14 @@ msgstr "Бирманский"
 msgid "cantonese"
 msgstr "Кантонский"
 
+#: src/widgets/chat/ui/chat-sidebar.tsx
+msgid "Chat..."
+msgstr "Чат..."
+
+#: src/widgets/chat/ui/chat.tsx
+msgid "chats"
+msgstr "Чаты"
+
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "chinese"
 msgstr "Китайский"
@@ -108,6 +128,10 @@ msgstr "Цветовая схема"
 msgid "Copy"
 msgstr "Копировать"
 
+#: src/widgets/chat/ui/chat-sidebar.tsx
+msgid "Create your first chat"
+msgstr "Создайте свой первый чат"
+
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Cut"
 msgstr "Вырезать"
@@ -116,16 +140,16 @@ msgstr "Вырезать"
 msgid "czech"
 msgstr "Чешский"
 
-#: src/shared/ui/selector-option/complex-mode.tsx
-msgid "Download"
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "download"
 msgstr "Загрузить"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Downloading Ollama..."
 msgstr "Загрузка Ollama..."
 
-#: src/shared/ui/selector-option/complex-mode.tsx
-msgid "Downloading..."
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "downloading..."
 msgstr "Загрузка..."
 
 #: src/shared/ui/file-upload/file-upload.tsx
@@ -136,8 +160,8 @@ msgstr "Перетащите"
 msgid "dutch"
 msgstr "Нидерландский"
 
-#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 #: src/pages/main/ui/main.tsx
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "english"
 msgstr "Английский"
 
@@ -172,6 +196,10 @@ msgstr "Цвет заголовков"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "french"
 msgstr "Французский"
+
+#: src/widgets/chat/ui/chat-messages.tsx
+msgid "generating..."
+msgstr "Генерация..."
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "german"
@@ -265,6 +293,19 @@ msgstr "Модель..."
 msgid "mongolian"
 msgstr "Монгольский"
 
+#: src/widgets/chat/ui/chat.tsx
+msgid "new chat"
+msgstr "Новый чат"
+
+#: src/widgets/chat/ui/chat-sidebar.tsx
+msgid "no chats"
+msgstr "Чатов нет"
+
+#: src/widgets/chat/ui/chat-sidebar.tsx
+msgid "no chats found"
+msgstr "Чаты не найдены"
+
+#: src/widgets/chat/ui/chat.tsx
 #: src/widgets/settings/ui/settings.tsx
 msgid "no model selected"
 msgstr "Модель не выбрана"
@@ -301,16 +342,16 @@ msgstr "Закрыть Underlator"
 msgid "Redo"
 msgstr "Повторить"
 
-#: src/shared/ui/selector-option/complex-mode.tsx
-msgid "Remove"
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "remove"
 msgstr "Удалить"
 
 #: src/shared/lib/hooks/use-model/use-model.ts
 msgid "Request error, check the settings"
 msgstr "Ошибка запроса, проверьте настройки"
 
-#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 #: src/pages/main/ui/main.tsx
+#: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "russian"
 msgstr "Русский"
 
@@ -318,13 +359,34 @@ msgstr "Русский"
 msgid "Select All"
 msgstr "Выбрать все"
 
+#: src/widgets/chat/ui/chat.tsx
+msgid "Select an existing chat or create a new one to start communicating with the assistant"
+msgstr "Выберите существующий чат или создайте новый, чтобы начать общение с ассистентом"
+
+#: src/widgets/chat/ui/chat.tsx
+msgid "send"
+msgstr "Отправить"
+
+#: src/widgets/chat/ui/chat-messages.tsx
+msgid "Send a message to start chatting with the assistant"
+msgstr "Отправьте сообщение, чтобы начать общение с ассистентом"
+
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "spanish"
 msgstr "Испанский"
 
+#: src/widgets/chat/ui/chat-messages.tsx
+msgid "start a new conversation"
+msgstr "Начните новый чат"
+
+#: src/widgets/chat/ui/chat.tsx
 #: src/widgets/text-translator/ui/text-translator.tsx
 msgid "stop"
 msgstr "Стоп"
+
+#: src/widgets/chat/ui/message-bubble.tsx
+msgid "system"
+msgstr "Система"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "tamil"
@@ -337,6 +399,10 @@ msgstr "Телугу"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "thai"
 msgstr "Тайский"
+
+#: src/shared/ui/markdown-renderer/markdown-renderer.tsx
+msgid "thinking"
+msgstr "Рассуждения"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "tibetan"
@@ -358,6 +424,10 @@ msgstr "Перевести"
 msgid "translation"
 msgstr "Перевод"
 
+#: src/widgets/chat/ui/chat-sidebar.tsx
+msgid "Try changing your search query"
+msgstr "Попробуйте изменить свой поисковый запрос"
+
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "turkish"
 msgstr "Турецкий"
@@ -370,9 +440,17 @@ msgstr "Украинский"
 msgid "Undo"
 msgstr "Отменить"
 
+#: src/widgets/chat/ui/message-bubble.tsx
+msgid "unknown"
+msgstr "Неизвестный"
+
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "urdu"
 msgstr "Урду"
+
+#: src/widgets/chat/ui/message-bubble.tsx
+msgid "user"
+msgstr "Пользователь"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "uyghur"
@@ -381,6 +459,10 @@ msgstr "Уйгурский"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "vietnamese"
 msgstr "Вьетнамский"
+
+#: src/widgets/chat/ui/chat.tsx
+msgid "welcome to chat"
+msgstr "Добро пожаловать в чат!"
 
 #: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
 #: src/widgets/pdf-viewer/ui/pdf-viewer.tsx
