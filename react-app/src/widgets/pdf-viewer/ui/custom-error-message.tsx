@@ -41,7 +41,7 @@ function CustomErrorMessage() {
   }, []);
 
   return (
-    <div className='custom-error-message'>
+    <div className='text-body-m custom-error-message'>
       <Trans>failed to load PDF file</Trans>
     </div>
   );

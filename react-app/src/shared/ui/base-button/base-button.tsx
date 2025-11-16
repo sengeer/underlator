@@ -25,7 +25,7 @@ function BaseButton({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}>
       {children && <div className='base-button__icon'>{children}</div>}
-      {text && <span className='base-button__text'>{text}</span>}
+      {text && <span className='text-body-m base-button__text'>{text}</span>}
     </button>
   );
 }

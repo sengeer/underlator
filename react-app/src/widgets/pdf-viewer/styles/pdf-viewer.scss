@@ -92,9 +92,6 @@
     max-height: calc(8 * 2rem);
     margin: 0;
     color: var(--foreground);
-    font-weight: 400;
-    font-size: 2rem;
-    line-height: 2rem;
     scrollbar-gutter: stable;
   }
 
@@ -113,8 +110,6 @@
     all: unset;
     width: 100%;
     color: var(--foreground);
-    font-weight: 400;
-    font-size: 2rem;
 
     &::placeholder {
       color: var(--main);

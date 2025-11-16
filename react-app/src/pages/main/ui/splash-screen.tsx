@@ -165,13 +165,13 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
       {/* Прогресс-бар */}
       <ProgressBar percentage={splashState.progress} />
 
-      <div className='splash-screen__text splash-screen__text_color_main'>
+      <div className='text-body-m splash-screen__text splash-screen__text_color_main'>
         {splashState.progress}%
       </div>
 
       {/* Отображение ошибки если она есть */}
       {splashState.error && (
-        <div className='splash-screen__text splash-screen__text_color_accent'>
+        <div className='text-body-m splash-screen__text splash-screen__text_color_accent'>
           {splashState.error}
         </div>
       )}

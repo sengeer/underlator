@@ -34,17 +34,12 @@
     min-height: 4rem;
     margin: 0;
     color: var(--foreground);
-    font-weight: 400;
-    font-size: 2rem;
   }
 
   &__text {
     align-self: center;
     margin: 0 1rem 0 0;
     color: var(--main);
-    font-weight: 500;
-    font-style: medium;
-    font-size: 1rem;
   }
 
   &__btns-group {
@@ -67,12 +62,6 @@
     }
   }
 
-  &__description {
-    color: var(--main);
-    font-weight: 500;
-    font-size: 1rem;
-  }
-
   &__button {
     margin: 0;
     padding: 0.5rem 1rem;
@@ -80,8 +69,6 @@
     border-radius: 4px;
     background: transparent;
     color: var(--accent);
-    font-weight: 500;
-    font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
 

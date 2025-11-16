@@ -64,16 +64,12 @@
   &__progress-percentage {
     width: min-content;
     color: var(--main);
-    font-weight: 500;
-    font-size: 1rem;
     text-align: right;
   }
 
   &__progress-size {
     min-width: 6rem;
     color: var(--main);
-    font-weight: 500;
-    font-size: 1rem;
     text-align: left;
     text-wrap: nowrap;
     opacity: 0.8;

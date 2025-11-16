@@ -164,7 +164,7 @@ function TextTranslator({ isOpened }: TextTranslatorProps) {
       {/* Поле ввода текста для перевода */}
       <div className='text-translator__textarea-wrapper'>
         <textarea
-          className='text-translator__textarea'
+          className='text-heading-l text-translator__textarea'
           value={input}
           placeholder={getPlaceholderByLanguage(sourceLanguage)}
           rows={1}
@@ -215,7 +215,7 @@ function TextTranslator({ isOpened }: TextTranslatorProps) {
       {/* Поле вывода переведенного текста */}
       <div className='text-translator__textarea-wrapper'>
         <textarea
-          className='text-translator__textarea'
+          className='text-heading-l text-translator__textarea'
           value={output}
           placeholder={getPlaceholderByLanguage(targetLanguage)}
           rows={1}

@@ -103,7 +103,7 @@ function MessageBubble({
       <div className={`message-bubble__content ${getRoleClass()}`}>
         <MarkdownRenderer
           content={message.content}
-          className='message-bubble__output'
+          className='text-heading-l message-bubble__output'
           showThinking
           text={getRoleLabel()}
         />

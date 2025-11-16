@@ -82,7 +82,9 @@ function Tests() {
     <>
       <div className='settings__container'>
         <div className='settings__column'>
-          <h2 className='settings__title'>{'Поля ввода для тестов IPC API'}</h2>
+          <h2 className='text-heading-l settings__title'>
+            {'Поля ввода для тестов IPC API'}
+          </h2>
           <ButtonWrapperWithBackground>
             <TextAndIconButton
               text='Промпт'
@@ -91,7 +93,7 @@ function Tests() {
               <NetworkIntelligenceIcon />
             </TextAndIconButton>
             <input
-              className='settings__input settings__text'
+              className='text-body-m settings__input settings__text'
               placeholder='Сколько будет 2 + 2?'
               type='text'
               id='prompt'
@@ -108,14 +110,16 @@ function Tests() {
               <ForumIcon />
             </TextAndIconButton>
             <input
-              className='settings__input settings__text'
+              className='text-body-m settings__input settings__text'
               placeholder='chat_xxxxxxxxxxxxx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
               type='text'
               value={chatId}
               onChange={(e) => setChatId(e.target.value)}
             />
           </ButtonWrapperWithBackground>
-          <h2 className='settings__title'>{'Тестирование Model IPC API'}</h2>
+          <h2 className='text-heading-l settings__title'>
+            {'Тестирование Model IPC API'}
+          </h2>
           <div className='settings__btns-group'>
             <TextButton
               onClick={() => testListModels()}
@@ -139,12 +143,12 @@ function Tests() {
               className='settings__button'>
               {'Удалить ' + settings[provider]?.model}
             </TextButton>
-            <p className='settings__description'>
+            <p className='text-body-m settings__text'>
               {
                 'Кнопки тестирования Model IPC API. Проверьте результаты в консоли.'
               }
             </p>
-            <h2 className='settings__title'>
+            <h2 className='text-heading-l settings__title'>
               {'Тестирование Catalog IPC API'}
             </h2>
             <TextButton
@@ -167,12 +171,14 @@ function Tests() {
               className='settings__button'>
               {'Получить информацию о модели'}
             </TextButton>
-            <p className='settings__description'>
+            <p className='text-body-m settings__text'>
               {
                 'Кнопки тестирования Catalog IPC API. Проверьте результаты в консоли.'
               }
             </p>
-            <h2 className='settings__title'>{'Тестирование Chat IPC API'}</h2>
+            <h2 className='text-heading-l settings__title'>
+              {'Тестирование Chat IPC API'}
+            </h2>
             <TextButton
               onClick={() =>
                 testCreateChat('Тестовый чат', settings[provider]?.model)
@@ -226,12 +232,14 @@ function Tests() {
               className='settings__button'>
               {'Удалить чат'}
             </TextButton>
-            <p className='settings__description'>
+            <p className='text-body-m settings__text'>
               {
                 'Кнопки тестирования Chat IPC API. Проверьте результаты в консоли.'
               }
             </p>
-            <h2 className='settings__title'>{'Тестирование RAG IPC API'}</h2>
+            <h2 className='text-heading-l settings__title'>
+              {'Тестирование RAG IPC API'}
+            </h2>
             <TextButton
               onClick={() =>
                 chatId
@@ -289,12 +297,14 @@ function Tests() {
               className='settings__button'>
               {'Подписка на прогресс обработки'}
             </TextButton>
-            <p className='settings__description'>
+            <p className='text-body-m settings__text'>
               {
                 'Кнопки тестирования RAG IPC API. Проверьте результаты в консоли.'
               }
             </p>
-            <h2 className='settings__title'>{'Тестирование UI'}</h2>
+            <h2 className='text-heading-l settings__title'>
+              {'Тестирование UI'}
+            </h2>
             <TextButton
               onClick={() =>
                 dispatch(

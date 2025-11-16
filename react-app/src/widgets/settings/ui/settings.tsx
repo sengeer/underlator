@@ -196,7 +196,7 @@ function Settings({ isOpened }: SettingsState) {
 
       <div className='settings__container'>
         <div className='settings__column'>
-          <h2 className='settings__title'>
+          <h2 className='text-heading-l settings__title'>
             <Trans>main settings</Trans>
           </h2>
           <ButtonWrapperWithBackground
@@ -207,9 +207,9 @@ function Settings({ isOpened }: SettingsState) {
               isDisabled>
               <LanguageIcon />
             </TextAndIconButton>
-            <p className='settings__text'>{languageKey}</p>
+            <p className='text-body-m settings__text'>{languageKey}</p>
           </ButtonWrapperWithBackground>
-          <h2 className='settings__title'>
+          <h2 className='text-heading-l settings__title'>
             <Trans>api configuration</Trans>
           </h2>
           <ButtonWrapperWithBackground
@@ -220,7 +220,7 @@ function Settings({ isOpened }: SettingsState) {
               isDisabled>
               <CableIcon />
             </TextAndIconButton>
-            <p className='settings__text'>{provider}</p>
+            <p className='text-body-m settings__text'>{provider}</p>
           </ButtonWrapperWithBackground>
           {provider === 'Ollama' && (
             <>
@@ -232,7 +232,7 @@ function Settings({ isOpened }: SettingsState) {
                   <HttpIcon />
                 </TextAndIconButton>
                 <input
-                  className='settings__input settings__text'
+                  className='text-body-m settings__input settings__text'
                   placeholder='http://127.0.0.1:11434'
                   type='url'
                   id='url'
@@ -249,7 +249,7 @@ function Settings({ isOpened }: SettingsState) {
                   <NetworkIntelligenceIcon />
                 </TextAndIconButton>
                 <input
-                  className='settings__input settings__text'
+                  className='text-body-m settings__input settings__text'
                   placeholder='llama3.1'
                   type='text'
                   id='model'
@@ -270,7 +270,7 @@ function Settings({ isOpened }: SettingsState) {
                   isDisabled>
                   <DownloadIcon />
                 </TextAndIconButton>
-                <p className='settings__text'>
+                <p className='text-body-m settings__text'>
                   {settings[provider]?.model || t`no model selected`}
                 </p>
               </ButtonWrapperWithBackground>
@@ -278,7 +278,7 @@ function Settings({ isOpened }: SettingsState) {
           )}
         </div>
         <div className='settings__column'>
-          <h2 className='settings__title'>
+          <h2 className='text-heading-l settings__title'>
             <Trans>color scheme</Trans>
           </h2>
           <div className='settings__btns-group'>

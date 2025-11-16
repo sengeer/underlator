@@ -9,6 +9,7 @@ import splittingContentOfModel from '../../lib/utils/splitting-content-of-model'
 import DecorativeTextAndIconButton from '../decorative-text-and-icon-button';
 import TextAndIconButton from '../text-and-icon-button';
 import './styles/markdown-renderer.scss';
+import './styles/thinking.scss';
 import { MarkdownRendererProps } from './types/markdown-renderer';
 
 function MarkdownRenderer({
@@ -75,10 +76,10 @@ function MarkdownRenderer({
         <div />
       </div>
       {showThinking && thinkingParts.length > 0 && isShowThinking && (
-        <div className='markdown-think'>
-          <div className='markdown-think__content'>
+        <div className='thinking'>
+          <div className='thinking__content'>
             {thinkingParts.map((thinking, index) => (
-              <div key={index} className='markdown-think__paragraph'>
+              <div key={index} className='thinking__paragraph'>
                 {thinking}
               </div>
             ))}
@@ -87,43 +88,51 @@ function MarkdownRenderer({
       )}
 
       {finalContent && (
-        <div className='markdown-main-content'>
+        <div className='markdown-renderer__content'>
           <Markdown
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeRaw]}
             components={{
-              h1: ({ children }) => <h1 className='markdown-h1'>{children}</h1>,
-              h2: ({ children }) => <h2 className='markdown-h2'>{children}</h2>,
-              h3: ({ children }) => <h3 className='markdown-h3'>{children}</h3>,
+              h1: ({ children }) => (
+                <h1 className='markdown-renderer__h1'>{children}</h1>
+              ),
+              h2: ({ children }) => (
+                <h2 className='markdown-renderer__h2'>{children}</h2>
+              ),
+              h3: ({ children }) => (
+                <h3 className='markdown-renderer__h3'>{children}</h3>
+              ),
               p: ({ children }) => (
-                <p className='markdown-paragraph'>{children}</p>
+                <p className='markdown-renderer__paragraph'>{children}</p>
               ),
               code: ({ children, className }) => (
-                <code className={`markdown-code ${className || ''}`}>
+                <code className={`markdown-renderer__code ${className || ''}`}>
                   {children}
                 </code>
               ),
               pre: ({ children }) => (
-                <pre className='markdown-pre'>{children}</pre>
+                <pre className='markdown-renderer__pre'>{children}</pre>
               ),
               blockquote: ({ children }) => (
-                <blockquote className='markdown-blockquote'>
+                <blockquote className='markdown-renderer__blockquote'>
                   {children}
                 </blockquote>
               ),
               ul: ({ children }) => (
-                <ul className='markdown-list'>{children}</ul>
+                <ul className='markdown-renderer__list'>{children}</ul>
               ),
               ol: ({ children }) => (
-                <ol className='markdown-list markdown-list__ordered'>
+                <ol className='markdown-renderer__list markdown-renderer__list_ordered'>
                   {children}
                 </ol>
               ),
               li: ({ children }) => (
-                <li className='markdown-list-item'>{children}</li>
+                <li className='markdown-renderer__list-item'>{children}</li>
               ),
               hr: ({ children }) => (
-                <hr className='markdown-thematic-break'>{children}</hr>
+                <hr className='markdown-renderer__thematic-break'>
+                  {children}
+                </hr>
               ),
             }}>
             {finalContent}

@@ -1,0 +1,22 @@
+.thinking {
+  margin: 1rem 0 0 11px;
+  padding: 0 0 0 1rem;
+  border-left: 2px solid var(--main);
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__paragraph {
+    margin: 0;
+    border-radius: 0.5rem;
+    color: var(--main);
+    font-weight: 400;
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+}

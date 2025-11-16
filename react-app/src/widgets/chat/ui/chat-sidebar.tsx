@@ -135,11 +135,11 @@ function ChatSidebar({
     if (state.filteredChats.length > 0) return null;
 
     return (
-      <div className='chat-sidebar__empty-state'>
-        <h3 className='chat-sidebar__empty-state-title'>
+      <div className='empty-state'>
+        <h3 className='text-heading-l empty-state__title'>
           {state.searchQuery ? t`no chats found` : t`no chats`}
         </h3>
-        <p className='chat-sidebar__empty-state-description'>
+        <p className='text-body-m empty-state__description'>
           {state.searchQuery
             ? t`Try changing your search query`
             : t`Create your first chat`}

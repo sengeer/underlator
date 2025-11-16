@@ -501,7 +501,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
           <>
             <div className='pdf-viewer__text-wrapper'>
               <input
-                className='pdf-viewer__instruction'
+                className='text-heading-l pdf-viewer__instruction'
                 type='text'
                 id='instruction'
                 placeholder={t`what does this mean?`}
@@ -515,7 +515,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                 {generatedResponse ? (
                   <MarkdownRenderer
                     content={stringifyGenerateResponse(generatedResponse)}
-                    className='pdf-viewer__output'
+                    className='text-heading-l pdf-viewer__output'
                     showThinking
                   />
                 ) : (

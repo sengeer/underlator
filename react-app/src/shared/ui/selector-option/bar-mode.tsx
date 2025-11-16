@@ -35,12 +35,12 @@ function renderProgressBar(progressInfo: any) {
 
   return (
     <div className='selector-option__progress'>
-      <span className='selector-option__progress-percentage'>
+      <span className='text-body-m selector-option__progress-percentage'>
         {Math.round(percentage)}%
       </span>
       <ProgressBar percentage={percentage} style={{ flex: 1 }} />
 
-      <span className='selector-option__progress-size'>
+      <span className='text-body-m selector-option__progress-size'>
         {formatFileSize(currentSize)} / {formatFileSize(totalSize)}
       </span>
     </div>

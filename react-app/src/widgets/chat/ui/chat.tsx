@@ -342,8 +342,8 @@ function Chat({ isOpened, className = '' }: ChatProps) {
 
     return (
       <div className='empty-state'>
-        <h2 className='empty-state__title'>{t`welcome to chat`}</h2>
-        <p className='empty-state__description'>
+        <h2 className='text-heading-l empty-state__title'>{t`welcome to chat`}</h2>
+        <p className='text-body-m empty-state__description'>
           {t`Select an existing chat or create a new one to start communicating with the` +
             ` ${settings[provider]?.model}`}
         </p>
@@ -390,11 +390,9 @@ function Chat({ isOpened, className = '' }: ChatProps) {
             <TextAndIconButton onClick={handleToggleSidebar} text={t`chats`}>
               <MenuIcon />
             </TextAndIconButton>
-            {state.activeChat ? (
-              <p className='chat__chat-info'>{state.activeChat.title}</p>
-            ) : (
-              <p className='chat__chat-info'>{'...'}</p>
-            )}
+            <p className='text-body-m chat__chat-info'>
+              {state.activeChat ? state.activeChat.title : '...'}
+            </p>
           </div>
         </div>
 
@@ -431,7 +429,7 @@ function Chat({ isOpened, className = '' }: ChatProps) {
           <div className='chat__bar'>
             <div className='chat__actions'>
               <TextareaAutosize
-                className='chat__textarea'
+                className='text-heading-l chat__textarea'
                 value={state.messageText}
                 placeholder={t`ask ` + settings[provider]?.model || ''}
                 onChange={handleInputChange}

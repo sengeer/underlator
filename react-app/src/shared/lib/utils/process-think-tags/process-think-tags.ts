@@ -48,6 +48,11 @@ export default function processThinkTags(modelContent: string): string {
     }
   }
 
+  // Автоматическое открытие завершенных тегов
+  if (closeMatches.length > openMatches.length) {
+    processedContent = '<think>' + processedContent;
+  }
+
   // Нормализация структуры тегов без изменения содержимого
   // Обеспечивает единообразный формат для последующего парсинга
   processedContent = processedContent.replace(

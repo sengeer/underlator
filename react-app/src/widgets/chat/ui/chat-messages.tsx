@@ -126,8 +126,8 @@ function ChatMessages({
 
     return (
       <div className='empty-state'>
-        <h2 className='empty-state__title'>{t`start a new conversation`}</h2>
-        <p className='empty-state__description'>
+        <h2 className='text-heading-l empty-state__title'>{t`start a new conversation`}</h2>
+        <p className='text-body-m empty-state__description'>
           {t`Send a message to start chatting with the assistant`}
         </p>
       </div>
