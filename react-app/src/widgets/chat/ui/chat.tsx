@@ -30,7 +30,7 @@ import '../styles/empty-state.scss';
 
 function Chat({ isOpened, className = '' }: ChatProps) {
   const { t } = useLingui();
-  const { generate, status, generatedResponse, stop } = useModel();
+  const { generate, status, stop } = useModel();
   const { provider, settings } = useSelector(selectProviderSettings);
 
   const dispatch = useDispatch();
@@ -151,7 +151,6 @@ function Chat({ isOpened, className = '' }: ChatProps) {
           name: settings[provider]?.model || 'qwen3:0.6b',
           provider: provider || 'Ollama',
         },
-        systemPrompt: 'You are a helpful assistant. Answer user questions.',
         generationSettings: {
           temperature: 0.7,
           maxTokens: 2048,
@@ -213,6 +212,7 @@ function Chat({ isOpened, className = '' }: ChatProps) {
           saveHistory: true,
         },
         {
+          think: true,
           temperature: 0.7,
           max_tokens: 2048,
         }
@@ -344,7 +344,8 @@ function Chat({ isOpened, className = '' }: ChatProps) {
       <div className='empty-state'>
         <h2 className='empty-state__title'>{t`welcome to chat`}</h2>
         <p className='empty-state__description'>
-          {t`Select an existing chat or create a new one to start communicating with the assistant`}
+          {t`Select an existing chat or create a new one to start communicating with the` +
+            ` ${settings[provider]?.model}`}
         </p>
         <IconButton onClick={handleCreateChat}>
           <AddIcon />
@@ -443,7 +444,6 @@ function Chat({ isOpened, className = '' }: ChatProps) {
             <div className='chat__actions'>
               {status === 'process' ? (
                 <div className='chat__btns-container'>
-                  <TextButtonFilled text='space' isDisabled />
                   <TextButton text={t`stop`} onClick={handleStopGeneration} />
                 </div>
               ) : (

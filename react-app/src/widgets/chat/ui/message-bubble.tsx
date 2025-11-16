@@ -44,15 +44,23 @@ function MessageBubble({
   }
 
   /**
-   * Форматирует временную метку для отображения.
+   * Форматирует временную метку в 24-часовой формат YYYY-MM-DD HH:mm:ss,
+   * используя локальный часовой пояс системы, где выполняется код.
    */
-  function formatTimestamp(timestamp: string) {
+  function formatTimestamp(timestamp: string): string {
     try {
       const date = new Date(timestamp);
-      return date.toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+
+      const pad = (n: number): string => String(n).padStart(2, '0');
+
+      const Y = date.getFullYear();
+      const M = pad(date.getMonth() + 1);
+      const D = pad(date.getDate());
+      const H = pad(date.getHours());
+      const m = pad(date.getMinutes());
+      const S = pad(date.getSeconds());
+
+      return `${D}.${M}.${Y}, ${H}:${m}:${S}`;
     } catch {
       return '';
     }
@@ -64,13 +72,13 @@ function MessageBubble({
   function getRoleLabel() {
     switch (message.role) {
       case 'user':
-        return t`user` + ' ' + formatTimestamp(message.timestamp);
+        return t`user` + ` ${formatTimestamp(message.timestamp)}`;
       case 'assistant':
         return message.model
           ? `${message.model.name} ${formatTimestamp(message.timestamp)}`
-          : t`assistant` + ' ' + formatTimestamp(message.timestamp);
+          : t`assistant` + ` ${formatTimestamp(message.timestamp)}`;
       case 'system':
-        return t`system` + ' ' + formatTimestamp(message.timestamp);
+        return t`system` + ` ${formatTimestamp(message.timestamp)}`;
       default:
         return t`unknown`;
     }

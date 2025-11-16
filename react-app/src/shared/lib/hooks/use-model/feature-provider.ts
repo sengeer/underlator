@@ -272,7 +272,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
   const message =
     typeof props.text === 'string' ? props.text : props.text.join(' ');
 
-  let ragContext: string;
+  let ragContext: string = '';
 
   try {
     const result = await ragElectron.getCollectionStats(props.chatId);
@@ -309,8 +309,6 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
         );
         throw new Error(`Failed getting RAG context: ${error}`);
       }
-    } else {
-      return;
     }
   } catch (error) {
     props.dispatch(

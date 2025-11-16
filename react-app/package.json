@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "homepage": "./",
+  "type": "module",
   "dependencies": {
     "@lingui/core": "^5.2.0",
     "@lingui/react": "^5.2.0",
@@ -38,7 +39,7 @@
     "prettier": "prettier --write .",
     "lint-staged": "lint-staged",
     "prepare": "cd ../ && husky ./react-app/.husky",
-    "electron": "npm run build && node electron-build.mts && cd ../electron-app && npm run make",
+    "electron": "npm run build && node electron-build.js && cd ../electron-app && npm run make",
     "extract": "lingui extract",
     "compile": "lingui compile --typescript",
     "docs": "npx typedoc",

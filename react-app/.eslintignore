@@ -6,7 +6,7 @@ build
 storybook-static
 .eslintrc.json
 docs
-electron-build.mts
+electron-build.js
 vite.config.ts
 lingui.config.ts
 dist
