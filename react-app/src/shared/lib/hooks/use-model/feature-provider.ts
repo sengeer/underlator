@@ -6,8 +6,8 @@
 
 import { electron as chatElectron } from '../../../apis/chat-ipc/chat-ipc';
 import { electron as ragElectron } from '../../../apis/rag-ipc/';
-import { addNotification } from '../../../models/notifications-slice';
 import { DEFAULT_MODEL } from '../../constants';
+import callANotificationWithALog from '../../utils/call-a-notification-with-a-log';
 import {
   prepareContextualTranslation,
   processContextualResponse,
@@ -47,19 +47,15 @@ async function handleContextualTranslation(
   );
 
   if (!validation.valid) {
-    props.dispatch(
-      addNotification({
-        type: 'error',
-        message: props.t`Translation error`,
-      })
+    const error = `Contextual translation validation failed: ${validation.reason}`;
+
+    callANotificationWithALog(
+      props.dispatch,
+      props.t`Translation error`,
+      error
     );
 
-    console.warn(
-      `Contextual translation validation failed: ${validation.reason}`
-    );
-    throw new Error(
-      `Contextual translation not possible: ${validation.reason}`
-    );
+    throw new Error(error);
   }
 
   // Подготовка контекстного перевода
@@ -70,16 +66,15 @@ async function handleContextualTranslation(
   );
 
   if (!preparation.success) {
-    props.dispatch(
-      addNotification({
-        type: 'error',
-        message: props.t`Translation error`,
-      })
+    const error = `Failed to prepare contextual translation: ${preparation.error}`;
+
+    callANotificationWithALog(
+      props.dispatch,
+      props.t`Translation error`,
+      error
     );
 
-    throw new Error(
-      `Failed to prepare contextual translation: ${preparation.error}`
-    );
+    throw new Error(error);
   }
 
   const { prompt } = preparation.data;
@@ -93,18 +88,14 @@ async function handleContextualTranslation(
     }
 
     if (chunk.error) {
-      props.dispatch(
-        addNotification({
-          type: 'error',
-          message: props.t`Translation error`,
-        })
+      callANotificationWithALog(
+        props.dispatch,
+        props.t`Translation error`,
+        `Streaming error in contextual translation: ${chunk.error}`
       );
 
       // Не бросает исключение в callback, так как это не остановит основной промис
       // Ошибка будет обработана в основном блоке try-catch
-      console.error(
-        `Streaming error in contextual translation: ${chunk.error}`
-      );
     }
   });
 
@@ -127,16 +118,12 @@ async function handleContextualTranslation(
     );
 
     if (!finalResult.success) {
-      props.dispatch(
-        addNotification({
-          type: 'error',
-          message: props.t`Translation error`,
-        })
-      );
-
-      console.warn(
+      callANotificationWithALog(
+        props.dispatch,
+        props.t`Translation error`,
         `Contextual translation processing failed: ${finalResult.error}`
       );
+
       const textArray = Array.isArray(props.text) ? props.text : [props.text];
       return textArray.reduce(
         (acc: Record<number, string>, text: string, index: number) => {
@@ -177,15 +164,13 @@ async function handleInstruction(props: ModelRequestContext): Promise<void> {
     }
 
     if (chunk.error) {
-      props.dispatch(
-        addNotification({
-          type: 'error',
-          message: props.t`Failed to generate a response`,
-        })
+      callANotificationWithALog(
+        props.dispatch,
+        props.t`Failed to generate a response`,
+        `Streaming error in instruction: ${chunk.error}`
       );
 
       // Не бросает исключение в callback, так как это не остановит основной промис
-      console.error(`Streaming error in instruction: ${chunk.error}`);
     }
   });
 
@@ -223,15 +208,13 @@ async function handleSimpleTranslation(
     }
 
     if (chunk.error) {
-      props.dispatch(
-        addNotification({
-          type: 'error',
-          message: props.t`Translation error`,
-        })
+      callANotificationWithALog(
+        props.dispatch,
+        props.t`Translation error`,
+        `Streaming error in simple translation: ${chunk.error}`
       );
 
       // Не бросает исключение в callback, так как это не остановит основной промис
-      console.error(`Streaming error in simple translation: ${chunk.error}`);
     }
   });
 
@@ -260,13 +243,15 @@ async function handleSimpleTranslation(
 async function handleChat(props: ModelRequestContext): Promise<void> {
   // Валидация обязательных параметров для режима чата
   if (!props.chatId) {
-    props.dispatch(
-      addNotification({
-        type: 'error',
-        message: props.t`Chat ID is required for chat mode`,
-      })
+    const error = 'Chat ID is required for chat mode';
+
+    callANotificationWithALog(
+      props.dispatch,
+      props.t`Chat ID is required for chat mode`,
+      error
     );
-    throw new Error('Chat ID is required for chat mode');
+
+    throw new Error(error);
   }
 
   const message =
@@ -301,23 +286,27 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
 
         ragContext = context;
       } catch (error) {
-        props.dispatch(
-          addNotification({
-            type: 'error',
-            message: props.t`Failed getting RAG context`,
-          })
+        const errMsg = `Failed getting RAG context: ${(error as Error).message}`;
+
+        callANotificationWithALog(
+          props.dispatch,
+          props.t`Failed getting RAG context`,
+          errMsg
         );
-        throw new Error(`Failed getting RAG context: ${error}`);
+
+        throw new Error(errMsg);
       }
     }
   } catch (error) {
-    props.dispatch(
-      addNotification({
-        type: 'error',
-        message: props.t`Failed getting RAG stats`,
-      })
+    const errMsg = `Failed getting RAG stats: ${(error as Error).message}`;
+
+    callANotificationWithALog(
+      props.dispatch,
+      props.t`Failed getting RAG stats`,
+      errMsg
     );
-    throw new Error(`Failed getting RAG stats: ${error}`);
+
+    throw new Error(errMsg);
   }
 
   let chatContext: ChatContext;
@@ -327,13 +316,15 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
     const chatResult = await chatElectron.getChat({ chatId: props.chatId });
 
     if (!chatResult.success || !chatResult.data) {
-      props.dispatch(
-        addNotification({
-          type: 'error',
-          message: props.t`Failed to load chat context`,
-        })
+      const error = `Failed to load chat context: ${chatResult.error}`;
+
+      callANotificationWithALog(
+        props.dispatch,
+        props.t`Failed to load chat context`,
+        error
       );
-      throw new Error(`Failed to load chat: ${chatResult.error}`);
+
+      throw new Error(error);
     }
 
     chatContext = {
@@ -347,27 +338,29 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
       },
     };
   } catch (error) {
-    props.dispatch(
-      addNotification({
-        type: 'error',
-        message: props.t`Failed to load chat context`,
-      })
+    const errMsg = `Chat context loading failed: ${(error as Error).message}`;
+
+    callANotificationWithALog(
+      props.dispatch,
+      props.t`Failed to load chat context`,
+      errMsg
     );
-    throw new Error(
-      `Chat context loading failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
+
+    throw new Error(errMsg);
   }
 
   // Валидация контекста чата
   const contextValidation = validateChatContext(chatContext);
   if (!contextValidation.success) {
-    props.dispatch(
-      addNotification({
-        type: 'error',
-        message: props.t`Invalid chat context`,
-      })
+    const error = `Invalid chat context: ${contextValidation.error}`;
+
+    callANotificationWithALog(
+      props.dispatch,
+      props.t`Invalid chat context`,
+      error
     );
-    throw new Error(`Invalid chat context: ${contextValidation.error}`);
+
+    throw new Error(error);
   }
 
   // Создание сообщения пользователя
@@ -403,15 +396,15 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
     });
 
     if (!summarizationResult.success) {
-      props.dispatch(
-        addNotification({
-          type: 'error',
-          message: props.t`Failed to process chat context`,
-        })
+      const error = `Context summarization failed: ${summarizationResult.error}`;
+
+      callANotificationWithALog(
+        props.dispatch,
+        props.t`Failed to process chat context`,
+        error
       );
-      throw new Error(
-        `Context summarization failed: ${summarizationResult.error}`
-      );
+
+      throw new Error(error);
     }
   }
 
@@ -425,13 +418,15 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
   });
 
   if (!promptResult.success) {
-    props.dispatch(
-      addNotification({
-        type: 'error',
-        message: props.t`Failed to build chat prompt`,
-      })
+    const error = `Prompt building failed: ${promptResult.error}`;
+
+    callANotificationWithALog(
+      props.dispatch,
+      props.t`Failed to build chat prompt`,
+      error
     );
-    throw new Error(`Prompt building failed: ${promptResult.error}`);
+
+    throw new Error(error);
   }
 
   const prompt = promptResult.data;
@@ -450,13 +445,15 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
     }
 
     if (chunk.error) {
-      props.dispatch(
-        addNotification({
-          type: 'error',
-          message: props.t`Chat generation error`,
-        })
+      const error = `Streaming error in chat: ${chunk.error}`;
+
+      callANotificationWithALog(
+        props.dispatch,
+        props.t`Chat generation error`,
+        error
       );
-      console.error(`Streaming error in chat: ${chunk.error}`);
+
+      throw new Error(error);
     }
   });
 

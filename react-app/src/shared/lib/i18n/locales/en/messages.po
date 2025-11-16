@@ -43,6 +43,11 @@ msgstr "Model installation error"
 
 #. js-lingui-explicit-id
 #: src/widgets/settings/models/model-ipc-slice.ts
+msgid " model is installed"
+msgstr " model is installed"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/model-ipc-slice.ts
 #: src/widgets/settings/models/model-ipc-slice.ts
 msgid "Model removal error"
 msgstr "Model removal error"
@@ -55,10 +60,19 @@ msgid "Error getting list of models"
 msgstr "Error getting list of models"
 
 #. js-lingui-explicit-id
+#: src/widgets/settings/models/model-ipc-slice.ts
+msgid " model has been removed"
+msgstr " model has been removed"
+
+#. js-lingui-explicit-id
 #: src/pages/main/models/splash-screen-ipc-slice.ts
 #: src/pages/main/models/splash-screen-ipc-slice.ts
 msgid "Internal application error"
 msgstr "Internal application error"
+
+#: src/widgets/chat/ui/chat.tsx
+msgid " file is attached!"
+msgstr " file is attached!"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "About Underlator"
@@ -161,9 +175,22 @@ msgstr "dutch"
 msgid "english"
 msgstr "english"
 
-#: src/shared/lib/hooks/use-copying/use-copying.ts
-msgid "Failed to copy text"
-msgstr "Failed to copy text"
+#: src/widgets/chat/ui/chat.tsx
+msgid "Error when selecting a file"
+msgstr "Error when selecting a file"
+
+#: src/widgets/chat/ui/chat.tsx
+msgid "Failed to create chat"
+msgstr "Failed to create chat"
+
+#: src/widgets/chat/ui/chat.tsx
+msgid "Failed to load chat"
+msgstr "Failed to load chat"
+
+#: src/widgets/chat/ui/chat-sidebar.tsx
+#: src/widgets/chat/ui/chat.tsx
+msgid "Failed to load chats"
+msgstr "Failed to load chats"
 
 #: src/widgets/pdf-viewer/ui/custom-error-message.tsx
 msgid "failed to load PDF file"
@@ -180,6 +207,10 @@ msgstr "Failed to stop generation"
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Failed to translate app"
 msgstr "Failed to translate app"
+
+#: src/widgets/chat/ui/chat.tsx
+msgid "File processing error"
+msgstr "File processing error"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "filipino"
@@ -301,7 +332,6 @@ msgstr "no chats"
 msgid "no chats found"
 msgstr "no chats found"
 
-#: src/widgets/chat/ui/chat.tsx
 #: src/widgets/settings/ui/settings.tsx
 msgid "no model selected"
 msgstr "no model selected"
@@ -356,8 +386,8 @@ msgid "Select All"
 msgstr "Select All"
 
 #: src/widgets/chat/ui/chat.tsx
-msgid "Select an existing chat or create a new one to start communicating with the assistant"
-msgstr "Select an existing chat or create a new one to start communicating with the assistant"
+msgid "Select an existing chat or create a new one to start communicating with the"
+msgstr "Select an existing chat or create a new one to start communicating with the"
 
 #: src/widgets/chat/ui/chat.tsx
 msgid "send"

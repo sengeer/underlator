@@ -14,7 +14,9 @@ import { electron as ragElectron } from '../../../shared/apis/rag-ipc';
 import AddIcon from '../../../shared/assets/icons/add-icon';
 import AttachFileIcon from '../../../shared/assets/icons/attach-file';
 import MenuIcon from '../../../shared/assets/icons/menu-icon';
+import StopCircleIcon from '../../../shared/assets/icons/stop-circle-icon';
 import useModel from '../../../shared/lib/hooks/use-model';
+import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log';
 import { addNotification } from '../../../shared/models/notifications-slice';
 import { selectProviderSettings } from '../../../shared/models/provider-settings-slice';
 import Gradient from '../../../shared/ui/gradient';
@@ -68,13 +70,7 @@ function Chat({ isOpened, className = '' }: ChatProps) {
         throw new Error(result.error || 'Failed to load chats');
       }
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: t`Failed to load chats`,
-        })
-      );
-      console.error('Failed to load chats:', error);
+      callANotificationWithALog(dispatch, t`Failed to load chats`, error);
       setState((prev) => ({
         ...prev,
         isLoading: false,
@@ -111,13 +107,7 @@ function Chat({ isOpened, className = '' }: ChatProps) {
         throw new Error(result.error || 'Failed to load chat');
       }
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: t`Failed to load chat`,
-        })
-      );
-      console.error('Failed to load chat:', error);
+      callANotificationWithALog(dispatch, t`Failed to load chat`, error);
       setState((prev) => ({
         ...prev,
         isLoading: false,
@@ -164,13 +154,7 @@ function Chat({ isOpened, className = '' }: ChatProps) {
         handleSelectChat(result.data.id);
       }
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: t`Failed to create chat`,
-        })
-      );
-      console.error('Failed to create chat:', error);
+      callANotificationWithALog(dispatch, t`Failed to create chat`, error);
     }
   }, [loadChats, handleSelectChat, settings[provider]?.model, provider]);
 
@@ -305,32 +289,24 @@ function Chat({ isOpened, className = '' }: ChatProps) {
             dispatch(
               addNotification({
                 type: 'success',
-                message: t`File ` + file.name + ` embedded!`,
+                message: file.name + t` file is attached!`,
               })
             );
 
             setState((prev) => ({ ...prev, isGenerating: false }));
           }
         } catch (error) {
-          dispatch(
-            addNotification({
-              type: 'error',
-              message: t`File processing error`,
-            })
-          );
-          console.error('❌ File processing error:', error);
+          callANotificationWithALog(dispatch, t`File processing error`, error);
         }
       };
 
       input.click();
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: t`Error when selecting a file`,
-        })
+      callANotificationWithALog(
+        dispatch,
+        t`Error when selecting a file`,
+        error
       );
-      console.error('❌ Error when selecting a file:', error);
     }
   }
 
@@ -441,9 +417,11 @@ function Chat({ isOpened, className = '' }: ChatProps) {
             </div>
             <div className='chat__actions'>
               {status === 'process' ? (
-                <div className='chat__btns-container'>
-                  <TextButton text={t`stop`} onClick={handleStopGeneration} />
-                </div>
+                <TextAndIconButton
+                  text={t`stop`}
+                  onClick={handleStopGeneration}>
+                  <StopCircleIcon />
+                </TextAndIconButton>
               ) : (
                 <div className='chat__btns-container'>
                   <TextButtonFilled text='enter' isDisabled />

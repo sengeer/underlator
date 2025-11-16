@@ -5,7 +5,7 @@
 
 import { useLingui } from '@lingui/react/macro';
 import { useDispatch } from 'react-redux';
-import { addNotification } from '../../../models/notifications-slice/';
+import callANotificationWithALog from '../../utils/call-a-notification-with-a-log';
 import { UseElectronTranslationReturn } from './types/use-electron-translation';
 
 /**
@@ -76,16 +76,7 @@ function useElectronTranslation(): UseElectronTranslationReturn {
     try {
       await window.electron.updateTranslations(translations);
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: t`Failed to translate app`,
-        })
-      );
-
-      // Логирование ошибок без прерывания работы приложения
-      // Обеспечивает стабильность при проблемах с IPC коммуникацией
-      console.error((error as Error).message);
+      callANotificationWithALog(dispatch, t`Failed to translate app`, error);
     }
   }
 

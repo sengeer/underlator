@@ -6,6 +6,7 @@
 
 import { i18n } from '@lingui/core';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log';
 import { addNotification } from '../../../shared/models/notifications-slice/';
 import { updateProviderSettings } from '../../../shared/models/provider-settings-slice';
 import { electron } from '../apis/model-and-catalog-ipc';
@@ -79,30 +80,28 @@ export const fetchCatalog = createAsyncThunk(
       const result = await electron.getCatalog(params);
 
       if (!result.success) {
-        dispatch(
-          addNotification({
-            type: 'error',
-            message: i18n._('Error getting the models catalog'),
-          })
+        const errMsg = 'Error getting the models catalog';
+
+        callANotificationWithALog(
+          dispatch,
+          i18n._('Error getting the models catalog'),
+          errMsg
         );
 
-        return rejectWithValue(
-          result.error || 'Error getting the models catalog'
-        );
+        return rejectWithValue(result.error || errMsg);
       }
 
       return result;
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: i18n._('Error getting the catalog'),
-        })
+      const errMsg = `Error getting the catalog: ${(error as Error).message}`;
+
+      callANotificationWithALog(
+        dispatch,
+        i18n._('Error getting the catalog'),
+        errMsg
       );
 
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(errMsg);
     }
   }
 );
@@ -118,28 +117,28 @@ export const searchModels = createAsyncThunk(
       const result = await electron.searchModels(filters);
 
       if (!result.success) {
-        dispatch(
-          addNotification({
-            type: 'error',
-            message: i18n._('Error searching models'),
-          })
+        const errMsg = 'Error searching models';
+
+        callANotificationWithALog(
+          dispatch,
+          i18n._('Error searching models'),
+          errMsg
         );
 
-        return rejectWithValue(result.error || 'Error searching models');
+        return rejectWithValue(result.error || errMsg);
       }
 
       return result;
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: i18n._('Error searching models'),
-        })
+      const errMsg = `Error searching models: ${(error as Error).message}`;
+
+      callANotificationWithALog(
+        dispatch,
+        i18n._('Error searching models'),
+        errMsg
       );
 
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(errMsg);
     }
   }
 );
@@ -155,28 +154,28 @@ export const fetchModelInfo = createAsyncThunk(
       const result = await electron.getModelInfo(params);
 
       if (!result.success) {
-        dispatch(
-          addNotification({
-            type: 'error',
-            message: i18n._('Error getting model info'),
-          })
+        const errMsg = 'Error getting model info';
+
+        callANotificationWithALog(
+          dispatch,
+          i18n._('Error getting model info'),
+          errMsg
         );
 
-        return rejectWithValue(result.error || 'Error getting model info');
+        return rejectWithValue(result.error || errMsg);
       }
 
       return result;
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: i18n._('Error getting model info'),
-        })
+      const errMsg = `Error getting model info: ${(error as Error).message}`;
+
+      callANotificationWithALog(
+        dispatch,
+        i18n._('Error getting model info'),
+        errMsg
       );
 
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(errMsg);
     }
   }
 );
@@ -215,14 +214,15 @@ export const installModel = createAsyncThunk(
       );
 
       if (!result.success) {
-        dispatch(
-          addNotification({
-            type: 'error',
-            message: i18n._('Model installation error'),
-          })
+        const errMsg = 'Model installation error';
+
+        callANotificationWithALog(
+          dispatch,
+          i18n._('Model installation error'),
+          errMsg
         );
 
-        return rejectWithValue(result.error || 'Error installing model');
+        return rejectWithValue(result.error || errMsg);
       }
 
       dispatch(
@@ -232,20 +232,26 @@ export const installModel = createAsyncThunk(
         })
       );
 
+      dispatch(
+        addNotification({
+          type: 'success',
+          message: params.name + i18n._(' model is installed'),
+        })
+      );
+
       dispatch(fetchCatalog({ forceRefresh: true }));
 
       return { ...result, modelName: params.name };
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: i18n._('Model installation error'),
-        })
+      const errMsg = `Model installation error: ${(error as Error).message}`;
+
+      callANotificationWithALog(
+        dispatch,
+        i18n._('Model installation error'),
+        errMsg
       );
 
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(errMsg);
     }
   }
 );
@@ -260,29 +266,28 @@ export const removeModel = createAsyncThunk(
     try {
       const resultRemove = await electron.removeModel(params);
       if (!resultRemove.success) {
-        dispatch(
-          addNotification({
-            type: 'error',
-            message: i18n._('Model removal error'),
-          })
+        const errMsg = 'Model removal error';
+
+        callANotificationWithALog(
+          dispatch,
+          i18n._('Model removal error'),
+          errMsg
         );
 
-        console.error('Remove failed', resultRemove.error);
-        return rejectWithValue(resultRemove.error || 'Error removing model');
+        return rejectWithValue(resultRemove.error || errMsg);
       }
 
       const resultList = await electron.listInstalledModels();
       if (!resultList.success) {
-        dispatch(
-          addNotification({
-            type: 'error',
-            message: i18n._('Error getting list of models'),
-          })
+        const errMsg = 'Error getting list of models';
+
+        callANotificationWithALog(
+          dispatch,
+          i18n._('Error getting list of models'),
+          errMsg
         );
 
-        return rejectWithValue(
-          resultList.error || 'Error getting list of models'
-        );
+        return rejectWithValue(resultList.error || errMsg);
       }
 
       dispatch(
@@ -293,22 +298,28 @@ export const removeModel = createAsyncThunk(
       );
       dispatch(fetchCatalog({ forceRefresh: true }));
 
+      dispatch(
+        addNotification({
+          type: 'success',
+          message: params.name + i18n._(' model has been removed'),
+        })
+      );
+
       return {
         ...resultRemove,
         modelName: params.name,
         firstInstalledModel: resultList.data.models[0].model,
       };
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: i18n._('Model removal error'),
-        })
+      const errMsg = `Model removal error: ${(error as Error).message}`;
+
+      callANotificationWithALog(
+        dispatch,
+        i18n._('Model removal error'),
+        errMsg
       );
 
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(errMsg);
     }
   }
 );
@@ -324,28 +335,28 @@ export const fetchInstalledModels = createAsyncThunk(
       const result = await electron.listInstalledModels();
 
       if (!result.success) {
-        dispatch(
-          addNotification({
-            type: 'error',
-            message: i18n._('Error getting list of models'),
-          })
+        const errMsg = 'Error getting list of models';
+
+        callANotificationWithALog(
+          dispatch,
+          i18n._('Error getting list of models'),
+          errMsg
         );
 
-        return rejectWithValue(result.error || 'Error getting list of models');
+        return rejectWithValue(result.error || errMsg);
       }
 
       return result;
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: i18n._('Error getting list of models'),
-        })
+      const errMsg = `Error getting list of models: ${(error as Error).message}`;
+
+      callANotificationWithALog(
+        dispatch,
+        i18n._('Error getting list of models'),
+        errMsg
       );
 
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(errMsg);
     }
   }
 );

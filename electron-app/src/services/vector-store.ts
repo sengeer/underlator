@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
 import Database from 'better-sqlite3';
+import { isDev } from '../main';
 import {
   DocumentChunk,
   VectorCollection,
@@ -53,8 +54,10 @@ export class VectorStoreService {
       ...config,
     };
 
-    // Определяем путь к базе данных
-    const userDataPath = app.getPath('userData');
+    // Определяет путь к базе данных
+    const userDataPath = isDev
+      ? app.getPath('userData')
+      : path.dirname(app.getPath('exe'));
     const dbDir = path.join(userDataPath, 'rag-vectors');
 
     if (!fs.existsSync(dbDir)) {
@@ -110,13 +113,13 @@ export class VectorStoreService {
     try {
       console.log('🔧 VectorStoreService: Initializing SQLite database...');
 
-      // Создаем SQLite базу данных
+      // Создает SQLite базу данных
       this.db = new Database(this.dbPath);
 
-      // Включаем WAL режим для лучшей производительности
+      // Включает WAL режим для лучшей производительности
       this.db.pragma('journal_mode = WAL');
 
-      // Создаем таблицу для чанков
+      // Создает таблицу для чанков
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS chunks (
           id TEXT PRIMARY KEY,
@@ -130,13 +133,13 @@ export class VectorStoreService {
         )
       `);
 
-      // Создаем индексы для быстрого поиска
+      // Создает индексы для быстрого поиска
       this.db.exec(`
         CREATE INDEX IF NOT EXISTS idx_collection ON chunks(collection_name);
         CREATE INDEX IF NOT EXISTS idx_chat_id ON chunks(chat_id);
       `);
 
-      // Создаем таблицу для коллекций
+      // Создает таблицу для коллекций
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS collections (
           name TEXT PRIMARY KEY,
@@ -176,7 +179,7 @@ export class VectorStoreService {
         `🔧 VectorStoreService: Creating collection '${collectionName}'...`
       );
 
-      // Проверяем, существует ли коллекция
+      // Проверяет, существует ли коллекция
       const existing = this.db
         .prepare('SELECT * FROM collections WHERE name = ?')
         .get(collectionName);
@@ -208,7 +211,7 @@ export class VectorStoreService {
         return this.createSuccessResult(collection, 'success');
       }
 
-      // Создаем новую коллекцию
+      // Создает новую коллекцию
       this.db
         .prepare(
           'INSERT INTO collections (name, chat_id, vector_size, distance_metric, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
@@ -278,7 +281,7 @@ export class VectorStoreService {
       const insertMany = this.db.transaction((chunks: DocumentChunk[]) => {
         let count = 0;
         for (const chunk of chunks) {
-          // Проверяем что content это строка
+          // Проверяет что content это строка
           const contentStr =
             typeof chunk.content === 'string'
               ? chunk.content
@@ -338,7 +341,7 @@ export class VectorStoreService {
         `🔧 VectorStoreService: Searching in collection '${collectionName}'...`
       );
 
-      // Получаем все чанки из коллекции
+      // Получает все чанки из коллекции
       const chunks = this.db
         .prepare(
           'SELECT * FROM chunks WHERE collection_name = ? AND chat_id = ?'
@@ -356,17 +359,17 @@ export class VectorStoreService {
         );
       }
 
-      // Если есть эмбеддинг запроса - используем семантический поиск
+      // Если есть эмбеддинг запроса - использует семантический поиск
       let sources: DocumentSource[];
       if (queryEmbedding && queryEmbedding.length > 0) {
         console.log('🔍 Using semantic search with embeddings');
 
-        // Вычисляем косинусное расстояние для каждого чанка
+        // Вычисляет косинусное расстояние для каждого чанка
         const chunksWithSimilarity = (chunks as ChunkRow[]).map(chunk => {
           const metadata = JSON.parse(chunk.metadata || '{}');
           const chunkEmbedding: number[] = JSON.parse(chunk.embedding || '[]');
 
-          // Вычисляем косинусное расстояние (cosine similarity)
+          // Вычисляет косинусное расстояние (cosine similarity)
           const similarity = this.cosineSimilarity(
             queryEmbedding,
             chunkEmbedding
@@ -384,7 +387,7 @@ export class VectorStoreService {
           const queryLower = query.query.toLowerCase();
           const contentLower = content.toLowerCase();
 
-          // Ищем точные совпадения в тексте (особенно для пунктов типа "7.1", "III" и т.д.)
+          // Ищет точные совпадения в тексте (особенно для пунктов типа "7.1", "III" и т.д.)
           if (contentLower.includes(queryLower)) {
             boostedSimilarity += 0.3; // Бонус за точное совпадение
           }
@@ -408,10 +411,10 @@ export class VectorStoreService {
           };
         });
 
-        // Сортируем по релевантности (от наибольшего к наименьшему)
+        // Сортирует по релевантности (от наибольшего к наименьшему)
         chunksWithSimilarity.sort((a, b) => b.similarity - a.similarity);
 
-        // Фильтруем по порогу схожести
+        // Фильтрует по порогу схожести
         const threshold = query.similarityThreshold ?? 0.7;
         const filteredChunks = chunksWithSimilarity.filter(
           item => item.similarity >= threshold
@@ -427,7 +430,7 @@ export class VectorStoreService {
           `✅ Relevant chunks: ${effectiveChunks.length} (filtered=${filteredChunks.length}, threshold=${threshold})`
         );
 
-        // Формируем источники
+        // Формирует источники
         sources = effectiveChunks.map(item => ({
           chunkId: item.chunk.id,
           content: item.content,
@@ -439,7 +442,7 @@ export class VectorStoreService {
           },
         }));
       } else {
-        // Fallback: если нет эмбеддинга, возвращаем все чанки
+        // Fallback: если нет эмбеддинга, возвращает все чанки
         console.log('⚠️ No query embedding provided, using simple search');
         sources = (chunks as ChunkRow[]).map((chunk, index) => {
           const metadata = JSON.parse(chunk.metadata || '{}');
@@ -464,7 +467,7 @@ export class VectorStoreService {
         });
       }
 
-      // Ограничиваем результаты
+      // Ограничивает результаты
       const limitedSources = sources.slice(0, query.topK || 10);
 
       const response: RagResponse = {
@@ -540,17 +543,17 @@ export class VectorStoreService {
         `🔧 VectorStoreService: Deleting collection '${collectionName}'...`
       );
 
-      // Удаляем чанки
+      // Удаляет чанки
       this.db
         .prepare('DELETE FROM chunks WHERE collection_name = ?')
         .run(collectionName);
 
-      // Удаляем коллекцию
+      // Удаляет коллекцию
       this.db
         .prepare('DELETE FROM collections WHERE name = ?')
         .run(collectionName);
 
-      // Удаляем из кэша
+      // Удаляет из кэша
       this.collectionCache.delete(collectionName);
 
       console.log(`✅ Collection '${collectionName}' deleted successfully`);

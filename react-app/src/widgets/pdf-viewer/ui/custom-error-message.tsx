@@ -8,7 +8,7 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { addNotification } from '../../../shared/models/notifications-slice/';
+import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log';
 import '../styles/custom-error-message.scss';
 
 /**
@@ -35,8 +35,10 @@ function CustomErrorMessage() {
   const { t } = useLingui();
 
   useEffect(() => {
-    dispatch(
-      addNotification({ type: 'error', message: t`Failed to load PDF file` })
+    callANotificationWithALog(
+      dispatch,
+      t`Failed to load PDF file`,
+      'Failed to load PDF file'
     );
   }, []);
 

@@ -5,7 +5,7 @@
 
 import { i18n } from '@lingui/core';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { addNotification } from '../../../shared/models/notifications-slice/';
+import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log';
 import { splashScreenApi } from '../apis/splash-screen-ipc';
 import type {
   SplashStatusData,
@@ -37,11 +37,9 @@ export const fetchSplashStatus = createAsyncThunk(
       const status = await splashScreenApi.getStatus();
 
       if (!status) {
-        dispatch(
-          addNotification({
-            type: 'error',
-            message: i18n._('Internal application error'),
-          })
+        callANotificationWithALog(
+          dispatch,
+          i18n._('Internal application error')
         );
 
         return rejectWithValue("Couldn't get splash screen status");
@@ -49,14 +47,12 @@ export const fetchSplashStatus = createAsyncThunk(
 
       return status;
     } catch (error) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: i18n._('Internal application error'),
-        })
+      callANotificationWithALog(
+        dispatch,
+        i18n._('Internal application error'),
+        error
       );
 
-      console.error('Error getting the status', error);
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       return rejectWithValue(errorMessage);

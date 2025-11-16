@@ -3,10 +3,7 @@
  * Хук для управления копированием текста в буфер обмена.
  */
 
-import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addNotification } from '../../../models/notifications-slice/';
 
 /**
  * Предоставляет состояние копирования и функцию для выполнения операции копирования с автоматическим сбросом состояния.
@@ -18,9 +15,6 @@ import { addNotification } from '../../../models/notifications-slice/';
 function useCopying() {
   // Состояние успешного копирования, автоматически сбрасывается через 1.5 секунды
   const [isCopied, setIsCopied] = useState(false);
-
-  const dispatch = useDispatch();
-  const { t } = useLingui();
 
   /**
    * Выполняет копирование текста в буфер обмена через Clipboard API.
@@ -38,13 +32,6 @@ function useCopying() {
       // Автоматический сброс состояния через 1.5 секунды для UX обратной связи
       setTimeout(() => setIsCopied(false), 1500);
     } catch (err) {
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: t`Failed to copy text`,
-        })
-      );
-
       // Логирование ошибок копирования для отладки
       console.error('Failed to copy text', err);
     }

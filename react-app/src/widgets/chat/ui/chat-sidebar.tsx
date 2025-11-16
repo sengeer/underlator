@@ -11,9 +11,9 @@ import { electron as chatElectron } from '../../../shared/apis/chat-ipc';
 import { ChatFile } from '../../../shared/apis/chat-ipc/types/chat-ipc';
 import { electron as ragElectron } from '../../../shared/apis/rag-ipc';
 import AddIcon from '../../../shared/assets/icons/add-icon';
+import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log';
 import splitByWordCount from '../../../shared/lib/utils/split-by-word-count';
 import splittingContentOfModel from '../../../shared/lib/utils/splitting-content-of-model';
-import { addNotification } from '../../../shared/models/notifications-slice';
 import IconButton from '../../../shared/ui/icon-button';
 import Search from '../../../shared/ui/search';
 import SelectorOption from '../../../shared/ui/selector-option';
@@ -102,13 +102,11 @@ function ChatSidebar({
           }
         }
       } catch (error) {
-        dispatch(
-          addNotification({
-            type: 'error',
-            message: t`Failed to load chats`,
-          })
+        callANotificationWithALog(
+          dispatch,
+          t`Failed to load chats`,
+          `Failed to delete chat: ${(error as Error).message}`
         );
-        console.error('Failed to delete chat:', error);
       }
     },
     [onDeleteChat, onRefreshChats, onSelectChat, activeChatId]

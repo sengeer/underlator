@@ -8,10 +8,10 @@
 import { useLingui } from '@lingui/react/macro';
 import { useState, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { addNotification } from '../../../models/notifications-slice/';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
 import { selectTranslationLanguages } from '../../../models/translation-languages-slice';
 import { DEFAULT_URL } from '../../constants';
+import callANotificationWithALog from '../../utils/call-a-notification-with-a-log';
 import useTranslationLanguages from '../use-translation-languages/use-translation-languages';
 import featureProvider from './feature-provider';
 import { ModelRequestContext } from './types/feature-provider';
@@ -135,17 +135,16 @@ function useModel() {
       await featureMethod(requestContext);
 
       setStatus('success');
-    } catch (e) {
-      const err = e as Error;
-      dispatch(
-        addNotification({
-          type: 'error',
-          message: t`Request error, check the settings`,
-        })
+    } catch (erorr) {
+      const errMsg = `Failed to generate text: ${(erorr as Error).message}`;
+
+      callANotificationWithALog(
+        dispatch,
+        t`Request error, check the settings`,
+        errMsg
       );
 
-      console.error('Failed to generate text: ' + err.message);
-      setError(err.message);
+      setError(errMsg);
       setStatus('error');
     } finally {
       abortControllerRef.current = null;
@@ -215,14 +214,11 @@ function useModel() {
       abortControllerRef.current.abort();
 
       window.electron.model.stop().catch((error: Error) => {
-        dispatch(
-          addNotification({
-            type: 'error',
-            message: t`Failed to stop generation`,
-          })
+        callANotificationWithALog(
+          dispatch,
+          t`Failed to stop generation`,
+          `Failed to stop generation via IPC: ${error}`
         );
-
-        console.error('Failed to stop generation via IPC:', error);
       });
     }
   }

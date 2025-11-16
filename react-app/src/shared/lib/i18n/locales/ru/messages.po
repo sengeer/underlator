@@ -43,6 +43,11 @@ msgstr "Ошибка установки модели"
 
 #. js-lingui-explicit-id
 #: src/widgets/settings/models/model-ipc-slice.ts
+msgid " model is installed"
+msgstr " установлена"
+
+#. js-lingui-explicit-id
+#: src/widgets/settings/models/model-ipc-slice.ts
 #: src/widgets/settings/models/model-ipc-slice.ts
 msgid "Model removal error"
 msgstr "Ошибка удаления модели"
@@ -55,14 +60,19 @@ msgid "Error getting list of models"
 msgstr "Ошибка при получении списка моделей"
 
 #. js-lingui-explicit-id
+#: src/widgets/settings/models/model-ipc-slice.ts
+msgid " model has been removed"
+msgstr " удалена"
+
+#. js-lingui-explicit-id
 #: src/pages/main/models/splash-screen-ipc-slice.ts
 #: src/pages/main/models/splash-screen-ipc-slice.ts
 msgid "Internal application error"
 msgstr "Внутренняя ошибка приложения"
 
 #: src/widgets/chat/ui/chat.tsx
-msgid "..."
-msgstr "..."
+msgid " file is attached!"
+msgstr " прикреплен!"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "About Underlator"
@@ -165,9 +175,22 @@ msgstr "Нидерландский"
 msgid "english"
 msgstr "Английский"
 
-#: src/shared/lib/hooks/use-copying/use-copying.ts
-msgid "Failed to copy text"
-msgstr "Не удалось скопировать текст"
+#: src/widgets/chat/ui/chat.tsx
+msgid "Error when selecting a file"
+msgstr "Ошибка при выборе файла"
+
+#: src/widgets/chat/ui/chat.tsx
+msgid "Failed to create chat"
+msgstr "Не удалось создать чат"
+
+#: src/widgets/chat/ui/chat.tsx
+msgid "Failed to load chat"
+msgstr "Не удалось загрузить чат"
+
+#: src/widgets/chat/ui/chat-sidebar.tsx
+#: src/widgets/chat/ui/chat.tsx
+msgid "Failed to load chats"
+msgstr "Не удалось загрузить чаты"
 
 #: src/widgets/pdf-viewer/ui/custom-error-message.tsx
 msgid "failed to load PDF file"
@@ -184,6 +207,10 @@ msgstr "Не удалось остановить генерацию"
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Failed to translate app"
 msgstr "Ошибка локализации приложения"
+
+#: src/widgets/chat/ui/chat.tsx
+msgid "File processing error"
+msgstr "Ошибка при обработке файла"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "filipino"
@@ -305,7 +332,6 @@ msgstr "Чатов нет"
 msgid "no chats found"
 msgstr "Чаты не найдены"
 
-#: src/widgets/chat/ui/chat.tsx
 #: src/widgets/settings/ui/settings.tsx
 msgid "no model selected"
 msgstr "Модель не выбрана"
@@ -360,8 +386,8 @@ msgid "Select All"
 msgstr "Выбрать все"
 
 #: src/widgets/chat/ui/chat.tsx
-msgid "Select an existing chat or create a new one to start communicating with the assistant"
-msgstr "Выберите существующий чат или создайте новый, чтобы начать общение с ассистентом"
+msgid "Select an existing chat or create a new one to start communicating with the"
+msgstr "Выберите существующий чат или создайте новый, чтобы начать общение с"
 
 #: src/widgets/chat/ui/chat.tsx
 msgid "send"
