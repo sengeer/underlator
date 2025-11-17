@@ -347,11 +347,11 @@ export class RagHandlers {
         query: request.query,
         chatId: request.chatId,
         topK: request.topK || 10,
-        // Понижаем дефолтный порог, чтобы избежать пустых результатов
+        // Понижает дефолтный порог, чтобы избежать пустых результатов
         similarityThreshold: request.similarityThreshold ?? 0.3,
       };
 
-      // Генерируем эмбеддинг для запроса пользователя
+      // Генерирует эмбеддинг для запроса пользователя
       console.log('🔍 Generating embedding for query:', request.query);
       const embeddingResult = await this.embeddingService.generateEmbedding(
         request.query
@@ -362,7 +362,7 @@ export class RagHandlers {
           '⚠️ Failed to generate query embedding:',
           embeddingResult.error
         );
-        // Продолжаем без эмбеддинга (будет использован fallback)
+        // Продолжает без эмбеддинга (будет использован fallback)
       }
 
       const queryEmbedding = embeddingResult.data;

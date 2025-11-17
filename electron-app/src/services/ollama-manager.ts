@@ -9,6 +9,8 @@ import { ElectronOllama } from 'electron-ollama';
 const path = require('path');
 import { app } from 'electron';
 import { mainWindow } from '../main';
+import { exec } from 'child_process';
+import { platform } from 'os';
 import { translations } from '../main';
 import { isDev } from '../main';
 import { errorHandler } from '../utils/error-handler';
@@ -261,21 +263,20 @@ class OllamaManager {
 
     try {
       this.isStopping = true;
-      console.log('🔄 Stopping the Ollama server...');
+      console.log('🔄 Stopping the Ollama server (graceful)...');
 
-      // Безопасная остановка сервера через getServer()
       const server = this.electronOllama.getServer();
       if (server) {
         await server.stop();
       }
 
-      console.log('✅ Ollama server stopped successfully');
+      console.log('✅ Ollama server stopped gracefully');
       return true;
     } catch (error) {
-      console.error('❌ Error stopping the Ollama server:', error);
-      throw new Error(
-        `❌ Failed to stop the Ollama server: ${(error as Error).message}`
-      );
+      console.error('❌ Error stopping the Ollama server gracefully:', error);
+      // НЕ пробрасываем ошибку, просто сообщаем о неудаче.
+      // Cleanup должен продолжиться в любом случае.
+      return false;
     } finally {
       this.isStopping = false;
     }
@@ -322,21 +323,88 @@ class OllamaManager {
   }
 
   /**
+   * Принудительно завершает все процессы "ollama" - по имени.
+   * Используется для гарантированной очистки при выходе из приложения.
+   *
+   * @returns {Promise<void>}
+   */
+  private killAllOllamaProcesses(): Promise<void> {
+    return new Promise(resolve => {
+      const osPlatform = platform();
+      let command: string;
+
+      if (osPlatform === 'win32') {
+        // Для Windows:
+        // /F - принудительное завершение
+        // /IM - завершить процесс по имени образа (ollama.exe)
+        command = 'taskkill /F /IM ollama.exe';
+      } else {
+        // Для macOS и Linux:
+        // pkill -9 -f ollama
+        // -9 - SIGKILL (принудительно, без компромиссов)
+        // -f - искать по всей командной строке (надежнее, чем просто по имени 'ollama')
+        command = 'pkill -9 -f ollama';
+      }
+
+      console.log(`[Exec] Running cleanup command: ${command}`);
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          // Ошибка "не найдено" - это нормально, значит, их и не было.
+          if (
+            stderr &&
+            !stderr.includes('No matching processes') && // Linux/macOS
+            !stderr.includes('не найден') && // Windows (ru)
+            !stderr.includes('not found') && // Windows (en)
+            !stderr.includes('Не найдено') // Windows (ru)
+          ) {
+            console.warn(
+              `⚠️ Error executing pkill/taskkill by name: ${stderr}`
+            );
+          }
+        }
+        console.log(
+          `[Exec] ${stdout || 'Process kill by name command executed.'}`
+        );
+        resolve();
+      });
+    });
+  }
+
+  /**
    * Выполняет полную очистку ресурсов OllamaManager.
-   * Останавливает сервер и освобождает ресурсы.
+   * Останавливает сервер и принудительно убивает все дочерние процессы.
    *
    * @returns {Promise<void>} Promise, который разрешается после очистки.
    */
   async cleanup(): Promise<void> {
+    console.log('🔄 Starting OllamaManager cleanup...');
     try {
+      // Попытка штатной остановки (может не убить дочерние процессы)
       if (this.electronOllama) {
-        await this.stopOllama();
-        this.electronOllama = null;
+        try {
+          console.log('Attempting graceful stop...');
+          await this.stopOllama();
+        } catch (stopError) {
+          console.warn(
+            `⚠️ Graceful stop failed (this is often expected): ${
+              (stopError as Error).message
+            }`
+          );
+        }
       }
+
+      // Принудительное завершение ВСЕХ процессов Ollama по имени.
+      // Решает проблему "зомби" процессов.
+      console.log(
+        '🧹 Forcibly cleaning up any remaining "ollama" processes...'
+      );
+      await this.killAllOllamaProcesses();
+
+      this.electronOllama = null;
       this.isInitialized = false;
-      console.log('✅ OllamaManager resources cleaned up');
+      console.log('✅ OllamaManager resources cleaned up successfully');
     } catch (error) {
-      console.error('❌ Error cleaning up the OllamaManager resources:', error);
+      console.error('❌ Error during OllamaManager cleanup:', error);
     }
   }
 }

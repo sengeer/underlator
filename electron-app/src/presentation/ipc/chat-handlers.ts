@@ -1002,10 +1002,10 @@ export class ChatHandlers {
       return { valid: false, error: 'Content is required' };
     }
 
-    if (request.content.length > 10000) {
+    if (request.content.length > 100000) {
       return {
         valid: false,
-        error: 'Content is too long (max 10000 characters)',
+        error: 'Content is too long (max 100000 characters)',
       };
     }
 

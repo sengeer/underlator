@@ -57,8 +57,8 @@ let isQuitting: boolean = false; // Флаг для отслеживания н�
 async function cleanupResources(): Promise<void> {
   console.log('🧹 Cleaning up application resources...');
 
-  // Останавливает Ollama
-  await ollamaManager.stopOllama();
+  // Останавливает и очищает Ollama
+  ollamaManager.cleanup();
 
   // Удаляет обработчики управления моделями
   modelHandlers?.removeHandlers();

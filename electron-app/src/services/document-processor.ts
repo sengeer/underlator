@@ -118,7 +118,8 @@ export class DocumentProcessorService {
   constructor(config?: Partial<DocumentProcessorConfig>) {
     this.config = {
       maxFileSize: 50 * 1024 * 1024, // 50MB
-      chunkSize: 512,
+      // TODO: добавить возможность указать chunkSize в UI
+      chunkSize: 2560,
       chunkOverlap: 50,
       supportedEncodings: ['utf-8', 'windows-1251', 'iso-8859-1'],
       enableVerboseLogging: true,
