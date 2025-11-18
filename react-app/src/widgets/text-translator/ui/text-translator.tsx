@@ -50,15 +50,6 @@ import TextButton from '../../../shared/ui/text-button';
 import '../styles/text-translator.scss';
 
 /**
- * Интерфейс пропсов компонента TextTranslator.
- * Определяет параметры для управления отображением компонента.
- */
-interface TextTranslatorProps {
-  /** Открыт ли компонент перевода текста */
-  isOpened: boolean;
-}
-
-/**
  * Основной компонент TextTranslator.
  *
  * Реализует интерфейс для перевода текста между различными языками через LLM модели.
@@ -80,7 +71,7 @@ interface TextTranslatorProps {
  * @param props.isOpened - Открыт ли компонент перевода текста.
  * @returns JSX элемент с интерфейсом перевода текста.
  */
-function TextTranslator({ isOpened }: TextTranslatorProps) {
+function TextTranslator() {
   // Хуки для управления состоянием и функциональностью
   const { isCopied, handleCopy } = useCopying();
   const { status, generatedResponse, generate, stop } = useModel();
@@ -149,8 +140,7 @@ function TextTranslator({ isOpened }: TextTranslatorProps) {
   }, [generatedResponse]);
 
   return (
-    <section
-      className={`text-translator${isOpened ? ' text-translator_open' : ''}`}>
+    <section className='text-translator'>
       {/* Кнопка выбора исходного языка */}
       <TextAndIconButton
         text={sourceLanguage}

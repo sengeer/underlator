@@ -4,7 +4,8 @@
  * Управляет анимацией появления/исчезновения и автоудалением.
  */
 
-import { useEffect, useState } from 'react';
+// @ts-ignore: 2724
+import { useEffect, useState, ViewTransition, startTransition } from 'react';
 import { useDispatch } from 'react-redux';
 import CloseIcon from '../../assets/icons/close-icon';
 import { removeNotification } from '../../models/notifications-slice';
@@ -49,20 +50,17 @@ function Toast({ id, type, message }: ToastProps) {
    * @returns Функция очистки таймеров при размонтировании компонента
    */
   function handleToastTimers(): () => void {
-    const showingTimer = setTimeout(() => {
-      setIsShow(true);
-    }, 300);
+    startTransition(() => setIsShow(true));
 
     const hidingTimer = setTimeout(() => {
-      setIsShow(false);
-    }, params.milliseconds + 300);
+      startTransition(() => setIsShow(false));
+    }, params.milliseconds);
 
     const removingTimer = setTimeout(() => {
       dispatch(removeNotification(id));
-    }, params.milliseconds + 600);
+    }, params.milliseconds + 300);
 
     return () => {
-      clearTimeout(showingTimer);
       clearTimeout(hidingTimer);
       clearTimeout(removingTimer);
     };
@@ -118,25 +116,31 @@ function Toast({ id, type, message }: ToastProps) {
   useEffect(setToastParams, []);
 
   return (
-    <aside className={`toast${isShow ? ' toast_show' : ''}`}>
-      <ButtonWrapperWithBackground isDisabled>
-        <DecorativeTextAndIconButton
-          // Преобразование message в строку для текстового отображения
-          text={typeof message === 'string' ? message : JSON.stringify(message)}
-          decorativeColor={params.color}
-          style={{
-            marginLeft: '1rem',
-            color: params.color,
-          }}>
-          {params.emoji}
-        </DecorativeTextAndIconButton>
-        <IconButton
-          style={{ marginRight: '1rem' }}
-          onClick={() => dispatch(removeNotification(id))}>
-          <CloseIcon />
-        </IconButton>
-      </ButtonWrapperWithBackground>
-    </aside>
+    isShow && (
+      <ViewTransition>
+        <aside className='toast'>
+          <ButtonWrapperWithBackground isDisabled>
+            <DecorativeTextAndIconButton
+              // Преобразование message в строку для текстового отображения
+              text={
+                typeof message === 'string' ? message : JSON.stringify(message)
+              }
+              decorativeColor={params.color}
+              style={{
+                marginLeft: '1rem',
+                color: params.color,
+              }}>
+              {params.emoji}
+            </DecorativeTextAndIconButton>
+            <IconButton
+              style={{ marginRight: '1rem' }}
+              onClick={() => startTransition(() => setIsShow(false))}>
+              <CloseIcon />
+            </IconButton>
+          </ButtonWrapperWithBackground>
+        </aside>
+      </ViewTransition>
+    )
   );
 }
 

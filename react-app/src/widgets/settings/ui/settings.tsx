@@ -50,7 +50,6 @@ import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import TextButton from '../../../shared/ui/text-button';
 import { LANGUAGES, PROVIDERS } from '../constants/settings';
-import { SettingsState } from '../types/settings';
 import ManageModels from './manage-embedded-ollama';
 import Tests from './tests';
 
@@ -62,7 +61,7 @@ import Tests from './tests';
  * @param isOpened - Открыт ли компонент настроек.
  * @returns JSX элемент с интерфейсом настроек.
  */
-function Settings({ isOpened }: SettingsState) {
+function Settings() {
   const { values, handleChange, resetForm, setValues } = useFormAndValidation();
 
   const dispatch = useDispatch();
@@ -191,7 +190,7 @@ function Settings({ isOpened }: SettingsState) {
   }, [provider, setValues, resetForm]);
 
   return (
-    <section className={`settings${isOpened ? ' settings_open' : ''}`}>
+    <section className='settings'>
       {import.meta.env.DEV && <Tests />}
 
       <div className='settings__container'>

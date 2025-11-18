@@ -1,14 +1,4 @@
 .toast {
   border-radius: 1rem;
   background-color: var(--background);
-  opacity: 0;
-  transition:
-    opacity ease-in-out 0.3s,
-    transform ease-in-out 0.3s;
-  transform: scale(0);
-
-  &_show {
-    opacity: 1;
-    transform: scale(1);
-  }
 }

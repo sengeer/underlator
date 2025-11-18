@@ -4,7 +4,7 @@
  */
 
 import { useLingui } from '@lingui/react/macro';
-import { useEffect } from 'react';
+import { useEffect, Activity } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import useElectronTranslation from '../../../shared/lib/hooks/use-electron-translation';
 import { isElementOpen } from '../../../shared/models/element-state-slice';
@@ -50,13 +50,13 @@ function Main() {
   const dispatch = useDispatch();
 
   // Получение состояния видимости TextTranslator из Redux store
-  const isOpenTextTranslationSection = useSelector((state) =>
-    isElementOpen(state, 'textTranslationSection')
+  const isOpenTextTranslatorSection = useSelector((state) =>
+    isElementOpen(state, 'textTranslatorSection')
   );
 
   // Получение состояния видимости PdfViewer из Redux store
-  const isOpenPdfTranslationSection = useSelector((state) =>
-    isElementOpen(state, 'pdfTranslationSection')
+  const isOpenPdfViewerSection = useSelector((state) =>
+    isElementOpen(state, 'pdfViewerSection')
   );
 
   // Получение состояния видимости Settings из Redux store
@@ -99,13 +99,19 @@ function Main() {
           {/* Навигационная панель для переключения между компонентами */}
           <SideNavigate />
           {/* Виджет чата */}
-          <Chat isOpened={isOpenChatSection} />
+          <Activity mode={isOpenChatSection ? 'visible' : 'hidden'}>
+            <Chat />
+          </Activity>
           {/* Виджет перевода текста */}
-          <TextTranslator isOpened={isOpenTextTranslationSection} />
+          <Activity mode={isOpenTextTranslatorSection ? 'visible' : 'hidden'}>
+            <TextTranslator />
+          </Activity>
           {/* Виджет просмотра и перевода PDF */}
-          <PdfViewer isOpened={isOpenPdfTranslationSection} />
+          <PdfViewer isOpened={isOpenPdfViewerSection} />
           {/* Виджет настроек */}
-          <Settings isOpened={isOpenSettingsSection} />
+          <Activity mode={isOpenSettingsSection ? 'visible' : 'hidden'}>
+            <Settings />
+          </Activity>
         </>
       )}
     </main>

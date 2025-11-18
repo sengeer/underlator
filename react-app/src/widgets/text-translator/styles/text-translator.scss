@@ -1,12 +1,8 @@
 .text-translator {
-  display: none;
+  display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   overflow: hidden;
-
-  &_open {
-    display: flex;
-  }
 
   &__textarea-wrapper {
     position: relative;

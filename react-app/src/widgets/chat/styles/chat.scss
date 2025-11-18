@@ -1,13 +1,9 @@
 .chat {
   position: relative;
-  display: none;
+  display: flex;
   overflow: hidden;
   width: 100%;
   height: 100vh;
-
-  &_open {
-    display: flex;
-  }
 
   &__bar {
     display: flex;

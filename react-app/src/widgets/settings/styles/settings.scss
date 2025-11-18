@@ -1,13 +1,9 @@
 .settings {
   position: relative;
-  display: none;
+  display: flex;
   flex-direction: column;
   justify-content: space-between;
   width: 100%;
-
-  &_open {
-    display: flex;
-  }
 
   &__container {
     display: flex;

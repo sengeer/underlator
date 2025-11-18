@@ -10,16 +10,6 @@ import type {
 } from '../../../shared/apis/chat-ipc/types/chat-ipc';
 
 /**
- * Пропсы компонента Chat.
- */
-export interface ChatProps {
-  /** Флаг видимости компонента чата */
-  isOpened: boolean;
-  /** Дополнительные CSS классы */
-  className?: string;
-}
-
-/**
  * Состояние компонента Chat.
  */
 export interface ChatState {

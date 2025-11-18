@@ -5,7 +5,7 @@
  */
 
 import { useLingui } from '@lingui/react/macro';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, startTransition } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -24,13 +24,13 @@ import IconButton from '../../../shared/ui/icon-button';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import TextButton from '../../../shared/ui/text-button';
 import TextButtonFilled from '../../../shared/ui/text-button-filled';
-import type { ChatProps, ChatState } from '../types/chat';
+import type { ChatState } from '../types/chat';
 import ChatMessages from './chat-messages';
 import ChatSidebar from './chat-sidebar';
 import '../styles/chat.scss';
 import '../styles/empty-state.scss';
 
-function Chat({ isOpened, className = '' }: ChatProps) {
+function Chat() {
   const { t } = useLingui();
   const { generate, status, stop } = useModel();
   const { provider, settings } = useSelector(selectProviderSettings);
@@ -254,7 +254,9 @@ function Chat({ isOpened, className = '' }: ChatProps) {
    * Обрабатывает переключение боковой панели.
    */
   const handleToggleSidebar = useCallback(() => {
-    setState((prev) => ({ ...prev, showSidebar: !prev.showSidebar }));
+    startTransition(() =>
+      setState((prev) => ({ ...prev, showSidebar: !prev.showSidebar }))
+    );
   }, []);
 
   async function uploadAndProcessDocument() {
@@ -332,10 +334,8 @@ function Chat({ isOpened, className = '' }: ChatProps) {
 
   // Загрузка списка чатов при открытии компонента
   useEffect(() => {
-    if (isOpened) {
-      loadChats();
-    }
-  }, [isOpened]);
+    loadChats();
+  }, []);
 
   // Обновление состояния генерации при изменении статуса useModel
   useEffect(() => {
@@ -346,18 +346,19 @@ function Chat({ isOpened, className = '' }: ChatProps) {
   }, [status]);
 
   return (
-    <div className={`chat ${isOpened ? 'chat_open' : ''} ${className}`}>
+    <div className='chat'>
       {/* Боковая панель */}
-      <ChatSidebar
-        isOpened={state.showSidebar}
-        chats={state.chats}
-        activeChatId={state.activeChat?.id}
-        isLoading={state.isLoading}
-        onCreateChat={handleCreateChat}
-        onSelectChat={handleSelectChat}
-        onDeleteChat={handleDeleteChat}
-        onRefreshChats={loadChats}
-      />
+      {state.showSidebar ? (
+        <ChatSidebar
+          chats={state.chats}
+          activeChatId={state.activeChat?.id}
+          isLoading={state.isLoading}
+          onCreateChat={handleCreateChat}
+          onSelectChat={handleSelectChat}
+          onDeleteChat={handleDeleteChat}
+          onRefreshChats={loadChats}
+        />
+      ) : null}
 
       {/* Основная область */}
       <div className='chat__main'>

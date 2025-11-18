@@ -47,13 +47,13 @@ function SideNavigate() {
   const dispatch = useDispatch();
 
   // Получение состояния видимости секции перевода текста из Redux store
-  const isOpenTextTranslationSection = useSelector((state) =>
-    isElementOpen(state, 'textTranslationSection')
+  const isOpenTextTranslatorSection = useSelector((state) =>
+    isElementOpen(state, 'textTranslatorSection')
   );
 
   // Получение состояния видимости секции работы с PDF из Redux store
-  const isOpenPdfTranslationSection = useSelector((state) =>
-    isElementOpen(state, 'pdfTranslationSection')
+  const isOpenPdfViewerSection = useSelector((state) =>
+    isElementOpen(state, 'pdfViewerSection')
   );
 
   // Получение состояния видимости секции настроек из Redux store
@@ -80,11 +80,11 @@ function SideNavigate() {
 
       {/* Кнопка переключения на секцию перевода текста */}
       <IconButton
-        isActiveStyle={isOpenTextTranslationSection}
+        isActiveStyle={isOpenTextTranslatorSection}
         onClick={() => {
-          dispatch(openElementOnly('textTranslationSection'));
+          dispatch(openElementOnly('textTranslatorSection'));
           dispatch(
-            setTypeUseBySection({ sectionName: 'textTranslationSection' })
+            setTypeUseBySection({ sectionName: 'textTranslatorSection' })
           );
         }}>
         <WithAdaptiveSize WrappedComponent={TranslateIcon} />
@@ -92,12 +92,10 @@ function SideNavigate() {
 
       {/* Кнопка переключения на секцию работы с PDF */}
       <IconButton
-        isActiveStyle={isOpenPdfTranslationSection}
+        isActiveStyle={isOpenPdfViewerSection}
         onClick={() => {
-          dispatch(openElementOnly('pdfTranslationSection'));
-          dispatch(
-            setTypeUseBySection({ sectionName: 'pdfTranslationSection' })
-          );
+          dispatch(openElementOnly('pdfViewerSection'));
+          dispatch(setTypeUseBySection({ sectionName: 'pdfViewerSection' }));
         }}>
         <WithAdaptiveSize WrappedComponent={PdfIcon} />
       </IconButton>

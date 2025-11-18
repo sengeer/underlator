@@ -1,17 +1,9 @@
 .chat-sidebar {
   display: flex;
   flex-direction: column;
-  width: 0;
+  width: auto;
   height: 100%;
   border-right: 0.15rem solid var(--main);
-  opacity: 0;
-  visibility: hidden;
-
-  &_open {
-    width: auto;
-    opacity: 1;
-    visibility: visible;
-  }
 
   &__chats-list {
     display: flex;

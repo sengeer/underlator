@@ -7,7 +7,7 @@ import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit';
 import { Elements } from './types/element-state-slice';
 
 const initialState: Elements = {
-  elements: ['textTranslationSection'],
+  elements: ['textTranslatorSection'],
 };
 
 const elementStateSlice = createSlice({
