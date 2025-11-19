@@ -28,7 +28,6 @@ function ChatMessages({
   const { t } = useLingui();
   const [state, setState] = useState<ChatMessagesState>({
     autoScroll: true,
-    scrollContainer: null,
     lastMessageCount: messages.length,
   });
 
@@ -85,16 +84,6 @@ function ChatMessages({
       }
     }
   }, [messages.length, state.autoScroll, state.lastMessageCount]);
-
-  // Инициализация контейнера прокрутки
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      setState((prev) => ({
-        ...prev,
-        scrollContainer: scrollContainerRef.current,
-      }));
-    }
-  }, []);
 
   /**
    * Рендерит индикатор генерации ответа.

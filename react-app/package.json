@@ -5,8 +5,8 @@
   "homepage": "./",
   "type": "module",
   "dependencies": {
-    "@lingui/core": "^5.2.0",
-    "@lingui/react": "^5.2.0",
+    "@lingui/core": "^5.6.0",
+    "@lingui/react": "^5.6.0",
     "@reduxjs/toolkit": "^2.5.0",
     "@types/jest": "^29.5.14",
     "@types/react": "^19.0.2",
@@ -65,10 +65,10 @@
   },
   "devDependencies": {
     "@feature-sliced/eslint-config": "^0.1.1",
-    "@lingui/babel-plugin-lingui-macro": "^5.2.0",
-    "@lingui/cli": "^5.2.0",
-    "@lingui/format-po": "^5.2.0",
-    "@lingui/vite-plugin": "^5.2.0",
+    "@lingui/babel-plugin-lingui-macro": "^5.6.0",
+    "@lingui/cli": "^5.6.0",
+    "@lingui/format-po": "^5.6.0",
+    "@lingui/vite-plugin": "^5.6.0",
     "@typescript-eslint/eslint-plugin": "^8.19.1",
     "@typescript-eslint/parser": "^8.19.1",
     "cpy": "^11.1.0",
@@ -96,5 +96,9 @@
     "*.{js,jsx,ts,tsx}": "npm run lint:fix",
     "*{.css,.scss}": "npm run stylelint:fix",
     "*.{js,jsx,ts,tsx,scss,md,html,json}": "npm run prettier"
+  },
+  "overrides": {
+    "react": "^19.3.0-canary-fb2177c1-20251114",
+    "react-dom": "^19.3.0-canary-fb2177c1-20251114"
   }
 }

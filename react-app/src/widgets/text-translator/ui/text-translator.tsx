@@ -23,6 +23,7 @@
 import { useLingui } from '@lingui/react/macro';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useResizeDetector } from 'react-resize-detector';
 import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
 import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CopyIcon from '../../../shared/assets/icons/copy-icon';
@@ -43,6 +44,7 @@ import {
 } from '../../../shared/models/element-state-slice';
 import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import IconButton from '../../../shared/ui/icon-button';
+import MarkdownRenderer from '../../../shared/ui/markdown-renderer';
 import Popup from '../../../shared/ui/popup';
 import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
@@ -87,6 +89,12 @@ function TextTranslator() {
 
   const { t } = useLingui();
   const dispatch = useDispatch();
+
+  const { height: heightOfOutputContainer, ref: outputContainerRef } =
+    useResizeDetector({
+      refreshMode: 'debounce',
+      refreshRate: 100,
+    });
 
   // Локальное состояние для текста ввода и вывода
   const [input, setInput] = useState<string>('');
@@ -152,9 +160,9 @@ function TextTranslator() {
       </TextAndIconButton>
 
       {/* Поле ввода текста для перевода */}
-      <div className='text-translator__textarea-wrapper'>
+      <div className='text-translator__content-wrapper'>
         <textarea
-          className='text-heading-l text-translator__textarea'
+          className='text-heading-m text-translator__textarea'
           value={input}
           placeholder={getPlaceholderByLanguage(sourceLanguage)}
           rows={1}
@@ -203,30 +211,15 @@ function TextTranslator() {
       </TextAndIconButton>
 
       {/* Поле вывода переведенного текста */}
-      <div className='text-translator__textarea-wrapper'>
-        <textarea
-          className='text-heading-l text-translator__textarea'
-          value={output}
-          placeholder={getPlaceholderByLanguage(targetLanguage)}
-          rows={1}
-          readOnly
+      <div
+        ref={outputContainerRef}
+        className='text-translator__content-wrapper'>
+        <MarkdownRenderer
+          content={output}
+          className='text-heading-l text-translator__output'
+          showThinking={false}
+          style={{ height: heightOfOutputContainer + 'px' }}
         />
-        {/* Кнопка копирования результата */}
-        <IconButton
-          style={{
-            position: 'absolute',
-            top: '1rem',
-            right: '1rem',
-          }}
-          onClick={() => handleCopy(output)}
-          isDisabled={output === '' || isCopied}>
-          <AnimatingWrapper isShow={isCopied}>
-            <CheckIcon />
-          </AnimatingWrapper>
-          <AnimatingWrapper isShow={!isCopied}>
-            <CopyIcon />
-          </AnimatingWrapper>
-        </IconButton>
       </div>
 
       {/* Кнопка перевода или остановки процесса */}

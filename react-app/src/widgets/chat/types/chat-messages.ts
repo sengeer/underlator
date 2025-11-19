@@ -24,8 +24,6 @@ export interface ChatMessagesProps {
 export interface ChatMessagesState {
   /** Флаг автоматической прокрутки */
   autoScroll: boolean;
-  /** Элемент для прокрутки */
-  scrollContainer: HTMLDivElement | null;
   /** Последнее количество сообщений для отслеживания изменений */
   lastMessageCount: number;
 }

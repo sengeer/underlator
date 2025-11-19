@@ -14,16 +14,13 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { useResizeDetector } from 'react-resize-detector';
 import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
-import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CloseIcon from '../../../shared/assets/icons/close-icon';
-import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import StopCircleIcon from '../../../shared/assets/icons/stop-circle-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
 import UnderlatorIcon from '../../../shared/assets/icons/underlator-icon';
-import useCopying from '../../../shared/lib/hooks/use-copying';
 import useFormAndValidation from '../../../shared/lib/hooks/use-form-and-validation';
 import useModel from '../../../shared/lib/hooks/use-model';
 import useModelButton from '../../../shared/lib/hooks/use-model-button';
@@ -107,8 +104,6 @@ export interface PdfTranslator {
  * <PdfViewer isOpened={isOpenPdfTranslationSection} />
  */
 function PdfViewer({ isOpened }: PdfTranslator) {
-  // Хук для работы с копированием текста
-  const { isCopied, handleCopy } = useCopying();
   const {
     sourceLanguage,
     targetLanguage,
@@ -526,7 +521,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                     style={{
                       position: 'absolute',
                       right: '1rem',
-                      top: 0,
+                      top: '24px',
                     }}
                     onClick={stop}>
                     <StopCircleIcon />
@@ -536,28 +531,12 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                     style={{
                       position: 'absolute',
                       right: '1rem',
-                      top: 0,
+                      top: '24px',
                     }}
                     onClick={resetResponse}>
                     <BackspaceIcon />
                   </IconButton>
                 )}
-                <IconButton
-                  style={{
-                    position: 'absolute',
-                    right: '1rem',
-                    top: '24px',
-                  }}
-                  onClick={() =>
-                    handleCopy(stringifyGenerateResponse(generatedResponse))
-                  }>
-                  <AnimatingWrapper isShow={isCopied}>
-                    <CheckIcon />
-                  </AnimatingWrapper>
-                  <AnimatingWrapper isShow={!isCopied}>
-                    <CopyIcon />
-                  </AnimatingWrapper>
-                </IconButton>
               </div>
             )}
           </>

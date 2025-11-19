@@ -8,17 +8,16 @@ import { useLingui } from '@lingui/react/macro';
 // @ts-ignore: 2724
 import { useState, useEffect, useCallback, ViewTransition } from 'react';
 import { useDispatch } from 'react-redux';
-import { electron as chatElectron } from '../../../shared/apis/chat-ipc';
-import { ChatFile } from '../../../shared/apis/chat-ipc/types/chat-ipc';
 import { electron as ragElectron } from '../../../shared/apis/rag-ipc';
 import AddIcon from '../../../shared/assets/icons/add-icon';
-import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log';
+import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log/call-a-notification-with-a-log';
 import splitByWordCount from '../../../shared/lib/utils/split-by-word-count';
 import splittingContentOfModel from '../../../shared/lib/utils/splitting-content-of-model';
 import IconButton from '../../../shared/ui/icon-button';
 import Search from '../../../shared/ui/search';
 import SelectorOption from '../../../shared/ui/selector-option';
 import TextButton from '../../../shared/ui/text-button/text-button';
+import { deleteChat } from '../models/chat-ipc-slice';
 import type { ChatSidebarProps, ChatSidebarState } from '../types/chat-sidebar';
 import '../styles/chat-sidebar.scss';
 
@@ -34,8 +33,6 @@ function ChatSidebar({
   const [state, setState] = useState<ChatSidebarState>({
     searchQuery: '',
     filteredChats: chats,
-    showActionsMenu: null,
-    confirmDelete: null,
   });
 
   const { t } = useLingui();
@@ -80,19 +77,28 @@ function ChatSidebar({
   const handleDeleteChat = useCallback(
     async (chatId: string) => {
       try {
-        const resultOfDeletingChat = await chatElectron.deleteChat({
-          chatId,
-          createBackup: true,
-          confirmed: true,
-        });
-
+        // Удаляет коллекцию документов RAG
         const resultOfDeletingCollection =
           await ragElectron.deleteDocumentCollection({ chatId });
 
-        if (
-          resultOfDeletingChat.success &&
-          resultOfDeletingCollection.success
-        ) {
+        if (!resultOfDeletingCollection.success) {
+          callANotificationWithALog(
+            dispatch,
+            t`Failed to delete document collection`,
+            resultOfDeletingCollection.error || 'Unknown error'
+          );
+        }
+
+        // Удаляет чат через Redux thunk
+        const result = await dispatch(
+          deleteChat({
+            chatId,
+            createBackup: true,
+            confirmed: true,
+          }) as any
+        );
+
+        if (deleteChat.fulfilled.match(result)) {
           onDeleteChat?.(chatId);
           onRefreshChats?.();
 
@@ -104,12 +110,12 @@ function ChatSidebar({
       } catch (error) {
         callANotificationWithALog(
           dispatch,
-          t`Failed to load chats`,
+          t`Failed to delete chat`,
           `Failed to delete chat: ${(error as Error).message}`
         );
       }
     },
-    [onDeleteChat, onRefreshChats, onSelectChat, activeChatId]
+    [dispatch, onDeleteChat, onRefreshChats, onSelectChat, activeChatId, t]
   );
 
   /**
@@ -118,12 +124,8 @@ function ChatSidebar({
   const handleExecuteDelete = useCallback(
     (chatId: string) => {
       handleDeleteChat(chatId);
-      setState((prev) => ({
-        ...prev,
-        confirmDelete: null,
-      }));
     },
-    [state.confirmDelete, handleDeleteChat]
+    [handleDeleteChat]
   );
 
   /**
@@ -178,7 +180,7 @@ function ChatSidebar({
         <div className='chat-sidebar__chats-list'>
           {renderEmptyState()}
 
-          {state.filteredChats.map((chat: ChatFile) => (
+          {state.filteredChats.map((chat) => (
             <SelectorOption
               type='bar'
               key={chat.id}

@@ -34,8 +34,4 @@ export interface ChatSidebarState {
   searchQuery: string;
   /** Отфильтрованный список чатов */
   filteredChats: ChatFile[];
-  /** Флаг показа меню действий для чата */
-  showActionsMenu: string | null;
-  /** Флаг подтверждения удаления */
-  confirmDelete: string | null;
 }

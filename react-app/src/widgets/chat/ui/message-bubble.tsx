@@ -5,7 +5,6 @@
  */
 
 import { useLingui } from '@lingui/react/macro';
-import { useRef, useEffect } from 'react';
 import CheckIcon from '../../../shared/assets/icons/check-icon';
 import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import useCopying from '../../../shared/lib/hooks/use-copying';
@@ -24,8 +23,6 @@ function MessageBubble({
   const { isCopied, handleCopy } = useCopying();
 
   const { t } = useLingui();
-
-  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Определяет CSS класс для роли сообщения.
@@ -83,15 +80,6 @@ function MessageBubble({
         return t`unknown`;
     }
   }
-
-  // Очистка таймаута при размонтировании
-  useEffect(() => {
-    return () => {
-      if (copyTimeoutRef.current) {
-        clearTimeout(copyTimeoutRef.current);
-      }
-    };
-  }, []);
 
   if (!isVisible) {
     return null;

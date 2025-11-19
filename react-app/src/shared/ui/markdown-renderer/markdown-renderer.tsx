@@ -3,10 +3,15 @@ import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
+import CheckIcon from '../../assets/icons/check-icon';
+import CopyIcon from '../../assets/icons/copy-icon';
 import KeyboardArrowDownIcon from '../../assets/icons/keyboard-arrow-down-icon';
+import useCopying from '../../lib/hooks/use-copying';
 import processThinkTags from '../../lib/utils/process-think-tags';
 import splittingContentOfModel from '../../lib/utils/splitting-content-of-model';
+import AnimatingWrapper from '../animating-wrapper';
 import DecorativeTextAndIconButton from '../decorative-text-and-icon-button';
+import IconButton from '../icon-button';
 import TextAndIconButton from '../text-and-icon-button';
 import './styles/markdown-renderer.scss';
 import './styles/thinking.scss';
@@ -15,12 +20,15 @@ import { MarkdownRendererProps } from './types/markdown-renderer';
 function MarkdownRenderer({
   content,
   className,
+  style,
   showThinking = true,
   text,
 }: MarkdownRendererProps) {
   if (!content) return null;
 
   const [isShowThinking, setIsShowThinking] = useState<boolean>(false);
+
+  const { isCopied, handleCopy } = useCopying();
 
   const { t } = useLingui();
 
@@ -53,7 +61,7 @@ function MarkdownRenderer({
   }, [content]);
 
   return (
-    <div className={`markdown-renderer ${className || ''}`}>
+    <div style={style} className={`markdown-renderer ${className || ''}`}>
       <div className='markdown-renderer__header'>
         {showThinking && thinkingParts.length > 0 && (
           <TextAndIconButton
@@ -73,6 +81,21 @@ function MarkdownRenderer({
             decorativeColor='var(--main)'
           />
         )}
+        <IconButton
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: '1rem',
+          }}
+          onClick={() => handleCopy(mainContentParts.toString())}
+          isDisabled={!mainContentParts || isCopied}>
+          <AnimatingWrapper isShow={isCopied}>
+            <CheckIcon />
+          </AnimatingWrapper>
+          <AnimatingWrapper isShow={!isCopied}>
+            <CopyIcon />
+          </AnimatingWrapper>
+        </IconButton>
         <div />
       </div>
       {showThinking && thinkingParts.length > 0 && isShowThinking && (
