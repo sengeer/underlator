@@ -1,9 +1,16 @@
+/**
+ * @module Index
+ * Точка входа приложения.
+ * Настраивает Redux Provider и PersistGate для автоматического восстановления состояния.
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './app/styles/root.scss';
 import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 import App from './app';
-import store from './app/models/store';
+import store, { persistor } from './app/models/store';
 
 const rootElement = document.getElementById('root');
 
@@ -12,7 +19,9 @@ if (rootElement) {
   root.render(
     <React.StrictMode>
       <Provider store={store}>
-        <App />
+        <PersistGate loading={null} persistor={persistor}>
+          <App />
+        </PersistGate>
       </Provider>
     </React.StrictMode>
   );

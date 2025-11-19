@@ -1,54 +1,42 @@
 /**
  * @module ProviderSettingsSlice
  * Redux slice для управления настройками провайдеров LLM.
- * Обеспечивает сохранение и восстановление настроек провайдеров в localStorage.
+ * Сохранение и восстановление состояния выполняется автоматически через redux-persist.
  * Поддерживает переключение между провайдерами и обновление их параметров.
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DEFAULT_MODEL, DEFAULT_URL } from '../../lib/constants';
-import {
-  getStorageWrite,
-  setStorageWrite,
-} from '../../lib/utils/control-local-storage';
 import { SECTION_TYPEUSE_MAPPING } from './constants/provider-settings-slice';
 import { ProviderSettingsState, State } from './types/provider-settings-slice';
 
 /**
- * Получает начальное состояние из localStorage.
- * Восстанавливает сохраненные настройки провайдеров или возвращает значения по умолчанию.
- * Обеспечивает персистентность настроек между сессиями приложения.
- * @returns Начальное состояние настроек провайдеров.
+ * Начальное состояние настроек провайдеров.
+ * Используется при первом запуске приложения или при отсутствии сохраненных данных.
+ * Восстановление сохраненного состояния выполняется автоматически через redux-persist.
  */
-function getInitialState(): ProviderSettingsState {
-  const savedState = getStorageWrite('providerSettings');
-  const defaultState: ProviderSettingsState = {
-    provider: 'Embedded Ollama',
-    settings: {
-      Ollama: {
-        id: 'ollama',
-        url: DEFAULT_URL,
-        model: DEFAULT_MODEL,
-        typeUse: 'instruction',
-      },
-      'Embedded Ollama': {
-        id: 'embedded-ollama',
-        url: DEFAULT_URL,
-        model: DEFAULT_MODEL,
-        typeUse: 'instruction',
-      },
+const initialState: ProviderSettingsState = {
+  provider: 'Embedded Ollama',
+  settings: {
+    Ollama: {
+      id: 'ollama',
+      url: DEFAULT_URL,
+      model: DEFAULT_MODEL,
+      typeUse: 'instruction',
     },
-  };
-
-  return savedState ? JSON.parse(savedState) : defaultState;
-}
-
-const initialState: ProviderSettingsState = getInitialState();
+    'Embedded Ollama': {
+      id: 'embedded-ollama',
+      url: DEFAULT_URL,
+      model: DEFAULT_MODEL,
+      typeUse: 'instruction',
+    },
+  },
+};
 
 /**
  * Redux slice для управления настройками провайдеров.
  * Содержит reducers для переключения провайдеров и обновления их настроек.
- * Автоматически сохраняет изменения в localStorage для персистентности.
+ * Сохранение состояния выполняется автоматически через redux-persist при каждом изменении.
  */
 export const providerSettingsSlice = createSlice({
   name: 'providerSettings',
@@ -63,7 +51,6 @@ export const providerSettingsSlice = createSlice({
      */
     setProvider(state, action: PayloadAction<ProviderType>) {
       state.provider = action.payload;
-      setStorageWrite('providerSettings', JSON.stringify(state));
     },
     /**
      * Обновляет настройки конкретного провайдера.
@@ -89,7 +76,6 @@ export const providerSettingsSlice = createSlice({
         };
       }
       state.settings[provider] = { ...state.settings[provider], ...settings };
-      setStorageWrite('providerSettings', JSON.stringify(state));
     },
     /**
      * Устанавливает тип использования для провайдера.
@@ -108,7 +94,6 @@ export const providerSettingsSlice = createSlice({
       const { provider, typeUse } = action.payload;
       if (state.settings[provider]) {
         state.settings[provider]!.typeUse = typeUse;
-        setStorageWrite('providerSettings', JSON.stringify(state));
       }
     },
     /**
@@ -130,7 +115,6 @@ export const providerSettingsSlice = createSlice({
 
       if (targetTypeUse && state.settings[state.provider]) {
         state.settings[state.provider]!.typeUse = targetTypeUse;
-        setStorageWrite('providerSettings', JSON.stringify(state));
       }
     },
   },

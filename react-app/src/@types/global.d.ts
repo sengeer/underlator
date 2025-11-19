@@ -4,6 +4,11 @@
  */
 
 /**
+ * Типы использования модели.
+ */
+type TypeUse = 'instruction' | 'translation' | 'contextualTranslation' | 'chat';
+
+/**
  * Типы существующих провайдеров в приложении.
  */
 type ProviderType = 'Ollama' | 'Embedded Ollama';
