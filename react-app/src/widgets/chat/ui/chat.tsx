@@ -41,7 +41,7 @@ import '../styles/empty-state.scss';
 function Chat() {
   const { t } = useLingui();
   const { generate, status, stop } = useModel();
-  const { provider, settings } = useSelector(selectProviderSettings);
+  const { provider, settings, rag } = useSelector(selectProviderSettings);
 
   const dispatch = useAppDispatch();
 
@@ -264,7 +264,11 @@ function Chat() {
           // Использует uploadAndProcessDocument для загрузки и обработки
           const result = await ragElectron.uploadAndProcessDocument(
             file,
-            activeChat.chat.id
+            activeChat.chat.id,
+            {
+              chunkSize: rag.chunkSize,
+              embeddingModel: rag.model || undefined,
+            }
           );
 
           if (result.success) {

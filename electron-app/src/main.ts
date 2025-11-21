@@ -253,9 +253,14 @@ async function loadPipeline(): Promise<void> {
       progress: 72,
     });
 
-    // Создает сервис файловой системы для чатов
-    chatFileSystemService = new ChatFileSystemService();
-    await chatFileSystemService.initialize();
+    // chatFileSystemService и chatHandlers уже созданы в createWindow()
+    // для ранней регистрации handlers, но нужно убедиться, что инициализация завершена
+    if (
+      chatFileSystemService &&
+      !chatFileSystemService.isServiceInitialized()
+    ) {
+      await chatFileSystemService.initialize();
+    }
 
     // Создает сервис векторного хранилища (полностью локальное SQLite решение)
     vectorStoreService = new VectorStoreService();
@@ -273,9 +278,6 @@ async function loadPipeline(): Promise<void> {
       );
     }
 
-    // Создает обработчики чатов
-    chatHandlers = new ChatHandlers(chatFileSystemService);
-
     // Отправляет статус создания файловой системы в React splash screen
     sendSplashStatus({
       status: 'creating-filesystem',
@@ -283,11 +285,10 @@ async function loadPipeline(): Promise<void> {
       progress: 78,
     });
 
-    // Регистрирует IPC handlers после создания всех сервисов
+    // Регистрирует остальные IPC handlers после создания всех сервисов
     console.log('🔧 IPC handlers registration...');
     setupOllamaIpcHandlers();
     setupCatalogIpcHandlers();
-    setupChatIpcHandlers();
 
     // RAG handlers регистрируются только после инициализации всех зависимостей
     // Важно: setupRAGIpcHandlers будет вызван позже, когда все сервисы готовы
@@ -434,6 +435,16 @@ function createWindow(): void {
   // Регистрирует splash screen handlers
   setupSplashIpcHandlers();
 
+  // Создает chatFileSystemService и chatHandlers раньше, чтобы handlers были доступны
+  // до того, как React приложение попытается их использовать
+  chatFileSystemService = new ChatFileSystemService();
+  chatFileSystemService.initialize().catch(error => {
+    console.error('❌ Error initializing ChatFileSystemService:', error);
+  });
+
+  chatHandlers = new ChatHandlers(chatFileSystemService);
+  setupChatIpcHandlers();
+
   // Загружает React и Electron приложение
   loadApp();
 
@@ -554,6 +565,7 @@ function setupChatIpcHandlers(): void {
   console.log('✅ ChatHandlers is available, register handlers...');
 
   // Регистрирует обработчики чатов
+  // Примечание: если handlers уже зарегистрированы, они будут перезаписаны
   chatHandlers.registerHandlers();
 
   console.log('✅ Chat IPC handlers are registered');

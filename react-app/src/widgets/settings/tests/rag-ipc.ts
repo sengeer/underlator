@@ -5,6 +5,10 @@
  */
 
 import { electron } from '../../../shared/apis/rag-ipc';
+import {
+  DEFAULT_RAG_CHUNK_SIZE,
+  DEFAULT_RAG_MODEL,
+} from '../../../shared/lib/constants';
 
 /**
  * Открывает диалог выбора PDF файла и обрабатывает его.
@@ -37,7 +41,10 @@ export async function testUploadAndProcessDocument(
 
       try {
         // Использует uploadAndProcessDocument для загрузки и обработки
-        const result = await electron.uploadAndProcessDocument(file, chatId);
+        const result = await electron.uploadAndProcessDocument(file, chatId, {
+          chunkSize: DEFAULT_RAG_CHUNK_SIZE,
+          embeddingModel: DEFAULT_RAG_MODEL,
+        });
 
         console.log('✅ Результат обработки документа:', result);
         if (result.success) {
@@ -60,38 +67,6 @@ export async function testUploadAndProcessDocument(
 }
 
 /**
- * Тестирует обработку PDF документа.
- * Тестирует IPC endpoint rag:process-document.
- */
-export async function testProcessDocument(
-  filePath: string,
-  chatId: string = 'test-chat-1'
-) {
-  console.log('🧪 Тестирование API обработки документа...');
-  console.log(`📄 Файл: ${filePath}`);
-  console.log(`💬 Чат ID: ${chatId}`);
-
-  try {
-    const result = await electron.processDocument({
-      filePath,
-      chatId,
-    });
-
-    console.log('✅ Результат обработки документа:', result);
-    if (result.success) {
-      console.log(`📊 Обработано чанков: ${result.totalChunks}`);
-      console.log(`📝 Первый чанк:`, result.chunks[0]);
-    } else {
-      console.error('❌ Ошибка обработки:', result.error);
-    }
-    return result;
-  } catch (error) {
-    console.error('❌ Ошибка обработки документа:', error);
-    throw error;
-  }
-}
-
-/**
  * Тестирует поиск релевантных документов.
  * Тестирует IPC endpoint rag:query-documents.
  */
@@ -104,12 +79,17 @@ export async function testQueryDocuments(
   console.log(`💬 Чат ID: ${chatId}`);
 
   try {
-    const result = await electron.queryDocuments({
-      query,
-      chatId,
-      topK: 5,
-      similarityThreshold: 0.7,
-    });
+    const result = await electron.queryDocuments(
+      {
+        query,
+        chatId,
+      },
+      {
+        topK: 5,
+        similarityThreshold: 0.7,
+        embeddingModel: DEFAULT_RAG_MODEL,
+      }
+    );
 
     console.log('✅ Результат поиска документов:', result);
     if (result.sources && result.sources.length > 0) {
@@ -256,13 +236,7 @@ export async function testFullRagSystem(
       console.log('⚠️ Коллекция еще не создана, это нормально');
     }
 
-    // 3. Обработать документ (если указан путь к файлу)
-    if (testFilePath) {
-      console.log('\n3️⃣ Тест обработки документа');
-      await testProcessDocument(testFilePath, testChatId);
-    }
-
-    // 4. Получить статистику после обработки
+    // 3. Получить статистику после обработки
     console.log('\n4️⃣ Тест получения статистики после обработки');
     try {
       await testGetCollectionStats(testChatId);
@@ -270,7 +244,7 @@ export async function testFullRagSystem(
       console.log('⚠️ Не удалось получить статистику');
     }
 
-    // 5. Выполнить поиск
+    // 4. Выполнить поиск
     console.log('\n5️⃣ Тест поиска документов');
     try {
       await testQueryDocuments('тестовый запрос', testChatId);
@@ -278,7 +252,7 @@ export async function testFullRagSystem(
       console.log('⚠️ Не удалось выполнить поиск');
     }
 
-    // 6. Удалить коллекцию
+    // 5. Удалить коллекцию
     console.log('\n6️⃣ Тест удаления коллекции');
     try {
       await testDeleteCollection(testChatId);
@@ -309,13 +283,16 @@ export async function testGenerateWithRagContext(
 
   try {
     // Сначала ищет релевантные документы
-    const searchResult = await electron.queryDocuments({
-      query,
-      chatId,
-      // NOTE: порог схожести и количество результатов можно изменить в зависимости от задачи
-      topK: 3, // Количество результатов уменьшено для более точного поиска
-      similarityThreshold: 0.3, // Порог схожести снижен для лучшего поиска
-    });
+    const searchResult = await electron.queryDocuments(
+      {
+        query,
+        chatId,
+      },
+      {
+        topK: 3,
+        similarityThreshold: 0.3,
+      }
+    );
 
     console.log(
       '✅ Найдено релевантных источников:',
@@ -374,7 +351,6 @@ export async function testGenerateWithRagContext(
 // Экспорты для использования в других модулях
 export default {
   testUploadAndProcessDocument,
-  testProcessDocument,
   testQueryDocuments,
   testGetCollectionStats,
   testListCollections,

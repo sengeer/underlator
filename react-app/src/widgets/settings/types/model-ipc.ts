@@ -80,6 +80,8 @@ export interface InstallModelParams {
   name: string;
   /** Необязательный тег модели */
   tag?: string;
+  /** Целевая подсистема для синхронизации (LLM или RAG) */
+  target?: 'provider' | 'rag';
 }
 
 /**
@@ -89,6 +91,8 @@ export interface InstallModelParams {
 export interface RemoveModelParams {
   /** Название модели для удаления */
   name: string;
+  /** Целевая подсистема для синхронизации (LLM или RAG) */
+  target?: 'provider' | 'rag';
 }
 
 /**
@@ -264,12 +268,12 @@ export interface RemoveModelPayload {
  * Основной компонент для управления моделями Embedded Ollama.
  */
 export interface ManageModelsProps {
+  /** Состояние открытия модального окна */
+  isOpened: boolean;
   /** Функция закрытия модального окна */
   onClose: () => void;
-  /** Дополнительные CSS классы */
-  className?: string;
-  /** Дополнительные стили */
-  style?: React.CSSProperties;
+  /** Контекст использования: выбор основной модели или модели эмбеддингов */
+  mode?: 'provider' | 'rag';
 }
 
 /**

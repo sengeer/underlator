@@ -27,17 +27,15 @@ function ChatMessages({
 }: ChatMessagesProps) {
   const { t } = useLingui();
   const [state, setState] = useState<ChatMessagesState>({
-    autoScroll: true,
     lastMessageCount: messages.length,
   });
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { ref: intersectionRef, isVisible } = useIntersectionObserver({
     threshold: 0.1,
     rootMargin: '100px',
   });
 
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   /**
    * Прокручивает к последнему сообщению.
    */
@@ -46,22 +44,6 @@ function ChatMessages({
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }
-
-  /**
-   * Обрабатывает прокрутку контейнера.
-   */
-  const handleScroll = useCallback(() => {
-    if (!scrollContainerRef.current) return;
-
-    const { scrollTop, scrollHeight, clientHeight } =
-      scrollContainerRef.current;
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-
-    setState((prev) => ({
-      ...prev,
-      autoScroll: isNearBottom,
-    }));
-  }, []);
 
   /**
    * Обрабатывает клик по кнопке прокрутки.
@@ -77,13 +59,8 @@ function ChatMessages({
         ...prev,
         lastMessageCount: messages.length,
       }));
-
-      // Автоматическая прокрутка к последнему сообщению
-      if (state.autoScroll) {
-        scrollToBottom();
-      }
     }
-  }, [messages.length, state.autoScroll, state.lastMessageCount]);
+  }, [messages.length, state.lastMessageCount]);
 
   /**
    * Рендерит индикатор генерации ответа.
@@ -127,7 +104,7 @@ function ChatMessages({
    * Рендерит кнопку прокрутки к низу.
    */
   function renderScrollToBottomButton() {
-    if (state.autoScroll || messages.length === 0) return null;
+    if (messages.length === 0) return null;
 
     return (
       <>
@@ -141,17 +118,11 @@ function ChatMessages({
   }
 
   return (
-    <div
-      ref={scrollContainerRef}
-      className={`chat-messages ${className}`}
-      onScroll={handleScroll}>
+    <div className={`chat-messages ${className}`}>
       {renderEmptyState()}
 
       {messages.map((message, index) => (
-        <div
-          className='chat-messages__item'
-          key={message.id}
-          ref={index === messages.length - 1 ? intersectionRef : undefined}>
+        <div className='chat-messages__item' key={message.id}>
           <MessageBubble
             message={message}
             isVisible={isVisible || index >= messages.length - 10}

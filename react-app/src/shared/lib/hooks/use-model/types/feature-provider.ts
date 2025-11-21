@@ -40,6 +40,8 @@ export interface ModelRequestContext {
   };
   /** Название модели для использования */
   model?: string;
+  /** Конфигурация RAG */
+  ragConfig: QueryDocumentsConfig;
   /** Текст или массив текстов для перевода */
   text: string | string[];
   /** Исходный язык */

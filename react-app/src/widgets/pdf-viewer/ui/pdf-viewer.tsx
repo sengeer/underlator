@@ -350,7 +350,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
           instruction:
             values.instruction === ''
               ? t`what does this mean?`
-              : values.instruction,
+              : values.instruction.toString(),
         },
         {
           think: true,

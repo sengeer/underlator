@@ -85,7 +85,7 @@ function MarkdownRenderer({
           style={{
             position: 'absolute',
             top: 0,
-            right: '1rem',
+            right: 0,
           }}
           onClick={() => handleCopy(mainContentParts.toString())}
           isDisabled={!mainContentParts || isCopied}>

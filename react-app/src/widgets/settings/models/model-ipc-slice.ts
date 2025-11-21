@@ -6,9 +6,16 @@
 
 import { i18n } from '@lingui/core';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import {
+  getEmbeddingModelDimension,
+  isEmbeddingModel,
+} from '../../../shared/lib/constants';
 import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log';
 import { addNotification } from '../../../shared/models/notifications-slice/';
-import { updateProviderSettings } from '../../../shared/models/provider-settings-slice';
+import {
+  updateProviderSettings,
+  updateRagSettings,
+} from '../../../shared/models/provider-settings-slice';
 import { electron } from '../apis/model-and-catalog-ipc';
 import type {
   ManageModelsState,
@@ -68,6 +75,15 @@ const initialState: ManageModelsState = {
   loading: false,
   error: null,
 };
+
+/**
+ * Извлекает название модели из ответа Ollama, учитывая разные ключи.
+ *
+ * @param model - Объект модели из Ollama API.
+ * @returns Строковое имя модели без undefined.
+ */
+const getInstalledModelName = (model?: { model?: string; name?: string }) =>
+  model?.model || model?.name || '';
 
 /**
  * Async thunk для получения каталога моделей.
@@ -188,11 +204,13 @@ export const installModel = createAsyncThunk(
   'manageModels/installModel',
   async (params: InstallModelParams, { rejectWithValue, dispatch }) => {
     try {
+      const { target = 'provider', ...request } = params;
+
       // Добавляет модель в список устанавливаемых
       dispatch(addInstallingModel(params.name));
 
       const result = await electron.installModel(
-        params,
+        request,
         (progress: ModelInstallProgress) => {
           // Обновляет прогресс через dispatch
           dispatch(
@@ -226,10 +244,15 @@ export const installModel = createAsyncThunk(
       }
 
       dispatch(
-        updateProviderSettings({
-          provider: 'Embedded Ollama',
-          settings: { model: params.name },
-        })
+        target === 'provider'
+          ? updateProviderSettings({
+              provider: 'Embedded Ollama',
+              settings: { model: params.name },
+            })
+          : updateRagSettings({
+              model: params.name,
+              vectorSize: getEmbeddingModelDimension(params.name),
+            })
       );
 
       dispatch(
@@ -264,7 +287,8 @@ export const removeModel = createAsyncThunk(
   'manageModels/removeModel',
   async (params: RemoveModelParams, { rejectWithValue, dispatch }) => {
     try {
-      const resultRemove = await electron.removeModel(params);
+      const { target = 'provider', ...request } = params;
+      const resultRemove = await electron.removeModel(request);
       if (!resultRemove.success) {
         const errMsg = 'Model removal error';
 
@@ -290,12 +314,33 @@ export const removeModel = createAsyncThunk(
         return rejectWithValue(resultList.error || errMsg);
       }
 
-      dispatch(
-        updateProviderSettings({
-          provider: 'Embedded Ollama',
-          settings: { model: resultList.data.models[0].model },
-        })
+      const installedModels: string[] = (resultList.data?.models || []).map(
+        getInstalledModelName
       );
+      const nextProviderModel = installedModels.find((model) => !!model);
+      const nextEmbeddingModel = installedModels.find((model) =>
+        isEmbeddingModel(model)
+      );
+
+      if (target === 'provider' && nextProviderModel) {
+        dispatch(
+          updateProviderSettings({
+            provider: 'Embedded Ollama',
+            settings: { model: nextProviderModel },
+          })
+        );
+      }
+
+      if (target === 'rag') {
+        dispatch(
+          updateRagSettings({
+            model: nextEmbeddingModel || '',
+            vectorSize: nextEmbeddingModel
+              ? getEmbeddingModelDimension(nextEmbeddingModel)
+              : undefined,
+          })
+        );
+      }
       dispatch(fetchCatalog({ forceRefresh: true }));
 
       dispatch(
@@ -308,7 +353,8 @@ export const removeModel = createAsyncThunk(
       return {
         ...resultRemove,
         modelName: params.name,
-        firstInstalledModel: resultList.data.models[0].model,
+        firstInstalledModel:
+          target === 'rag' ? nextEmbeddingModel || '' : nextProviderModel || '',
       };
     } catch (error) {
       const errMsg = `Model removal error: ${(error as Error).message}`;

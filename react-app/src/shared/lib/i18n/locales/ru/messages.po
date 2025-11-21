@@ -65,6 +65,57 @@ msgid " model has been removed"
 msgstr " удалена"
 
 #. js-lingui-explicit-id
+#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/widgets/chat/models/chat-ipc-slice.ts
+msgid "Error getting the chats list"
+msgstr "При получении списка чатов возникла ошибка"
+
+#. js-lingui-explicit-id
+#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/widgets/chat/models/chat-ipc-slice.ts
+msgid "Error creating chat"
+msgstr "При создании чата возникла ошибка"
+
+#. js-lingui-explicit-id
+#: src/widgets/chat/models/chat-ipc-slice.ts
+msgid "Chat created successfully"
+msgstr "Чат создан"
+
+#. js-lingui-explicit-id
+#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/widgets/chat/models/chat-ipc-slice.ts
+msgid "Error getting chat"
+msgstr "При получении чата возникла ошибка"
+
+#. js-lingui-explicit-id
+#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/widgets/chat/models/chat-ipc-slice.ts
+msgid "Error updating chat"
+msgstr "При обновлении чата возникла ошибка"
+
+#. js-lingui-explicit-id
+#: src/widgets/chat/models/chat-ipc-slice.ts
+msgid "Chat updated successfully"
+msgstr "Чат обновлен"
+
+#. js-lingui-explicit-id
+#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/widgets/chat/models/chat-ipc-slice.ts
+msgid "Error deleting chat"
+msgstr "При удалении чата возникла ошибка"
+
+#. js-lingui-explicit-id
+#: src/widgets/chat/models/chat-ipc-slice.ts
+msgid "Chat deleted successfully"
+msgstr "Чат удален"
+
+#. js-lingui-explicit-id
+#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/widgets/chat/models/chat-ipc-slice.ts
+msgid "Error adding message"
+msgstr "При добавлении сообщения возникла ошибка"
+
+#. js-lingui-explicit-id
 #: src/pages/main/models/splash-screen-ipc-slice.ts
 #: src/pages/main/models/splash-screen-ipc-slice.ts
 msgid "Internal application error"
@@ -83,8 +134,8 @@ msgid "accent color"
 msgstr "Акцентный цвет"
 
 #: src/widgets/settings/ui/settings.tsx
-msgid "api configuration"
-msgstr "Конфигурация API"
+msgid "API configuration"
+msgstr "API конфигурация"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "arabic"
@@ -131,6 +182,10 @@ msgid "chinese"
 msgstr "Китайский"
 
 #: src/widgets/settings/ui/settings.tsx
+msgid "chunk size"
+msgstr "Размер чанка"
+
+#: src/widgets/settings/ui/settings.tsx
 msgid "color scheme"
 msgstr "Цветовая схема"
 
@@ -170,6 +225,14 @@ msgstr "Перетащите"
 msgid "dutch"
 msgstr "Нидерландский"
 
+#: src/widgets/settings/ui/manage-embedded-ollama.tsx
+msgid "Embedding model..."
+msgstr "Модель эмбеддингов..."
+
+#: src/widgets/settings/ui/manage-embedded-ollama.tsx
+msgid "Embedding models not found"
+msgstr "Модели эмбеддингов не найдены"
+
 #: src/pages/main/ui/main.tsx
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "english"
@@ -179,18 +242,13 @@ msgstr "Английский"
 msgid "Error when selecting a file"
 msgstr "Ошибка при выборе файла"
 
-#: src/widgets/chat/ui/chat.tsx
-msgid "Failed to create chat"
-msgstr "Не удалось создать чат"
-
-#: src/widgets/chat/ui/chat.tsx
-msgid "Failed to load chat"
-msgstr "Не удалось загрузить чат"
+#: src/widgets/chat/ui/chat-sidebar.tsx
+msgid "Failed to delete chat"
+msgstr "Не удалось удалить чат"
 
 #: src/widgets/chat/ui/chat-sidebar.tsx
-#: src/widgets/chat/ui/chat.tsx
-msgid "Failed to load chats"
-msgstr "Не удалось загрузить чаты"
+msgid "Failed to delete document collection"
+msgstr "Не удалось удалить коллекцию документов"
 
 #: src/widgets/pdf-viewer/ui/custom-error-message.tsx
 msgid "failed to load PDF file"
@@ -199,6 +257,10 @@ msgstr "Не удалось загрузить PDF-файл"
 #: src/widgets/pdf-viewer/ui/custom-error-message.tsx
 msgid "Failed to load PDF file"
 msgstr "Не удалось загрузить PDF-файл"
+
+#: src/widgets/chat/ui/chat.tsx
+msgid "Failed to send message"
+msgstr "Не удалось отправить сообщение"
 
 #: src/shared/lib/hooks/use-model/use-model.ts
 msgid "Failed to stop generation"
@@ -297,6 +359,10 @@ msgid "malay"
 msgstr "Малайский"
 
 #: src/widgets/settings/ui/settings.tsx
+msgid "manage embedding models"
+msgstr "Управление моделями эмбеддингов"
+
+#: src/widgets/settings/ui/settings.tsx
 msgid "manage models"
 msgstr "Управление моделями"
 
@@ -333,8 +399,13 @@ msgid "no chats found"
 msgstr "Чаты не найдены"
 
 #: src/widgets/settings/ui/settings.tsx
+#: src/widgets/settings/ui/settings.tsx
 msgid "no model selected"
 msgstr "Модель не выбрана"
+
+#: src/widgets/settings/ui/settings.tsx
+msgid "number of top results"
+msgstr "Количество топ результатов"
 
 #: src/shared/ui/file-upload/file-upload.tsx
 msgid "or click"
@@ -363,6 +434,10 @@ msgstr "Провайдер"
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Quit"
 msgstr "Закрыть Underlator"
+
+#: src/widgets/settings/ui/settings.tsx
+msgid "RAG configuration"
+msgstr "RAG конфигурация"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Redo"
@@ -396,6 +471,10 @@ msgstr "Отправить"
 #: src/widgets/chat/ui/chat-messages.tsx
 msgid "Send a message to start chatting with the assistant"
 msgstr "Отправьте сообщение, чтобы начать общение с ассистентом"
+
+#: src/widgets/settings/ui/settings.tsx
+msgid "similarity threshold"
+msgstr "Порог сходства"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "spanish"

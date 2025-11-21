@@ -10,3 +10,14 @@
 export interface PopupSelectorData {
   [key: string]: string;
 }
+
+/**
+ * Типы для формы настроек.
+ */
+export interface SettingsFormData {
+  url: string;
+  model: string;
+  topK: string;
+  similarityThreshold: string;
+  chunkSize: string;
+}

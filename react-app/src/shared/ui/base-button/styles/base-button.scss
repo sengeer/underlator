@@ -1,8 +1,10 @@
 .base-button {
-  all: unset;
   display: flex;
   align-self: center;
+  border: none;
+  background: none;
   color: var(--main);
+  outline: none;
   cursor: pointer;
   transition: color 0.125s;
 

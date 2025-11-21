@@ -148,6 +148,8 @@ export interface DocumentProcessingOptions {
   encoding?: string;
   /** Максимальный размер чанка */
   maxChunkSize?: number;
+  /** Пользовательский размер чанка */
+  chunkSize?: number;
   /** Размер перекрытия чанков */
   chunkOverlap?: number;
 }
@@ -386,6 +388,10 @@ export interface ProcessingOptions {
   timeout?: number;
   /** Принудительная обработка без кэширования */
   forceProcessing?: boolean;
+  /** Пользовательский размер чанка */
+  chunkSize?: number;
+  /** Пользовательский размер перекрытия */
+  chunkOverlap?: number;
 }
 
 /**

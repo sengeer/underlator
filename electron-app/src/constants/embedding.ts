@@ -141,39 +141,67 @@ export const DEFAULT_EMBEDDING_CONFIG: OllamaEmbeddingConfig = {
 };
 
 /**
+ * Нормализует название модели, удаляя тег после двоеточия.
+ * Модели Ollama могут иметь теги (например, "embeddinggemma:latest"),
+ * но для проверки поддержки и получения метаданных нужна только базовая часть.
+ *
+ * @param modelName - Оригинальное название модели из каталога или настроек.
+ * @returns Нормализованное название без версии/тега.
+ */
+export function normalizeEmbeddingModelName(modelName: string): string {
+  return modelName?.split(':')[0] || modelName;
+}
+
+/**
  * Проверяет, поддерживается ли указанная модель эмбеддингов.
- * @param modelName - Название модели для проверки
- * @returns true если модель поддерживается
+ * Нормализует имя модели перед проверкой для поддержки моделей с тегами.
+ *
+ * @param modelName - Название модели для проверки (может содержать тег, например "embeddinggemma:latest").
+ * @returns true если модель поддерживается.
  */
 export function isEmbeddingModelSupported(modelName: string): boolean {
+  const normalizedName = normalizeEmbeddingModelName(modelName);
   return Object.values(EMBEDDING_MODELS).includes(
-    modelName as (typeof EMBEDDING_MODELS)[keyof typeof EMBEDDING_MODELS]
+    normalizedName as (typeof EMBEDDING_MODELS)[keyof typeof EMBEDDING_MODELS]
   );
 }
 
 /**
  * Получает размерность векторов для указанной модели.
- * @param modelName - Название модели
- * @returns Размерность векторов или undefined если модель не поддерживается
+ * Нормализует имя модели перед поиском для поддержки моделей с тегами.
+ *
+ * @param modelName - Название модели (может содержать тег, например "embeddinggemma:latest").
+ * @returns Размерность векторов или undefined если модель не поддерживается.
  */
 export function getEmbeddingDimensions(modelName: string): number | undefined {
-  return EMBEDDING_DIMENSIONS[modelName as keyof typeof EMBEDDING_DIMENSIONS];
+  const normalizedName = normalizeEmbeddingModelName(modelName);
+  return EMBEDDING_DIMENSIONS[
+    normalizedName as keyof typeof EMBEDDING_DIMENSIONS
+  ];
 }
 
 /**
  * Получает максимальную длину входного текста для указанной модели.
- * @param modelName - Название модели
- * @returns Максимальная длина или undefined если модель не поддерживается
+ * Нормализует имя модели перед поиском для поддержки моделей с тегами.
+ *
+ * @param modelName - Название модели (может содержать тег, например "embeddinggemma:latest").
+ * @returns Максимальная длина или undefined если модель не поддерживается.
  */
 export function getMaxInputLength(modelName: string): number | undefined {
-  return MAX_INPUT_LENGTHS[modelName as keyof typeof MAX_INPUT_LENGTHS];
+  const normalizedName = normalizeEmbeddingModelName(modelName);
+  return MAX_INPUT_LENGTHS[normalizedName as keyof typeof MAX_INPUT_LENGTHS];
 }
 
 /**
  * Получает оптимальный размер батча для указанной модели.
- * @param modelName - Название модели
- * @returns Оптимальный размер батча или undefined если модель не поддерживается
+ * Нормализует имя модели перед поиском для поддержки моделей с тегами.
+ *
+ * @param modelName - Название модели (может содержать тег, например "embeddinggemma:latest").
+ * @returns Оптимальный размер батча или undefined если модель не поддерживается.
  */
 export function getOptimalBatchSize(modelName: string): number | undefined {
-  return OPTIMAL_BATCH_SIZES[modelName as keyof typeof OPTIMAL_BATCH_SIZES];
+  const normalizedName = normalizeEmbeddingModelName(modelName);
+  return OPTIMAL_BATCH_SIZES[
+    normalizedName as keyof typeof OPTIMAL_BATCH_SIZES
+  ];
 }

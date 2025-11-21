@@ -34,13 +34,7 @@ import modelIpcSlice from '../../widgets/settings/models/model-ipc-slice';
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: [
-    'providerSettings',
-    'translationLanguages',
-    'elements',
-    'chat',
-    'manageModels',
-  ],
+  whitelist: ['elements', 'providerSettings', 'translationLanguages'],
 };
 
 /**

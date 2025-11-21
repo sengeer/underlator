@@ -29,6 +29,18 @@ interface ProviderSettings {
 }
 
 /**
+ * Конфигурация RAG.
+ */
+interface QueryDocumentsConfig {
+  /** Количество результатов */
+  topK: number;
+  /** Порог схожести */
+  similarityThreshold: number;
+  /** Название модели эмбеддингов для валидации цепочки */
+  embeddingModel?: string;
+}
+
+/**
  * Интерфейс информации о текстовом узле.
  * Используется для работы с DOM узлами при переводе PDF документов.
  */

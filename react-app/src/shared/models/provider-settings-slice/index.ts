@@ -11,6 +11,7 @@ export {
   updateProviderSettings,
   setTypeUse,
   setTypeUseBySection,
+  updateRagSettings,
 } from './provider-settings-slice';
 
 export { default } from './provider-settings-slice';

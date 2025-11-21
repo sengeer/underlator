@@ -89,11 +89,6 @@ export const loadChats = createAsyncThunk(
   'chat/loadChats',
   async (params: LoadChatsParams = {}, { rejectWithValue, dispatch }) => {
     try {
-      // Если не требуется принудительное обновление и есть кэш, возвращает кэшированные данные
-      if (!params.forceRefresh) {
-        // Кэширование обрабатывается на уровне компонента
-      }
-
       const result = await electron.listChats(params);
 
       if (!result.success) {

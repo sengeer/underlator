@@ -245,8 +245,9 @@ export class DocumentProcessorService {
     return executeWithErrorHandling(
       async () => {
         const chunks: DocumentChunk[] = [];
-        const chunkSize = this.config.chunkSize;
-        const overlap = this.config.chunkOverlap;
+        const chunkSize = options.chunkSize ?? this.config.chunkSize;
+        const overlap = options.chunkOverlap ?? this.config.chunkOverlap;
+        // Переопределение размеров через опции обеспечивает согласованность с настройками UI
 
         // Использует утилиты для создания чанков
         const textChunks = PDFUtils.createTextChunks(pages, {

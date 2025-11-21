@@ -15,6 +15,7 @@ import type {
   RagResponse,
   VectorCollection,
   CollectionStats,
+  UploadAndProcessDocumentConfig,
 } from './types/rag-ipc';
 
 /**
@@ -54,7 +55,7 @@ export class Electron {
 
       this.log('processDocument result', response);
 
-      // Извлекаем data из обертки IPC
+      // Извлекает data из обертки IPC
       if (!response.success) {
         throw new Error(response.error || 'Unknown error');
       }
@@ -72,20 +73,24 @@ export class Electron {
    * @param params - Параметры поиска.
    * @returns Promise с результатами поиска.
    */
-  async queryDocuments(params: RagQueryRequest): Promise<RagResponse> {
+  async queryDocuments(
+    params: RagQueryRequest,
+    config: QueryDocumentsConfig
+  ): Promise<RagResponse> {
     this.log('queryDocuments', params);
 
     try {
-      const response = await (window as any).electron.rag.queryDocuments({
-        query: params.query,
-        chatId: params.chatId,
-        topK: params.topK,
-        similarityThreshold: params.similarityThreshold,
-      });
+      const response = await (window as any).electron.rag.queryDocuments(
+        {
+          query: params.query,
+          chatId: params.chatId,
+        },
+        config
+      );
 
       this.log('queryDocuments result', response);
 
-      // Извлекаем data из обертки IPC
+      // Извлекает data из обертки IPC
       if (!response.success) {
         throw new Error(response.error || 'Unknown error');
       }
@@ -117,7 +122,7 @@ export class Electron {
 
       this.log('deleteDocumentCollection result', response);
 
-      // Извлекаем data из обертки IPC
+      // Извлекает data из обертки IPC
       if (!response.success) {
         throw new Error(response.error || 'Unknown error');
       }
@@ -144,7 +149,7 @@ export class Electron {
       );
       this.log('getCollectionStats result', response);
 
-      // Извлекаем data из обертки IPC
+      // Извлекает data из обертки IPC
       if (!response.success) {
         throw new Error(response.error || 'Unknown error');
       }
@@ -168,7 +173,7 @@ export class Electron {
       const response = await (window as any).electron.rag.listCollections();
       this.log('listCollections result', response);
 
-      // Проверяем что response это IPC обертка
+      // Проверяет что response это IPC обертка
       if (response && typeof response === 'object' && 'success' in response) {
         // IPC обертка
         if (!response.success) {
@@ -216,18 +221,19 @@ export class Electron {
    */
   async uploadAndProcessDocument(
     file: File,
-    chatId: string
+    chatId: string,
+    config: UploadAndProcessDocumentConfig
   ): Promise<ProcessDocumentResult> {
     this.log('uploadAndProcessDocument', { fileName: file.name, chatId });
 
     try {
-      // Читаем файл как ArrayBuffer
+      // Читает файл как ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
 
-      // Конвертируем в base64 безопасным способом для больших файлов
+      // Конвертирует в base64 безопасным способом для больших файлов
       const bytes = new Uint8Array(arrayBuffer);
       let binary = '';
-      const chunkSize = 8192; // Обрабатываем по частям
+      const chunkSize = 8192; // Обрабатывает по частям
 
       for (let i = 0; i < bytes.length; i += chunkSize) {
         const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
@@ -236,7 +242,7 @@ export class Electron {
 
       const base64 = btoa(binary);
 
-      // Отправляем в main процесс
+      // Отправляет в main процесс
       const request: UploadAndProcessDocumentRequest = {
         fileName: file.name,
         fileData: base64,
@@ -245,11 +251,11 @@ export class Electron {
       };
       const response = await (
         window as any
-      ).electron.rag.uploadAndProcessDocument(request);
+      ).electron.rag.uploadAndProcessDocument(request, config);
 
       this.log('uploadAndProcessDocument result', response);
 
-      // Извлекаем data из обертки IPC
+      // Извлекает data из обертки IPC
       if (!response.success) {
         throw new Error(response.error || 'Unknown error');
       }

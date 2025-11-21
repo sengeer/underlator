@@ -3,7 +3,6 @@
  * Типы для IPC взаимодействия с RAG системой.
  */
 
-// Типы для RAG систем будут определены при использовании
 export interface DocumentChunk {
   id: string;
   content: string;
@@ -63,6 +62,16 @@ export interface CollectionStats {
   indexesCount: number;
   indexingStatus: 'idle' | 'indexing' | 'completed' | 'error';
   lastIndexedAt?: string;
+}
+
+/**
+ * Конфигурация загрузки и обработки документа.
+ */
+export interface UploadAndProcessDocumentConfig {
+  /** Размер чанка */
+  chunkSize: number;
+  /** Название модели эмбеддингов */
+  embeddingModel?: string;
 }
 
 /**

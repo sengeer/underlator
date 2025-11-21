@@ -5,6 +5,28 @@
  */
 
 /**
+ * Конфигурация RAG.
+ */
+export interface QueryDocumentsConfig {
+  /** Количество результатов */
+  topK: number;
+  /** Порог схожести */
+  similarityThreshold: number;
+  /** Название модели эмбеддингов */
+  embeddingModel?: string;
+}
+
+/**
+ * Конфигурация загрузки и обработки документа.
+ */
+export interface UploadAndProcessDocumentConfig {
+  /** Размер чанка */
+  chunkSize: number;
+  /** Название модели эмбеддингов */
+  embeddingModel?: string;
+}
+
+/**
  * Чанк документа для векторного хранилища.
  * Представляет фрагмент текста с метаданными и эмбеддингами.
  */

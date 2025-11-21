@@ -104,12 +104,19 @@ function useModel() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
+    console.log('🚀 providerSettings.rag', providerSettings.rag);
+
     try {
       // Собирает контекст запроса
       const requestContext: ModelRequestContext = {
         config: {
           id: (providerSettings.settings as any)?.id || 'embedded-ollama',
           url: providerSettings.settings.url || DEFAULT_URL,
+        },
+        ragConfig: {
+          topK: providerSettings.rag.topK,
+          similarityThreshold: providerSettings.rag.similarityThreshold,
+          embeddingModel: providerSettings.rag.model,
         },
         model: providerSettings.settings.model,
         text: texts,

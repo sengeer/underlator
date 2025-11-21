@@ -17,6 +17,7 @@ import {
   getEmbeddingDimensions,
   getOptimalBatchSize,
   isEmbeddingModelSupported,
+  normalizeEmbeddingModelName,
 } from '../constants/embedding';
 import { ErrorHandler } from '../utils/error-handler';
 import type {
@@ -80,33 +81,14 @@ export class EmbeddingService {
         this.config.defaultModel
       );
       if (!primaryModelAvailable) {
-        console.warn(
-          `⚠️ Primary model ${this.config.defaultModel} is not available, checking fallback models...`
-        );
-
-        // Ищет доступную fallback модель
-        let availableModel: string | null = null;
-        for (const fallbackModel of this.config.fallbackModels) {
-          if (await this.validateEmbeddingModel(fallbackModel)) {
-            availableModel = fallbackModel;
-            break;
-          }
-        }
-
-        if (!availableModel) {
-          const error = 'None of the embedding models are available';
-          console.error(`❌ ${error}`);
-          return this.createErrorResult(error, 'error');
-        }
-
-        // Обновляет конфигурацию с доступной моделью
-        this.config.defaultModel = availableModel;
-        console.log(`✅ Using embedding model: ${availableModel}`);
-      } else {
-        console.log(
-          `✅ Primary embedding model is available: ${this.config.defaultModel}`
-        );
+        const error = `Embedding model ${this.config.defaultModel} is not available`;
+        console.error(`❌ ${error}`);
+        return this.createErrorResult(error, 'error');
       }
+
+      console.log(
+        `✅ Primary embedding model is available: ${this.config.defaultModel}`
+      );
 
       // Инициализирует кэш
       this.initializeCache();
@@ -335,9 +317,20 @@ export class EmbeddingService {
         return false;
       }
 
+      // Нормализует имя модели для сравнения (удаляет тег :latest и т.д.)
+      const normalizedModelName = normalizeEmbeddingModelName(modelName);
       const isAvailable = modelsResponse.models.some(
-        (model: { name: string }) =>
-          model.name === modelName || model.name.startsWith(`${modelName}:`)
+        (model: { name: string }) => {
+          const normalizedInstalledName = normalizeEmbeddingModelName(
+            model.name
+          );
+          return (
+            normalizedInstalledName === normalizedModelName ||
+            model.name === modelName ||
+            model.name.startsWith(`${modelName}:`) ||
+            model.name.startsWith(`${normalizedModelName}:`)
+          );
+        }
       );
 
       if (isAvailable) {
@@ -434,40 +427,29 @@ export class EmbeddingService {
     model: string,
     config?: ElectronApiConfig
   ): Promise<OllamaOperationResult<OllamaEmbeddingResponse>> {
-    const modelsToTry = [model, ...this.config.fallbackModels];
+    try {
+      const request: OllamaEmbeddingRequest = {
+        model,
+        prompt: text,
+      };
 
-    for (const currentModel of modelsToTry) {
-      try {
-        const request: OllamaEmbeddingRequest = {
-          model: currentModel,
-          prompt: text,
-        };
-
-        const result = await this.ollamaApi.generateEmbedding(
-          request,
-          config || { id: 'default', url: '' }
-        );
-
-        if (result.success) {
-          return result;
-        }
-
-        console.warn(
-          `⚠️ Error generating embedding for model ${currentModel}: ${result.error}`
-        );
-      } catch (error) {
-        console.warn(
-          `⚠️ Exception when generating embedding for model ${currentModel}:`,
-          error
-        );
-      }
+      return await this.ollamaApi.generateEmbedding(
+        request,
+        config || { id: 'default', url: '' }
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unable to generate embedding';
+      console.error(
+        `❌ Error generating embedding for model ${model}:`,
+        message
+      );
+      return {
+        success: false,
+        error: message,
+        status: 'error',
+      };
     }
-
-    return {
-      success: false,
-      error: 'Unable to generate embedding for any of the available models',
-      status: 'error',
-    };
   }
 
   /**

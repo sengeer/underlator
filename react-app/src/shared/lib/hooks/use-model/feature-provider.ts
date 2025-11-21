@@ -264,13 +264,13 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
 
     if (result.sizeBytes > 0) {
       try {
-        const searchResult = await ragElectron.queryDocuments({
-          query: message,
-          chatId: props.chatId,
-          // NOTE: порог схожести и количество результатов можно изменить в зависимости от задачи
-          topK: 1, // Количество результатов уменьшено для более точного поиска
-          similarityThreshold: 0.3, // Порог схожести снижен для лучшего поиска
-        });
+        const searchResult = await ragElectron.queryDocuments(
+          {
+            query: message,
+            chatId: props.chatId,
+          },
+          props.ragConfig
+        );
 
         // Формирует промпт с контекстом из документов
         const context = searchResult.sources

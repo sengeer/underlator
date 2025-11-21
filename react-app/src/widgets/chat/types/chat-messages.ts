@@ -22,8 +22,6 @@ export interface ChatMessagesProps {
  * Состояние компонента ChatMessages.
  */
 export interface ChatMessagesState {
-  /** Флаг автоматической прокрутки */
-  autoScroll: boolean;
   /** Последнее количество сообщений для отслеживания изменений */
   lastMessageCount: number;
 }

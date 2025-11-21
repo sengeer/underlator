@@ -29,6 +29,8 @@ import type {
   RagResponse,
   VectorCollection,
   CollectionStats,
+  QueryDocumentsConfig,
+  UploadAndProcessDocumentConfig,
 } from './types/rag';
 import type {
   ProcessDocumentRequest,
@@ -166,17 +168,22 @@ contextBridge.exposeInMainWorld('electron', {
   // API для работы с RAG системой
   rag: {
     processDocument: (
-      request: ProcessDocumentRequest
+      request: ProcessDocumentRequest,
+      config?: UploadAndProcessDocumentConfig
     ): Promise<ProcessDocumentResult> =>
-      ipcRenderer.invoke('rag:process-document', request),
+      ipcRenderer.invoke('rag:process-document', request, config || {}),
 
     uploadAndProcessDocument: (
-      request: UploadAndProcessDocumentRequest
+      request: UploadAndProcessDocumentRequest,
+      config: UploadAndProcessDocumentConfig
     ): Promise<ProcessDocumentResult> =>
-      ipcRenderer.invoke('rag:upload-and-process-document', request),
+      ipcRenderer.invoke('rag:upload-and-process-document', request, config),
 
-    queryDocuments: (request: RagQueryRequest): Promise<RagResponse> =>
-      ipcRenderer.invoke('rag:query-documents', request),
+    queryDocuments: (
+      request: RagQueryRequest,
+      config: QueryDocumentsConfig
+    ): Promise<RagResponse> =>
+      ipcRenderer.invoke('rag:query-documents', request, config),
 
     deleteDocumentCollection: (
       request: DeleteCollectionRequest

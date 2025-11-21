@@ -16,7 +16,7 @@
     "lint:fix": "eslint --fix . --ext .js,.ts",
     "prettier": "prettier . --write",
     "lint-staged": "lint-staged",
-    "type-check": "tsc --noEmit",
+    "type:check": "tsc --noEmit --pretty",
     "docs": "npx typedoc"
   },
   "devDependencies": {

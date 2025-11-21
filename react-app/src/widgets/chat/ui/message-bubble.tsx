@@ -5,11 +5,6 @@
  */
 
 import { useLingui } from '@lingui/react/macro';
-import CheckIcon from '../../../shared/assets/icons/check-icon';
-import CopyIcon from '../../../shared/assets/icons/copy-icon';
-import useCopying from '../../../shared/lib/hooks/use-copying';
-import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
-import IconButton from '../../../shared/ui/icon-button';
 import MarkdownRenderer from '../../../shared/ui/markdown-renderer';
 import Tail from '../assets/tail';
 import type { MessageBubbleProps } from '../types/message-bubble';
@@ -20,8 +15,6 @@ function MessageBubble({
   isVisible = true,
   className = '',
 }: MessageBubbleProps) {
-  const { isCopied, handleCopy } = useCopying();
-
   const { t } = useLingui();
 
   /**
@@ -95,20 +88,6 @@ function MessageBubble({
           showThinking
           text={getRoleLabel()}
         />
-        <IconButton
-          style={{
-            position: 'absolute',
-            right: '1rem',
-            top: '1rem',
-          }}
-          onClick={() => handleCopy(message.content)}>
-          <AnimatingWrapper isShow={isCopied}>
-            <CheckIcon />
-          </AnimatingWrapper>
-          <AnimatingWrapper isShow={!isCopied}>
-            <CopyIcon />
-          </AnimatingWrapper>
-        </IconButton>
       </div>
       {message.role === 'user' ? (
         <Tail

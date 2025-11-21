@@ -18,6 +18,8 @@ import type {
   RagResponse,
   VectorCollection,
   CollectionStats,
+  QueryDocumentsConfig,
+  UploadAndProcessDocumentConfig,
 } from '../../types/rag';
 import type {
   ProcessDocumentRequest,
@@ -117,14 +119,15 @@ export class RagHandlers {
   registerHandlers(): void {
     console.log('🔧 Registering RAG IPC handlers...');
 
-    // Обработчик обработки PDF документов
+    // Обработка PDF документов
     ipcMain.handle(
       'rag:process-document',
       IpcHandler.createHandlerWrapper(
         async (
-          request: ProcessDocumentRequest
+          request: ProcessDocumentRequest,
+          config?: UploadAndProcessDocumentConfig
         ): Promise<ProcessDocumentResult> => {
-          return await this.handleProcessDocument(request);
+          return await this.handleProcessDocument(request, config);
         },
         'rag:process-document'
       )
@@ -134,8 +137,11 @@ export class RagHandlers {
     ipcMain.handle(
       'rag:query-documents',
       IpcHandler.createHandlerWrapper(
-        async (request: RagQueryRequest): Promise<RagResponse> => {
-          return await this.handleQueryDocuments(request);
+        async (
+          request: RagQueryRequest,
+          config: QueryDocumentsConfig
+        ): Promise<RagResponse> => {
+          return await this.handleQueryDocuments(request, config);
         },
         'rag:query-documents'
       )
@@ -182,9 +188,10 @@ export class RagHandlers {
       'rag:upload-and-process-document',
       IpcHandler.createHandlerWrapper(
         async (
-          request: UploadAndProcessDocumentRequest
+          request: UploadAndProcessDocumentRequest,
+          config: UploadAndProcessDocumentConfig
         ): Promise<ProcessDocumentResult> => {
-          return await this.handleUploadAndProcessDocument(request);
+          return await this.handleUploadAndProcessDocument(request, config);
         },
         'rag:upload-and-process-document'
       )
@@ -214,7 +221,8 @@ export class RagHandlers {
    * Извлекает текст, разбивает на чанки, создает эмбеддинги и добавляет в векторное хранилище.
    */
   private async handleProcessDocument(
-    request: ProcessDocumentRequest
+    request: ProcessDocumentRequest,
+    config?: UploadAndProcessDocumentConfig
   ): Promise<ProcessDocumentResult> {
     // Валидация запроса
     const validation = this.validateProcessDocumentRequest(request);
@@ -228,14 +236,23 @@ export class RagHandlers {
     }
 
     try {
+      const embeddingContext = await this.resolveEmbeddingContext(
+        config?.embeddingModel
+      );
+
       // Ленивая инициализация DocumentProcessorService
       const docProcessor = await this.getDocumentProcessorService();
 
       // Обработка PDF документа
-      const processingResult = await docProcessor.processPDF(request.filePath, {
+      const processingOptions = {
+        ...(request.options || {}),
         chatId: request.chatId,
-        ...request.options,
-      });
+      };
+
+      const processingResult = await docProcessor.processPDF(
+        request.filePath,
+        processingOptions
+      );
 
       if (!processingResult.success || !processingResult.data) {
         return {
@@ -251,7 +268,7 @@ export class RagHandlers {
         processingResult.data.pages,
         processingResult.data.metadata,
         request.chatId,
-        request.options
+        processingOptions
       );
 
       if (!chunkingResult.success || !chunkingResult.data) {
@@ -275,7 +292,7 @@ export class RagHandlers {
       }
 
       // Генерация эмбеддингов
-      const embeddingModel = this.embeddingService.getCurrentEmbeddingModel();
+      const embeddingModel = embeddingContext.modelName;
       const embeddingPromises = chunkingResult.data.map(async chunk => {
         const embeddingResult = await this.embeddingService.generateEmbedding(
           chunk.content,
@@ -329,11 +346,88 @@ export class RagHandlers {
   }
 
   /**
+   * Подбирает модель эмбеддингов и проверяет совместимость с хранилищем.
+   *
+   * @param preferredModel - Модель, выбранная на фронтенде.
+   * @returns Название модели и ожидаемая размерность векторов.
+   */
+  private async resolveEmbeddingContext(
+    preferredModel?: string
+  ): Promise<{ modelName: string; vectorSize: number }> {
+    const targetModel =
+      preferredModel || this.embeddingService.getCurrentEmbeddingModel();
+
+    if (!targetModel) {
+      throw new Error('Embedding model is not configured');
+    }
+
+    const isAvailable =
+      await this.embeddingService.validateEmbeddingModel(targetModel);
+
+    if (!isAvailable) {
+      throw new Error(
+        `Embedding model "${targetModel}" is not installed or unsupported`
+      );
+    }
+
+    const vectorSize =
+      this.embeddingService.getEmbeddingDimensions(targetModel);
+
+    if (!vectorSize) {
+      throw new Error(
+        `Vector dimensions metadata is missing for model "${targetModel}"`
+      );
+    }
+
+    await this.ensureVectorStoreCompatibility(vectorSize);
+    this.embeddingService.updateConfig({ defaultModel: targetModel });
+
+    return { modelName: targetModel, vectorSize };
+  }
+
+  /**
+   * Проверяет, может ли векторное хранилище работать с новой размерностью.
+   *
+   * @param vectorSize - Размерность векторов выбранной модели.
+   */
+  private async ensureVectorStoreCompatibility(
+    vectorSize: number
+  ): Promise<void> {
+    const currentConfig = this.vectorStoreService.getConfig();
+    if (currentConfig.defaultVectorSize === vectorSize) {
+      return;
+    }
+
+    const collectionsResult = await this.vectorStoreService.listCollections();
+    if (!collectionsResult.success) {
+      throw new Error(
+        collectionsResult.error ||
+          'Failed to validate existing collections before switching embedding model'
+      );
+    }
+
+    const collections = collectionsResult.data || [];
+    const incompatibleCollection = collections.find(
+      collection =>
+        collection.vectorSize !== vectorSize && collection.stats.pointsCount > 0
+    );
+
+    if (incompatibleCollection) {
+      throw new Error(
+        `Vector store already contains embeddings with dimension ${incompatibleCollection.vectorSize}. Remove existing collections before switching to model with dimension ${vectorSize}.`
+      );
+    }
+
+    this.vectorStoreService.updateConfig({ defaultVectorSize: vectorSize });
+  }
+
+  /**
    * Обрабатывает поиск релевантных документов по запросу.
    * Выполняет векторный поиск и возвращает найденные фрагменты.
    */
   private async handleQueryDocuments(
-    request: RagQueryRequest
+    request: RagQueryRequest,
+    config: QueryDocumentsConfig
   ): Promise<RagResponse> {
     // Валидация запроса
     const validation = this.validateRAGQueryRequest(request);
@@ -342,19 +436,23 @@ export class RagHandlers {
     }
 
     try {
+      const embeddingContext = await this.resolveEmbeddingContext(
+        config.embeddingModel
+      );
+
       // Создание RAG запроса
       const ragQuery: RagQuery = {
         query: request.query,
         chatId: request.chatId,
-        topK: request.topK || 10,
-        // Понижает дефолтный порог, чтобы избежать пустых результатов
-        similarityThreshold: request.similarityThreshold ?? 0.3,
+        topK: config.topK,
+        similarityThreshold: config.similarityThreshold,
       };
 
       // Генерирует эмбеддинг для запроса пользователя
       console.log('🔍 Generating embedding for query:', request.query);
       const embeddingResult = await this.embeddingService.generateEmbedding(
-        request.query
+        request.query,
+        embeddingContext.modelName
       );
 
       if (!embeddingResult.success || !embeddingResult.data) {
@@ -514,7 +612,8 @@ export class RagHandlers {
    * Сохраняет файл во временную директорию и вызывает обработку.
    */
   private async handleUploadAndProcessDocument(
-    request: UploadAndProcessDocumentRequest
+    request: UploadAndProcessDocumentRequest,
+    config: UploadAndProcessDocumentConfig
   ): Promise<ProcessDocumentResult> {
     // Валидация запроса
     const validation = this.validateUploadAndProcessRequest(request);
@@ -543,11 +642,17 @@ export class RagHandlers {
       fs.writeFileSync(tempFilePath, buffer);
       console.log(`📄 Файл сохранен: ${tempFilePath}`);
 
-      // Вызываем обработку документа
-      const result = await this.handleProcessDocument({
-        filePath: tempFilePath,
-        chatId: request.chatId,
-      });
+      // Передача chunkSize сохраняет консистентность настроек RAG и обработки документов
+      const result = await this.handleProcessDocument(
+        {
+          filePath: tempFilePath,
+          chatId: request.chatId,
+          options: {
+            chunkSize: config.chunkSize,
+          },
+        },
+        config
+      );
 
       return result;
     } catch (error) {

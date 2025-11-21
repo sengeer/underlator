@@ -24,8 +24,13 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '../../../app';
 import {
+  isEmbeddingModel,
+  getEmbeddingModelDimension,
+} from '../../../shared/lib/constants';
+import {
   selectProviderSettings,
   updateProviderSettings,
+  updateRagSettings,
 } from '../../../shared/models/provider-settings-slice';
 import PopupWithSearch from '../../../shared/ui/popup-with-search';
 import {
@@ -153,41 +158,47 @@ function getModelDisplayState(
  * списка моделей с поддержкой ленивой загрузки и анимаций.
  *
  * @param props - Пропсы компонента.
+ * @param props.isOpened - Состояние открытия модального окна.
  * @param props.onClose - Функция закрытия модального окна.
  * @returns JSX элемент с интерфейсом управления моделями.
  */
-function ManageModels({ onClose }: ManageModelsProps) {
+function ManageModels({
+  isOpened,
+  onClose,
+  mode = 'provider',
+}: ManageModelsProps) {
   const { t } = useLingui();
   const dispatch = useAppDispatch();
 
+  const isEmbeddingMode = mode === 'rag';
   const catalogState = useSelector(selectCatalogState);
   const installationState = useSelector(selectInstallationState);
   const searchState = useSelector(selectSearchState);
-  const { provider, settings } = useSelector(selectProviderSettings);
+  const { provider, settings, rag } = useSelector(selectProviderSettings);
 
   const [searchQuery, setSearchQueryLocal] = useState('');
   const [selectedModel, setSelectedModel] = useState<string | undefined>(
-    settings[provider]?.model
+    isEmbeddingMode ? rag.model || undefined : settings[provider]?.model
   );
+  const searchInputPlaceholder = isEmbeddingMode
+    ? t`Embedding model...`
+    : t`Model...`;
 
-  /**
-   * Получает список установленных моделей из каталога.
-   *
-   * Извлекает названия моделей, которые имеют тег 'installed' в каталоге.
-   * Используется для определения состояния моделей при отображении.
-   * Мемоизируется для оптимизации производительности.
-   *
-   * @returns Массив названий установленных моделей.
-   */
-  const installedModels = useMemo(() => {
-    if (!catalogState.catalog?.ollama) return [];
-
-    const installed = catalogState.catalog.ollama
-      .filter((model) => model.tags?.includes('installed'))
-      .map((model) => model.name);
-
-    return installed;
-  }, [catalogState.catalog?.ollama]);
+  useEffect(() => {
+    const newSelectedModel = isEmbeddingMode
+      ? rag.model || undefined
+      : settings[provider]?.model;
+    // Обновляет только если значение действительно изменилось
+    if (selectedModel !== newSelectedModel) {
+      setSelectedModel(newSelectedModel);
+    }
+  }, [
+    isEmbeddingMode,
+    rag.model,
+    settings[provider]?.model,
+    provider,
+    selectedModel,
+  ]);
 
   /**
    * Получает прогресс установки для конкретной модели.
@@ -203,6 +214,36 @@ function ManageModels({ onClose }: ManageModelsProps) {
     (modelName: string) => installationState.progress[modelName],
     [installationState.progress]
   );
+
+  const filterByMode = useCallback(
+    (model: OllamaModelInfo) =>
+      !isEmbeddingMode || isEmbeddingModel(model.name),
+    [isEmbeddingMode]
+  );
+
+  const availableModels = useMemo(() => {
+    if (!catalogState.catalog?.ollama) return [];
+
+    return catalogState.catalog.ollama.filter((model) => filterByMode(model));
+  }, [catalogState.catalog?.ollama, filterByMode]);
+
+  /**
+   * Получает список установленных моделей из каталога.
+   *
+   * Извлекает названия моделей, которые имеют тег 'installed' в каталоге.
+   * Используется для определения состояния моделей при отображении.
+   * Мемоизируется для оптимизации производительности.
+   *
+   * @returns Массив названий установленных моделей.
+   */
+  const installedModels = useMemo(() => {
+    if (!catalogState.catalog?.ollama) return [];
+
+    return catalogState.catalog.ollama
+      .filter((model) => model.tags?.includes('installed'))
+      .filter((model) => filterByMode(model))
+      .map((model) => model.name);
+  }, [catalogState.catalog?.ollama, filterByMode]);
 
   /**
    * Обработчик поиска с debounce.
@@ -239,8 +280,43 @@ function ManageModels({ onClose }: ManageModelsProps) {
    *
    * @returns Объект с обработчиками событий моделей.
    */
-  const eventCallbacks: ModelEventCallbacks = useMemo(
-    () => ({
+  const eventCallbacks: ModelEventCallbacks = useMemo(() => {
+    if (isEmbeddingMode) {
+      return {
+        onModelSelect: (modelName: string) => {
+          setSelectedModel(modelName);
+          dispatch(
+            updateRagSettings({
+              model: modelName,
+              vectorSize: getEmbeddingModelDimension(modelName),
+            })
+          );
+          onClose();
+        },
+        onModelInstall: async (modelName: string) => {
+          const { payload } = (await dispatch(
+            installModel({ name: modelName, target: 'rag' })
+          )) as {
+            payload: InstallModelPayload;
+          };
+
+          if (payload?.success) {
+            setSelectedModel(modelName);
+          }
+        },
+        onModelRemove: async (modelName: string) => {
+          const { payload } = (await dispatch(
+            removeModel({ name: modelName, target: 'rag' })
+          )) as {
+            payload: RemoveModelPayload;
+          };
+
+          setSelectedModel(payload?.firstInstalledModel || undefined);
+        },
+      };
+    }
+
+    return {
       onModelSelect: (modelName: string) => {
         setSelectedModel(modelName);
         dispatch(
@@ -258,7 +334,7 @@ function ManageModels({ onClose }: ManageModelsProps) {
           payload: InstallModelPayload;
         };
 
-        if (payload.success) {
+        if (payload?.success) {
           setSelectedModel(modelName);
         }
       },
@@ -269,13 +345,12 @@ function ManageModels({ onClose }: ManageModelsProps) {
           payload: RemoveModelPayload;
         };
 
-        if (payload.success && payload.firstInstalledModel) {
+        if (payload?.success && payload.firstInstalledModel) {
           setSelectedModel(payload.firstInstalledModel);
         }
       },
-    }),
-    [dispatch, provider, onClose]
-  );
+    };
+  }, [dispatch, provider, onClose, isEmbeddingMode]);
 
   /**
    * Получает модели для отображения.
@@ -293,45 +368,42 @@ function ManageModels({ onClose }: ManageModelsProps) {
    * @returns Массив объектов с моделью и состоянием отображения.
    */
   const displayModels = useMemo(() => {
-    if (searchQuery) {
-      const models =
-        searchState.filteredResults.length > 0
-          ? searchState.filteredResults
-          : catalogState.catalog?.ollama || [];
+    const source =
+      searchQuery && searchState.filteredResults.length > 0
+        ? searchState.filteredResults
+        : searchQuery
+          ? catalogState.catalog?.ollama || []
+          : availableModels;
 
-      return models.map((model) => ({
-        model,
-        displayState: getModelDisplayState(
-          model,
-          installedModels,
-          installationState.installing,
-          installationState.errors,
-          selectedModel
-        ),
-      }));
-    } else {
-      const models = catalogState.catalog?.ollama || [];
+    const models = searchQuery ? source.filter(filterByMode) : source;
 
-      return models.map((model) => ({
+    return models.map((model) => ({
+      model,
+      displayState: getModelDisplayState(
         model,
-        displayState: getModelDisplayState(
-          model,
-          installedModels,
-          installationState.installing,
-          installationState.errors,
-          selectedModel
-        ),
-      }));
-    }
+        installedModels,
+        installationState.installing,
+        installationState.errors,
+        selectedModel
+      ),
+    }));
   }, [
     searchQuery,
     searchState.filteredResults,
     catalogState.catalog?.ollama,
+    availableModels,
+    filterByMode,
     installedModels,
     installationState.installing,
     installationState.errors,
     selectedModel,
   ]);
+
+  const emptyStateContent = isEmbeddingMode ? (
+    <Trans>Embedding models not found</Trans>
+  ) : (
+    <Trans>Мodels not found</Trans>
+  );
 
   /**
    * Сбрасывает поиск при открытии модального окна.
@@ -354,12 +426,14 @@ function ManageModels({ onClose }: ManageModelsProps) {
    * отображения интерфейса.
    */
   useEffect(() => {
-    dispatch(fetchCatalog({ forceRefresh: false }));
-  }, [dispatch]);
+    if (isOpened) {
+      dispatch(fetchCatalog({ forceRefresh: false }));
+    }
+  }, [dispatch, isOpened]);
 
   return (
     <PopupWithSearch
-      isOpened={true}
+      isOpened={isOpened}
       setOpened={onClose}
       styleWrapper={{ minWidth: '50%', maxWidth: '80%' }}
       enableLazyLoading
@@ -369,7 +443,7 @@ function ManageModels({ onClose }: ManageModelsProps) {
       animationDuration={50}
       animationDelay={25}
       animationType='scaleIn'
-      searchPlaceholder={t`Model...`}
+      searchPlaceholder={searchInputPlaceholder}
       searchDebounceMs={300}
       searchValue={searchQuery}
       onSearchChange={handleSearchChange}
@@ -382,7 +456,7 @@ function ManageModels({ onClose }: ManageModelsProps) {
             textAlign: 'center',
             color: 'var(--foreground)',
           }}>
-          <Trans>Мodels not found</Trans>
+          {emptyStateContent}
         </div>
       ) : (
         displayModels.map(({ model, displayState }) => (

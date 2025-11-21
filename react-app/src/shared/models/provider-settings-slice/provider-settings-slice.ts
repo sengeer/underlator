@@ -6,9 +6,21 @@
  */
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DEFAULT_MODEL, DEFAULT_URL } from '../../lib/constants';
+import {
+  DEFAULT_MODEL,
+  DEFAULT_URL,
+  DEFAULT_RAG_MODEL,
+  DEFAULT_RAG_TOP_K,
+  DEFAULT_RAG_SIMILARITY_THRESHOLD,
+  DEFAULT_RAG_CHUNK_SIZE,
+  getEmbeddingModelDimension,
+} from '../../lib/constants';
 import { SECTION_TYPEUSE_MAPPING } from './constants/provider-settings-slice';
-import { ProviderSettingsState, State } from './types/provider-settings-slice';
+import {
+  ProviderSettingsState,
+  State,
+  RagSettings,
+} from './types/provider-settings-slice';
 
 /**
  * Начальное состояние настроек провайдеров.
@@ -30,6 +42,13 @@ const initialState: ProviderSettingsState = {
       model: DEFAULT_MODEL,
       typeUse: 'instruction',
     },
+  },
+  rag: {
+    model: DEFAULT_RAG_MODEL,
+    vectorSize: getEmbeddingModelDimension(DEFAULT_RAG_MODEL),
+    topK: DEFAULT_RAG_TOP_K,
+    similarityThreshold: DEFAULT_RAG_SIMILARITY_THRESHOLD,
+    chunkSize: DEFAULT_RAG_CHUNK_SIZE,
   },
 };
 
@@ -117,6 +136,48 @@ export const providerSettingsSlice = createSlice({
         state.settings[state.provider]!.typeUse = targetTypeUse;
       }
     },
+
+    /**
+     * Обновляет глобальные настройки RAG.
+     * Позволяет синхронизировать выбранную модель эмбеддингов и числовые параметры.
+     *
+     * @param state - Текущее состояние настроек.
+     * @param action - Действие с частичным набором полей RAG.
+     */
+    updateRagSettings(state, action: PayloadAction<Partial<RagSettings>>) {
+      // Объединяет существующие настройки с новыми, сохраняя все поля
+      const newModel =
+        action.payload.model !== undefined
+          ? action.payload.model
+          : state.rag.model || DEFAULT_RAG_MODEL;
+      const newVectorSize =
+        action.payload.vectorSize !== undefined
+          ? action.payload.vectorSize
+          : action.payload.model !== undefined
+            ? getEmbeddingModelDimension(action.payload.model) ||
+              state.rag.vectorSize
+            : state.rag.vectorSize ||
+              getEmbeddingModelDimension(state.rag.model || DEFAULT_RAG_MODEL);
+
+      // Объединяет существующие настройки с новыми, используя значения по умолчанию для отсутствующих полей
+      state.rag = {
+        model: newModel,
+        vectorSize: newVectorSize,
+        topK:
+          action.payload.topK !== undefined
+            ? action.payload.topK
+            : (state.rag.topK ?? DEFAULT_RAG_TOP_K),
+        similarityThreshold:
+          action.payload.similarityThreshold !== undefined
+            ? action.payload.similarityThreshold
+            : (state.rag.similarityThreshold ??
+              DEFAULT_RAG_SIMILARITY_THRESHOLD),
+        chunkSize:
+          action.payload.chunkSize !== undefined
+            ? action.payload.chunkSize
+            : (state.rag.chunkSize ?? DEFAULT_RAG_CHUNK_SIZE),
+      };
+    },
   },
 });
 
@@ -125,6 +186,7 @@ export const {
   updateProviderSettings,
   setTypeUse,
   setTypeUseBySection,
+  updateRagSettings,
 } = providerSettingsSlice.actions;
 
 /**
@@ -144,7 +206,7 @@ export const selectProviderSettings = (state: State) => state.providerSettings;
  * @returns Объект с активным провайдером и его настройками.
  */
 export const selectActiveProviderSettings = (state: State) => {
-  const { provider, settings } = state.providerSettings;
+  const { provider, settings, rag } = state.providerSettings;
   const defaultSettings: ProviderSettings = {
     id: 'embedded-ollama',
     url: DEFAULT_URL,
@@ -154,6 +216,7 @@ export const selectActiveProviderSettings = (state: State) => {
   return {
     provider,
     settings: settings[provider] || defaultSettings,
+    rag: rag,
   };
 };
 
