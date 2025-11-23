@@ -23,8 +23,9 @@ function MarkdownRenderer({
   style,
   showThinking = true,
   text,
+  placeholder,
 }: MarkdownRendererProps) {
-  if (!content) return null;
+  if (!content) return renderPlaceholder();
 
   const [isShowThinking, setIsShowThinking] = useState<boolean>(false);
 
@@ -59,6 +60,14 @@ function MarkdownRenderer({
   useEffect(() => {
     scrollToBottom();
   }, [content]);
+
+  function renderPlaceholder() {
+    return (
+      <div className={`markdown-renderer__placeholder ${className || ''}`}>
+        {placeholder}
+      </div>
+    );
+  }
 
   return (
     <div style={style} className={`markdown-renderer ${className || ''}`}>

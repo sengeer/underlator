@@ -216,9 +216,10 @@ function TextTranslator() {
         className='text-translator__content-wrapper'>
         <MarkdownRenderer
           content={output}
-          className='text-heading-l text-translator__output'
+          className='text-heading-m text-translator__output'
           showThinking={false}
           style={{ height: heightOfOutputContainer + 'px' }}
+          placeholder={getPlaceholderByLanguage(targetLanguage)}
         />
       </div>
 

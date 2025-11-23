@@ -54,7 +54,7 @@ import {
 } from '../../../shared/models/provider-settings-slice';
 import type { RagSettings } from '../../../shared/models/provider-settings-slice/types/provider-settings-slice';
 import ButtonWrapperWithBackground from '../../../shared/ui/button-wrapper-with-background';
-import ColorPicker from '../../../shared/ui/color-picker';
+import Grid from '../../../shared/ui/grid/grid';
 import Popup from '../../../shared/ui/popup';
 import SelectorOption from '../../../shared/ui/selector-option/';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
@@ -63,6 +63,7 @@ import { LANGUAGES, PROVIDERS } from '../constants/settings';
 import type { SettingsFormData } from '../types/settings';
 import ManageModels from './manage-embedded-ollama';
 import Tests from './tests';
+import Themes from './themes';
 
 /**
  * Компонент Settings.
@@ -370,23 +371,23 @@ function Settings() {
       {import.meta.env.DEV && <Tests />}
 
       <div className='settings__container'>
-        <div className='settings__column settings__column_type_main'>
-          <h2 className='text-heading-l settings__title'>
-            <Trans>main settings</Trans>
-          </h2>
-          <ButtonWrapperWithBackground
-            onClick={() => dispatch(openElement('languageSelectorPopup'))}>
-            <TextAndIconButton
-              text={t`interface language`}
-              style={{ marginLeft: '1rem' }}
-              isDisabled>
-              <LanguageIcon />
-            </TextAndIconButton>
-            <p className='text-body-m settings__text'>{languageKey}</p>
-          </ButtonWrapperWithBackground>
-          <h2 className='text-heading-l settings__title'>
-            <Trans>API configuration</Trans>
-          </h2>
+        <h2 className='text-heading-l settings__title'>
+          <Trans>main settings</Trans>
+        </h2>
+        <ButtonWrapperWithBackground
+          onClick={() => dispatch(openElement('languageSelectorPopup'))}>
+          <TextAndIconButton
+            text={t`interface language`}
+            style={{ marginLeft: '1rem' }}
+            isDisabled>
+            <LanguageIcon />
+          </TextAndIconButton>
+          <p className='text-body-m settings__text'>{languageKey}</p>
+        </ButtonWrapperWithBackground>
+        <h2 className='text-heading-l settings__title'>
+          <Trans>API configuration</Trans>
+        </h2>
+        <Grid columns={1}>
           <ButtonWrapperWithBackground
             onClick={() => dispatch(openElement('providerSelectorPopup'))}>
             <TextAndIconButton
@@ -398,106 +399,65 @@ function Settings() {
             <p className='text-body-m settings__text'>{provider}</p>
           </ButtonWrapperWithBackground>
           {provider === 'Ollama' && (
-            <>
-              <ButtonWrapperWithBackground>
-                <TextAndIconButton
-                  text={'url'}
-                  style={{ marginLeft: '1rem' }}
-                  isDisabled>
-                  <HttpIcon />
-                </TextAndIconButton>
-                <input
-                  className='text-body-m settings__input settings__text'
-                  placeholder='http://127.0.0.1:11434'
-                  type='url'
-                  id='url'
-                  {...register('url', {
-                    pattern: {
-                      value: /^https?:\/\/.+/,
-                      message: 'Invalid URL format',
-                    },
-                  })}
-                />
-              </ButtonWrapperWithBackground>
-              <ButtonWrapperWithBackground>
-                <TextAndIconButton
-                  text={t`model`}
-                  style={{ marginLeft: '1rem' }}
-                  isDisabled>
-                  <NetworkIntelligenceIcon />
-                </TextAndIconButton>
-                <input
-                  className='text-body-m settings__input settings__text'
-                  placeholder='llama3.1'
-                  type='text'
-                  id='model'
-                  {...register('model', {
-                    required: 'Model name is required',
-                  })}
-                />
-              </ButtonWrapperWithBackground>
-            </>
+            <ButtonWrapperWithBackground>
+              <TextAndIconButton
+                text={'url'}
+                style={{ marginLeft: '1rem' }}
+                isDisabled>
+                <HttpIcon />
+              </TextAndIconButton>
+              <input
+                className='text-body-m settings__input settings__text'
+                placeholder='http://127.0.0.1:11434'
+                type='url'
+                id='url'
+                {...register('url', {
+                  pattern: {
+                    value: /^https?:\/\/.+/,
+                    message: 'Invalid URL format',
+                  },
+                })}
+              />
+            </ButtonWrapperWithBackground>
+          )}
+          {provider === 'Ollama' && (
+            <ButtonWrapperWithBackground>
+              <TextAndIconButton
+                text={t`model`}
+                style={{ marginLeft: '1rem' }}
+                isDisabled>
+                <NetworkIntelligenceIcon />
+              </TextAndIconButton>
+              <input
+                className='text-body-m settings__input settings__text'
+                placeholder='llama3.1'
+                type='text'
+                id='model'
+                {...register('model', {
+                  required: 'Model name is required',
+                })}
+              />
+            </ButtonWrapperWithBackground>
           )}
           {provider === 'Embedded Ollama' && (
-            <>
-              <ButtonWrapperWithBackground
-                onClick={() => dispatch(openElement('manageModelsPopup'))}>
-                <TextAndIconButton
-                  text={t`manage models`}
-                  style={{ marginLeft: '1rem' }}
-                  isDisabled>
-                  <DownloadIcon />
-                </TextAndIconButton>
-                <p className='text-body-m settings__text'>
-                  {settings[provider]?.model || t`no model selected`}
-                </p>
-              </ButtonWrapperWithBackground>
-            </>
+            <ButtonWrapperWithBackground
+              onClick={() => dispatch(openElement('manageModelsPopup'))}>
+              <TextAndIconButton
+                text={t`manage models`}
+                style={{ marginLeft: '1rem' }}
+                isDisabled>
+                <DownloadIcon />
+              </TextAndIconButton>
+              <p className='text-body-m settings__text'>
+                {settings[provider]?.model || t`no model selected`}
+              </p>
+            </ButtonWrapperWithBackground>
           )}
-        </div>
-        <div className='settings__column settings__column_type_color'>
-          <h2 className='text-heading-l settings__title'>
-            <Trans>color scheme</Trans>
-          </h2>
-          <div className='settings__btns-group'>
-            <ColorPicker
-              text={t`main color`}
-              variable='--main'
-              color='#6272a4'
-            />
-            <ColorPicker
-              text={t`background color`}
-              variable='--background'
-              color='#282a36'
-            />
-            <ColorPicker
-              text={t`accent color`}
-              variable='--accent'
-              color='#bd93f9'
-            />
-            <ColorPicker
-              text={t`foreground color`}
-              variable='--foreground'
-              color='#f8f8f2'
-            />
-          </div>
-        </div>
-        <div className='settings__column settings__column_type_rag'>
-          <h2 className='text-heading-l settings__title'>
-            <Trans>RAG configuration</Trans>
-          </h2>
-          <ButtonWrapperWithBackground
-            onClick={() => dispatch(openElement('manageEmbeddingModelsPopup'))}>
-            <TextAndIconButton
-              text={t`manage embedding models`}
-              style={{ marginLeft: '1rem' }}
-              isDisabled>
-              <DownloadIcon />
-            </TextAndIconButton>
-            <p className='text-body-m settings__text'>
-              {rag?.model || t`no model selected`}
-            </p>
-          </ButtonWrapperWithBackground>
+        </Grid>
+        <h2 className='text-heading-l settings__title'>
+          <Trans>RAG configuration</Trans>
+        </h2>
+        <Grid columns={2}>
           <ButtonWrapperWithBackground>
             <TextAndIconButton
               text={t`number of top results`}
@@ -550,7 +510,23 @@ function Settings() {
               {...createNumberFieldRegister('chunkSize', 1, 4096)}
             />
           </ButtonWrapperWithBackground>
-        </div>
+          <ButtonWrapperWithBackground
+            onClick={() => dispatch(openElement('manageEmbeddingModelsPopup'))}>
+            <TextAndIconButton
+              text={t`manage embedding models`}
+              style={{ marginLeft: '1rem' }}
+              isDisabled>
+              <DownloadIcon />
+            </TextAndIconButton>
+            <p className='text-body-m settings__text'>
+              {rag?.model || t`no model selected`}
+            </p>
+          </ButtonWrapperWithBackground>
+        </Grid>
+        <h2 className='text-heading-l settings__title'>
+          <Trans>theme</Trans>
+        </h2>
+        <Themes />
       </div>
       <Popup
         isOpened={

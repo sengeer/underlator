@@ -1,4 +1,9 @@
 .markdown-renderer {
+  &__placeholder {
+    height: 100%;
+    color: var(--main);
+  }
+
   &__header {
     display: flex;
     gap: 1rem;

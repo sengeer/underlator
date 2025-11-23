@@ -4,12 +4,14 @@ import { ButtonWrapperWithBackgroundProps } from './types/button-wrapper-with-ba
 function ButtonWrapperWithBackground({
   onClick,
   children,
+  style,
   isDisabled,
 }: ButtonWrapperWithBackgroundProps) {
   return (
     <div
       className={`button-wrapper-with-background ${isDisabled && 'button-wrapper-with-background_disabled'}`}
-      onClick={onClick}>
+      onClick={onClick}
+      style={style}>
       {children}
     </div>
   );

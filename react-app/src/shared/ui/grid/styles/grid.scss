@@ -1,0 +1,19 @@
+.grid {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  &__row {
+    display: grid;
+    width: 100%;
+
+    // На мобильных устройствах всегда одна колонка
+    @media (width <= 768px) {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  &__item {
+    min-width: 0;
+  }
+}

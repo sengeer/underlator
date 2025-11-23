@@ -152,6 +152,18 @@ process.on('uncaughtException', error => {
 });
 
 /**
+ * Запускает первоначальные сервисы.
+ * Данная функция вызывается сразу после создания главного окна приложения.
+ */
+function loadInitialServices(): void {
+  // Создаёт экземпляр IPC обработчиков для splash screen
+  splashHandlers = new SplashHandlers();
+
+  // Регистрирует splash screen handlers
+  setupSplashIpcHandlers();
+}
+
+/**
  * По очереди инициализирует различные модули Electron приложения.
  * Выполняется при старте.
  * Отправляет статус инициализации в React splash screen через IPC.
@@ -253,14 +265,11 @@ async function loadPipeline(): Promise<void> {
       progress: 72,
     });
 
-    // chatFileSystemService и chatHandlers уже созданы в createWindow()
-    // для ранней регистрации handlers, но нужно убедиться, что инициализация завершена
-    if (
-      chatFileSystemService &&
-      !chatFileSystemService.isServiceInitialized()
-    ) {
-      await chatFileSystemService.initialize();
-    }
+    // Создает сервис файловой системы для чатов
+    chatFileSystemService = new ChatFileSystemService();
+
+    // Инициализирует сервис файловой системы для чатов
+    await chatFileSystemService.initialize();
 
     // Создает сервис векторного хранилища (полностью локальное SQLite решение)
     vectorStoreService = new VectorStoreService();
@@ -278,6 +287,9 @@ async function loadPipeline(): Promise<void> {
       );
     }
 
+    // Создает обработчики чатов
+    chatHandlers = new ChatHandlers(chatFileSystemService);
+
     // Отправляет статус создания файловой системы в React splash screen
     sendSplashStatus({
       status: 'creating-filesystem',
@@ -285,10 +297,11 @@ async function loadPipeline(): Promise<void> {
       progress: 78,
     });
 
-    // Регистрирует остальные IPC handlers после создания всех сервисов
+    // Регистрирует IPC handlers после создания всех сервисов
     console.log('🔧 IPC handlers registration...');
     setupOllamaIpcHandlers();
     setupCatalogIpcHandlers();
+    setupChatIpcHandlers();
 
     // RAG handlers регистрируются только после инициализации всех зависимостей
     // Важно: setupRAGIpcHandlers будет вызван позже, когда все сервисы готовы
@@ -429,21 +442,8 @@ function createWindow(): void {
     },
   });
 
-  // Создаёт экземпляр SplashHandlers
-  splashHandlers = new SplashHandlers();
-
-  // Регистрирует splash screen handlers
-  setupSplashIpcHandlers();
-
-  // Создает chatFileSystemService и chatHandlers раньше, чтобы handlers были доступны
-  // до того, как React приложение попытается их использовать
-  chatFileSystemService = new ChatFileSystemService();
-  chatFileSystemService.initialize().catch(error => {
-    console.error('❌ Error initializing ChatFileSystemService:', error);
-  });
-
-  chatHandlers = new ChatHandlers(chatFileSystemService);
-  setupChatIpcHandlers();
+  // Загружает первоначальные сервисы
+  loadInitialServices();
 
   // Загружает React и Electron приложение
   loadApp();
@@ -527,10 +527,12 @@ function setupOllamaIpcHandlers(): void {
  */
 function setupCatalogIpcHandlers(): void {
   console.log('🔧 Setting up Catalog IPC handlers...');
+
   if (!modelCatalogService || !catalogHandlers) {
     console.error('❌ ModelCatalogService is not initialized');
     return;
   }
+
   console.log('✅ ModelCatalogService is available, register handlers...');
   catalogHandlers.registerHandlers();
 }
@@ -558,14 +560,13 @@ function setupSplashIpcHandlers(): void {
  */
 function setupChatIpcHandlers(): void {
   console.log('🔧 Setting up Chat IPC handlers...');
+
   if (!chatHandlers) {
     console.error('❌ ChatHandlers is not initialized');
     return;
   }
-  console.log('✅ ChatHandlers is available, register handlers...');
 
   // Регистрирует обработчики чатов
-  // Примечание: если handlers уже зарегистрированы, они будут перезаписаны
   chatHandlers.registerHandlers();
 
   console.log('✅ Chat IPC handlers are registered');

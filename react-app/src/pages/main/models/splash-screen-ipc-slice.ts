@@ -21,7 +21,7 @@ const initialState: SplashScreenState = {
   progress: 0,
   loading: false,
   error: null,
-  visible: import.meta.env.DEV ? false : true,
+  visible: true,
   startTime: null,
   endTime: null,
 };

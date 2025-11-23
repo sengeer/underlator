@@ -4,4 +4,5 @@ export interface MarkdownRendererProps {
   style?: React.CSSProperties;
   showThinking?: boolean;
   text?: string;
+  placeholder?: string;
 }

@@ -130,10 +130,6 @@ msgid "About Underlator"
 msgstr "About Underlator"
 
 #: src/widgets/settings/ui/settings.tsx
-msgid "accent color"
-msgstr "accent color"
-
-#: src/widgets/settings/ui/settings.tsx
 msgid "API configuration"
 msgstr "API configuration"
 
@@ -152,10 +148,6 @@ msgstr "assistant"
 #: src/widgets/chat/ui/chat.tsx
 msgid "attach file"
 msgstr "attach file"
-
-#: src/widgets/settings/ui/settings.tsx
-msgid "background color"
-msgstr "background color"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "bengali"
@@ -184,10 +176,6 @@ msgstr "chinese"
 #: src/widgets/settings/ui/settings.tsx
 msgid "chunk size"
 msgstr "chunk size"
-
-#: src/widgets/settings/ui/settings.tsx
-msgid "color scheme"
-msgstr "color scheme"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Copy"
@@ -278,10 +266,6 @@ msgstr "File processing error"
 msgid "filipino"
 msgstr "filipino"
 
-#: src/widgets/settings/ui/settings.tsx
-msgid "foreground color"
-msgstr "foreground color"
-
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "french"
 msgstr "french"
@@ -345,10 +329,6 @@ msgstr "korean"
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Loading App..."
 msgstr "Loading App..."
-
-#: src/widgets/settings/ui/settings.tsx
-msgid "main color"
-msgstr "main color"
 
 #: src/widgets/settings/ui/settings.tsx
 msgid "main settings"
@@ -504,6 +484,10 @@ msgstr "telugu"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "thai"
 msgstr "thai"
+
+#: src/widgets/settings/ui/settings.tsx
+msgid "theme"
+msgstr "theme"
 
 #: src/shared/ui/markdown-renderer/markdown-renderer.tsx
 msgid "thinking"

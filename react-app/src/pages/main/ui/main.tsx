@@ -1,13 +1,17 @@
 /**
  * @module Main
- * Главный компонент приложения Main.
+ * Главный компонент приложения.
  */
 
 import { useLingui } from '@lingui/react/macro';
-import { useEffect, Activity } from 'react';
+import { useEffect, useRef, Activity } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import useElectronTranslation from '../../../shared/lib/hooks/use-electron-translation';
 import { isElementOpen } from '../../../shared/models/element-state-slice';
+import {
+  selectThemes,
+  setActiveTheme,
+} from '../../../shared/models/themes-slice';
 import {
   setSourceLanguage,
   setTargetLanguage,
@@ -76,11 +80,35 @@ function Main() {
   // Предоставляет функцию синхронизации переводов с main процессом
   const { translateElectron } = useElectronTranslation();
 
+  // Получение состояния тем из Redux store
+  const themes = useSelector(selectThemes);
+
   // Синхронизация переводов Electron при монтировании компонента
   // Обеспечивает корректное отображение локализованных строк в меню и интерфейсе
   useEffect(() => {
     translateElectron();
   }, [translateElectron]);
+
+  // Применение активной темы при монтировании компонента
+  // Обеспечивает восстановление выбранной темы после перезагрузки приложения
+  // и применение темы сразу после восстановления состояния из redux-persist
+  useEffect(() => {
+    if (themes.activeTheme) {
+      dispatch(setActiveTheme(themes.activeTheme));
+    }
+  }, [dispatch, themes.activeTheme]);
+
+  // Ref для отслеживания первого запуска эффекта
+  // Предотвращает повторное срабатывание эффекта при изменении зависимостей
+  const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    if (hasInitialized.current) {
+      return;
+    }
+
+    hasInitialized.current = true;
+  }, []);
 
   useEffect(() => {
     dispatch(setSourceLanguage(t`english`));
@@ -92,7 +120,7 @@ function Main() {
       {/* SplashScreen отображается первым для показа статуса загрузки всего приложения */}
       <SplashScreen />
       {/* Основной интерфейс показывается только после завершения загрузки приложения */}
-      {!isSplashVisible && (
+      {isSplashVisible ? null : (
         <>
           {/* Контейнер для отображения toast-уведомлений */}
           <ToastContainer />
