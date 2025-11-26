@@ -29,6 +29,7 @@ function ChatMessages({
   const [state, setState] = useState<ChatMessagesState>({
     lastMessageCount: messages.length,
   });
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
   const { ref: intersectionRef, isVisible } = useIntersectionObserver({
     threshold: 0.1,
@@ -36,6 +37,42 @@ function ChatMessages({
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Проверяет, нужно ли показывать кнопку прокрутки вниз.
+   * Кнопка скрывается, если:
+   * - Нет скроллбара (контент не переполняет контейнер)
+   * - Пользователь уже внизу списка сообщений
+   * - Идет генерация ответа (происходит автоматическая прокрутка)
+   */
+  const checkScrollToBottomVisibility = useCallback(() => {
+    if (!messagesContainerRef.current || isGenerating) {
+      setShowScrollToBottom(false);
+      return;
+    }
+
+    const container = messagesContainerRef.current;
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const threshold = 50; // Порог в пикселях для определения "внизу"
+
+    // Проверяет, есть ли скроллбар
+    const hasScrollbar = scrollHeight > clientHeight;
+
+    // Проверяет, находится ли пользователь внизу
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - threshold;
+
+    // Показывает кнопку только если есть скроллбар и пользователь не внизу
+    setShowScrollToBottom(hasScrollbar && !isAtBottom);
+  }, [isGenerating]);
+
+  /**
+   * Обрабатывает событие скролла контейнера сообщений.
+   */
+  const handleScroll = useCallback(() => {
+    checkScrollToBottomVisibility();
+  }, [checkScrollToBottomVisibility]);
+
   /**
    * Прокручивает к последнему сообщению.
    */
@@ -50,17 +87,7 @@ function ChatMessages({
    */
   const handleScrollToBottomClick = useCallback(() => {
     scrollToBottom();
-  }, [scrollToBottom]);
-
-  // Обновление состояния при изменении количества сообщений
-  useEffect(() => {
-    if (messages.length !== state.lastMessageCount) {
-      setState((prev) => ({
-        ...prev,
-        lastMessageCount: messages.length,
-      }));
-    }
-  }, [messages.length, state.lastMessageCount]);
+  }, []);
 
   /**
    * Рендерит индикатор генерации ответа.
@@ -77,6 +104,44 @@ function ChatMessages({
       </DecorativeTextAndIconButton>
     );
   }
+
+  // Обновление состояния при изменении количества сообщений
+  useEffect(() => {
+    if (messages.length !== state.lastMessageCount) {
+      setState((prev) => ({
+        ...prev,
+        lastMessageCount: messages.length,
+      }));
+    }
+  }, [messages.length, state.lastMessageCount]);
+
+  // Проверка видимости кнопки при изменении сообщений или генерации
+  useEffect(() => {
+    // Небольшая задержка для того, чтобы DOM обновился после изменения сообщений
+    const timeoutId = setTimeout(() => {
+      checkScrollToBottomVisibility();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [messages.length, isGenerating, checkScrollToBottomVisibility]);
+
+  // Добавление обработчика скролла
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener('scroll', handleScroll);
+    // Также проверяем при изменении размера контейнера
+    const resizeObserver = new ResizeObserver(() => {
+      checkScrollToBottomVisibility();
+    });
+    resizeObserver.observe(container);
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      resizeObserver.disconnect();
+    };
+  }, [handleScroll, checkScrollToBottomVisibility]);
 
   useEffect(() => {
     if (isGenerating) {
@@ -102,9 +167,14 @@ function ChatMessages({
 
   /**
    * Рендерит кнопку прокрутки к низу.
+   * Кнопка отображается только если:
+   * - Есть сообщения
+   * - Есть скроллбар (контент переполняет контейнер)
+   * - Пользователь не находится внизу списка
+   * - Не идет генерация ответа
    */
   function renderScrollToBottomButton() {
-    if (messages.length === 0) return null;
+    if (messages.length === 0 || !showScrollToBottom) return null;
 
     return (
       <>
@@ -118,7 +188,7 @@ function ChatMessages({
   }
 
   return (
-    <div className={`chat-messages ${className}`}>
+    <div ref={messagesContainerRef} className={`chat-messages ${className}`}>
       {renderEmptyState()}
 
       {messages.map((message, index) => (
