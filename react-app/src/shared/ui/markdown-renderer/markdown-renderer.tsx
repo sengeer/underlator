@@ -1,8 +1,11 @@
 import { useLingui } from '@lingui/react/macro';
 import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
+import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import 'katex/dist/katex.min.css';
 import CheckIcon from '../../assets/icons/check-icon';
 import CopyIcon from '../../assets/icons/copy-icon';
 import KeyboardArrowDownIcon from '../../assets/icons/keyboard-arrow-down-icon';
@@ -122,8 +125,8 @@ function MarkdownRenderer({
       {finalContent && (
         <div className='markdown-renderer__content'>
           <Markdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw]}
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeRaw, rehypeKatex]}
             components={{
               h1: ({ children }) => (
                 <h1 className='markdown-renderer__h1'>{children}</h1>
