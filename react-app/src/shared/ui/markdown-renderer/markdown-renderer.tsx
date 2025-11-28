@@ -1,3 +1,11 @@
+/**
+ * @module MarkdownRenderer
+ * Компонент отвечает за унифицированный рендер markdown-ответов моделей
+ * во всех сценариях общения с LLM (чат, переводчики, просмотр PDF).
+ * Поддерживаются дополнительные теги `<think>`, математическая нотация
+ * и копирование очищенного ответа без внутренних заметок модели.
+ */
+
 import { useLingui } from '@lingui/react/macro';
 import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
@@ -20,6 +28,37 @@ import './styles/markdown-renderer.scss';
 import './styles/thinking.scss';
 import { MarkdownRendererProps } from './types/markdown-renderer';
 
+/**
+ * Компонент для рендера markdown-контента с поддержкой "мыслящих" блоков,
+ * математической нотации и служебных UI-элементов (копирование, заголовок, thinking-панель).
+ *
+ * Используется в `TextTranslator`, `PdfViewer` и `MessageBubble`, обеспечивая единообразное отображение
+ * результата LLM независимо от режима работы.
+ *
+ * @param content - Исходный markdown-текст или `null`, если ответа еще нет.
+ * @param className - Дополнительный CSS-класс контейнера.
+ * @param style - Инлайновые стили контейнера.
+ * @param showThinking - Флаг отображения секции внутренних размышлений модели.
+ * @param text - Дополнительная подпись (например, название модели), отображается справа в заголовке.
+ * @param placeholder - Контент-заглушка до появления основного текста.
+ * @returns Готовый блок с отрисованным markdown и вспомогательными элементами.
+ *
+ * @example
+ * // Использование в чате для отображения ответа
+ * <MarkdownRenderer
+ *   content={message.content}
+ *   showThinking
+ *   text={message.modelName}
+ * />
+ *
+ * @example
+ * // Использование в переводчике с кастомным плейсхолдером
+ * <MarkdownRenderer
+ *   content={translatedText}
+ *   placeholder={t`translation_placeholder`}
+ *   showThinking={false}
+ * />
+ */
 function MarkdownRenderer({
   content,
   className,
@@ -41,19 +80,24 @@ function MarkdownRenderer({
   const { thinkingParts, mainContentParts } =
     splittingContentOfModel(processedContent);
 
-  // Defining final content
+  // Логика выбора основного контента исключает внутренние заметки,
+  // чтобы пользователь видел только финальный ответ модели.
   let finalContent;
 
   if (thinkingParts.length === 0) {
-    // If there is not <think>...</think>, use original content
+    // При отсутствии тегов <think> используется исходный текст без преобразований.
     finalContent = processedContent;
   } else {
-    // If there is <think>...</think>, use only main content without think tags
+    // При наличии тегов <think> финальный текст составляется без внутренних заметок.
     finalContent = mainContentParts.join('\n\n');
   }
 
   const anchorRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Гарантирует автоматический скролл к последнему фрагменту markdown,
+   * чтобы свежие ответы модели оставались в фокусе пользователя.
+   */
   function scrollToBottom() {
     if (anchorRef.current) {
       anchorRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -64,6 +108,10 @@ function MarkdownRenderer({
     scrollToBottom();
   }, [content]);
 
+  /**
+   * Рендерит заглушку до появления основного markdown-контента.
+   * Используется во всех сценариях, где компонент подключен до готовности данных.
+   */
   function renderPlaceholder() {
     return (
       <div className={`markdown-renderer__placeholder ${className || ''}`}>

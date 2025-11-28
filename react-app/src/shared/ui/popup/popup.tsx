@@ -129,15 +129,6 @@ function Popup({
     return () => document.removeEventListener('focusout', handleFocus);
   }, [isOpened, setOpened, popupRef]);
 
-  useEffect(() => {
-    if (isOpened) {
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpened]);
-
   // Закрытие попапа по клику на overlay
   const handleOverlay = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {

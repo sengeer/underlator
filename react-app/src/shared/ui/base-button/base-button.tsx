@@ -1,6 +1,37 @@
+/**
+ * @module BaseButton
+ * Базовый компонент кнопки для переиспользования в разных виджетах.
+ */
+
 import './styles/base-button.scss';
 import { BaseButtonProps } from './types/base-button';
 
+/**
+ * Универсальная кнопка с поддержкой иконок, текстового содержимого и подсказок.
+ *
+ * Компонент служит «основой» для других кнопок,
+ * реализуемой по принципу LSP (принцип подстановки Барбары Лисков).
+ *
+ * @param props - Пропсы компонента. См. `BaseButtonProps` для полного описания.
+ * @returns JSX-элемент кнопки с базовым стилем.
+ *
+ * @example
+ * // Прямое использование
+ * <BaseButton text='Сохранить' onClick={handleSave} />
+ *
+ * @example
+ * // С иконкой и подсказкой
+ * <BaseButton tooltipText='Открыть настройки'>
+ *   <SettingsIcon />
+ * </BaseButton>
+ *
+ * @example
+ * // Через композицию в IconButton
+ * <IconButton
+ *   aria-label='Добавить документ'
+ *   onClick={handleAdd}
+ * />
+ */
 function BaseButton({
   children,
   className,

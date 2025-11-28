@@ -1,3 +1,11 @@
+/**
+ * @module FileUpload
+ * Drag-and-drop компонент выбора документа для PDF Viewer.
+ *
+ * Компонент служит точкой входа в режим анализа PDF, раскрывается поверх рабочей области
+ * и синхронизирует пользовательский ввод с обработчиками `pdf-viewer`.
+ */
+
 import { Trans } from '@lingui/react/macro';
 import { forwardRef } from 'react';
 import { useState } from 'react';
@@ -5,6 +13,23 @@ import './styles/file-upload.scss';
 import CloudIcon from '../../assets/icons/cloud-icon';
 import { FileUploadProps } from './types/file-upload';
 
+/**
+ * Компонент drag-and-drop загрузки документов, интегрированный с `pdf-viewer`.
+ *
+ * Переиспользует единый обработчик `onChange`, применяемый и в нативном `<input type="file" />`,
+ * и в событиях перетаскивания. Видимость контролируется родительскими виджетами.
+ *
+ * @param props - Пропсы компонента FileUpload.
+ * @param ref - Проброшенный ref к нативному input, чтобы родитель мог инициировать выбор файла.
+ * @returns JSX элемент формы загрузки.
+ *
+ * @example
+ * <FileUpload
+ *   isOpened={!file}
+ *   onChange={onFileChange}
+ *   ref={fileInputRef}
+ * />
+ */
 const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
   ({ isOpened, onChange }, ref) => {
     const [isDragging, setIsDragging] = useState(false);
@@ -31,6 +56,7 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
       setIsDragging(false);
 
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        // Синтетический change поддерживает единый пайплайн обработки файла в pdf-viewer
         const syntheticEvent = {
           target: {
             files: e.dataTransfer.files,
