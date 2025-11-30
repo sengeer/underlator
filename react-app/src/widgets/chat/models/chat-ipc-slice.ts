@@ -6,7 +6,7 @@
 
 import { i18n } from '@lingui/core';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { electron } from '../../../shared/apis/chat-ipc';
+import { chatIpc } from '../../../shared/apis/chat-ipc/';
 import type { ChatMessage } from '../../../shared/apis/chat-ipc/types/chat-ipc';
 import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log/call-a-notification-with-a-log';
 import { addNotification } from '../../../shared/models/notifications-slice';
@@ -89,7 +89,7 @@ export const loadChats = createAsyncThunk(
   'chat/loadChats',
   async (params: LoadChatsParams = {}, { rejectWithValue, dispatch }) => {
     try {
-      const result = await electron.listChats(params);
+      const result = await chatIpc.listChats(params);
 
       if (!result.success) {
         const errMsg = 'Error getting the chats list';
@@ -126,7 +126,7 @@ export const createChat = createAsyncThunk(
   'chat/createChat',
   async (params: CreateChatSliceParams, { rejectWithValue, dispatch }) => {
     try {
-      const result = await electron.createChat(params);
+      const result = await chatIpc.createChat(params);
 
       if (!result.success) {
         const errMsg = 'Error creating chat';
@@ -173,7 +173,7 @@ export const loadChat = createAsyncThunk(
   'chat/loadChat',
   async (params: LoadChatSliceParams, { rejectWithValue, dispatch }) => {
     try {
-      const result = await electron.getChat(params);
+      const result = await chatIpc.getChat(params);
 
       if (!result.success) {
         const errMsg = 'Error getting chat';
@@ -206,7 +206,7 @@ export const updateChat = createAsyncThunk(
   'chat/updateChat',
   async (params: UpdateChatSliceParams, { rejectWithValue, dispatch }) => {
     try {
-      const result = await electron.updateChat(params);
+      const result = await chatIpc.updateChat(params);
 
       if (!result.success) {
         const errMsg = 'Error updating chat';
@@ -251,7 +251,7 @@ export const deleteChat = createAsyncThunk(
   'chat/deleteChat',
   async (params: DeleteChatSliceParams, { rejectWithValue, dispatch }) => {
     try {
-      const result = await electron.deleteChat(params);
+      const result = await chatIpc.deleteChat(params);
 
       if (!result.success) {
         const errMsg = 'Error deleting chat';
@@ -302,7 +302,7 @@ export const addMessage = createAsyncThunk(
   'chat/addMessage',
   async (params: AddMessageSliceParams, { rejectWithValue, dispatch }) => {
     try {
-      const result = await electron.addMessage(params);
+      const result = await chatIpc.addMessage(params);
 
       if (!result.success) {
         const errMsg = 'Error adding message';

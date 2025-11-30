@@ -3,6 +3,7 @@
  * API клиент для взаимодействия с Model IPC.
  */
 
+import { log } from '../../../utils/log';
 import type { GenerateResponse, GenerateRequest } from '../types/model-ipc';
 
 /**
@@ -25,8 +26,8 @@ export class Electron {
       throw new Error('Electron API is unavailable');
     }
 
-    console.log('🚀 request', request);
-    console.log('🚀 config', config);
+    log('[Model IPC]', `generate: ${request}`);
+    log('[Model IPC]', `config: ${config}`);
 
     // Вызывает IPC и проверяет результат
     const response = await window.electron.model.generate(request, config);

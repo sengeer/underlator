@@ -59,6 +59,10 @@ function useElectronTranslation(): UseElectronTranslationReturn {
     DOWNLOADING_OLLAMA: t`Downloading Ollama...`,
     LOADING_APP: t`Loading App...`,
     GETTING_CATALOG: t`Getting model catalog...`,
+    GB: t`GB`,
+    OK: t`ok!`,
+    RAM: t`RAM`,
+    INSUFFICIENT_RAM: t`insufficient RAM`,
   };
 
   /**

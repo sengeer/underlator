@@ -149,6 +149,10 @@ msgstr "Ассистент"
 msgid "attach file"
 msgstr "Прикрепить файл"
 
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "B"
+msgstr "Б"
+
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "bengali"
 msgstr "Бенгальский"
@@ -270,6 +274,11 @@ msgstr "Филиппинский"
 msgid "french"
 msgstr "Французский"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "GB"
+msgstr "ГБ"
+
 #: src/widgets/chat/ui/chat-messages.tsx
 msgid "generating..."
 msgstr "Генерация..."
@@ -302,6 +311,10 @@ msgstr "Индонезийский"
 msgid "instruction"
 msgstr "Инструкция"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "insufficient RAM"
+msgstr "Недостаточно ОЗУ"
+
 #: src/widgets/settings/ui/settings.tsx
 msgid "interface language"
 msgstr "Язык интерфейса"
@@ -317,6 +330,10 @@ msgstr "Японский"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "kazakh"
 msgstr "Казахский"
+
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "KB"
+msgstr "КБ"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "khmer"
@@ -349,6 +366,10 @@ msgstr "Управление моделями"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "marathi"
 msgstr "Маратхи"
+
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "MB"
+msgstr "МБ"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Menu"
@@ -387,6 +408,10 @@ msgstr "Модель не выбрана"
 msgid "number of top results"
 msgstr "Количество топ результатов"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "ok!"
+msgstr "Ок!"
+
 #: src/shared/ui/file-upload/file-upload.tsx
 msgid "or click"
 msgstr "или"
@@ -418,6 +443,10 @@ msgstr "Закрыть Underlator"
 #: src/widgets/settings/ui/settings.tsx
 msgid "RAG configuration"
 msgstr "RAG конфигурация"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "RAM"
+msgstr "ОЗУ"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Redo"
@@ -476,6 +505,10 @@ msgstr "Система"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "tamil"
 msgstr "Тамильский"
+
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "TB"
+msgstr "ТБ"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "telugu"

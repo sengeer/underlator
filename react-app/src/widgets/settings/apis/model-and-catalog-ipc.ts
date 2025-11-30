@@ -1,6 +1,6 @@
 /**
- * @module ModelIpcApi
- * API клиент для взаимодействия с Model и Catalog IPC в Settings виджете.
+ * @module ModelAndCatalogIpcApi
+ * API клиент для взаимодействия с Model и Catalog в Settings виджете.
  * Предоставляет функции для управления каталогом моделей и непосредственно моделями.
  */
 
@@ -19,11 +19,12 @@ import type {
 } from '../types/model-ipc';
 
 /**
- * @class Electron
- * Класс для работы с Electron API.
- * Инкапсулирует Electron IPC операции.
+ * @class ModelAndCatalogIpc
+ *
+ * Класс для работы с Model и Catalog IPC API.
+ * Инкапсулирует Model и Catalog IPC операции.
  */
-export class Electron {
+class ModelAndCatalogIpc {
   private config: SettingsApiConfig;
   private progressCallbacks = new Map<string, ModelProgressCallback>();
   private errorCallbacks = new Map<string, ModelErrorCallback>();
@@ -31,7 +32,6 @@ export class Electron {
   constructor(config?: Partial<SettingsApiConfig>) {
     this.config = { ...DEFAULT_CONFIG, ...config };
 
-    // Проверяет доступность Electron API
     if (typeof window !== 'undefined' && window.electron) {
       this.setupProgressListeners();
     } else {
@@ -318,14 +318,16 @@ export class Electron {
  * @param config - Конфигурация для клиента.
  * @returns Экземпляр API клиента.
  */
-export function createElectron(config?: Partial<SettingsApiConfig>): Electron {
-  return new Electron(config);
+function createModelAndCatalogIpc(
+  config?: Partial<SettingsApiConfig>
+): ModelAndCatalogIpc {
+  return new ModelAndCatalogIpc(config);
 }
 
 /**
  * Глобальный экземпляр API клиента.
  * Используется для единообразного доступа к API во всем приложении.
  */
-export const electron = createElectron();
+const modelAndCatalogIpc = createModelAndCatalogIpc();
 
-export default electron;
+export default modelAndCatalogIpc;

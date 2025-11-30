@@ -5,7 +5,7 @@
  */
 
 import { DEFAULT_OPTIONS } from '../../../shared/lib/constants';
-import { electron } from '../apis/model-and-catalog-ipc';
+import modelAndCatalogIpc from '../apis/model-and-catalog-ipc';
 import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../constants/ipc';
 
 /**
@@ -14,7 +14,7 @@ import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../constants/ipc';
  */
 export async function testListModels() {
   console.log('🧪 Тестирование API получения списка установленных моделей...');
-  console.log(await electron.listInstalledModels());
+  console.log(await modelAndCatalogIpc.listInstalledModels());
 }
 
 /**
@@ -24,7 +24,7 @@ export async function testListModels() {
 export async function testInstallModel(model = OLLAMA_TEST_MODEL) {
   console.log('🧪 Тестирование API установки модели...');
   console.log(
-    await electron.installModel({
+    await modelAndCatalogIpc.installModel({
       name: model,
     })
   );
@@ -98,7 +98,7 @@ export async function testGenerateText(
  */
 export async function testGetCatalog() {
   console.log('🧪 Тестирование API получения каталога моделей...');
-  console.log(await electron.getCatalog({ forceRefresh: false }));
+  console.log(await modelAndCatalogIpc.getCatalog({ forceRefresh: false }));
 }
 
 /**
@@ -109,7 +109,7 @@ export async function testGetCatalogForceRefresh() {
   console.log(
     '🧪 Тестирование API получения каталога моделей с принудительным обновлением...'
   );
-  console.log(await electron.getCatalog({ forceRefresh: true }));
+  console.log(await modelAndCatalogIpc.getCatalog({ forceRefresh: true }));
 }
 
 /**
@@ -122,7 +122,7 @@ export async function testSearchModels() {
 
     // Тест 1: Поиск по названию
     console.log('🔍 Поиск моделей с "embed" в названии...');
-    const nameSearchResponse = await electron.searchModels({
+    const nameSearchResponse = await modelAndCatalogIpc.searchModels({
       search: 'embed',
       type: 'ollama',
     });
@@ -140,7 +140,7 @@ export async function testSearchModels() {
 
     // Тест 2: Поиск по размеру
     console.log('🔍 Поиск моделей размером менее 1GB...');
-    const sizeSearchResponse = await electron.searchModels({
+    const sizeSearchResponse = await modelAndCatalogIpc.searchModels({
       maxSize: 1024 * 1024 * 1024, // 1GB
       type: 'ollama',
     });
@@ -158,7 +158,7 @@ export async function testSearchModels() {
 
     // Тест 3: Поиск по тегам
     console.log('🔍 Поиск моделей с тегом "chat"...');
-    const tagsSearchResponse = await electron.searchModels({
+    const tagsSearchResponse = await modelAndCatalogIpc.searchModels({
       tags: ['chat'],
       type: 'ollama',
     });
@@ -192,7 +192,7 @@ export async function testSearchModels() {
 export async function testGetModelInfo(model = OLLAMA_TEST_MODEL) {
   console.log('🧪 Тестирование API получения детальной информации о модели...');
   console.log(
-    await electron.getModelInfo({
+    await modelAndCatalogIpc.getModelInfo({
       modelName: model,
     })
   );
@@ -205,7 +205,7 @@ export async function testGetModelInfo(model = OLLAMA_TEST_MODEL) {
 export async function testRemoveModel(model = OLLAMA_TEST_MODEL) {
   console.log(`🧪 Тестирование API удаления модели ${model}...`);
   console.log(
-    await electron.removeModel({
+    await modelAndCatalogIpc.removeModel({
       name: model,
     })
   );

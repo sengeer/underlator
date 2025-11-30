@@ -7,6 +7,7 @@ import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 import ProgressBar from '../progress-bar';
 import TextButton from '../text-button/text-button';
+import TextButtonFilled from '../text-button-filled';
 import {
   SelectorOptionProps,
   SelectorOptionState,
@@ -20,7 +21,9 @@ import {
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B';
 
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const { t } = useLingui();
+
+  const sizes = [t`B`, t`KB`, t`MB`, t`GB`, t`TB`];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return `${(bytes / Math.pow(1024, i)).toFixed(1)}${sizes[i]}`;
 }
@@ -48,18 +51,39 @@ function renderProgressBar(progressInfo: any) {
 }
 
 /**
+ * Рендерит статус совместимости модели.
+ * @param compatibilityMessages - Сообщение о совместимости.
+ * @returns JSX элемент со статусом совместимости или null.
+ */
+function renderCompatibilityStatus(compatibilityMessages?: string) {
+  // Отображает сообщение для всех статусов, включая 'ok'
+  return <TextButtonFilled text={compatibilityMessages} isDisabled />;
+}
+
+/**
  * Рендерит кнопки действий в зависимости от состояния<div className=""></div>
  * @param state - Текущее состояние.
  * @param actionHandlers - Обработчики действий.
+ * @param compatibilityStatus - Статус совместимости.
+ * @param compatibilityMessages - Сообщение о совместимости.
  * @returns JSX элемент с кнопками действий.
  */
-function renderActionButtons(state: SelectorOptionState, actionHandlers: any) {
+function renderActionButtons(
+  state: SelectorOptionState,
+  actionHandlers: any,
+  compatibilityStatus?: string,
+  compatibilityMessages?: string[]
+) {
   const { t } = useLingui();
 
   switch (state) {
     case 'available':
       return (
         <div className='selector-option__actions'>
+          {compatibilityStatus &&
+            compatibilityMessages?.map((message) =>
+              renderCompatibilityStatus(message)
+            )}
           <TextButton text={t`download`} onClick={actionHandlers?.onInstall} />
         </div>
       );
@@ -91,6 +115,8 @@ function BarMode({
   progressInfo,
   actionHandlers,
   children,
+  compatibilityStatus,
+  compatibilityMessages,
 }: SelectorOptionProps) {
   const [isHoveringActions, setIsHoveringActions] = useState(false);
 
@@ -124,7 +150,12 @@ function BarMode({
       <div
         onMouseEnter={() => setIsHoveringActions(true)}
         onMouseLeave={() => setIsHoveringActions(false)}>
-        {renderActionButtons(state, actionHandlers)}
+        {renderActionButtons(
+          state,
+          actionHandlers,
+          compatibilityStatus,
+          compatibilityMessages
+        )}
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ import {
   updateProviderSettings,
   updateRagSettings,
 } from '../../../shared/models/provider-settings-slice';
-import { electron } from '../apis/model-and-catalog-ipc';
+import modelAndCatalogIpc from '../apis/model-and-catalog-ipc';
 import type {
   ManageModelsState,
   CatalogState,
@@ -93,7 +93,7 @@ export const fetchCatalog = createAsyncThunk(
   'manageModels/fetchCatalog',
   async (params: GetCatalogParams = {}, { rejectWithValue, dispatch }) => {
     try {
-      const result = await electron.getCatalog(params);
+      const result = await modelAndCatalogIpc.getCatalog(params);
 
       if (!result.success) {
         const errMsg = 'Error getting the models catalog';
@@ -130,7 +130,7 @@ export const searchModels = createAsyncThunk(
   'manageModels/searchModels',
   async (filters: ModelSearchFilters, { rejectWithValue, dispatch }) => {
     try {
-      const result = await electron.searchModels(filters);
+      const result = await modelAndCatalogIpc.searchModels(filters);
 
       if (!result.success) {
         const errMsg = 'Error searching models';
@@ -167,7 +167,7 @@ export const fetchModelInfo = createAsyncThunk(
   'manageModels/fetchModelInfo',
   async (params: GetModelInfoParams, { rejectWithValue, dispatch }) => {
     try {
-      const result = await electron.getModelInfo(params);
+      const result = await modelAndCatalogIpc.getModelInfo(params);
 
       if (!result.success) {
         const errMsg = 'Error getting model info';
@@ -209,7 +209,7 @@ export const installModel = createAsyncThunk(
       // Добавляет модель в список устанавливаемых
       dispatch(addInstallingModel(params.name));
 
-      const result = await electron.installModel(
+      const result = await modelAndCatalogIpc.installModel(
         request,
         (progress: ModelInstallProgress) => {
           // Обновляет прогресс через dispatch
@@ -288,7 +288,7 @@ export const removeModel = createAsyncThunk(
   async (params: RemoveModelParams, { rejectWithValue, dispatch }) => {
     try {
       const { target = 'provider', ...request } = params;
-      const resultRemove = await electron.removeModel(request);
+      const resultRemove = await modelAndCatalogIpc.removeModel(request);
       if (!resultRemove.success) {
         const errMsg = 'Model removal error';
 
@@ -301,7 +301,7 @@ export const removeModel = createAsyncThunk(
         return rejectWithValue(resultRemove.error || errMsg);
       }
 
-      const resultList = await electron.listInstalledModels();
+      const resultList = await modelAndCatalogIpc.listInstalledModels();
       if (!resultList.success) {
         const errMsg = 'Error getting list of models';
 
@@ -378,7 +378,7 @@ export const fetchInstalledModels = createAsyncThunk(
   'manageModels/fetchInstalledModels',
   async (_, { rejectWithValue, dispatch }) => {
     try {
-      const result = await electron.listInstalledModels();
+      const result = await modelAndCatalogIpc.listInstalledModels();
 
       if (!result.success) {
         const errMsg = 'Error getting list of models';

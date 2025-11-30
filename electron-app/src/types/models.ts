@@ -28,6 +28,15 @@ export interface BaseModel {
 }
 
 /**
+ * Статус совместимости модели с системой.
+ */
+export type CompatibilityStatus =
+  | 'ok'
+  | 'insufficient_ram'
+  | 'insufficient_vram'
+  | 'unknown';
+
+/**
  * Модель Ollama.
  * Специфичная информация для моделей Ollama.
  */
@@ -44,6 +53,10 @@ export interface OllamaModelInfo extends BaseModel {
   digest?: string;
   /** Теги модели */
   tags?: string[];
+  /** Статус совместимости с системой */
+  compatibilityStatus?: CompatibilityStatus;
+  /** Сообщение о совместимости */
+  compatibilityMessages?: string[];
 }
 
 /**
@@ -86,4 +99,55 @@ export interface ModelFilters {
   status?: ModelStatus;
   /** Теги */
   tags?: string[];
+}
+
+/**
+ * Интерфейс модели из API каталога.
+ * Структура данных, возвращаемая эндпоинтом ollama-models.
+ */
+export interface ModelsApiModel {
+  /** Название модели */
+  name: string;
+  /** Описание модели */
+  description: string;
+  /** Теги модели (включая квантизации) */
+  tags: string[];
+}
+
+/**
+ * Результат получения каталога моделей.
+ * Результат операции получения списка моделей из API.
+ */
+export interface ModelsApiResult {
+  /** Успешность операции */
+  success: boolean;
+  /** Список моделей */
+  models?: ModelsApiModel[];
+  /** Ошибка при получении */
+  error?: string;
+}
+
+/**
+ * Конфигурация для ModelsApi клиента.
+ * Настройки для работы с API каталога моделей.
+ */
+export interface ModelsApiConfig {
+  /** Базовый URL для API каталога моделей */
+  baseUrl: string;
+  /** Таймаут для HTTP запросов в миллисекундах */
+  timeout: number;
+  /** Количество попыток при ошибках сети */
+  retryAttempts: number;
+  /** Задержка между попытками в миллисекундах */
+  retryDelay: number;
+}
+
+/**
+ * Результат проверки совместимости.
+ */
+export interface CompatibilityResult {
+  /** Статус совместимости */
+  status: CompatibilityStatus;
+  /** Сообщение для пользователя */
+  message: string[];
 }

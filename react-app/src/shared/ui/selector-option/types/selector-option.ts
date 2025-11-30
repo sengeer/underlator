@@ -42,6 +42,15 @@ export interface ActionHandlers {
 }
 
 /**
+ * Статус совместимости модели с системой.
+ */
+export type CompatibilityStatus =
+  | 'ok'
+  | 'insufficient_ram'
+  | 'insufficient_vram'
+  | 'unknown';
+
+/**
  * Основные пропсы компонента SelectorOption.
  */
 export interface SelectorOptionProps {
@@ -60,4 +69,8 @@ export interface SelectorOptionProps {
   actionHandlers?: ActionHandlers;
   /** Дочерний(ие) элемент(ы) */
   children: React.JSX.Element;
+  /** Статус совместимости модели с системой */
+  compatibilityStatus?: CompatibilityStatus;
+  /** Сообщение о совместимости */
+  compatibilityMessages?: string[];
 }

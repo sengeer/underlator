@@ -4,7 +4,7 @@
  * Используется для проверки работы RAG Electron IPC эндпоинтов.
  */
 
-import { electron } from '../../../shared/apis/rag-ipc';
+import { ragIpc } from '../../../shared/apis/rag-ipc/';
 import {
   DEFAULT_RAG_CHUNK_SIZE,
   DEFAULT_RAG_MODEL,
@@ -41,7 +41,7 @@ export async function testUploadAndProcessDocument(
 
       try {
         // Использует uploadAndProcessDocument для загрузки и обработки
-        const result = await electron.uploadAndProcessDocument(file, chatId, {
+        const result = await ragIpc.uploadAndProcessDocument(file, chatId, {
           chunkSize: DEFAULT_RAG_CHUNK_SIZE,
           embeddingModel: DEFAULT_RAG_MODEL,
         });
@@ -79,7 +79,7 @@ export async function testQueryDocuments(
   console.log(`💬 Чат ID: ${chatId}`);
 
   try {
-    const result = await electron.queryDocuments(
+    const result = await ragIpc.queryDocuments(
       {
         query,
         chatId,
@@ -118,7 +118,7 @@ export async function testGetCollectionStats(chatId: string = 'test-chat-1') {
   console.log(`💬 Чат ID: ${chatId}`);
 
   try {
-    const result = await electron.getCollectionStats(chatId);
+    const result = await ragIpc.getCollectionStats(chatId);
 
     console.log('✅ Результат получения статистики:', result);
     console.log(`📊 Количество точек: ${result.pointsCount}`);
@@ -142,7 +142,7 @@ export async function testListCollections() {
   console.log('🧪 Тестирование API получения списка коллекций...');
 
   try {
-    const result = await electron.listCollections();
+    const result = await ragIpc.listCollections();
 
     console.log('✅ Результат получения списка коллекций:', result);
     console.log(`📊 Найдено коллекций: ${result.length}`);
@@ -169,7 +169,7 @@ export async function testDeleteCollection(chatId: string = 'test-chat-1') {
   console.log(`💬 Чат ID: ${chatId}`);
 
   try {
-    const result = await electron.deleteDocumentCollection({
+    const result = await ragIpc.deleteDocumentCollection({
       chatId,
     });
 
@@ -194,7 +194,7 @@ export async function testProcessingProgress() {
   console.log('🧪 Тестирование API подписки на прогресс обработки...');
 
   try {
-    const unsubscribe = electron.onProcessingProgress((progress: any) => {
+    const unsubscribe = ragIpc.onProcessingProgress((progress: any) => {
       console.log('📊 Прогресс обработки:', progress);
       console.log(`   Этап: ${progress.stage}`);
       console.log(`   Прогресс: ${progress.progress}%`);
@@ -283,7 +283,7 @@ export async function testGenerateWithRagContext(
 
   try {
     // Сначала ищет релевантные документы
-    const searchResult = await electron.queryDocuments(
+    const searchResult = await ragIpc.queryDocuments(
       {
         query,
         chatId,

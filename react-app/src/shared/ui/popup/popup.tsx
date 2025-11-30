@@ -102,14 +102,14 @@ function Popup({
 
   // Закрытие попапа по Escape
   useEffect(() => {
-    const closeByEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+    const handleClosureByKey = (e: KeyboardEvent) => {
+      if (e.code === 'Escape') {
         setOpened(false);
       }
     };
 
-    document.addEventListener('keydown', closeByEscape);
-    return () => document.removeEventListener('keydown', closeByEscape);
+    document.addEventListener('keydown', handleClosureByKey);
+    return () => document.removeEventListener('keydown', handleClosureByKey);
   }, [isOpened, setOpened]);
 
   useEffect(() => {

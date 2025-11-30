@@ -4,4 +4,4 @@
  * Предоставляет единую точку доступа к API клиенту и типам.
  */
 
-export { default, electron, createElectron, Electron } from './chat-ipc';
+export { default as chatIpc } from './chat-ipc';

@@ -5,9 +5,15 @@
  */
 
 import { OllamaApi } from './ollama-api';
-import { OllamaHtmlParser, createOllamaHtmlParser } from '../utils/html-parser';
+import { ModelsApi, createModelsApi } from './models-api';
 import { STATIC_MODELS, DEFAULT_CATALOG_CONFIG } from '../constants/catalog';
 import { executeWithErrorHandling } from '../utils/error-handler';
+import { getSystemInfo } from '../utils/system-info';
+import {
+  checkModelCompatibility,
+  extractParameterSize,
+  extractQuantizationLevel,
+} from '../utils/model-compatibility';
 import type { ModelCatalogConfig, CachedCatalog } from '../types/catalog';
 import type {
   ModelCatalog,
@@ -27,7 +33,7 @@ export class ModelCatalogService {
   private config: ModelCatalogConfig;
   private cache: CachedCatalog | null = null;
   private ollamaApi: OllamaApi;
-  private htmlParser: OllamaHtmlParser;
+  private modelsApi: ModelsApi;
 
   /**
    * Создает экземпляр ModelCatalogService.
@@ -43,7 +49,7 @@ export class ModelCatalogService {
     // Используется переданный OllamaApi, инициализируется новый при отсутствии
     this.ollamaApi =
       ollamaApi || new OllamaApi({ baseUrl: this.config.ollamaUrl });
-    this.htmlParser = createOllamaHtmlParser();
+    this.modelsApi = createModelsApi();
   }
 
   /**
@@ -304,74 +310,116 @@ export class ModelCatalogService {
   }
 
   /**
-   * Получает модели из Ollama Library через HTML парсинг.
-   * Использует квантизированные модели для получения полного каталога.
+   * Получает модели из Ollama Library через API каталога моделей.
+   * Использует публичный эндпоинт для получения списка доступных моделей.
    * При отсутствии интернета возвращает пустой список для graceful fallback.
+   * Проверяет совместимость каждой модели с системой пользователя.
    *
    * @returns Promise со списком библиотечных моделей.
    */
   private async getLibraryModels(): Promise<OllamaModelInfo[]> {
     try {
-      const parseResult = await this.htmlParser.getAvailableModels();
+      const apiResult = await this.modelsApi.getAvailableModels();
 
-      if (!parseResult.success) {
+      if (!apiResult.success || !apiResult.models) {
         console.warn(
-          "⚠️ Couldn't get models from the Ollama Library, using a static list"
+          "⚠️ Couldn't get models from the Ollama Library API, using a static list"
         );
-        return this.getStaticModels();
+        return await this.getStaticModels();
       }
 
-      // Используем квантизированные модели если они доступны
-      if (
-        parseResult.quantizedModels &&
-        parseResult.quantizedModels.length > 0
-      ) {
-        return parseResult.quantizedModels.map((model, index) => ({
-          id: `library-${model.fullName}-${index}`,
-          name: model.fullName,
-          displayName: model.fullName,
-          description:
-            model.description || `Модель ${model.fullName} из Ollama`,
-          version: model.tag,
-          size: model.size || 0,
-          createdAt: new Date().toISOString(),
-          modifiedAt: new Date().toISOString(),
-          type: 'ollama' as const,
-          format: 'gguf',
-          parameterSize: this.extractParameterSize(model.baseName),
-          quantizationLevel: this.extractQuantizationLevel(model.tag),
-          tags: model.tags || ['library'],
-        }));
+      // Получает информацию о системе один раз для всех моделей
+      const systemInfo = await getSystemInfo();
+
+      // Преобразует модели из API в формат OllamaModelInfo
+      // Создает отдельную запись для каждой комбинации модели и тега (квантизации)
+      const libraryModels: OllamaModelInfo[] = [];
+
+      for (const apiModel of apiResult.models) {
+        // Если у модели есть теги, создается отдельная запись для каждого тега
+        if (apiModel.tags && apiModel.tags.length > 0) {
+          for (const tag of apiModel.tags) {
+            // Формируется полное название модели с тегом
+            const fullName = tag.includes(':')
+              ? tag
+              : `${apiModel.name}:${tag}`;
+
+            // Извлекается базовое название модели
+            const baseName = apiModel.name;
+
+            // Извлекаются параметры модели (сначала из тега, потом из названия)
+            const parameterSize =
+              extractParameterSize(tag) ||
+              extractParameterSize(baseName) ||
+              'Unknown';
+            const quantizationLevel = extractQuantizationLevel(tag);
+
+            // Проверяется совместимость модели с системой
+            const compatibility = checkModelCompatibility(
+              baseName,
+              tag,
+              systemInfo
+            );
+
+            libraryModels.push({
+              id: `library-${fullName}-${libraryModels.length}`,
+              name: fullName,
+              displayName: fullName,
+              description:
+                apiModel.description || `Модель ${fullName} из Ollama`,
+              version: tag,
+              size: 0, // Размер будет вычисляться на основе параметров
+              createdAt: new Date().toISOString(),
+              modifiedAt: new Date().toISOString(),
+              type: 'ollama' as const,
+              format: 'gguf',
+              parameterSize,
+              quantizationLevel,
+              tags: [...apiModel.tags, 'library'],
+              compatibilityStatus: compatibility.status,
+              compatibilityMessages: compatibility.message,
+            });
+          }
+        } else {
+          // Если тегов нет, создается одна запись с базовым названием
+          const parameterSize =
+            extractParameterSize(apiModel.name) || 'Unknown';
+          const quantizationLevel = extractQuantizationLevel('latest');
+
+          // Проверяется совместимость модели с системой
+          const compatibility = checkModelCompatibility(
+            apiModel.name,
+            'latest',
+            systemInfo
+          );
+
+          libraryModels.push({
+            id: `library-${apiModel.name}-${libraryModels.length}`,
+            name: apiModel.name,
+            displayName: apiModel.name,
+            description:
+              apiModel.description || `Модель ${apiModel.name} из Ollama`,
+            version: 'latest',
+            size: 0, // Размер будет вычисляться на основе параметров
+            createdAt: new Date().toISOString(),
+            modifiedAt: new Date().toISOString(),
+            type: 'ollama' as const,
+            format: 'gguf',
+            parameterSize,
+            quantizationLevel,
+            tags: ['library'],
+            compatibilityStatus: compatibility.status,
+            compatibilityMessages: compatibility.message,
+          });
+        }
       }
 
-      // Fallback на базовые модели если квантизированные недоступны
-      if (parseResult.models && parseResult.models.length > 0) {
-        return parseResult.models.map((model, index) => ({
-          id: `library-${model.name}-${index}`,
-          name: model.name,
-          displayName: model.name,
-          description: model.description || `Модель ${model.name} из Ollama`,
-          version: 'latest',
-          size: model.size || 0,
-          createdAt: new Date().toISOString(),
-          modifiedAt: new Date().toISOString(),
-          type: 'ollama' as const,
-          format: 'gguf',
-          parameterSize: this.extractParameterSize(model.name),
-          quantizationLevel: this.extractQuantizationLevel(model.name),
-          tags: model.tags || ['library'],
-        }));
-      }
-
-      console.warn(
-        '⚠️ There are no available models from the Ollama Library, we use a static one'
-      );
-      return this.getStaticModels();
+      return libraryModels;
     } catch (error) {
-      // При сетевых ошибках возвращаем пустой список для graceful fallback
+      // При сетевых ошибках возвращается пустой список для graceful fallback
       // Это позволяет приложению запускаться только с локальными моделями
       console.warn(
-        '⚠️ Network error getting models from Ollama Library, using only local models:',
+        '⚠️ Network error getting models from Ollama Library API, using only local models:',
         error instanceof Error ? error.message : 'Unknown error'
       );
       return [];
@@ -380,25 +428,45 @@ export class ModelCatalogService {
 
   /**
    * Получает статический список моделей как fallback.
+   * Проверяет совместимость каждой модели с системой пользователя.
    *
    * @returns Список статических моделей.
    */
-  private getStaticModels(): OllamaModelInfo[] {
-    return STATIC_MODELS.map((model, index) => ({
-      id: `static-${model.name}-${index}`,
-      name: model.name,
-      displayName: model.displayName,
-      description: model.description,
-      version: 'latest',
-      size: model.size,
-      createdAt: new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
-      type: 'ollama' as const,
-      format: 'gguf',
-      parameterSize: this.extractParameterSize(model.name),
-      quantizationLevel: this.extractQuantizationLevel(model.name),
-      tags: model.tags,
-    }));
+  private async getStaticModels(): Promise<OllamaModelInfo[]> {
+    // Получает информацию о системе один раз для всех моделей
+    const systemInfo = await getSystemInfo();
+
+    return Promise.all(
+      STATIC_MODELS.map(async (model, index) => {
+        const parameterSize = extractParameterSize(model.name) || 'Unknown';
+        const quantizationLevel = extractQuantizationLevel(model.name);
+
+        // Проверяется совместимость модели с системой
+        const compatibility = checkModelCompatibility(
+          model.name,
+          model.name,
+          systemInfo
+        );
+
+        return {
+          id: `static-${model.name}-${index}`,
+          name: model.name,
+          displayName: model.displayName,
+          description: model.description,
+          version: 'latest',
+          size: model.size,
+          createdAt: new Date().toISOString(),
+          modifiedAt: new Date().toISOString(),
+          type: 'ollama' as const,
+          format: 'gguf',
+          parameterSize,
+          quantizationLevel,
+          tags: model.tags,
+          compatibilityStatus: compatibility.status,
+          compatibilityMessages: compatibility.message,
+        };
+      })
+    );
   }
 
   /**
@@ -425,50 +493,6 @@ export class ModelCatalogService {
       totalCount: allModels.length,
       lastUpdated: new Date().toISOString(),
     };
-  }
-
-  /**
-   * Извлекает размер параметров из названия модели.
-   *
-   * @param modelName - Название модели.
-   * @returns Размер параметров.
-   */
-  private extractParameterSize(modelName: string): string {
-    // Извлечение размера из названия модели (например, llama2:7b, llama2:13b)
-    const sizeMatch = modelName.match(/(\d+(?:\.\d+)?)(b|m|k)/i);
-    if (sizeMatch && sizeMatch[1] && sizeMatch[2]) {
-      return `${sizeMatch[1]}${sizeMatch[2].toUpperCase()}`;
-    }
-    return 'Unknown';
-  }
-
-  /**
-   * Извлекает уровень квантизации из названия модели или тега.
-   *
-   * @param modelNameOrTag - Название модели или тег квантизации.
-   * @returns Уровень квантизации.
-   */
-  private extractQuantizationLevel(modelNameOrTag: string): string {
-    // Извлечение квантизации из названия модели или тега (например, q4_0, q8_0)
-    const quantMatch = modelNameOrTag.match(/q(\d+)_(\d+)/i);
-    if (quantMatch) {
-      return `Q${quantMatch[1]}_${quantMatch[2]}`;
-    }
-
-    // Проверяем другие форматы квантизации
-    if (modelNameOrTag.includes('latest')) {
-      return 'Latest';
-    }
-
-    if (modelNameOrTag.includes('fp16')) {
-      return 'FP16';
-    }
-
-    if (modelNameOrTag.includes('fp32')) {
-      return 'FP32';
-    }
-
-    return 'Unknown';
   }
 
   /**

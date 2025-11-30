@@ -4,8 +4,8 @@
  * Поддерживает контекстный перевод, инструкции, чат и простой перевод.
  */
 
-import { electron as chatElectron } from '../../../apis/chat-ipc/chat-ipc';
-import { electron as ragElectron } from '../../../apis/rag-ipc/';
+import { chatIpc } from '../../../apis/chat-ipc/';
+import { ragIpc } from '../../../apis/rag-ipc/';
 import { DEFAULT_MODEL } from '../../constants';
 import callANotificationWithALog from '../../utils/call-a-notification-with-a-log';
 import {
@@ -16,6 +16,7 @@ import {
   getContextualTranslationConfig,
   validateContextualTranslationParams,
 } from '../../utils/contextual-translation';
+import { log } from '../../utils/log';
 import { electron } from './apis/model-ipc';
 import type {
   IpcResponse,
@@ -260,11 +261,11 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
   let ragContext: string = '';
 
   try {
-    const result = await ragElectron.getCollectionStats(props.chatId);
+    const result = await ragIpc.getCollectionStats(props.chatId);
 
     if (result.sizeBytes > 0) {
       try {
-        const searchResult = await ragElectron.queryDocuments(
+        const searchResult = await ragIpc.queryDocuments(
           {
             query: message,
             chatId: props.chatId,
@@ -313,7 +314,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
 
   // Загружает контекст из файловой системы
   try {
-    const chatResult = await chatElectron.getChat({ chatId: props.chatId });
+    const chatResult = await chatIpc.getChat({ chatId: props.chatId });
 
     if (!chatResult.success || !chatResult.data) {
       const error = `Failed to load chat context: ${chatResult.error}`;
@@ -457,7 +458,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
     }
   });
 
-  console.log('Cобранный промпт: ', prompt);
+  log('[Feature Provider]', `Cобранный промпт: ${prompt}`);
 
   try {
     // Запуск генерации через Electron IPC
@@ -486,7 +487,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
     if (props.saveHistory !== false) {
       try {
         // Добавляет сообщение пользователя
-        const addUserMessageResult = await chatElectron.addMessage({
+        const addUserMessageResult = await chatIpc.addMessage({
           chatId: props.chatId,
           role: 'user',
           content: userMessage.content,
@@ -499,7 +500,7 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
         }
 
         // Добавляет сообщение ассистента
-        const addAssistantMessageResult = await chatElectron.addMessage({
+        const addAssistantMessageResult = await chatIpc.addMessage({
           chatId: props.chatId,
           role: 'assistant',
           content: assistantMessage.content,

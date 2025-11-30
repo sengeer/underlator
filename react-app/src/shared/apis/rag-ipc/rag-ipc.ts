@@ -1,8 +1,9 @@
 /**
- * @module RAGIpc
+ * @module RagIpc
  * IPC клиент для взаимодействия с RAG системой.
  */
 
+import { log } from '../../lib/utils/log';
 import type {
   RagApiConfig,
   ProcessDocumentRequest,
@@ -19,12 +20,12 @@ import type {
 } from './types/rag-ipc';
 
 /**
- * @class Electron
+ * @class RagIpc
  *
  * Класс для работы с RAG системой через IPC.
  * Предоставляет методы для обработки документов, поиска и управления коллекциями.
  */
-export class Electron {
+class RagIpc {
   private config: RagApiConfig;
 
   constructor(config?: Partial<RagApiConfig>) {
@@ -32,7 +33,6 @@ export class Electron {
       timeout: config?.timeout || 30000,
       retryAttempts: config?.retryAttempts || 3,
       retryDelay: config?.retryDelay || 1000,
-      enableLogging: config?.enableLogging || false,
     };
   }
 
@@ -45,7 +45,7 @@ export class Electron {
   async processDocument(
     params: ProcessDocumentRequest
   ): Promise<ProcessDocumentResult> {
-    this.log('processDocument', params);
+    log('[RAG IPC]', `processDocument: ${params}`);
 
     try {
       const response = await (window as any).electron.rag.processDocument({
@@ -53,7 +53,7 @@ export class Electron {
         chatId: params.chatId,
       });
 
-      this.log('processDocument result', response);
+      log('[RAG IPC]', `Результат processDocument: ${response}`);
 
       // Извлекает data из обертки IPC
       if (!response.success) {
@@ -77,7 +77,7 @@ export class Electron {
     params: RagQueryRequest,
     config: QueryDocumentsConfig
   ): Promise<RagResponse> {
-    this.log('queryDocuments', params);
+    log('[RAG IPC]', `queryDocuments: ${params}`);
 
     try {
       const response = await (window as any).electron.rag.queryDocuments(
@@ -88,7 +88,7 @@ export class Electron {
         config
       );
 
-      this.log('queryDocuments result', response);
+      log('[RAG IPC]', `Результат queryDocuments: ${response}`);
 
       // Извлекает data из обертки IPC
       if (!response.success) {
@@ -111,7 +111,7 @@ export class Electron {
   async deleteDocumentCollection(
     params: DeleteCollectionRequest
   ): Promise<DeleteCollectionResult> {
-    this.log('deleteDocumentCollection', params);
+    log('[RAG IPC]', `deleteDocumentCollection: ${params}`);
 
     try {
       const response = await (
@@ -120,7 +120,7 @@ export class Electron {
         chatId: params.chatId,
       });
 
-      this.log('deleteDocumentCollection result', response);
+      log('[RAG IPC]', `Результат deleteDocumentCollection: ${response}`);
 
       // Извлекает data из обертки IPC
       if (!response.success) {
@@ -141,13 +141,13 @@ export class Electron {
    * @returns Promise со статистикой коллекции.
    */
   async getCollectionStats(chatId: string): Promise<CollectionStats> {
-    this.log('getCollectionStats', { chatId });
+    log('[RAG IPC]', `getCollectionStats: ${chatId}`);
 
     try {
       const response = await (window as any).electron.rag.getCollectionStats(
         chatId
       );
-      this.log('getCollectionStats result', response);
+      log('[RAG IPC]', `Результат getCollectionStats: ${response}`);
 
       // Извлекает data из обертки IPC
       if (!response.success) {
@@ -167,11 +167,11 @@ export class Electron {
    * @returns Promise со списком коллекций.
    */
   async listCollections(): Promise<VectorCollection[]> {
-    this.log('listCollections', {});
+    log('[RAG IPC]', 'listCollections');
 
     try {
       const response = await (window as any).electron.rag.listCollections();
-      this.log('listCollections result', response);
+      log('[RAG IPC]', `Результат listCollections: ${response}`);
 
       // Проверяет что response это IPC обертка
       if (response && typeof response === 'object' && 'success' in response) {
@@ -201,7 +201,7 @@ export class Electron {
   onProcessingProgress(
     callback: (progress: RagProcessingProgress) => void
   ): () => void {
-    this.log('onProcessingProgress', {});
+    log('[RAG IPC]', 'onProcessingProgress');
 
     try {
       return (window as any).electron.rag.onProcessingProgress(callback);
@@ -224,7 +224,7 @@ export class Electron {
     chatId: string,
     config: UploadAndProcessDocumentConfig
   ): Promise<ProcessDocumentResult> {
-    this.log('uploadAndProcessDocument', { fileName: file.name, chatId });
+    log('[RAG IPC]', `uploadAndProcessDocument: ${file.name}, ${chatId}`);
 
     try {
       // Читает файл как ArrayBuffer
@@ -253,7 +253,7 @@ export class Electron {
         window as any
       ).electron.rag.uploadAndProcessDocument(request, config);
 
-      this.log('uploadAndProcessDocument result', response);
+      log('[RAG IPC]', `uploadAndProcessDocument result: ${response}`);
 
       // Извлекает data из обертки IPC
       if (!response.success) {
@@ -286,18 +286,6 @@ export class Electron {
   }
 
   /**
-   * Логирует сообщение, если включено логирование.
-   *
-   * @param method - Название метода.
-   * @param data - Данные для логирования.
-   */
-  private log(method: string, data: any): void {
-    if (this.config.enableLogging) {
-      console.log(`[RAG IPC] ${method}:`, data);
-    }
-  }
-
-  /**
    * Обрабатывает ошибку.
    *
    * @param method - Название метода.
@@ -315,12 +303,13 @@ export class Electron {
  * @param config - Конфигурация API.
  * @returns Экземпляр Electron для работы с RAG.
  */
-export function createElectron(config?: Partial<RagApiConfig>): Electron {
-  return new Electron(config);
+function createRagIpc(config?: Partial<RagApiConfig>): RagIpc {
+  return new RagIpc(config);
 }
 
 /**
  * Экспорт по умолчанию.
  */
-const electron = new Electron();
-export default electron;
+const ragIpc = createRagIpc();
+
+export default ragIpc;

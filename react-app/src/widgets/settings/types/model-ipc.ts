@@ -4,6 +4,15 @@
  */
 
 /**
+ * Статус совместимости модели с системой.
+ */
+export type CompatibilityStatus =
+  | 'ok'
+  | 'insufficient_ram'
+  | 'insufficient_vram'
+  | 'unknown';
+
+/**
  * Информация о модели Ollama.
  * Упрощенная версия для использования в Settings виджете.
  */
@@ -22,6 +31,10 @@ export interface OllamaModelInfo {
   parameterSize?: string;
   /** Уровень квантизации */
   quantizationLevel?: string;
+  /** Статус совместимости с системой */
+  compatibilityStatus?: CompatibilityStatus;
+  /** Сообщение о совместимости */
+  compatibilityMessages?: string[];
 }
 
 /**

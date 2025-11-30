@@ -149,6 +149,10 @@ msgstr "assistant"
 msgid "attach file"
 msgstr "attach file"
 
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "B"
+msgstr "B"
+
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "bengali"
 msgstr "bengali"
@@ -270,6 +274,11 @@ msgstr "filipino"
 msgid "french"
 msgstr "french"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "GB"
+msgstr "GB"
+
 #: src/widgets/chat/ui/chat-messages.tsx
 msgid "generating..."
 msgstr "generating..."
@@ -302,6 +311,10 @@ msgstr "indonesian"
 msgid "instruction"
 msgstr "instruction"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "insufficient RAM"
+msgstr "insufficient RAM"
+
 #: src/widgets/settings/ui/settings.tsx
 msgid "interface language"
 msgstr "interface language"
@@ -317,6 +330,10 @@ msgstr "japanese"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "kazakh"
 msgstr "kazakh"
+
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "KB"
+msgstr "KB"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "khmer"
@@ -349,6 +366,10 @@ msgstr "manage models"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "marathi"
 msgstr "marathi"
+
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "MB"
+msgstr "MB"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Menu"
@@ -387,6 +408,10 @@ msgstr "no model selected"
 msgid "number of top results"
 msgstr "number of top results"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "ok!"
+msgstr "ok!"
+
 #: src/shared/ui/file-upload/file-upload.tsx
 msgid "or click"
 msgstr "or click"
@@ -418,6 +443,10 @@ msgstr "Quit"
 #: src/widgets/settings/ui/settings.tsx
 msgid "RAG configuration"
 msgstr "RAG configuration"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "RAM"
+msgstr "RAM"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Redo"
@@ -476,6 +505,10 @@ msgstr "system"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "tamil"
 msgstr "tamil"
+
+#: src/shared/ui/selector-option/bar-mode.tsx
+msgid "TB"
+msgstr "TB"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "telugu"

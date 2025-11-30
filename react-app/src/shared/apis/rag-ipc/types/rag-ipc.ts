@@ -84,8 +84,6 @@ export interface RagApiConfig {
   retryAttempts: number;
   /** Задержка между попытками в миллисекундах */
   retryDelay: number;
-  /** Включить логирование */
-  enableLogging: boolean;
 }
 
 /**

@@ -4,6 +4,8 @@
  * Предоставляет функции для управления чатами через IPC.
  */
 
+import { log } from '../../lib/utils/log';
+import { DEFAULT_CONFIG } from './constants/chat-ipc';
 import type {
   CreateChatParams,
   ListChatsParams,
@@ -21,22 +23,11 @@ import type {
 } from './types/chat-ipc';
 
 /**
- * Конфигурация по умолчанию для API клиента.
- * Базовые настройки для работы с Chat Electron API.
- */
-const DEFAULT_CONFIG: ChatApiConfig = {
-  timeout: 30000,
-  maxRetries: 3,
-  retryDelay: 1000,
-  enableLogging: false,
-};
-
-/**
- * @class Electron
+ * @class ChatIpc
  * Класс для работы с Chat Electron API.
  * Инкапсулирует Electron IPC операции для управления чатами.
  */
-export class Electron {
+class СhatIpc {
   private config: ChatApiConfig;
 
   constructor(config?: Partial<ChatApiConfig>) {
@@ -44,7 +35,7 @@ export class Electron {
 
     // Проверяет доступность Electron API
     if (typeof window !== 'undefined' && window.electron) {
-      this.log('Chat Electron API initialized');
+      log('[Chat IPC]', 'Chat Electron API инициализирован');
     } else {
       console.warn(
         'Chat Electron API is unavailable, and some functions may not work'
@@ -65,20 +56,16 @@ export class Electron {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      this.log('Creating new chat:', params.title);
+      log('[Chat IPC]', `createChat: ${params.title}`);
 
       const response = await window.electron.chat.create(params);
-
-      if (response.success && response.data) {
-        this.log('Chat created successfully:', response.data.id);
-      }
 
       return response;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      this.log('Error creating chat:', errorMessage);
+      log('[Chat IPC]', `Ошибка createChat: ${errorMessage}`);
 
       return {
         success: false,
@@ -102,22 +89,16 @@ export class Electron {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      this.log('Fetching chat list');
+      log('[Chat IPC]', 'listChats');
 
       const response = await window.electron.chat.list(params);
-
-      if (response.success && response.data) {
-        this.log(
-          `Found ${response.data.chats.length} chats (total: ${response.data.totalCount})`
-        );
-      }
 
       return response;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      this.log('Error fetching chat list:', errorMessage);
+      log('[Chat IPC]', `Ошибка listChats: ${errorMessage}`);
 
       return {
         success: false,
@@ -141,22 +122,16 @@ export class Electron {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      this.log('Fetching chat:', params.chatId);
+      log('[Chat IPC]', `getChat: ${params.chatId}`);
 
       const response = await window.electron.chat.get(params);
-
-      if (response.success && response.data) {
-        this.log(
-          `Chat loaded: ${response.data.title} (${response.data.messages.length} messages)`
-        );
-      }
 
       return response;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      this.log('Error fetching chat:', errorMessage);
+      log('[Chat IPC]', `Ошибка getChat: ${errorMessage}`);
 
       return {
         success: false,
@@ -180,20 +155,16 @@ export class Electron {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      this.log('Updating chat:', params.chatId);
+      log('[Chat IPC]', `updateChat: ${params.chatId}`);
 
       const response = await window.electron.chat.update(params);
-
-      if (response.success && response.data) {
-        this.log('Chat updated successfully:', response.data.id);
-      }
 
       return response;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      this.log('Error updating chat:', errorMessage);
+      log('[Chat IPC]', `Ошибка updateChat: ${errorMessage}`);
 
       return {
         success: false,
@@ -217,22 +188,16 @@ export class Electron {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      this.log('Adding message to chat:', params.chatId);
+      log('[Chat IPC]', `addMessage: ${params.chatId}`);
 
       const response = await window.electron.chat.addMessage(params);
-
-      if (response.success && response.data) {
-        this.log(
-          `Message added: ${params.role} message in chat ${params.chatId}`
-        );
-      }
 
       return response;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      this.log('Error adding message:', errorMessage);
+      log('[Chat IPC]', `Ошибка addMessage: ${errorMessage}`);
 
       return {
         success: false,
@@ -256,24 +221,16 @@ export class Electron {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      this.log('Deleting chat:', params.chatId);
+      log('[Chat IPC]', `deleteChat: ${params.chatId}`);
 
       const response = await window.electron.chat.delete(params);
-
-      if (response.success && response.data) {
-        this.log(
-          `Chat deleted: ${response.data.deletedChatId}${
-            response.data.backupCreated ? ' (backup created)' : ''
-          }`
-        );
-      }
 
       return response;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      this.log('Error deleting chat:', errorMessage);
+      log('[Chat IPC]', `Ошибка deleteChat: ${errorMessage}`);
 
       return {
         success: false,
@@ -303,19 +260,6 @@ export class Electron {
   getConfig(): ChatApiConfig {
     return { ...this.config };
   }
-
-  /**
-   * Логирует сообщения если включено логирование.
-   * Используется для отладки и мониторинга операций.
-   *
-   * @param message - Сообщение для логирования.
-   * @param data - Дополнительные данные.
-   */
-  private log(message: string, data?: any): void {
-    if (this.config.enableLogging) {
-      console.log(`[Chat API] ${message}`, data || '');
-    }
-  }
 }
 
 /**
@@ -325,14 +269,14 @@ export class Electron {
  * @param config - Конфигурация для клиента.
  * @returns Экземпляр API клиента.
  */
-export function createElectron(config?: Partial<ChatApiConfig>): Electron {
-  return new Electron(config);
+export function createChatIpc(config?: Partial<ChatApiConfig>): СhatIpc {
+  return new СhatIpc(config);
 }
 
 /**
  * Глобальный экземпляр API клиента.
  * Используется для единообразного доступа к API во всем приложении.
  */
-export const electron = createElectron();
+const chatIpc = createChatIpc();
 
-export default electron;
+export default chatIpc;

@@ -133,6 +133,8 @@ function ModelItem({
       state={displayState.state}
       progressInfo={progressInfo}
       actionHandlers={actionHandlers}
+      compatibilityStatus={model.compatibilityStatus}
+      compatibilityMessages={model.compatibilityMessages}
       onClick={() => {
         if (displayState.state === 'installed') {
           eventCallbacks.onModelSelect?.(model.name);

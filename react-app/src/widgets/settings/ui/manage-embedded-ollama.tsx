@@ -449,26 +449,17 @@ function ManageModels({
       onSearchChange={handleSearchChange}
       isLoading={catalogState.loading}>
       {/* Список моделей */}
-      {displayModels.length === 0 && !catalogState.loading ? (
-        <div
-          style={{
-            padding: '2rem',
-            textAlign: 'center',
-            color: 'var(--foreground)',
-          }}>
-          {emptyStateContent}
-        </div>
-      ) : (
-        displayModels.map(({ model, displayState }) => (
-          <ModelItem
-            key={model.name}
-            model={model}
-            displayState={displayState}
-            eventCallbacks={eventCallbacks}
-            onProgress={getModelProgress}
-          />
-        ))
-      )}
+      {displayModels.length === 0 && !catalogState.loading
+        ? emptyStateContent
+        : displayModels.map(({ model, displayState }) => (
+            <ModelItem
+              key={model.name}
+              model={model}
+              displayState={displayState}
+              eventCallbacks={eventCallbacks}
+              onProgress={getModelProgress}
+            />
+          ))}
     </PopupWithSearch>
   );
 }

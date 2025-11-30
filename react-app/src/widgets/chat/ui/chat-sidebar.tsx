@@ -8,7 +8,7 @@ import { useLingui } from '@lingui/react/macro';
 // @ts-ignore: 2724
 import { useState, useEffect, useCallback, ViewTransition } from 'react';
 import { useDispatch } from 'react-redux';
-import { electron as ragElectron } from '../../../shared/apis/rag-ipc';
+import { ragIpc } from '../../../shared/apis/rag-ipc/';
 import AddIcon from '../../../shared/assets/icons/add-icon';
 import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log/call-a-notification-with-a-log';
 import splitByWordCount from '../../../shared/lib/utils/split-by-word-count';
@@ -79,7 +79,7 @@ function ChatSidebar({
       try {
         // Удаляет коллекцию документов RAG
         const resultOfDeletingCollection =
-          await ragElectron.deleteDocumentCollection({ chatId });
+          await ragIpc.deleteDocumentCollection({ chatId });
 
         if (!resultOfDeletingCollection.success) {
           callANotificationWithALog(

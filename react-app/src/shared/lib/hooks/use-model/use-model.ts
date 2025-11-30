@@ -6,7 +6,7 @@
  */
 
 import { useLingui } from '@lingui/react/macro';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
 import { selectTranslationLanguages } from '../../../models/translation-languages-slice';
@@ -104,8 +104,6 @@ function useModel() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    console.log('🚀 providerSettings.rag', providerSettings.rag);
-
     try {
       // Собирает контекст запроса
       const requestContext: ModelRequestContext = {
@@ -145,11 +143,15 @@ function useModel() {
     } catch (erorr) {
       const errMsg = `Failed to generate text: ${(erorr as Error).message}`;
 
-      callANotificationWithALog(
-        dispatch,
-        t`Request error, check the settings`,
-        errMsg
-      );
+      if (
+        (erorr as Error).message !==
+        'IPC Operation failed: model:generate: ❌ Operation was cancelled'
+      )
+        callANotificationWithALog(
+          dispatch,
+          t`Request error, check the settings`,
+          errMsg
+        );
 
       setError(errMsg);
       setStatus('error');
@@ -229,6 +231,20 @@ function useModel() {
       });
     }
   }
+
+  /**
+   * Обрабатывает нажатие клавиши Space для остановки генерации.
+   */
+  useEffect(() => {
+    function handleStoppingByKey(e: KeyboardEvent) {
+      if (e.code === 'Space' && status === 'process') {
+        stop();
+      }
+    }
+    document.addEventListener('keydown', handleStoppingByKey);
+
+    return () => document.removeEventListener('keydown', handleStoppingByKey);
+  }, [status === 'process']);
 
   return {
     /** Статус выполнения операции */

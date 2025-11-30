@@ -29,4 +29,8 @@ export interface MenuTranslations {
   DOWNLOADING_OLLAMA?: string;
   LOADING_APP?: string;
   GETTING_CATALOG?: string;
+  GB?: string;
+  OK?: string;
+  RAM?: string;
+  INSUFFICIENT_RAM?: string;
 }

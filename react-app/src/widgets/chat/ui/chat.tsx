@@ -9,11 +9,10 @@ import { useState, useEffect, useCallback, startTransition } from 'react';
 import { useSelector } from 'react-redux';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useAppDispatch } from '../../../app/';
-import { electron as ragElectron } from '../../../shared/apis/rag-ipc';
+import { ragIpc } from '../../../shared/apis/rag-ipc/';
 import AddIcon from '../../../shared/assets/icons/add-icon';
 import AttachFileIcon from '../../../shared/assets/icons/attach-file';
 import MenuIcon from '../../../shared/assets/icons/menu-icon';
-import StopCircleIcon from '../../../shared/assets/icons/stop-circle-icon';
 import useModel from '../../../shared/lib/hooks/use-model';
 import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log/call-a-notification-with-a-log';
 import { addNotification } from '../../../shared/models/notifications-slice';
@@ -217,7 +216,7 @@ function Chat() {
   /**
    * Обрабатывает нажатие клавиш в поле ввода.
    */
-  const handleInputKeyDown = useCallback(
+  const handleSendMessageByKey = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -262,7 +261,7 @@ function Chat() {
           );
 
           // Использует uploadAndProcessDocument для загрузки и обработки
-          const result = await ragElectron.uploadAndProcessDocument(
+          const result = await ragIpc.uploadAndProcessDocument(
             file,
             activeChat.chat.id,
             {
@@ -401,7 +400,7 @@ function Chat() {
                 value={messageText}
                 placeholder={t`ask ` + settings[provider]?.model || ''}
                 onChange={handleInputChange}
-                onKeyDown={handleInputKeyDown}
+                onKeyDown={handleSendMessageByKey}
                 disabled={generation.isGenerating}
                 minRows={1}
                 maxRows={5}
@@ -412,7 +411,7 @@ function Chat() {
                 <TextAndIconButton
                   text={t`stop`}
                   onClick={handleStopGeneration}>
-                  <StopCircleIcon />
+                  <TextButtonFilled text='space' isDisabled />
                 </TextAndIconButton>
               ) : (
                 <div className='chat__btns-container'>

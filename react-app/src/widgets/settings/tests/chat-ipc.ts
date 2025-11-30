@@ -4,7 +4,7 @@
  * Используется для проверки работы Chat Electron IPC энпоинтов.
  */
 
-import { electron } from '../../../shared/apis/chat-ipc';
+import { chatIpc } from '../../../shared/apis/chat-ipc';
 
 /**
  * Создает новый чат.
@@ -16,7 +16,7 @@ export async function testCreateChat(
 ) {
   console.log('🧪 Тестирование API создания чата...');
   try {
-    const result = await electron.createChat({
+    const result = await chatIpc.createChat({
       title,
       defaultModel: {
         name: model,
@@ -48,7 +48,7 @@ export async function testCreateChat(
 export async function testListChats() {
   console.log('🧪 Тестирование API получения списка чатов...');
   try {
-    const result = await electron.listChats({
+    const result = await chatIpc.listChats({
       limit: 10,
       sortBy: 'updatedAt',
       sortOrder: 'desc',
@@ -77,7 +77,7 @@ export async function testListChats() {
 export async function testGetChat(chatId: string) {
   console.log(`🧪 Тестирование API получения чата ${chatId}...`);
   try {
-    const result = await electron.getChat({
+    const result = await chatIpc.getChat({
       chatId,
       includeMessages: true,
       messageLimit: 50,
@@ -107,7 +107,7 @@ export async function testUpdateChat(
 ) {
   console.log(`🧪 Тестирование API обновления чата ${chatId}...`);
   try {
-    const result = await electron.updateChat({
+    const result = await chatIpc.updateChat({
       chatId,
       title: newTitle,
       generationSettings: {
@@ -142,7 +142,7 @@ export async function testAddMessage(
 ) {
   console.log(`🧪 Тестирование API добавления сообщения в чат ${chatId}...`);
   try {
-    const result = await electron.addMessage({
+    const result = await chatIpc.addMessage({
       chatId,
       role: 'user',
       content,
@@ -178,7 +178,7 @@ export async function testAddAssistantMessage(
     `🧪 Тестирование API добавления ответа ассистента в чат ${chatId}...`
   );
   try {
-    const result = await electron.addMessage({
+    const result = await chatIpc.addMessage({
       chatId,
       role: 'assistant',
       content,
@@ -213,7 +213,7 @@ export async function testAddAssistantMessage(
 export async function testDeleteChat(chatId: string, createBackup = true) {
   console.log(`🧪 Тестирование API удаления чата ${chatId}...`);
   try {
-    const result = await electron.deleteChat({
+    const result = await chatIpc.deleteChat({
       chatId,
       createBackup,
       confirmed: true,
