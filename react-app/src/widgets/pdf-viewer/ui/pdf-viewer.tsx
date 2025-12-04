@@ -36,7 +36,6 @@ import {
   selectActiveProviderSettings,
   setTypeUse,
 } from '../../../shared/models/provider-settings-slice';
-import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import DecorativeTextAndIconButton from '../../../shared/ui/decorative-text-and-icon-button';
 import FileUpload from '../../../shared/ui/file-upload';
 import Gradient from '../../../shared/ui/gradient';

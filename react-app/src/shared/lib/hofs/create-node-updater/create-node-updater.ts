@@ -4,6 +4,7 @@
  */
 
 import type { NodeOperationResult } from './types/create-node-updater';
+import { getElementMetrics, scaleTextToFit } from './utils/scale-text-to-fit';
 
 /**
  * Высокоуровневая HOF функция для безопасного обновления DOM узлов.
@@ -61,8 +62,25 @@ export const createNodeUpdater =
     }
 
     try {
+      // Сохранение оригинальных метрик элемента перед заменой текста
+      const metrics = getElementMetrics(textInfo.element);
+
       // Безопасное обновление значения текстового узла
       textInfo.node.nodeValue = newText;
+
+      // Масштабирование шрифта для сохранения размеров элемента
+      const scaledFontSize = scaleTextToFit(
+        textInfo.element,
+        metrics.width,
+        metrics.height,
+        metrics.fontSize
+      );
+
+      // Применение масштабированного размера шрифта только если он изменился
+      if (scaledFontSize !== metrics.fontSize) {
+        textInfo.element.style.fontSize = `${scaledFontSize}px`;
+      }
+
       return { success: true, updated: true };
     } catch (error) {
       // Обработка исключений при обновлении DOM узла

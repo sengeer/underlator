@@ -60,7 +60,7 @@
     "name": "Sengeer",
     "email": "sengeer@mail.ru"
   },
-  "license": "MIT",
+  "license": "MIT WITH COMMONS CLAUSE",
   "dependencies": {
     "better-sqlite3": "^12.4.1",
     "electron-ollama": "^0.1.25",
