@@ -2,7 +2,7 @@
   "name": "underlator",
   "productName": "Underlator",
   "version": "1.0.0",
-  "description": "Confidential translator and interactive assistant for document analysis using local LLMs — as a desktop application.",
+  "description": "Backend for Underlator desktop application",
   "main": "dist/electron/main.js",
   "scripts": {
     "start": "npm run build:dev && concurrently \"npm run start:react\" \"wait-on http://localhost:8000 && npm run start:electron\"",
@@ -60,7 +60,7 @@
     "name": "Sengeer",
     "email": "sengeer@mail.ru"
   },
-  "license": "MIT WITH COMMONS CLAUSE",
+  "license": "BSD-3-Clause + Branding",
   "dependencies": {
     "better-sqlite3": "^12.4.1",
     "electron-ollama": "^0.1.25",
