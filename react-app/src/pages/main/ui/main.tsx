@@ -7,7 +7,11 @@ import { useLingui } from '@lingui/react/macro';
 import { useEffect, useRef, Activity } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import useElectronTranslation from '../../../shared/lib/hooks/use-electron-translation';
-import { isElementOpen } from '../../../shared/models/element-state-slice';
+import {
+  isElementOpen,
+  openElement,
+  closeElement,
+} from '../../../shared/models/element-state-slice';
 import {
   selectThemes,
   setActiveTheme,
@@ -22,7 +26,10 @@ import PdfViewer from '../../../widgets/pdf-viewer';
 import Settings from '../../../widgets/settings';
 import SideNavigate from '../../../widgets/side-navigate/';
 import TextTranslator from '../../../widgets/text-translator';
+import { BOOSTY_DONATE_URL } from '../constants/donation';
+import { useAppLaunches } from '../hooks/use-app-launches';
 import { selectSplashVisible } from '../models/splash-screen-ipc-slice';
+import Donation from './donation';
 import SplashScreen from './splash-screen';
 import '../styles/main.scss';
 
@@ -75,6 +82,33 @@ function Main() {
   const isOpenChatSection = useSelector((state) =>
     isElementOpen(state, 'chatSection')
   );
+
+  // Получение состояния видимости модального окна доната из Redux store
+  const isOpenDonationPopup = useSelector((state) =>
+    isElementOpen(state, 'donationPopup')
+  );
+
+  // Хук для отслеживания открытий приложения и показа модального окна доната
+  const { shouldShowPopup, dismissPopup } = useAppLaunches();
+
+  // Управление состоянием модального окна доната через Redux
+  useEffect(() => {
+    if (shouldShowPopup) {
+      dispatch(openElement('donationPopup'));
+    }
+  }, [shouldShowPopup, dispatch]);
+
+  // Обработчик закрытия модального окна
+  function handleCloseDonationPopup() {
+    dispatch(closeElement('donationPopup'));
+    dismissPopup();
+  }
+
+  // Обработчик открытия страницы доната
+  function handleDonate() {
+    window.open(BOOSTY_DONATE_URL, '_blank', 'noopener,noreferrer');
+    handleCloseDonationPopup();
+  }
 
   // Хук для работы с переводами Electron
   // Предоставляет функцию синхронизации переводов с main процессом
@@ -140,6 +174,12 @@ function Main() {
           <Activity mode={isOpenSettingsSection ? 'visible' : 'hidden'}>
             <Settings />
           </Activity>
+          {/* Модальное окно доната */}
+          <Donation
+            isOpened={shouldShowPopup || isOpenDonationPopup}
+            setOpened={handleCloseDonationPopup}
+            onDonate={handleDonate}
+          />
         </>
       )}
     </main>

@@ -58,7 +58,7 @@ function Tests() {
   }, [setValues]);
 
   return (
-    <div className='settings__container'>
+    <>
       <h2 className='text-heading-l settings__title'>
         {'Поля ввода для тестов IPC API'}
       </h2>
@@ -305,7 +305,7 @@ function Tests() {
           {'Вызвать Toast-ошибку'}
         </TextButton>
       </Grid>
-    </div>
+    </>
   );
 }
 

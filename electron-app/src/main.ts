@@ -344,12 +344,13 @@ async function loadPipeline(): Promise<void> {
     // Отправляет сигнал завершения инициализации в React splash screen
     sendSplashComplete();
   } catch (error) {
-    console.error('❌ App initialization error:', error);
+    const errorMessage = `❌ ${(error as Error).message}`;
+    console.error(errorMessage);
 
     // Отправляет ошибку в React splash screen
-    sendSplashError('❌ Failed to initialize app');
+    sendSplashError(errorMessage);
 
-    throw new Error(`❌ Failed to initialize app: ${(error as Error).message}`);
+    throw new Error(errorMessage);
   }
 }
 
@@ -377,7 +378,7 @@ function buildMenu(): void {
       submenu: [
         {
           role: 'about',
-          label: translations.ABOUT || 'About',
+          label: translations.ABOUT || 'About Underlator',
         },
         { role: 'undo', label: translations.UNDO || 'Undo' },
         { role: 'redo', label: translations.REDO || 'Redo' },
@@ -439,6 +440,7 @@ function createWindow(): void {
       preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
+      devTools: isDev,
     },
   });
 
@@ -500,8 +502,9 @@ async function loadApp(): Promise<void> {
   }
 
   loadPipeline().catch(error => {
-    console.error('❌ App initialization error:', error);
-    sendSplashError('❌ App initialization error');
+    const errorMessage = (error as Error).message;
+    console.error(errorMessage);
+    sendSplashError(errorMessage);
   });
 }
 

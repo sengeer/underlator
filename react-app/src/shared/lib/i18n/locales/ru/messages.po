@@ -181,6 +181,10 @@ msgstr "Китайский"
 msgid "chunk size"
 msgstr "Размер чанка"
 
+#: src/widgets/settings/ui/settings.tsx
+msgid "contact"
+msgstr "Связаться"
+
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Copy"
 msgstr "Копировать"
@@ -196,6 +200,14 @@ msgstr "Вырезать"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "czech"
 msgstr "Чешский"
+
+#: src/widgets/settings/ui/settings.tsx
+msgid "donate"
+msgstr "Поддержать проект"
+
+#: src/pages/main/ui/donation.tsx
+msgid "donation"
+msgstr "Пожертвование"
 
 #: src/shared/ui/selector-option/bar-mode.tsx
 msgid "download"
@@ -525,6 +537,10 @@ msgstr "Тема"
 #: src/shared/ui/markdown-renderer/markdown-renderer.tsx
 msgid "thinking"
 msgstr "Рассуждения"
+
+#: src/pages/main/ui/donation.tsx
+msgid "This project is developed by a small team of enthusiasts. If you find Underlator useful, please consider supporting our work. Your contribution helps us continue improving the application and adding new features."
+msgstr "Этот проект разработан небольшой командой энтузиастов. Если Вам нравится Underlator, пожалуйста, рассмотрите возможность поддержки нашей работы. Ваш вклад поможет нам продолжать совершенствовать приложение и добавлять новые функции."
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "tibetan"

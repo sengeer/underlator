@@ -66,6 +66,7 @@ function MarkdownRenderer({
   showThinking = true,
   text,
   placeholder,
+  isShowedCopyingBtn = true,
 }: MarkdownRendererProps) {
   if (!content) return renderPlaceholder();
 
@@ -136,27 +137,23 @@ function MarkdownRenderer({
         )}
         {text && (
           <DecorativeTextAndIconButton
-            style={{ paddingRight: '2rem' }}
+            style={{ paddingRight: '24px' }}
             text={text}
             decorativeColor='var(--main)'
           />
         )}
-        <IconButton
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-          }}
-          onClick={() => handleCopy(mainContentParts.toString())}
-          isDisabled={!mainContentParts || isCopied}>
-          <AnimatingWrapper isShow={isCopied}>
-            <CheckIcon />
-          </AnimatingWrapper>
-          <AnimatingWrapper isShow={!isCopied}>
-            <CopyIcon />
-          </AnimatingWrapper>
-        </IconButton>
-        <div />
+        {isShowedCopyingBtn && (
+          <IconButton
+            onClick={() => handleCopy(mainContentParts.toString())}
+            isDisabled={!mainContentParts || isCopied}>
+            <AnimatingWrapper isShow={isCopied}>
+              <CheckIcon />
+            </AnimatingWrapper>
+            <AnimatingWrapper isShow={!isCopied}>
+              <CopyIcon />
+            </AnimatingWrapper>
+          </IconButton>
+        )}
       </div>
       {showThinking && thinkingParts.length > 0 && isShowThinking && (
         <div className='thinking'>

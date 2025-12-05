@@ -20,14 +20,18 @@ import { Trans } from '@lingui/react/macro';
 import { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
+import packageJson from '../../../../package.json';
 import BalanceIcon from '../../../shared/assets/icons/balance-icon';
 import CableIcon from '../../../shared/assets/icons/cable-icon';
+import CommitIcon from '../../../shared/assets/icons/commit-icon';
 import DownloadIcon from '../../../shared/assets/icons/download-icon';
 import HttpIcon from '../../../shared/assets/icons/http-icon';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
+import MailIcon from '../../../shared/assets/icons/mail-icon';
 import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
 import TextIncreaseIcon from '../../../shared/assets/icons/text-increase-icon';
 import TrophyIcon from '../../../shared/assets/icons/trophy-icon';
+import UnderlatorIcon from '../../../shared/assets/icons/underlator-icon';
 import {
   DEFAULT_LOCALE,
   DEFAULT_RAG_TOP_K,
@@ -370,164 +374,179 @@ function Settings() {
     <section className='settings'>
       {import.meta.env.DEV && <Tests />}
 
-      <div className='settings__container'>
-        <h2 className='text-heading-l settings__title'>
-          <Trans>main settings</Trans>
-        </h2>
+      <div className='settings__header'>
+        <TextAndIconButton
+          text={t`donate`}
+          onClick={() => dispatch(openElement('donationPopup'))}>
+          <UnderlatorIcon width={24} height={24} />
+        </TextAndIconButton>
+        <TextAndIconButton text={`v${packageJson.version}`} isDisabled>
+          <CommitIcon />
+        </TextAndIconButton>
+        <TextAndIconButton
+          text={t`contact`}
+          onClick={() => {
+            window.location.href = 'mailto:fox8911@gmail.com';
+          }}>
+          <MailIcon />
+        </TextAndIconButton>
+      </div>
+      <h2 className='text-heading-l settings__title'>
+        <Trans>main settings</Trans>
+      </h2>
+      <ButtonWrapperWithBackground
+        onClick={() => dispatch(openElement('languageSelectorPopup'))}>
+        <TextAndIconButton
+          text={t`interface language`}
+          style={{ marginLeft: '1rem' }}
+          isDisabled>
+          <LanguageIcon />
+        </TextAndIconButton>
+        <p className='text-body-m settings__text'>{languageKey}</p>
+      </ButtonWrapperWithBackground>
+      <h2 className='text-heading-l settings__title'>
+        <Trans>API configuration</Trans>
+      </h2>
+      <Grid columns={1}>
         <ButtonWrapperWithBackground
-          onClick={() => dispatch(openElement('languageSelectorPopup'))}>
+          onClick={() => dispatch(openElement('providerSelectorPopup'))}>
           <TextAndIconButton
-            text={t`interface language`}
+            text={t`provider`}
             style={{ marginLeft: '1rem' }}
             isDisabled>
-            <LanguageIcon />
+            <CableIcon />
           </TextAndIconButton>
-          <p className='text-body-m settings__text'>{languageKey}</p>
+          <p className='text-body-m settings__text'>{provider}</p>
         </ButtonWrapperWithBackground>
-        <h2 className='text-heading-l settings__title'>
-          <Trans>API configuration</Trans>
-        </h2>
-        <Grid columns={1}>
+        {provider === 'Ollama' && (
+          <ButtonWrapperWithBackground>
+            <TextAndIconButton
+              text={'url'}
+              style={{ marginLeft: '1rem' }}
+              isDisabled>
+              <HttpIcon />
+            </TextAndIconButton>
+            <input
+              className='text-body-m settings__input settings__text'
+              placeholder='http://127.0.0.1:11434'
+              type='url'
+              id='url'
+              {...register('url', {
+                pattern: {
+                  value: /^https?:\/\/.+/,
+                  message: 'Invalid URL format',
+                },
+              })}
+            />
+          </ButtonWrapperWithBackground>
+        )}
+        {provider === 'Ollama' && (
+          <ButtonWrapperWithBackground>
+            <TextAndIconButton
+              text={t`model`}
+              style={{ marginLeft: '1rem' }}
+              isDisabled>
+              <NetworkIntelligenceIcon />
+            </TextAndIconButton>
+            <input
+              className='text-body-m settings__input settings__text'
+              placeholder='llama3.1'
+              type='text'
+              id='model'
+              {...register('model', {
+                required: 'Model name is required',
+              })}
+            />
+          </ButtonWrapperWithBackground>
+        )}
+        {provider === 'Embedded Ollama' && (
           <ButtonWrapperWithBackground
-            onClick={() => dispatch(openElement('providerSelectorPopup'))}>
+            onClick={() => dispatch(openElement('manageModelsPopup'))}>
             <TextAndIconButton
-              text={t`provider`}
-              style={{ marginLeft: '1rem' }}
-              isDisabled>
-              <CableIcon />
-            </TextAndIconButton>
-            <p className='text-body-m settings__text'>{provider}</p>
-          </ButtonWrapperWithBackground>
-          {provider === 'Ollama' && (
-            <ButtonWrapperWithBackground>
-              <TextAndIconButton
-                text={'url'}
-                style={{ marginLeft: '1rem' }}
-                isDisabled>
-                <HttpIcon />
-              </TextAndIconButton>
-              <input
-                className='text-body-m settings__input settings__text'
-                placeholder='http://127.0.0.1:11434'
-                type='url'
-                id='url'
-                {...register('url', {
-                  pattern: {
-                    value: /^https?:\/\/.+/,
-                    message: 'Invalid URL format',
-                  },
-                })}
-              />
-            </ButtonWrapperWithBackground>
-          )}
-          {provider === 'Ollama' && (
-            <ButtonWrapperWithBackground>
-              <TextAndIconButton
-                text={t`model`}
-                style={{ marginLeft: '1rem' }}
-                isDisabled>
-                <NetworkIntelligenceIcon />
-              </TextAndIconButton>
-              <input
-                className='text-body-m settings__input settings__text'
-                placeholder='llama3.1'
-                type='text'
-                id='model'
-                {...register('model', {
-                  required: 'Model name is required',
-                })}
-              />
-            </ButtonWrapperWithBackground>
-          )}
-          {provider === 'Embedded Ollama' && (
-            <ButtonWrapperWithBackground
-              onClick={() => dispatch(openElement('manageModelsPopup'))}>
-              <TextAndIconButton
-                text={t`manage models`}
-                style={{ marginLeft: '1rem' }}
-                isDisabled>
-                <DownloadIcon />
-              </TextAndIconButton>
-              <p className='text-body-m settings__text'>
-                {settings[provider]?.model || t`no model selected`}
-              </p>
-            </ButtonWrapperWithBackground>
-          )}
-        </Grid>
-        <h2 className='text-heading-l settings__title'>
-          <Trans>RAG configuration</Trans>
-        </h2>
-        <Grid columns={2}>
-          <ButtonWrapperWithBackground>
-            <TextAndIconButton
-              text={t`number of top results`}
-              style={{ marginLeft: '1rem' }}
-              isDisabled>
-              <TrophyIcon />
-            </TextAndIconButton>
-            <input
-              className='text-body-m settings__input settings__text'
-              placeholder={DEFAULT_RAG_TOP_K.toString()}
-              type='number'
-              id='topK'
-              min={1}
-              max={100}
-              {...createNumberFieldRegister('topK', 1, 100)}
-            />
-          </ButtonWrapperWithBackground>
-          <ButtonWrapperWithBackground>
-            <TextAndIconButton
-              text={t`similarity threshold`}
-              style={{ marginLeft: '1rem' }}
-              isDisabled>
-              <BalanceIcon />
-            </TextAndIconButton>
-            <input
-              className='text-body-m settings__input settings__text'
-              placeholder={DEFAULT_RAG_SIMILARITY_THRESHOLD.toString()}
-              type='number'
-              step='0.1'
-              id='similarityThreshold'
-              min={0}
-              max={1}
-              {...createNumberFieldRegister('similarityThreshold', 0, 1)}
-            />
-          </ButtonWrapperWithBackground>
-          <ButtonWrapperWithBackground>
-            <TextAndIconButton
-              text={t`chunk size`}
-              style={{ marginLeft: '1rem' }}
-              isDisabled>
-              <TextIncreaseIcon />
-            </TextAndIconButton>
-            <input
-              className='text-body-m settings__input settings__text'
-              placeholder={DEFAULT_RAG_CHUNK_SIZE.toString()}
-              type='number'
-              id='chunkSize'
-              min={1}
-              max={4096}
-              {...createNumberFieldRegister('chunkSize', 1, 4096)}
-            />
-          </ButtonWrapperWithBackground>
-          <ButtonWrapperWithBackground
-            onClick={() => dispatch(openElement('manageEmbeddingModelsPopup'))}>
-            <TextAndIconButton
-              text={t`manage embedding models`}
+              text={t`manage models`}
               style={{ marginLeft: '1rem' }}
               isDisabled>
               <DownloadIcon />
             </TextAndIconButton>
             <p className='text-body-m settings__text'>
-              {rag?.model || t`no model selected`}
+              {settings[provider]?.model || t`no model selected`}
             </p>
           </ButtonWrapperWithBackground>
-        </Grid>
-        <h2 className='text-heading-l settings__title'>
-          <Trans>theme</Trans>
-        </h2>
-        <Themes />
-      </div>
+        )}
+      </Grid>
+      <h2 className='text-heading-l settings__title'>
+        <Trans>RAG configuration</Trans>
+      </h2>
+      <Grid columns={2}>
+        <ButtonWrapperWithBackground>
+          <TextAndIconButton
+            text={t`number of top results`}
+            style={{ marginLeft: '1rem' }}
+            isDisabled>
+            <TrophyIcon />
+          </TextAndIconButton>
+          <input
+            className='text-body-m settings__input settings__text'
+            placeholder={DEFAULT_RAG_TOP_K.toString()}
+            type='number'
+            id='topK'
+            min={1}
+            max={100}
+            {...createNumberFieldRegister('topK', 1, 100)}
+          />
+        </ButtonWrapperWithBackground>
+        <ButtonWrapperWithBackground>
+          <TextAndIconButton
+            text={t`similarity threshold`}
+            style={{ marginLeft: '1rem' }}
+            isDisabled>
+            <BalanceIcon />
+          </TextAndIconButton>
+          <input
+            className='text-body-m settings__input settings__text'
+            placeholder={DEFAULT_RAG_SIMILARITY_THRESHOLD.toString()}
+            type='number'
+            step='0.1'
+            id='similarityThreshold'
+            min={0}
+            max={1}
+            {...createNumberFieldRegister('similarityThreshold', 0, 1)}
+          />
+        </ButtonWrapperWithBackground>
+        <ButtonWrapperWithBackground>
+          <TextAndIconButton
+            text={t`chunk size`}
+            style={{ marginLeft: '1rem' }}
+            isDisabled>
+            <TextIncreaseIcon />
+          </TextAndIconButton>
+          <input
+            className='text-body-m settings__input settings__text'
+            placeholder={DEFAULT_RAG_CHUNK_SIZE.toString()}
+            type='number'
+            id='chunkSize'
+            min={1}
+            max={4096}
+            {...createNumberFieldRegister('chunkSize', 1, 4096)}
+          />
+        </ButtonWrapperWithBackground>
+        <ButtonWrapperWithBackground
+          onClick={() => dispatch(openElement('manageEmbeddingModelsPopup'))}>
+          <TextAndIconButton
+            text={t`manage embedding models`}
+            style={{ marginLeft: '1rem' }}
+            isDisabled>
+            <DownloadIcon />
+          </TextAndIconButton>
+          <p className='text-body-m settings__text'>
+            {rag?.model || t`no model selected`}
+          </p>
+        </ButtonWrapperWithBackground>
+      </Grid>
+      <h2 className='text-heading-l settings__title'>
+        <Trans>theme</Trans>
+      </h2>
+      <Themes />
       <Popup
         isOpened={
           isOpenLanguageSelectorPopup && Object.keys(LANGUAGES).length > 1

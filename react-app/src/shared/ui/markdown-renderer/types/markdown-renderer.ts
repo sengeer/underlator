@@ -19,4 +19,6 @@ export interface MarkdownRendererProps {
   text?: string;
   /** Заглушка, отображаемая до появления основного контента */
   placeholder?: string;
+  /** Флаг отображения кнопки копирования */
+  isShowedCopyingBtn?: boolean;
 }

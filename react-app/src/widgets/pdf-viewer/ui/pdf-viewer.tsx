@@ -511,6 +511,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                     content={stringifyGenerateResponse(generatedResponse)}
                     className='text-heading-l pdf-viewer__output'
                     showThinking
+                    isShowedCopyingBtn={false}
                   />
                 ) : (
                   <Loader />
@@ -520,7 +521,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                     style={{
                       position: 'absolute',
                       right: '1rem',
-                      top: '24px',
+                      top: 0,
                     }}
                     onClick={stop}>
                     <StopCircleIcon />
@@ -530,7 +531,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
                     style={{
                       position: 'absolute',
                       right: '1rem',
-                      top: '24px',
+                      top: 0,
                     }}
                     onClick={resetResponse}>
                     <BackspaceIcon />
@@ -568,7 +569,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
             settings.typeUse !== 'instruction' ? (
               <StopCircleIcon />
             ) : settings.typeUse === 'instruction' ? (
-              <UnderlatorIcon />
+              <UnderlatorIcon width={32} height={32} />
             ) : (
               <TranslateIcon width={32} height={32} />
             )}
