@@ -157,7 +157,7 @@ export class VectorStoreService {
 
       return this.createSuccessResult(undefined, 'success');
     } catch (error) {
-      console.error('❌ Failed to initialize VectorStoreService:', error);
+      console.error('Failed to initialize VectorStoreService:', error);
       return this.createErrorResult((error as Error).message);
     }
   }
@@ -247,10 +247,7 @@ export class VectorStoreService {
       this.cacheCollection(collection);
       return this.createSuccessResult(collection, 'success');
     } catch (error) {
-      console.error(
-        `❌ Failed to create collection for chat ${chatId}:`,
-        error
-      );
+      console.error(`Failed to create collection for chat ${chatId}:`, error);
       return this.createErrorResult((error as Error).message);
     }
   }
@@ -311,7 +308,7 @@ export class VectorStoreService {
       return this.createSuccessResult(count, 'success');
     } catch (error) {
       console.error(
-        `❌ Failed to add chunks to collection for chat ${chatId}:`,
+        `Failed to add chunks to collection for chat ${chatId}:`,
         error
       );
       return this.createErrorResult((error as Error).message);
@@ -491,7 +488,7 @@ export class VectorStoreService {
       return this.createSuccessResult(response, 'success');
     } catch (error) {
       console.error(
-        `❌ Failed to search in collection for chat ${query.chatId}:`,
+        `Failed to search in collection for chat ${query.chatId}:`,
         error
       );
       return this.createErrorResult((error as Error).message);
@@ -560,10 +557,7 @@ export class VectorStoreService {
 
       return this.createSuccessResult(undefined, 'success');
     } catch (error) {
-      console.error(
-        `❌ Failed to delete collection for chat ${chatId}:`,
-        error
-      );
+      console.error(`Failed to delete collection for chat ${chatId}:`, error);
       return this.createErrorResult((error as Error).message);
     }
   }
@@ -606,7 +600,7 @@ export class VectorStoreService {
       return this.createSuccessResult(statsObj, 'success');
     } catch (error) {
       console.error(
-        `❌ Failed to get collection stats for chat ${chatId}:`,
+        `Failed to get collection stats for chat ${chatId}:`,
         error
       );
       return this.createErrorResult((error as Error).message);
@@ -647,7 +641,7 @@ export class VectorStoreService {
 
       return this.createSuccessResult(result, 'success');
     } catch (error) {
-      console.error('❌ Failed to list collections:', error);
+      console.error('Failed to list collections:', error);
       return this.createErrorResult((error as Error).message);
     }
   }

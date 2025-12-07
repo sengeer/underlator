@@ -64,7 +64,7 @@ export class CatalogHandlers {
           const result = await modelCatalogService!.searchModels(filters);
 
           if (!result.success || !result.data) {
-            throw new Error(result.error || '❌ Failed to search models');
+            throw new Error(result.error || 'Failed to search models');
           }
 
           return result.data;
@@ -95,7 +95,7 @@ export class CatalogHandlers {
           );
 
           if (!result.success) {
-            throw new Error(result.error || '❌ Failed to get model info');
+            throw new Error(result.error || 'Failed to get model info');
           }
 
           return result.data || null;

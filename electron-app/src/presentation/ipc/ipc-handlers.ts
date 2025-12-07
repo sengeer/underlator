@@ -70,13 +70,13 @@ export class IpcHandler {
     requiredFields: string[] = []
   ): { valid: boolean; error?: string } {
     if (!request || typeof request !== 'object') {
-      return { valid: false, error: '❌ Invalid request format' };
+      return { valid: false, error: 'Invalid request format' };
     }
 
     // Проверка обязательных полей
     for (const field of requiredFields) {
       if (!(field in request)) {
-        return { valid: false, error: `❌ Missing required field: ${field}` };
+        return { valid: false, error: `Missing required field: ${field}` };
       }
     }
 
@@ -119,7 +119,7 @@ export class IpcHandler {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const fullMessage = context ? `${context}: ${errorMessage}` : errorMessage;
 
-    console.error(`❌ [IPC Error] ${fullMessage}`, error);
+    console.error(`[IPC Error] ${fullMessage}`, error);
 
     return fullMessage;
   }
@@ -138,7 +138,7 @@ export class IpcHandler {
     if (result.success) {
       return this.createSuccessResponse(result.data, id);
     } else {
-      return this.createErrorResponse(result.error || '❌ Unknown error', id);
+      return this.createErrorResponse(result.error || 'Unknown error', id);
     }
   }
 
@@ -194,7 +194,7 @@ export class IpcHandler {
         // Логирует ошибку
         this.logOperation(operationName, request, response, duration);
 
-        console.error(`❌ IPC Handler error: ${operationName}`, {
+        console.error(`IPC Handler error: ${operationName}`, {
           requestId,
           error,
           duration,

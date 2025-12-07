@@ -94,12 +94,12 @@ export class RagHandlers {
         console.log('✅ DocumentProcessorService initialized');
       } else {
         console.error(
-          '❌ Failed to initialize DocumentProcessorService:',
+          'Failed to initialize DocumentProcessorService:',
           result.error
         );
       }
     } catch (error) {
-      console.error('❌ Failed to load DocumentProcessorService:', error);
+      console.error('Failed to load DocumentProcessorService:', error);
       throw new Error('DocumentProcessorService не может быть загружен');
     } finally {
       this.isInitializingDocProcessor = false;

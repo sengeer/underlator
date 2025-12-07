@@ -97,7 +97,7 @@ function sendSplashStatus(status: SplashMessages): void {
     mainWindow.webContents.send('splash:status-update', status);
     console.log('✅ The status has been sent to the React app');
   } else {
-    console.error('❌ The main window is not available for sending the status');
+    console.error('The main window is not available for sending the status');
   }
 }
 
@@ -147,7 +147,7 @@ function convertErrorToString(error: Error) {
  * Используется для отправки ошибок в splash screen.
  */
 process.on('uncaughtException', error => {
-  console.error('❌ Unhandled exception in main process:', error);
+  console.error('Unhandled exception in main process:', error);
   sendSplashError(convertErrorToString(error));
 });
 
@@ -221,7 +221,7 @@ async function loadPipeline(): Promise<void> {
       console.log('✅ Embedding service successfully initialized');
     } else {
       console.warn(
-        `❌ Error initializing embedding service: ${embeddingInitResult.error}`
+        `Error initializing embedding service: ${embeddingInitResult.error}`
       );
     }
 
@@ -279,7 +279,7 @@ async function loadPipeline(): Promise<void> {
       console.log('✅ VectorStoreService initialized successfully');
     } else {
       console.error(
-        '❌ Failed to initialize VectorStoreService:',
+        'Failed to initialize VectorStoreService:',
         vectorStoreInitResult.error
       );
       console.log(
@@ -320,7 +320,7 @@ async function loadPipeline(): Promise<void> {
       await setupRAGIpcHandlers();
       console.log('✅ RAG IPC handlers registered successfully');
     } catch (error) {
-      console.error('❌ Failed to setup RAG handlers:', error);
+      console.error('Failed to setup RAG handlers:', error);
       console.log('⚠️ RAG functionality may not be fully available');
     }
 
@@ -486,7 +486,7 @@ function createWindow(): void {
  */
 async function loadApp(): Promise<void> {
   if (!mainWindow) {
-    console.error('❌ Main window not available');
+    console.error('Main window not available');
     return;
   }
 
@@ -516,7 +516,7 @@ async function loadApp(): Promise<void> {
 function setupOllamaIpcHandlers(): void {
   console.log('🔧 Setting up Ollama IPC handlers...');
   if (!ollamaApi || !modelHandlers) {
-    console.error('❌ OllamaApi is not initialized');
+    console.error('OllamaApi is not initialized');
     return;
   }
   console.log('✅ OllamaApi is available, register handlers...');
@@ -532,7 +532,7 @@ function setupCatalogIpcHandlers(): void {
   console.log('🔧 Setting up Catalog IPC handlers...');
 
   if (!modelCatalogService || !catalogHandlers) {
-    console.error('❌ ModelCatalogService is not initialized');
+    console.error('ModelCatalogService is not initialized');
     return;
   }
 
@@ -548,7 +548,7 @@ function setupSplashIpcHandlers(): void {
   console.log('🔧 Configuring Splash IPC handlers...');
 
   if (!splashHandlers) {
-    console.error('❌ SplashScreen is not initialized');
+    console.error('SplashScreen is not initialized');
     return;
   }
 
@@ -565,7 +565,7 @@ function setupChatIpcHandlers(): void {
   console.log('🔧 Setting up Chat IPC handlers...');
 
   if (!chatHandlers) {
-    console.error('❌ ChatHandlers is not initialized');
+    console.error('ChatHandlers is not initialized');
     return;
   }
 
@@ -593,7 +593,7 @@ async function setupRAGIpcHandlers(): Promise<void> {
       console.log('🔧 Creating RagHandlers...');
       if (!vectorStoreService || !embeddingService) {
         console.error(
-          '❌ VectorStoreService or EmbeddingService is not initialized'
+          'VectorStoreService or EmbeddingService is not initialized'
         );
         return;
       }
@@ -614,7 +614,7 @@ async function setupRAGIpcHandlers(): Promise<void> {
 
     console.log('✅ RAG IPC handlers are registered');
   } catch (error) {
-    console.error('❌ Failed to setup RAG handlers:', error);
+    console.error('Failed to setup RAG handlers:', error);
     // Ошибка не пробрасывается, чтобы приложение запускалось в любых случаях
   }
 }
@@ -633,7 +633,7 @@ app.on('ready', async () => {
 
     console.log('✅ The application has been successfully initialized');
   } catch (error) {
-    console.error('❌ Application initialization error:', error);
+    console.error('Application initialization error:', error);
 
     // Создает окно даже при ошибке для отображения ошибки
     createWindow();
@@ -692,7 +692,7 @@ app.on('before-quit', async () => {
     await ollamaManager.stopOllama();
     console.log('✅️ Ollama server is stopped when the application is closed');
   } catch (error) {
-    console.error('❌ Error stopping Ollama when closing:', error);
+    console.error('Error stopping Ollama when closing:', error);
   }
 
   // Очищает все ресурсы приложения

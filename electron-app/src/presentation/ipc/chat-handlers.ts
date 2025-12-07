@@ -298,7 +298,7 @@ export class ChatHandlers {
       console.log(`✅ Chat created successfully: ${chatId}`);
       return this.createSuccessResult(chatData, 'creating');
     } catch (error) {
-      console.error('❌ Error creating chat:', error);
+      console.error('Error creating chat:', error);
       return this.createErrorResult<ChatData>(
         error instanceof Error ? error.message : 'Unknown error'
       );
@@ -355,7 +355,7 @@ export class ChatHandlers {
       console.log(`✅ Chat retrieved successfully: ${request.chatId}`);
       return this.createSuccessResult(chatData, 'success');
     } catch (error) {
-      console.error(`❌ Error getting chat ${request.chatId}:`, error);
+      console.error(`Error getting chat ${request.chatId}:`, error);
       return this.createErrorResult<ChatData>(
         error instanceof Error ? error.message : 'Unknown error'
       );
@@ -456,7 +456,7 @@ export class ChatHandlers {
       console.log(`✅ Chat updated successfully: ${request.chatId}`);
       return this.createSuccessResult(chatData, 'updating');
     } catch (error) {
-      console.error(`❌ Error updating chat ${request.chatId}:`, error);
+      console.error(`Error updating chat ${request.chatId}:`, error);
       return this.createErrorResult<ChatData>(
         error instanceof Error ? error.message : 'Unknown error'
       );
@@ -514,7 +514,7 @@ export class ChatHandlers {
         deletedChatId: request.chatId,
       });
     } catch (error) {
-      console.error(`❌ Error deleting chat ${request.chatId}:`, error);
+      console.error(`Error deleting chat ${request.chatId}:`, error);
       return this.createErrorResult<void>(
         error instanceof Error ? error.message : 'Unknown error'
       );
@@ -562,7 +562,7 @@ export class ChatHandlers {
         pagination,
       });
     } catch (error) {
-      console.error('❌ Error listing chats:', error);
+      console.error('Error listing chats:', error);
       return this.createErrorResult<ChatFile[]>(
         error instanceof Error ? error.message : 'Unknown error'
       );
@@ -651,10 +651,7 @@ export class ChatHandlers {
       console.log(`✅ Message added successfully to chat: ${request.chatId}`);
       return this.createSuccessResult(newMessage, 'updating', { updatedChat });
     } catch (error) {
-      console.error(
-        `❌ Error adding message to chat ${request.chatId}:`,
-        error
-      );
+      console.error(`Error adding message to chat ${request.chatId}:`, error);
       return this.createErrorResult<ChatMessage>(
         error instanceof Error ? error.message : 'Unknown error'
       );

@@ -32,19 +32,19 @@ export const ERROR_TYPES: Record<ErrorType, string> = {
  * Сообщения об ошибках по типам.
  */
 export const ERROR_MESSAGES: Record<ErrorType, string> = {
-  network: '❌ Network error: unable to connect to server',
-  timeout: '❌ Operation timeout exceeded',
-  validation: '❌ Input data validation error',
-  permission: '❌ Insufficient permissions to perform operation',
-  not_found: '❌ Requested resource not found',
-  conflict: '❌ Data conflict: resource already exists',
-  rate_limit: '❌ Request rate limit exceeded',
-  service_unavailable: '❌ Service temporarily unavailable',
-  bad_request: '❌ Invalid request',
-  unauthorized: '❌ Authentication required',
-  forbidden: '❌ Access denied',
-  internal: '❌ Internal server error',
-  unknown: '❌ Unknown error',
+  network: 'Network error: unable to connect to server',
+  timeout: 'Operation timeout exceeded',
+  validation: 'Input data validation error',
+  permission: 'Insufficient permissions to perform operation',
+  not_found: 'Requested resource not found',
+  conflict: 'Data conflict: resource already exists',
+  rate_limit: 'Request rate limit exceeded',
+  service_unavailable: 'Service temporarily unavailable',
+  bad_request: 'Invalid request',
+  unauthorized: 'Authentication required',
+  forbidden: 'Access denied',
+  internal: 'Internal server error',
+  unknown: 'Unknown error',
 };
 
 /**

@@ -185,7 +185,7 @@ export class ErrorHandler {
       .filter(Boolean)
       .join(' | ');
 
-    console.error(`❌ ${logMessage}`);
+    console.error(`${logMessage}`);
 
     if (this.config.enableStackLogging && (error as any).stack) {
       console.error('Stack trace:', (error as any).stack);

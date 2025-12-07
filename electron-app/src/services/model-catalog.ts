@@ -111,7 +111,7 @@ export class ModelCatalogService {
       if (!catalogResult.success || !catalogResult.data) {
         return {
           success: false,
-          error: '❌ Failed to get catalog',
+          error: 'Failed to get catalog',
           status: 'error',
         };
       }
@@ -136,12 +136,12 @@ export class ModelCatalogService {
       };
     } catch (error) {
       console.error(
-        `❌ Error getting information about the model: ${modelName}:`,
+        `Error getting information about the model: ${modelName}:`,
         error
       );
       return {
         success: false,
-        error: error instanceof Error ? error.message : '❌ Unknown error',
+        error: error instanceof Error ? error.message : 'Unknown error',
         status: 'error',
       };
     }
@@ -162,7 +162,7 @@ export class ModelCatalogService {
       if (!catalogResult.success || !catalogResult.data) {
         return {
           success: false,
-          error: '❌ Failed to get catalog',
+          error: 'Failed to get catalog',
           status: 'error',
         };
       }
@@ -226,10 +226,10 @@ export class ModelCatalogService {
         status: 'success',
       };
     } catch (error) {
-      console.error('❌ Model search error:', error);
+      console.error('Model search error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : '❌ Unknown error',
+        error: error instanceof Error ? error.message : 'Unknown error',
         status: 'error',
       };
     }

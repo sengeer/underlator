@@ -65,7 +65,7 @@ class OllamaManager {
       errorHandler.logError(error, context);
       this.isInitialized = false;
       throw new Error(
-        `❌ Failed to initialize the OllamaManager: ${(error as Error).message}`
+        `Failed to initialize the OllamaManager: ${(error as Error).message}`
       );
     }
   }
@@ -103,7 +103,7 @@ class OllamaManager {
   async startOllama(): Promise<boolean> {
     if (!this.electronOllama) {
       throw new Error(
-        '❌ OllamaManager is not initialized. Call initialize() first.'
+        'OllamaManager is not initialized. Call initialize() first.'
       );
     }
 
@@ -149,7 +149,7 @@ class OllamaManager {
               versionToServe = lastVersion;
               console.log(`✅ Using local Ollama version: ${versionToServe}`);
             } else {
-              throw new Error('❌ Invalid local version found');
+              throw new Error('Invalid local version found');
             }
           } else {
             // Если локальных версий нет, пытаемся получить метаданные из интернета
@@ -177,7 +177,7 @@ class OllamaManager {
           console.log('✅ Ollama server started successfully');
           return true;
         } catch (error) {
-          console.error(`❌ Attempt ${attempt} failed:`, error);
+          console.error(`Attempt ${attempt} failed:`, error);
 
           // Проверяет, является ли ошибка из-за отсутствия интернета
           const isNetworkError =
@@ -208,16 +208,13 @@ class OllamaManager {
                 );
                 // Если нет локальных версий и нет интернета, бросает ошибку
                 throw new Error(
-                  '❌ No local Ollama versions available and no internet connection. Please install Ollama manually or connect to the internet.'
+                  'No local Ollama versions available and no internet connection. Please install Ollama manually or connect to the internet.'
                 );
               }
             } catch (localCheckError) {
-              console.error(
-                '❌ Error checking local versions:',
-                localCheckError
-              );
+              console.error('Error checking local versions:', localCheckError);
               throw new Error(
-                '❌ Failed to start Ollama: no local versions available and no internet connection'
+                'Failed to start Ollama: no local versions available and no internet connection'
               );
             }
           }
@@ -225,7 +222,7 @@ class OllamaManager {
           // Если это последняя попытка - пробрасывает ошибку дальше
           if (attempt >= this.MAX_ATTEMPTS) {
             throw new Error(
-              `❌ Failed to start Ollama server after ${this.MAX_ATTEMPTS} attempts: ${(error as Error).message}`
+              `Failed to start Ollama server after ${this.MAX_ATTEMPTS} attempts: ${(error as Error).message}`
             );
           }
 
@@ -252,7 +249,7 @@ class OllamaManager {
    */
   async stopOllama(): Promise<boolean> {
     if (!this.electronOllama) {
-      console.log('❌ OllamaManager is not initialized');
+      console.log('OllamaManager is not initialized');
       return false;
     }
 
@@ -273,7 +270,7 @@ class OllamaManager {
       console.log('✅ Ollama server stopped gracefully');
       return true;
     } catch (error) {
-      console.error('❌ Error stopping the Ollama server gracefully:', error);
+      console.error('Error stopping the Ollama server gracefully:', error);
       // НЕ пробрасываем ошибку, просто сообщаем о неудаче.
       // Cleanup должен продолжиться в любом случае.
       return false;
@@ -299,7 +296,7 @@ class OllamaManager {
       const isRunning = await this.electronOllama.isRunning();
       return isRunning;
     } catch (error) {
-      console.error('❌ Error checking the Ollama server status:', error);
+      console.error('Error checking the Ollama server status:', error);
       return false;
     }
   }
@@ -404,7 +401,7 @@ class OllamaManager {
       this.isInitialized = false;
       console.log('✅ OllamaManager resources cleaned up successfully');
     } catch (error) {
-      console.error('❌ Error during OllamaManager cleanup:', error);
+      console.error('Error during OllamaManager cleanup:', error);
     }
   }
 }

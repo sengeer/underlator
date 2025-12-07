@@ -29,7 +29,7 @@ export async function getSystemInfo(): Promise<SystemInfo> {
     };
     return cachedSystemInfo;
   } catch (error) {
-    console.error('❌ Error getting system info:', error);
+    console.error('Error getting system info:', error);
     // Возвращает консервативные значения по умолчанию
     return {
       totalMemory: 8 * 1024 * 1024 * 1024, // 8GB по умолчанию

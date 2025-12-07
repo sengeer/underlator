@@ -82,7 +82,7 @@ export class EmbeddingService {
       );
       if (!primaryModelAvailable) {
         const error = `Embedding model ${this.config.defaultModel} is not available`;
-        console.error(`❌ ${error}`);
+        console.error(`${error}`);
         return this.createErrorResult(error, 'error');
       }
 
@@ -100,7 +100,7 @@ export class EmbeddingService {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      console.error(`❌ Error initializing embedding service:`, errorMessage);
+      console.error(`Error initializing embedding service:`, errorMessage);
 
       this.errorHandler.logError(error, context);
       return this.createErrorResult(errorMessage, 'error');
@@ -183,7 +183,7 @@ export class EmbeddingService {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      console.error(`❌ Error generating embedding:`, errorMessage);
+      console.error(`Error generating embedding:`, errorMessage);
 
       this.errorHandler.logError(error, context);
       return this.createErrorResult(errorMessage, 'error');
@@ -289,7 +289,7 @@ export class EmbeddingService {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      console.error(`❌ Error batch generation of embeddings:`, errorMessage);
+      console.error(`Error batch generation of embeddings:`, errorMessage);
 
       this.errorHandler.logError(error, context);
       return this.createErrorResult(errorMessage, 'error');
@@ -341,7 +341,7 @@ export class EmbeddingService {
 
       return isAvailable;
     } catch (error) {
-      console.error(`❌ Error checking model ${modelName}:`, error);
+      console.error(`Error checking model ${modelName}:`, error);
       return false;
     }
   }
@@ -440,10 +440,7 @@ export class EmbeddingService {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unable to generate embedding';
-      console.error(
-        `❌ Error generating embedding for model ${model}:`,
-        message
-      );
+      console.error(`Error generating embedding for model ${model}:`, message);
       return {
         success: false,
         error: message,

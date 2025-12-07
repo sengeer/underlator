@@ -112,14 +112,14 @@ export class OllamaApi {
               onChunk?.(chunk as OllamaGenerateResponse);
             },
             (error: string) => {
-              console.error(`❌ Streaming error in ${context}:`, error);
+              console.error(`Streaming error in ${context}:`, error);
             },
             { module: 'OllamaApi', operation: 'listModels' }
           );
         } catch (error) {
           // Обрабатывает ошибки отмены
           if (error instanceof Error && error.name === 'AbortError') {
-            throw new Error('❌ Operation was cancelled');
+            throw new Error('Operation was cancelled');
           }
           throw error;
         }
@@ -203,12 +203,12 @@ export class OllamaApi {
             // Проверяет на ошибки установки
             if ((chunk as OllamaPullProgress).error) {
               throw new Error(
-                `❌ Model installation failed: ${(chunk as OllamaPullProgress).error}`
+                `Model installation failed: ${(chunk as OllamaPullProgress).error}`
               );
             }
           },
           (error: string) => {
-            console.error(`❌ Installation error in ${context}:`, error);
+            console.error(`Installation error in ${context}:`, error);
           },
           { module: 'OllamaApi', operation: 'installModel', details: context }
         );
@@ -308,7 +308,7 @@ export class OllamaApi {
 
       return response.ok;
     } catch (error) {
-      console.error(`❌ Health check failed: ${error}`);
+      console.error(`Health check failed: ${error}`);
       return false;
     }
   }
@@ -419,7 +419,7 @@ export class OllamaApi {
             );
             return embeddingResponse;
           } catch (error) {
-            console.error(`❌ Error generating embedding:`, error);
+            console.error(`Error generating embedding:`, error);
             throw error;
           }
         },
@@ -445,7 +445,7 @@ export class OllamaApi {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      console.error(`❌ Critical error generating embedding:`, errorMessage);
+      console.error(`Critical error generating embedding:`, errorMessage);
 
       return {
         success: false,
@@ -527,7 +527,7 @@ export class OllamaApi {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       console.error(
-        `❌ A critical error in batch embedding generation:`,
+        `A critical error in batch embedding generation:`,
         errorMessage
       );
 

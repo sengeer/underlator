@@ -104,7 +104,7 @@ export class FileSystemService {
         status: 'success',
       };
     } catch (error) {
-      console.error('❌ Error initializing FileSystemService:', error);
+      console.error('Error initializing FileSystemService:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -530,7 +530,7 @@ export class FileSystemService {
         await fs.mkdir(dir, { recursive: true });
         console.log(`📁 Created directory: ${dir}`);
       } catch (error) {
-        console.error(`❌ Failed to create directory ${dir}:`, error);
+        console.error(`Failed to create directory ${dir}:`, error);
         throw error;
       }
     }
@@ -548,7 +548,7 @@ export class FileSystemService {
 
       console.log('✅ File system access verified');
     } catch (error) {
-      console.error('❌ File system access check failed:', error);
+      console.error('File system access check failed:', error);
       throw new Error('File system is not accessible');
     }
   }
@@ -620,7 +620,7 @@ export class FileSystemService {
 
       return fileInfos;
     } catch (error) {
-      console.error(`❌ Error reading folder ${folderPath}:`, error);
+      console.error(`Error reading folder ${folderPath}:`, error);
       return [];
     }
   }
@@ -884,7 +884,7 @@ export class FileSystemService {
         status: 'success',
       };
     } catch (error) {
-      console.error(`❌ Error locking file ${fileName}:`, error);
+      console.error(`Error locking file ${fileName}:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Lock error',
@@ -924,7 +924,7 @@ export class FileSystemService {
         status: 'success',
       };
     } catch (error) {
-      console.error(`❌ Error unlocking file ${fileName}:`, error);
+      console.error(`Error unlocking file ${fileName}:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unlock error',
@@ -1121,7 +1121,7 @@ export class FileSystemService {
         }
       }
     } catch (error) {
-      console.error('❌ Error cleaning up expired locks:', error);
+      console.error('Error cleaning up expired locks:', error);
     }
   }
 
@@ -1181,11 +1181,11 @@ export class FileSystemService {
           await fs.unlink(filePath);
           console.log(`🧹 Cleaned up old backup: ${path.basename(filePath)}`);
         } catch (error) {
-          console.error(`❌ Error deleting backup ${filePath}:`, error);
+          console.error(`Error deleting backup ${filePath}:`, error);
         }
       }
     } catch (error) {
-      console.error('❌ Error cleaning up old backups:', error);
+      console.error('Error cleaning up old backups:', error);
     }
   }
 

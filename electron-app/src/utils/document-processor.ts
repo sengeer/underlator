@@ -52,7 +52,7 @@ function getPdfParse() {
       // Возвращает модуль и попробует вызвать напрямую
       return pdfParseModule;
     } catch (error) {
-      console.error('❌ Failed to load pdf-parse:', error);
+      console.error('Failed to load pdf-parse:', error);
       throw new Error('pdf-parse не может быть загружен');
     }
   }

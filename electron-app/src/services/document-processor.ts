@@ -97,7 +97,7 @@ function getPdfParse() {
       pdfParseLib = require('pdf-parse');
       console.log('📄 pdf-parse module loaded, type:', typeof pdfParseLib);
     } catch (error) {
-      console.error('❌ Failed to load pdf-parse:', error);
+      console.error('Failed to load pdf-parse:', error);
       throw new Error('pdf-parse не может быть загружен');
     }
   }
