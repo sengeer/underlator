@@ -2,8 +2,9 @@
 .scannerwork
 
 # misc
+/temp
 .DS_Store
 .roo
 
-# jsdoc
+# typedoc
 /docs

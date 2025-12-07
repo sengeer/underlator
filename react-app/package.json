@@ -3,13 +3,33 @@
   "version": "1.0.0",
   "private": true,
   "homepage": "./",
-  "description": "Frontend for Underlator desktop application",
+  "description": "Frontend application for working with local LLMs",
   "type": "module",
   "author": {
     "name": "Sengeer",
     "email": "fox8911@gmail.com"
   },
   "license": "BSD-3-Clause + Branding",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sengeer/underlator.git"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://boosty.to/underlator/donate"
+  },
+  "keywords": [
+    "electron",
+    "react",
+    "translation",
+    "pdf",
+    "llm",
+    "ollama",
+    "desktop-app",
+    "privacy",
+    "local-ai",
+    "chat"
+  ],
   "dependencies": {
     "@lingui/core": "^5.6.0",
     "@lingui/react": "^5.6.0",

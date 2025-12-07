@@ -2,7 +2,7 @@
   "name": "underlator",
   "productName": "Underlator",
   "version": "1.0.0",
-  "description": "Backend for Underlator desktop application",
+  "description": "Backend application for working with local LLMs",
   "main": "dist/electron/main.js",
   "scripts": {
     "start": "npm run build:dev && concurrently \"npm run start:react\" \"wait-on http://localhost:8000 && npm run start:electron\"",
@@ -55,12 +55,32 @@
     "webpack-cli": "^6.0.1",
     "webpack-node-externals": "^3.0.0"
   },
-  "keywords": [],
+  "keywords": [
+    "electron",
+    "desktop-app",
+    "translation",
+    "pdf",
+    "llm",
+    "ollama",
+    "rag",
+    "vector-store",
+    "privacy",
+    "local-ai",
+    "confidential"
+  ],
   "author": {
     "name": "Sengeer",
     "email": "fox8911@gmail.com"
   },
   "license": "BSD-3-Clause + Branding",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sengeer/underlator.git"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://boosty.to/underlator/donate"
+  },
   "dependencies": {
     "better-sqlite3": "^12.4.1",
     "electron-ollama": "^0.1.25",
