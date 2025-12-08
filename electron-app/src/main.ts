@@ -46,6 +46,7 @@ let ragHandlers: RagHandlers | null = null;
 export let currentAbortController: AbortController | null = null;
 const isMac: boolean = process.platform === 'darwin';
 const isWindows: boolean = process.platform === 'win32';
+const isLinux: boolean = process.platform === 'linux';
 
 export let translations: MenuTranslations = {};
 let isQuitting: boolean = false; // Флаг для отслеживания намерения завершить приложение
@@ -429,13 +430,24 @@ function createWindow(): void {
    */
   const preloadPath = path.join(__dirname, 'preload.js');
 
+  // Определяет путь к иконке в зависимости от платформы
+  let iconPath: string | undefined;
+  if (isWindows) {
+    iconPath = path.join(__dirname, '../../icons/icon.ico');
+  } else if (isLinux) {
+    iconPath = path.join(__dirname, '../../icons/icon.png');
+  } else if (isMac) {
+    // macOS использует иконку из app bundle
+    iconPath = undefined;
+  }
+
   // Создание браузерного окна
   mainWindow = new BrowserWindow({
     width: 480,
     height: 350,
     minWidth: 480,
     minHeight: 350,
-    icon: isWindows && path.join(__dirname, '../../icons/icon.ico'),
+    icon: iconPath,
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,

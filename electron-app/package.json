@@ -8,11 +8,14 @@
     "start": "npm run build:dev && concurrently \"npm run start:react\" \"wait-on http://localhost:8000 && npm run start:electron\"",
     "start:react": "cd ../react-app && cross-env BROWSER=none npm run start",
     "start:electron": "cross-env NODE_ENV=development electron-forge start",
+    "react:build": "cd ../react-app && npm run react:build",
     "package": "electron-forge package",
     "build:prod": "cross-env NODE_ENV=production webpack --config webpack.config.ts",
     "build:dev": "cross-env NODE_ENV=development webpack --config webpack.config.ts",
     "copy-ollama-binaries": "node ./scripts/copy-ollama-binaries.mjs",
-    "make": "npm run build:prod && electron-builder --dir",
+    "make:windows": "npm run react:build && npm run build:prod && electron-builder --win",
+    "make:macos": "npm run react:build && npm run build:prod && electron-builder --dir",
+    "make:linux": "npm run react:build && npm run build:prod && electron-builder --linux",
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "eslint --fix . --ext .js,.ts",
     "prettier": "prettier . --write",
@@ -104,6 +107,7 @@
     "asar": true,
     "appId": "com.example.underlator",
     "productName": "Underlator",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "out"
     },
@@ -111,18 +115,47 @@
       "dist/**/*",
       "node_modules/**/*",
       "package.json",
-      "icons/icon.ico"
+      "icons/icon.ico",
+      "icons/icon.png"
     ],
     "win": {
       "target": [
-        "portable"
+        "zip",
+        "dir"
       ],
-      "icon": "icons/icon.ico"
+      "icon": "icons/icon.ico",
+      "artifactName": "${productName}-${version}-win-${arch}.${ext}"
     },
     "mac": {
       "category": "public.app-category.utilities",
       "icon": "icons/icon.icns",
       "target": "dmg"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Utility",
+      "icon": "icons/icon.png",
+      "executableName": "Underlator",
+      "artifactName": "${productName}-${version}-linux-${arch}.${ext}",
+      "desktop": {
+        "Name": "Underlator",
+        "Comment": "Desktop application for working with local LLMs",
+        "Categories": "Utility;Office;",
+        "StartupWMClass": "Underlator"
+      }
     }
   }
 }
