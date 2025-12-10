@@ -140,7 +140,7 @@
           ]
         },
         {
-          "target": "AppImage",
+          "target": "zip",
           "arch": [
             "x64"
           ]
