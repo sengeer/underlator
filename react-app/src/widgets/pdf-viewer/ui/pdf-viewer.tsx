@@ -400,11 +400,10 @@ function PdfViewer({ isOpened }: PdfTranslator) {
         if (settings.typeUse === 'contextualTranslation') {
           setTextInfos([]);
           resetResponse();
+          hideButton();
         }
       }
     }
-
-    hideButton();
   }, [
     provider,
     generatedResponse,
@@ -544,7 +543,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
       </div>
 
       <div className='pdf-viewer__container'>
-        {isTranslateButtonVisible && positionOfTranslateButton && (
+        {isTranslateButtonVisible && (
           <IconButton
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}

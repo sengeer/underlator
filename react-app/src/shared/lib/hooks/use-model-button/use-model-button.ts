@@ -41,26 +41,6 @@ function calculateButtonPosition(
 }
 
 /**
- * Получает информацию о текущем выделении текста и координаты мыши.
- * Извлекает selection, текст, range и последние координаты мыши.
- *
- * @param mouseX - Координата X мыши.
- * @param mouseY - Координата Y мыши.
- * @returns Объект с информацией о выделении и координатах мыши.
- */
-function getSelectionInfo(mouseX: number, mouseY: number) {
-  const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) {
-    return { selection: null, text: '', range: null, mouseX, mouseY };
-  }
-
-  const text = selection.toString().trim();
-  const range = selection.getRangeAt(0);
-
-  return { selection, text, range, mouseX, mouseY };
-}
-
-/**
  * Хук для управления контекстной кнопкой использования модели.
  * Отслеживает выделение текста, валидирует его и управляет отображением кнопки.
  *
@@ -86,6 +66,9 @@ function useModelButton(config: UseModelButtonConfig = {}) {
   // Ref для управления интервалом проверки
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Ref для управления таймером анимации
+  const animationTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Состояние для отслеживания наведения курсора на кнопку
   const [isHovered, setIsHovered] = useState(false);
 
@@ -104,51 +87,91 @@ function useModelButton(config: UseModelButtonConfig = {}) {
   }, []);
 
   /**
+   * Управляет анимацией кнопки с очисткой предыдущего таймера.
+   * Предотвращает накопление таймеров при частых обновлениях.
+   */
+  const triggerAnimation = useCallback(() => {
+    // Очищает предыдущий таймер, если он существует
+    if (animationTimerRef.current) {
+      clearTimeout(animationTimerRef.current);
+    }
+
+    setIsAnimating(true);
+    animationTimerRef.current = setTimeout(() => {
+      setIsAnimating(false);
+      animationTimerRef.current = null;
+    }, 200);
+  }, []);
+
+  /**
    * Проверяет текущее выделение и обновляет состояние кнопки.
    * Используется в периодической проверке для надежного обнаружения выделения.
    */
   const checkSelection = useCallback(() => {
+    // Не обновляет состояние, если курсор наведен на кнопку
     if (isHovered) {
       return;
     }
 
-    const { selection, text, range, mouseX, mouseY } = getSelectionInfo(
-      mousePosition.x,
-      mousePosition.y
-    );
+    const selection = window.getSelection();
 
-    // Если есть выделенный текст и это PDF контент - показывает кнопку
-    if (!text || !selection || !range || !isValidPdfSelection(selection)) {
-      if (buttonState.type !== 'hidden') {
-        setIsAnimating(true);
-        setButtonState({ type: 'hidden' });
-        setTimeout(() => setIsAnimating(false), 200);
-      }
+    // Проверяет только валидность выделения в PDF
+    const isValidSelection = selection && isValidPdfSelection(selection);
+
+    if (!isValidSelection) {
+      // Скрывает кнопку, если выделение невалидно
+      // Использует функциональное обновление
+      setButtonState((prevState) => {
+        if (prevState.type !== 'hidden') {
+          triggerAnimation();
+          return { type: 'hidden' };
+        }
+        return prevState;
+      });
       return;
     }
 
+    // Вычисляет позицию кнопки рядом с курсором
     const position = calculateButtonPosition(
-      mouseX,
-      mouseY,
+      mousePosition.x,
+      mousePosition.y,
       positionOffset,
       containerRef
     );
 
-    // Определение состояния кнопки на основе статуса обработки
+    // Определяет тип кнопки: 'stop' при обработке, иначе 'visible'
     const newType = isProcessing ? 'stop' : 'visible';
 
-    if (
-      buttonState.type !== newType ||
-      // @ts-ignore
-      (buttonState.type !== 'hidden' &&
-        (buttonState.position?.x !== position.x ||
-          buttonState.position?.y !== position.y))
-    ) {
-      setIsAnimating(true);
-      setButtonState({ type: newType as 'visible' | 'stop', position });
-      setTimeout(() => setIsAnimating(false), 200);
-    }
-  }, [isProcessing, positionOffset, mousePosition, buttonState]);
+    // Использует функциональное обновление для сравнения с актуальным состоянием
+    setButtonState((prevState) => {
+      const hasTypeChanged = prevState.type !== newType;
+
+      // Если кнопка была скрыта, всегда показываем её при валидном выделении
+      if (prevState.type === 'hidden') {
+        triggerAnimation();
+        return { type: newType, position };
+      }
+
+      // Если кнопка видима, проверяет изменение типа или позиции
+      const hasPositionChanged =
+        prevState.position?.x !== position.x ||
+        prevState.position?.y !== position.y;
+
+      if (hasTypeChanged || hasPositionChanged) {
+        triggerAnimation();
+        return { type: newType, position };
+      }
+
+      return prevState;
+    });
+  }, [
+    isProcessing,
+    positionOffset,
+    mousePosition,
+    isHovered,
+    containerRef,
+    triggerAnimation,
+  ]);
 
   /**
    * Обработчик движения мыши для отслеживания координат курсора.
@@ -173,6 +196,10 @@ function useModelButton(config: UseModelButtonConfig = {}) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      // Очищает таймер анимации при размонтировании
+      if (animationTimerRef.current) {
+        clearTimeout(animationTimerRef.current);
+      }
       document.removeEventListener('mousemove', handleMouseMove);
     };
   }, [checkSelection, handleMouseMove]);
@@ -180,24 +207,30 @@ function useModelButton(config: UseModelButtonConfig = {}) {
   /**
    * Обработчик клика по кнопке использования модели.
    * Вызывает переданный колбэк для запуска использования модели.
+   * Сбрасывает состояние наведения, чтобы не блокировать появление кнопки после перевода.
    */
   const handleUseModelClick = useCallback(() => {
+    setIsHovered(false);
     onUseModel();
   }, [onUseModel]);
 
   /**
    * Обработчик клика по кнопке остановки.
    * Вызывает переданный колбэк для остановки использования модели.
+   * Сбрасывает состояние наведения, чтобы не блокировать появление кнопки после остановки.
    */
   const handleStopClick = useCallback(() => {
+    setIsHovered(false);
     onStop();
   }, [onStop]);
 
   /**
    * Функция для программного скрытия кнопки.
    * Используется для принудительного скрытия кнопки при необходимости.
+   * Также сбрасывает состояние наведения, чтобы не блокировать появление кнопки.
    */
   const hideButton = useCallback(() => {
+    setIsHovered(false);
     setButtonState({ type: 'hidden' });
   }, []);
 
@@ -215,7 +248,8 @@ function useModelButton(config: UseModelButtonConfig = {}) {
     /** Флаг состояния обработки (упрощенный доступ к состоянию) */
     isProcessing: buttonState.type === 'stop',
     /** Позиция кнопки или null если скрыта */
-    position: buttonState.type !== 'hidden' ? buttonState.position : null,
+    position:
+      buttonState.type !== 'hidden' ? buttonState.position : { x: 0, y: 0 },
     /** Флаг анимации для управления CSS переходами */
     isAnimating,
     /** Обработчик наведения курсора на кнопку */

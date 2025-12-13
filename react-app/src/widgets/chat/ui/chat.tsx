@@ -238,7 +238,7 @@ function Chat() {
       // Создает скрытый input элемент для выбора файла
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = '.pdf';
+      input.accept = '.pdf,.txt,.md';
 
       input.onchange = async (event: Event) => {
         const target = event.target as HTMLInputElement;

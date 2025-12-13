@@ -68,18 +68,39 @@ export const createNodeUpdater =
       // Безопасное обновление значения текстового узла
       textInfo.node.nodeValue = newText;
 
-      // Масштабирование шрифта для сохранения размеров элемента
-      const scaledFontSize = scaleTextToFit(
-        textInfo.element,
-        metrics.width,
-        metrics.height,
-        metrics.fontSize
-      );
+      // Пересчет layout для корректного измерения размеров текста
+      void textInfo.element.offsetWidth;
 
-      // Применение масштабированного размера шрифта только если он изменился
-      if (scaledFontSize !== metrics.fontSize) {
-        textInfo.element.style.fontSize = `${scaledFontSize}px`;
+      // Измерение реальной ширины текста через scrollWidth (ширина содержимого)
+      const textWidth = textInfo.element.scrollWidth;
+      const textHeight = textInfo.element.scrollHeight;
+
+      // Вычисление коэффициента масштабирования на основе ширины исходного текста
+      let scaledFontSize = metrics.fontSize;
+      if (textWidth > metrics.width || textHeight > metrics.height) {
+        const widthScale = metrics.width / textWidth;
+        const heightScale = metrics.height / textHeight;
+        const scaleFactor = Math.min(widthScale, heightScale);
+        scaledFontSize = metrics.fontSize * scaleFactor * 0.95;
+        // Ограничивает минимальным разумным размером (1px) для предотвращения ошибок
+        scaledFontSize = Math.max(scaledFontSize, 1);
       }
+
+      // Применение масштабированного размера шрифта
+      textInfo.element.style.fontSize = `${scaledFontSize}px`;
+
+      // Установка ширины элемента равной оригинальной ширине
+      textInfo.element.style.width = `${metrics.width}px`;
+      textInfo.element.style.minWidth = `${metrics.width}px`;
+      textInfo.element.style.maxWidth = `${metrics.width}px`;
+
+      // Установка стилей для центрирования текста по вертикали и горизонтали
+      textInfo.element.style.height = `${metrics.height}px`;
+      textInfo.element.style.display = 'flex';
+      textInfo.element.style.alignItems = 'center';
+      textInfo.element.style.justifyContent = 'center';
+      textInfo.element.style.overflow = 'hidden';
+      textInfo.element.style.boxSizing = 'border-box';
 
       return { success: true, updated: true };
     } catch (error) {

@@ -13,6 +13,7 @@ import { VectorStoreService } from '../../services/vector-store';
 import { DocumentProcessorService } from '../../services/document-processor';
 import { EmbeddingService } from '../../services/embedding';
 import { ErrorHandler } from '../../utils/error-handler';
+import { getFileExtension } from '../../utils/file-utils';
 import type {
   RagQuery,
   RagResponse,
@@ -217,7 +218,23 @@ export class RagHandlers {
   }
 
   /**
-   * Обрабатывает загрузку и обработку PDF документа.
+   * Создает результат ошибки для обработки документа.
+   * Устраняет дублирование кода создания результатов ошибок.
+   *
+   * @param error - Сообщение об ошибке.
+   * @returns Стандартизированный результат ошибки.
+   */
+  private createErrorResult(error: string): ProcessDocumentResult {
+    return {
+      success: false,
+      chunks: [],
+      totalChunks: 0,
+      error,
+    };
+  }
+
+  /**
+   * Обрабатывает загрузку и обработку документа.
    * Извлекает текст, разбивает на чанки, создает эмбеддинги и добавляет в векторное хранилище.
    */
   private async handleProcessDocument(
@@ -227,12 +244,7 @@ export class RagHandlers {
     // Валидация запроса
     const validation = this.validateProcessDocumentRequest(request);
     if (!validation.valid) {
-      return {
-        success: false,
-        chunks: [],
-        totalChunks: 0,
-        error: validation.error,
-      };
+      return this.createErrorResult(validation.error || 'Invalid request');
     }
 
     try {
@@ -243,24 +255,37 @@ export class RagHandlers {
       // Ленивая инициализация DocumentProcessorService
       const docProcessor = await this.getDocumentProcessorService();
 
-      // Обработка PDF документа
+      // Определяет тип файла по расширению
+      const fileExtension = getFileExtension(request.filePath);
+
       const processingOptions = {
         ...(request.options || {}),
         chatId: request.chatId,
       };
 
-      const processingResult = await docProcessor.processPDF(
-        request.filePath,
-        processingOptions
-      );
+      // Обрабатывает документ в зависимости от типа файла
+      let processingResult;
+      if (fileExtension === 'pdf') {
+        processingResult = await docProcessor.processPDF(
+          request.filePath,
+          processingOptions
+        );
+      } else if (fileExtension === 'txt' || fileExtension === 'md') {
+        processingResult = await docProcessor.processTextFile(
+          request.filePath,
+          processingOptions
+        );
+      } else {
+        return this.createErrorResult(
+          `Unsupported file type: ${fileExtension}`
+        );
+      }
 
       if (!processingResult.success || !processingResult.data) {
-        return {
-          success: false,
-          chunks: [],
-          totalChunks: 0,
-          error: processingResult.error || 'Failed to process PDF',
-        };
+        return this.createErrorResult(
+          processingResult.error ||
+            `Failed to process ${fileExtension.toUpperCase()} file`
+        );
       }
 
       // Создание чанков
@@ -272,12 +297,9 @@ export class RagHandlers {
       );
 
       if (!chunkingResult.success || !chunkingResult.data) {
-        return {
-          success: false,
-          chunks: [],
-          totalChunks: 0,
-          error: chunkingResult.error || 'Failed to split into chunks',
-        };
+        return this.createErrorResult(
+          chunkingResult.error || 'Failed to split into chunks'
+        );
       }
 
       // Создание коллекции если она не существует
@@ -321,12 +343,9 @@ export class RagHandlers {
       );
 
       if (!addResult.success) {
-        return {
-          success: false,
-          chunks: [],
-          totalChunks: 0,
-          error: addResult.error || 'Failed to add chunks to vector store',
-        };
+        return this.createErrorResult(
+          addResult.error || 'Failed to add chunks to vector store'
+        );
       }
 
       return {
@@ -618,12 +637,7 @@ export class RagHandlers {
     // Валидация запроса
     const validation = this.validateUploadAndProcessRequest(request);
     if (!validation.valid) {
-      return {
-        success: false,
-        chunks: [],
-        totalChunks: 0,
-        error: validation.error,
-      };
+      return this.createErrorResult(validation.error || 'Invalid request');
     }
 
     let tempFilePath: string | null = null;
@@ -657,14 +671,9 @@ export class RagHandlers {
       return result;
     } catch (error) {
       const classified = this.errorHandler.classifyError(error);
-      return {
-        success: false,
-        chunks: [],
-        totalChunks: 0,
-        error: classified.message,
-      };
+      return this.createErrorResult(classified.message);
     } finally {
-      // Удаляем временный файл
+      // Удаляет временный файл
       if (tempFilePath && fs.existsSync(tempFilePath)) {
         try {
           fs.unlinkSync(tempFilePath);
@@ -708,8 +717,15 @@ export class RagHandlers {
       return { valid: false, error: 'Chat ID is required' };
     }
 
-    if (!request.fileName.toLowerCase().endsWith('.pdf')) {
-      return { valid: false, error: 'Only PDF files are supported' };
+    const fileName = request.fileName.toLowerCase();
+    const supportedExtensions = ['.pdf', '.txt', '.md'];
+    const isSupported = supportedExtensions.some(ext => fileName.endsWith(ext));
+
+    if (!isSupported) {
+      return {
+        valid: false,
+        error: 'Only PDF, TXT, and MD files are supported',
+      };
     }
 
     return { valid: true };

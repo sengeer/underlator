@@ -4,6 +4,8 @@
  * Поддерживает извлечение текста, разбиение на чанки и готов к мультимодальному расширению.
  */
 
+import * as path from 'path';
+import * as fs from 'fs';
 import { errorHandler, executeWithErrorHandling } from '../utils/error-handler';
 import type { OperationResult, OperationContext } from '../types/error-handler';
 import type { DocumentChunk } from '../types/rag';
@@ -18,6 +20,12 @@ import type {
   PDFPageInfo,
 } from '../types/document-processor';
 import { PDFUtils } from '../utils/document-processor';
+import { getFileExtension } from '../utils/file-utils';
+import {
+  PAGE_DIMENSIONS,
+  TEXT_PAGE_SIZES,
+  TEXT_ENCODINGS,
+} from '../constants/document-processor';
 
 /**
  * Устанавливает polyfills для DOM API, которые требуются pdf-parse в Node.js окружении.
@@ -98,7 +106,7 @@ function getPdfParse() {
       console.log('📄 pdf-parse module loaded, type:', typeof pdfParseLib);
     } catch (error) {
       console.error('Failed to load pdf-parse:', error);
-      throw new Error('pdf-parse не может быть загружен');
+      throw new Error('pdf-parse cannot be loaded');
     }
   }
 
@@ -150,6 +158,11 @@ export class DocumentProcessorService {
         const pdfProcessor = new PDFProcessor(this.config);
         this.processors.set('pdf', pdfProcessor);
 
+        // Регистрирует встроенный текстовый процессор
+        const textProcessor = new TextProcessor(this.config);
+        this.processors.set('txt', textProcessor);
+        this.processors.set('md', textProcessor);
+
         this.isInitialized = true;
 
         if (this.config.enableVerboseLogging) {
@@ -158,6 +171,69 @@ export class DocumentProcessorService {
       },
       { context }
     );
+  }
+
+  /**
+   * Общий метод для обработки документов.
+   * Устраняет дублирование между processPDF и processTextFile.
+   *
+   * @param filePath - Путь к файлу.
+   * @param processorType - Тип процессора ('pdf', 'txt', 'md').
+   * @param options - Опции обработки.
+   * @returns Результат обработки документа (без обертки OperationResult).
+   */
+  private async processDocument(
+    filePath: string,
+    processorType: string,
+    options: ProcessingOptions = {}
+  ): Promise<PDFProcessingResult> {
+    if (!this.isInitialized) {
+      throw new Error('DocumentProcessorService is not initialized');
+    }
+
+    const processor = this.processors.get(processorType);
+    if (!processor) {
+      throw new Error(
+        `The processor for type "${processorType}" was not found.`
+      );
+    }
+
+    // Читает файл
+    const fileBuffer = await this.readFile(filePath);
+
+    // Валидирует документ в зависимости от типа
+    let validationResult: OperationResult<boolean>;
+    if (processorType === 'pdf') {
+      validationResult = await this.validateDocument(fileBuffer, filePath);
+    } else {
+      validationResult = await this.validateTextDocument(fileBuffer, filePath);
+    }
+
+    if (!validationResult.success) {
+      throw new Error(validationResult.error || 'Document validation error');
+    }
+
+    // Для текстовых файлов передает filePath через options
+    const processingOptions =
+      processorType === 'pdf'
+        ? options
+        : {
+            ...options,
+            metadata: {
+              ...options.metadata,
+              filePath,
+            },
+          };
+
+    // Обрабатывает документ
+    const result = await processor.process(fileBuffer, processingOptions);
+    if (!result.success || !result.data) {
+      throw new Error(
+        result.error || `File processing error for the type "${processorType}"`
+      );
+    }
+
+    return result.data;
   }
 
   /**
@@ -176,46 +252,30 @@ export class DocumentProcessorService {
 
     return executeWithErrorHandling(
       async () => {
-        if (!this.isInitialized) {
-          throw new Error('DocumentProcessorService не инициализирован');
-        }
+        return await this.processDocument(filePath, 'pdf', options);
+      },
+      { context }
+    );
+  }
 
-        const processor = this.processors.get('pdf');
-        if (!processor) {
-          throw new Error('PDF процессор не найден');
-        }
+  /**
+   * Обрабатывает текстовый файл (.txt, .md) и извлекает текст с метаданными.
+   * Основной метод для обработки текстовых файлов.
+   */
+  async processTextFile(
+    filePath: string,
+    options: ProcessingOptions = {}
+  ): Promise<OperationResult<PDFProcessingResult>> {
+    const context: OperationContext = {
+      module: 'DocumentProcessorService',
+      operation: 'processTextFile',
+      params: { filePath, options },
+    };
 
-        // Читает файл
-        const fileBuffer = await this.readFile(filePath);
-
-        // Валидирует документ
-        const validationResult = await this.validateDocument(
-          fileBuffer,
-          filePath
-        );
-        if (!validationResult.success) {
-          throw new Error(
-            validationResult.error || 'Ошибка валидации документа'
-          );
-        }
-
-        // Обрабатывает документ
-        const result = await processor.process(fileBuffer, options);
-        if (!result.success) {
-          throw new Error(result.error || 'Ошибка обработки PDF');
-        }
-
-        return (
-          result.data || {
-            success: false,
-            metadata: { pageCount: 0, fileSize: 0 },
-            pages: [],
-            totalCharacterCount: 0,
-            totalWordCount: 0,
-            processingTime: 0,
-            error: 'Ошибка обработки PDF',
-          }
-        );
+    return executeWithErrorHandling(
+      async () => {
+        const fileExtension = getFileExtension(filePath) || 'txt';
+        return await this.processDocument(filePath, fileExtension, options);
       },
       { context }
     );
@@ -317,19 +377,19 @@ export class DocumentProcessorService {
     return executeWithErrorHandling(
       async () => {
         if (!this.isInitialized) {
-          throw new Error('DocumentProcessorService не инициализирован');
+          throw new Error('DocumentProcessorService is not initialized');
         }
 
         const processor = this.processors.get('pdf');
         if (!processor) {
-          throw new Error('PDF процессор не найден');
+          throw new Error('PDF processor not found');
         }
 
         const fileBuffer = await this.readFile(_filePath);
         const result = await processor.extractMetadata(fileBuffer);
 
         if (!result.success) {
-          throw new Error(result.error || 'Ошибка извлечения метаданных');
+          throw new Error(result.error || 'Metadata extraction error');
         }
 
         return (
@@ -363,24 +423,64 @@ export class DocumentProcessorService {
         // Проверяет размер файла
         if (fileBuffer.length > this.config.maxFileSize) {
           throw new Error(
-            `Размер файла (${this.formatFileSize(fileBuffer.length)}) превышает максимально допустимый (${this.formatFileSize(this.config.maxFileSize)})`
+            `File size (${this.formatFileSize(fileBuffer.length)}) exceeds maximum allowed (${this.formatFileSize(this.config.maxFileSize)})`
           );
         }
 
         // Проверяет, что файл не пустой
         if (fileBuffer.length === 0) {
-          throw new Error('Файл пустой');
+          throw new Error('File is empty');
         }
 
         // Проверяет заголовок PDF
         const pdfHeader = fileBuffer.slice(0, 4).toString();
         if (pdfHeader !== '%PDF') {
-          throw new Error('Файл не является корректным PDF документом');
+          throw new Error('File is not a valid PDF document');
         }
 
         // Проверяет расширение файла
         if (!_filePath.toLowerCase().endsWith('.pdf')) {
-          throw new Error('Файл должен иметь расширение .pdf');
+          throw new Error('File must have .pdf extension');
+        }
+
+        return true;
+      },
+      { context }
+    );
+  }
+
+  /**
+   * Валидирует текстовый документ перед обработкой.
+   * Проверяет корректность файла и его размер.
+   */
+  async validateTextDocument(
+    fileBuffer: Buffer,
+    filePath: string
+  ): Promise<OperationResult<boolean>> {
+    const context: OperationContext = {
+      module: 'DocumentProcessorService',
+      operation: 'validateTextDocument',
+      params: { fileSize: fileBuffer.length },
+    };
+
+    return executeWithErrorHandling(
+      async () => {
+        // Проверяет размер файла
+        if (fileBuffer.length > this.config.maxFileSize) {
+          throw new Error(
+            `File size (${this.formatFileSize(fileBuffer.length)}) exceeds maximum allowed (${this.formatFileSize(this.config.maxFileSize)})`
+          );
+        }
+
+        // Проверяет, что файл не пустой
+        if (fileBuffer.length === 0) {
+          throw new Error('File is empty');
+        }
+
+        // Проверяет расширение файла
+        const fileName = filePath.toLowerCase();
+        if (!fileName.endsWith('.txt') && !fileName.endsWith('.md')) {
+          throw new Error('File must have .txt or .md extension');
         }
 
         return true;
@@ -501,8 +601,7 @@ export class DocumentProcessorService {
    * Внутренний метод для чтения файлов с обработкой ошибок.
    */
   private async readFile(filePath: string): Promise<Buffer> {
-    const fs = require('fs').promises;
-    return await fs.readFile(filePath);
+    return await fs.promises.readFile(filePath);
   }
 
   /**
@@ -667,7 +766,7 @@ class PDFProcessor implements DocumentProcessor<Buffer, PDFProcessingResult> {
             const pageInfo: PDFPageInfo = {
               pageNumber: i + 1,
               text: pageText,
-              dimensions: { width: 595, height: 842 },
+              dimensions: PAGE_DIMENSIONS.A4,
               textBlocks: [] as any[],
               characterCount: pageText.length,
               wordCount: words.length,
@@ -708,7 +807,7 @@ class PDFProcessor implements DocumentProcessor<Buffer, PDFProcessingResult> {
             const pageInfo: PDFPageInfo = {
               pageNumber: i + 1,
               text: pageText,
-              dimensions: { width: 595, height: 842 },
+              dimensions: PAGE_DIMENSIONS.A4,
               textBlocks: [] as any[],
               characterCount: pageText.length,
               wordCount: words.length,
@@ -751,12 +850,12 @@ class PDFProcessor implements DocumentProcessor<Buffer, PDFProcessingResult> {
   validate(input: Buffer): OperationResult<boolean> {
     try {
       if (input.length === 0) {
-        throw new Error('PDF файл пустой');
+        throw new Error('PDF file is empty');
       }
 
       const pdfHeader = input.slice(0, 4).toString();
       if (pdfHeader !== '%PDF') {
-        throw new Error('Файл не является корректным PDF документом');
+        throw new Error('File is not a valid PDF document');
       }
 
       return {
@@ -804,6 +903,215 @@ class PDFProcessor implements DocumentProcessor<Buffer, PDFProcessingResult> {
           subject: pdfData.info?.Subject || undefined,
           creator: pdfData.info?.Creator || undefined,
           producer: pdfData.info?.Producer || undefined,
+        };
+
+        return metadata;
+      },
+      { context }
+    );
+  }
+}
+
+/**
+ * Встроенный процессор для текстовых файлов (.txt, .md).
+ * Реализует базовую функциональность обработки текстовых файлов.
+ */
+class TextProcessor implements DocumentProcessor<Buffer, PDFProcessingResult> {
+  readonly processorId = 'text-processor';
+  readonly supportedFileTypes = ['txt', 'md'];
+  readonly config: DocumentProcessorConfig;
+
+  constructor(config: DocumentProcessorConfig) {
+    this.config = config;
+  }
+
+  supportsFileType(fileType: string): boolean {
+    return this.supportedFileTypes.includes(fileType.toLowerCase());
+  }
+
+  async process(
+    input: Buffer,
+    options: ProcessingOptions = {}
+  ): Promise<OperationResult<PDFProcessingResult>> {
+    const context: OperationContext = {
+      module: 'TextProcessor',
+      operation: 'process',
+    };
+
+    return executeWithErrorHandling(
+      async () => {
+        const startTime = Date.now();
+
+        // Определяет кодировку и читает текст
+        let text = '';
+        let encodingUsed = 'utf-8';
+        const supportedEncodings =
+          this.config.supportedEncodings.length > 0
+            ? this.config.supportedEncodings
+            : TEXT_ENCODINGS;
+
+        // Пытается прочитать файл в разных кодировках
+        for (const encoding of supportedEncodings) {
+          try {
+            const decoded = input.toString(encoding as BufferEncoding);
+            // Проверяет, что текст читается корректно (нет заменяющих символов)
+            if (!decoded.includes('\uFFFD')) {
+              text = decoded;
+              encodingUsed = encoding;
+              break;
+            }
+          } catch {
+            // Продолжает попытки с следующей кодировкой
+            continue;
+          }
+        }
+
+        // Если не удалось прочитать, использует UTF-8 по умолчанию
+        if (!text) {
+          text = input.toString('utf-8');
+          encodingUsed = 'utf-8';
+        }
+
+        if (this.config.enableVerboseLogging) {
+          console.log(
+            `📝 Text file decoded using encoding: ${encodingUsed}, length: ${text.length}`
+          );
+        }
+
+        // Разбивает текст на "страницы" для совместимости с PDFProcessingResult
+        const pageSize = TEXT_PAGE_SIZES.DEFAULT_TEXT_PAGE_SIZE;
+        const pages: PDFPageInfo[] = [];
+        let totalCharacterCount = 0;
+        let totalWordCount = 0;
+
+        // Разбивает текст на страницы
+        for (let i = 0; i < text.length; i += pageSize) {
+          const pageText = text.substring(
+            i,
+            Math.min(i + pageSize, text.length)
+          );
+          const words = pageText
+            .split(/\s+/)
+            .filter((word: string) => word.length > 0);
+
+          const pageInfo: PDFPageInfo = {
+            pageNumber: pages.length + 1,
+            text: pageText,
+            dimensions: PAGE_DIMENSIONS.A4,
+            textBlocks: [],
+            characterCount: pageText.length,
+            wordCount: words.length,
+          };
+
+          pages.push(pageInfo);
+          totalCharacterCount += pageText.length;
+          totalWordCount += words.length;
+
+          if (options.onProgress) {
+            const progress: ProcessingProgress = {
+              stage: 'parsing',
+              progress: Math.round(
+                ((pages.length * pageSize) / text.length) * 100
+              ),
+              currentPage: pages.length,
+              totalPages: Math.ceil(text.length / pageSize),
+              message: `Pages processed: ${pages.length}`,
+            };
+            options.onProgress(progress);
+          }
+        }
+
+        // Извлекает метаданные
+        const filePath =
+          (options.metadata?.['filePath'] as string | undefined) || '';
+
+        let stats: fs.Stats | null = null;
+        if (filePath) {
+          try {
+            stats = fs.statSync(filePath);
+          } catch (error) {
+            // Логирует ошибку, но не прерывает обработку
+            if (this.config.enableVerboseLogging) {
+              console.warn(
+                `⚠️ Failed to read file stats for ${filePath}:`,
+                error instanceof Error ? error.message : String(error)
+              );
+            }
+            stats = null;
+          }
+        }
+
+        const metadata: PDFMetadata = {
+          title: filePath ? path.basename(filePath) : 'unknown.txt',
+          pageCount: pages.length,
+          fileSize: input.length,
+          creationDate: stats?.birthtime?.toISOString(),
+          modificationDate: stats?.mtime?.toISOString(),
+        };
+
+        const processingTime = Date.now() - startTime;
+
+        const result: PDFProcessingResult = {
+          success: true,
+          metadata,
+          pages,
+          totalCharacterCount,
+          totalWordCount,
+          processingTime,
+        };
+
+        return result;
+      },
+      { context }
+    );
+  }
+
+  validate(input: Buffer): OperationResult<boolean> {
+    try {
+      if (input.length === 0) {
+        throw new Error('The text file is empty');
+      }
+
+      // Проверяет, что файл содержит текстовые данные
+      // Пытается прочитать как UTF-8
+      try {
+        const text = input.toString('utf-8');
+        // Проверяет наличие заменяющих символов (признак неверной кодировки)
+        if (text.includes('\uFFFD') && input.length > 100) {
+          // Для больших файлов это может быть проблемой
+          console.warn('There may be an issue with the file encoding');
+        }
+      } catch {
+        throw new Error('The file cannot be read as text.');
+      }
+
+      return {
+        success: true,
+        data: true,
+        status: 'success',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: (error as Error).message,
+        status: 'error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  async extractMetadata(input: Buffer): Promise<OperationResult<PDFMetadata>> {
+    const context: OperationContext = {
+      module: 'TextProcessor',
+      operation: 'extractMetadata',
+    };
+
+    return executeWithErrorHandling(
+      async () => {
+        const metadata: PDFMetadata = {
+          pageCount: 1, // Будет уточнено при полной обработке
+          fileSize: input.length,
         };
 
         return metadata;

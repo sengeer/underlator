@@ -59,8 +59,8 @@ export function scaleTextToFit(
   // Применяем коэффициент к размеру шрифта с небольшим запасом (0.95) для надежности
   const scaledFontSize = originalFontSize * scaleFactor * 0.95;
 
-  // Ограничиваем минимальный размер шрифта (не менее 50% от оригинала)
-  return Math.max(scaledFontSize, originalFontSize * 0.5);
+  // Ограничивает минимальным разумным размером (1px) для предотвращения ошибок
+  return Math.max(scaledFontSize, 1);
 }
 
 /**
