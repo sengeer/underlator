@@ -9,7 +9,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
 import Database from 'better-sqlite3';
-import { isDev } from '../main';
 import {
   DocumentChunk,
   VectorCollection,
@@ -55,10 +54,8 @@ export class VectorStoreService {
     };
 
     // Определяет путь к базе данных
-    const userDataPath = isDev
-      ? app.getPath('userData')
-      : path.dirname(app.getPath('exe'));
-    const dbDir = path.join(userDataPath, 'rag-vectors');
+    const userDataPath = app.getPath('userData');
+    const dbDir = path.join(userDataPath, 'Rag Vectors');
 
     if (!fs.existsSync(dbDir)) {
       fs.mkdirSync(dbDir, { recursive: true });

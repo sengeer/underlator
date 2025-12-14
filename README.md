@@ -74,6 +74,16 @@ Underlator is designed for working with sensitive data:
 - ✅ **No internet required** — the application works completely autonomously
 - ✅ **No external requests** — your documents and messages never leave your computer
 
+## 🗑️ Uninstall
+
+Application data (chats, RAG vectors, and other files) is stored in the standard Electron userData directory:
+
+- **macOS**: `~/Library/Application Support/Underlator/`
+- **Linux**: `~/.config/Underlator/`
+- **Windows**: `%APPDATA%\Underlator\` (typically `C:\Users\<username>\AppData\Roaming\Underlator\`)
+
+To completely remove the application, delete this directory after uninstalling the application itself.
+
 ## 📄 License
 
 BSD-3-Clause + Branding (see [LICENSE](LICENSE))

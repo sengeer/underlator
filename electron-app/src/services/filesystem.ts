@@ -9,16 +9,17 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import {
   DEFAULT_FILESYSTEM_CONFIG,
-  FILESYSTEM_PATHS,
   FILE_EXTENSIONS,
   FILESYSTEM_ERROR_CODES,
   FILESYSTEM_ERROR_MESSAGES,
   VALIDATION_CONFIG,
+  FILE_TYPE_CONFIGS,
   getFileTypeConfig,
   isFileTypeSupported,
 } from '../constants/filesystem';
 import { FileValidatorFactory } from '../utils/file-validators';
 import { executeWithErrorHandling } from '../utils/error-handler';
+import { DirectoryFactory } from '../utils/directory-factory';
 import type {
   FileSystemConfig,
   FileSystemOperationResult,
@@ -43,9 +44,7 @@ import type { OperationContext } from '../types/error-handler';
 export class FileSystemService {
   private config: FileSystemConfig;
   private basePath: string;
-  private backupsPath: string;
-  private tempPath: string;
-  private locksPath: string;
+  private directoryFactory: DirectoryFactory;
   private fileLocks: Map<string, FileLockStatus> = new Map();
   private isInitialized: boolean = false;
 
@@ -62,9 +61,7 @@ export class FileSystemService {
 
     // Устанавливает базовый путь
     this.basePath = this.config.basePath;
-    this.backupsPath = path.join(this.basePath, FILESYSTEM_PATHS.BACKUP_FOLDER);
-    this.tempPath = path.join(this.basePath, FILESYSTEM_PATHS.TEMP_FOLDER);
-    this.locksPath = path.join(this.basePath, FILESYSTEM_PATHS.LOCK_FOLDER);
+    this.directoryFactory = new DirectoryFactory(this.basePath);
   }
 
   /**
@@ -84,8 +81,8 @@ export class FileSystemService {
     try {
       console.log('🔄 Initializing FileSystemService...');
 
-      // Создание необходимых папок
-      await this.createDirectories();
+      // Создание необходимых папок через фабрику
+      await this.directoryFactory.createAll();
 
       // Проверка доступности файловой системы
       await this.checkFileSystemAccess();
@@ -401,12 +398,21 @@ export class FileSystemService {
           );
           files.push(...filesInFolder);
         } else {
-          // Получает файлы всех типов
-          const supportedTypes = ['chat', 'document', 'settings', 'log'];
+          // Получает файлы всех типов динамически из FILE_TYPE_CONFIGS
+          const supportedTypes = Object.keys(FILE_TYPE_CONFIGS).map(key =>
+            key.toLowerCase()
+          );
           for (const type of supportedTypes) {
-            const folderPath = this.getFolderPath(type);
-            const filesInFolder = await this.getFilesInFolder(folderPath, type);
-            files.push(...filesInFolder);
+            try {
+              const folderPath = this.getFolderPath(type);
+              const filesInFolder = await this.getFilesInFolder(
+                folderPath,
+                type
+              );
+              files.push(...filesInFolder);
+            } catch {
+              // Игнорирует типы файлов без определенной директории
+            }
           }
         }
 
@@ -510,30 +516,6 @@ export class FileSystemService {
         returnErrorAsResult: true,
       }
     ) as Promise<FileSystemOperationResult<FileSystemStats>>;
-  }
-
-  /**
-   * Создает необходимые директории.
-   */
-  private async createDirectories(): Promise<void> {
-    const directories = [this.backupsPath, this.tempPath, this.locksPath];
-
-    // Создание папок для всех поддерживаемых типов файлов
-    const supportedTypes = ['chat', 'document', 'settings', 'log'];
-    for (const fileType of supportedTypes) {
-      const folderPath = this.getFolderPath(fileType);
-      directories.push(folderPath);
-    }
-
-    for (const dir of directories) {
-      try {
-        await fs.mkdir(dir, { recursive: true });
-        console.log(`📁 Created directory: ${dir}`);
-      } catch (error) {
-        console.error(`Failed to create directory ${dir}:`, error);
-        throw error;
-      }
-    }
   }
 
   /**
@@ -744,6 +726,7 @@ export class FileSystemService {
 
   /**
    * Выполняет атомарную запись файла через временный файл.
+   * Если временная директория не определена, записывает напрямую.
    *
    * @param filePath - Путь к файлу.
    * @param data - Данные для записи.
@@ -752,14 +735,22 @@ export class FileSystemService {
     filePath: string,
     data: FileStructure
   ): Promise<void> {
+    const jsonData = JSON.stringify(data, null, 2);
+
+    // Если временная директория не определена, записывает напрямую
+    if (!this.directoryFactory.has('TEMP_FOLDER')) {
+      await fs.writeFile(filePath, jsonData, 'utf-8');
+      return;
+    }
+
+    const tempPath = this.directoryFactory.getPath('TEMP_FOLDER');
     const tempFilePath = path.join(
-      this.tempPath,
+      tempPath,
       `${crypto.randomUUID()}${FILE_EXTENSIONS.TEMP_FILE}`
     );
 
     try {
       // Записывает во временный файл
-      const jsonData = JSON.stringify(data, null, 2);
       await fs.writeFile(tempFilePath, jsonData, 'utf-8');
 
       // Атомарно перемещает временный файл в целевое место
@@ -837,6 +828,7 @@ export class FileSystemService {
 
   /**
    * Блокирует файл для исключительного доступа.
+   * Если директория блокировок не определена, использует только память.
    *
    * @param fileName - Имя файла.
    * @returns Результат блокировки.
@@ -845,10 +837,6 @@ export class FileSystemService {
     fileName: string
   ): Promise<FileSystemOperationResult<void>> {
     const lockId = crypto.randomUUID();
-    const lockPath = path.join(
-      this.locksPath,
-      `${fileName}${FILE_EXTENSIONS.LOCK_FILE}`
-    );
 
     try {
       // Проверяет, не заблокирован ли уже файл
@@ -861,14 +849,11 @@ export class FileSystemService {
         };
       }
 
-      // Создает файл блокировки
       const lockData = {
         owner: lockId,
         lockedAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + this.config.lockTimeout).toISOString(),
       };
-
-      await fs.writeFile(lockPath, JSON.stringify(lockData), 'utf-8');
 
       // Сохраняет информацию о блокировке в памяти
       this.fileLocks.set(fileName, {
@@ -877,6 +862,16 @@ export class FileSystemService {
         lockedAt: lockData.lockedAt,
         expiresAt: lockData.expiresAt,
       });
+
+      // Создает файл блокировки только если директория определена
+      if (this.directoryFactory.has('LOCK_FOLDER')) {
+        const locksPath = this.directoryFactory.getPath('LOCK_FOLDER');
+        const lockPath = path.join(
+          locksPath,
+          `${fileName}${FILE_EXTENSIONS.LOCK_FILE}`
+        );
+        await fs.writeFile(lockPath, JSON.stringify(lockData), 'utf-8');
+      }
 
       console.log(`🔒 File locked: ${fileName}`);
       return {
@@ -895,6 +890,7 @@ export class FileSystemService {
 
   /**
    * Разблокирует файл.
+   * Если директория блокировок не определена, удаляет только из памяти.
    *
    * @param fileName - Имя файла.
    * @returns Результат разблокировки.
@@ -902,17 +898,19 @@ export class FileSystemService {
   private async unlockFile(
     fileName: string
   ): Promise<FileSystemOperationResult<void>> {
-    const lockPath = path.join(
-      this.locksPath,
-      `${fileName}${FILE_EXTENSIONS.LOCK_FILE}`
-    );
-
     try {
-      // Удаляет файл блокировки
-      try {
-        await fs.unlink(lockPath);
-      } catch {
-        // Игнорирует ошибки если файл блокировки не существует
+      // Удаляет файл блокировки только если директория определена
+      if (this.directoryFactory.has('LOCK_FOLDER')) {
+        const locksPath = this.directoryFactory.getPath('LOCK_FOLDER');
+        const lockPath = path.join(
+          locksPath,
+          `${fileName}${FILE_EXTENSIONS.LOCK_FILE}`
+        );
+        try {
+          await fs.unlink(lockPath);
+        } catch {
+          // Игнорирует ошибки если файл блокировки не существует
+        }
       }
 
       // Удаляет информацию о блокировке из памяти
@@ -935,6 +933,7 @@ export class FileSystemService {
 
   /**
    * Проверяет статус блокировки файла.
+   * Если директория блокировок не определена, проверяет только память.
    *
    * @param fileName - Имя файла.
    * @returns Статус блокировки.
@@ -955,35 +954,38 @@ export class FileSystemService {
       }
     }
 
-    // Проверяет файл блокировки на диске
-    const lockPath = path.join(
-      this.locksPath,
-      `${fileName}${FILE_EXTENSIONS.LOCK_FILE}`
-    );
+    // Проверяет файл блокировки на диске только если директория определена
+    if (this.directoryFactory.has('LOCK_FOLDER')) {
+      const locksPath = this.directoryFactory.getPath('LOCK_FOLDER');
+      const lockPath = path.join(
+        locksPath,
+        `${fileName}${FILE_EXTENSIONS.LOCK_FILE}`
+      );
 
-    try {
-      const lockContent = await fs.readFile(lockPath, 'utf-8');
-      const lockData = JSON.parse(lockContent);
+      try {
+        const lockContent = await fs.readFile(lockPath, 'utf-8');
+        const lockData = JSON.parse(lockContent);
 
-      // Проверяет не истекла ли блокировка
-      if (new Date(lockData.expiresAt).getTime() > Date.now()) {
-        const lockStatus: FileLockStatus = {
-          isLocked: true,
-          owner: lockData.owner,
-          lockedAt: lockData.lockedAt,
-          expiresAt: lockData.expiresAt,
-        };
+        // Проверяет не истекла ли блокировка
+        if (new Date(lockData.expiresAt).getTime() > Date.now()) {
+          const lockStatus: FileLockStatus = {
+            isLocked: true,
+            owner: lockData.owner,
+            lockedAt: lockData.lockedAt,
+            expiresAt: lockData.expiresAt,
+          };
 
-        // Сохраняет в памяти
-        this.fileLocks.set(fileName, lockStatus);
+          // Сохраняет в памяти
+          this.fileLocks.set(fileName, lockStatus);
 
-        return lockStatus;
-      } else {
-        // Удаляет истекшую блокировку
-        await fs.unlink(lockPath);
+          return lockStatus;
+        } else {
+          // Удаляет истекшую блокировку
+          await fs.unlink(lockPath);
+        }
+      } catch {
+        // Файл блокировки не существует или поврежден
       }
-    } catch {
-      // Файл блокировки не существует или поврежден
     }
 
     return { isLocked: false };
@@ -991,6 +993,7 @@ export class FileSystemService {
 
   /**
    * Создает резервную копию файла.
+   * Если директория резервных копий не определена, пропускает создание бэкапа.
    *
    * @param fileName - Имя файла.
    * @param fileType - Тип файла.
@@ -1008,11 +1011,20 @@ export class FileSystemService {
 
     return executeWithErrorHandling(
       async () => {
+        // Если директория резервных копий не определена, пропускает создание
+        if (!this.directoryFactory.has('BACKUP_FOLDER')) {
+          console.log(
+            `⚠️ Backup skipped for ${fileName} (backup folder not defined)`
+          );
+          return;
+        }
+
         const sourcePath = this.getFilePath(fileName, fileType);
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const fileTypeConfig = getFileTypeConfig(fileType);
         const backupFileName = `${fileName.replace(fileTypeConfig?.extension || '', '')}_${timestamp}${FILE_EXTENSIONS.BACKUP_FILE}`;
-        const backupPath = path.join(this.backupsPath, backupFileName);
+        const backupsPath = this.directoryFactory.getPath('BACKUP_FOLDER');
+        const backupPath = path.join(backupsPath, backupFileName);
 
         // Копирует файл
         await fs.copyFile(sourcePath, backupPath);
@@ -1031,6 +1043,7 @@ export class FileSystemService {
 
   /**
    * Получает список резервных копий.
+   * Если директория резервных копий не определена, возвращает пустой список.
    *
    * @returns Promise со списком резервных копий.
    */
@@ -1038,12 +1051,22 @@ export class FileSystemService {
     FileSystemOperationResult<BackupInfo[]>
   > {
     try {
-      const files = await fs.readdir(this.backupsPath);
+      // Если директория резервных копий не определена, возвращает пустой список
+      if (!this.directoryFactory.has('BACKUP_FOLDER')) {
+        return {
+          success: true,
+          data: [],
+          status: 'success',
+        };
+      }
+
+      const backupsPath = this.directoryFactory.getPath('BACKUP_FOLDER');
+      const files = await fs.readdir(backupsPath);
       const backupFiles: BackupInfo[] = [];
 
       for (const file of files) {
         if (file.endsWith(FILE_EXTENSIONS.BACKUP_FILE)) {
-          const filePath = path.join(this.backupsPath, file);
+          const filePath = path.join(backupsPath, file);
           const stats = await fs.stat(filePath);
 
           // Извлекает имя исходного файла и тип
@@ -1051,9 +1074,11 @@ export class FileSystemService {
             .replace(/_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z/, '')
             .replace(FILE_EXTENSIONS.BACKUP_FILE, '');
 
-          // Определяет тип файла по расширению
+          // Определяет тип файла по расширению динамически из FILE_TYPE_CONFIGS
           let fileType = 'unknown';
-          const supportedTypes = ['chat', 'document', 'settings', 'log'];
+          const supportedTypes = Object.keys(FILE_TYPE_CONFIGS).map(key =>
+            key.toLowerCase()
+          );
           for (const type of supportedTypes) {
             const config = getFileTypeConfig(type);
             if (config && originalFile.endsWith(config.extension)) {
@@ -1095,14 +1120,31 @@ export class FileSystemService {
 
   /**
    * Очищает устаревшие блокировки.
+   * Если директория блокировок не определена, очищает только память.
    */
   private async cleanupExpiredLocks(): Promise<void> {
     try {
-      const files = await fs.readdir(this.locksPath);
+      // Очищает истекшие блокировки из памяти
+      for (const [fileName, lockStatus] of this.fileLocks.entries()) {
+        if (
+          lockStatus.expiresAt &&
+          new Date(lockStatus.expiresAt).getTime() <= Date.now()
+        ) {
+          this.fileLocks.delete(fileName);
+        }
+      }
+
+      // Очищает файлы блокировок на диске только если директория определена
+      if (!this.directoryFactory.has('LOCK_FOLDER')) {
+        return;
+      }
+
+      const locksPath = this.directoryFactory.getPath('LOCK_FOLDER');
+      const files = await fs.readdir(locksPath);
 
       for (const file of files) {
         if (file.endsWith(FILE_EXTENSIONS.LOCK_FILE)) {
-          const lockPath = path.join(this.locksPath, file);
+          const lockPath = path.join(locksPath, file);
 
           try {
             const lockContent = await fs.readFile(lockPath, 'utf-8');

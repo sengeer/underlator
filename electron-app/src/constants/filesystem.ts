@@ -5,15 +5,13 @@
  */
 
 import { FileSystemConfig } from '../types/filesystem';
-import { isDev } from '../main';
 import { app } from 'electron';
-import * as path from 'path';
 
 /**
  * Конфигурация по умолчанию для универсального FileSystemService.
  */
 export const DEFAULT_FILESYSTEM_CONFIG: FileSystemConfig = {
-  basePath: isDev ? app.getPath('userData') : path.dirname(app.getPath('exe')),
+  basePath: app.getPath('userData'),
   maxFileSize: 50 * 1024 * 1024, // 50MB
   lockTimeout: 5 * 60 * 1000, // 5 минут
   enableBackup: true,
@@ -23,22 +21,24 @@ export const DEFAULT_FILESYSTEM_CONFIG: FileSystemConfig = {
 
 /**
  * Имена папок для разных типов файлов.
+ * Для добавления новой директории добавьте новую пару ключ-значение.
+ * Для отключения директории удалите соответствующую строку.
  */
 export const FILESYSTEM_PATHS = {
   /** Папка для чатов */
-  CHATS_FOLDER: 'chats',
+  CHATS_FOLDER: 'Chats',
   /** Папка для документов */
-  DOCUMENTS_FOLDER: 'documents',
+  // DOCUMENTS_FOLDER: 'Documents',
   /** Папка для настроек */
-  SETTINGS_FOLDER: 'settings',
+  // SETTINGS_FOLDER: 'Settings',
   /** Папка для логов */
-  LOGS_FOLDER: 'logs',
+  // LOGS_FOLDER: 'Logs',
   /** Папка для резервных копий */
-  BACKUP_FOLDER: 'backups',
+  BACKUP_FOLDER: 'Backups',
   /** Папка для временных файлов */
-  TEMP_FOLDER: 'temp',
+  TEMP_FOLDER: 'Temp',
   /** Папка для блокировок */
-  LOCK_FOLDER: 'locks',
+  LOCK_FOLDER: 'Locks',
 } as const;
 
 /**
@@ -180,30 +180,30 @@ export const FILE_TYPE_CONFIGS = {
     maxFiles: 1000,
     validation: VALIDATION_CONFIG.CHAT,
   },
-  /** Конфигурация для документов */
-  DOCUMENT: {
-    folder: FILESYSTEM_PATHS.DOCUMENTS_FOLDER,
-    extension: FILE_EXTENSIONS.DOCUMENT_FILE,
-    maxFileSize: 50 * 1024 * 1024, // 50MB
-    maxFiles: 500,
-    validation: VALIDATION_CONFIG.DOCUMENT,
-  },
-  /** Конфигурация для настроек */
-  SETTINGS: {
-    folder: FILESYSTEM_PATHS.SETTINGS_FOLDER,
-    extension: FILE_EXTENSIONS.SETTINGS_FILE,
-    maxFileSize: 1024 * 1024, // 1MB
-    maxFiles: 100,
-    validation: VALIDATION_CONFIG.SETTINGS,
-  },
-  /** Конфигурация для логов */
-  LOG: {
-    folder: FILESYSTEM_PATHS.LOGS_FOLDER,
-    extension: FILE_EXTENSIONS.LOG_FILE,
-    maxFileSize: 5 * 1024 * 1024, // 5MB
-    maxFiles: 100,
-    validation: VALIDATION_CONFIG.GENERAL,
-  },
+  // /** Конфигурация для документов */
+  // DOCUMENT: {
+  //   folder: FILESYSTEM_PATHS.DOCUMENTS_FOLDER,
+  //   extension: FILE_EXTENSIONS.DOCUMENT_FILE,
+  //   maxFileSize: 50 * 1024 * 1024, // 50MB
+  //   maxFiles: 500,
+  //   validation: VALIDATION_CONFIG.DOCUMENT,
+  // },
+  // /** Конфигурация для настроек */
+  // SETTINGS: {
+  //   folder: FILESYSTEM_PATHS.SETTINGS_FOLDER,
+  //   extension: FILE_EXTENSIONS.SETTINGS_FILE,
+  //   maxFileSize: 1024 * 1024, // 1MB
+  //   maxFiles: 100,
+  //   validation: VALIDATION_CONFIG.SETTINGS,
+  // },
+  // /** Конфигурация для логов */
+  // LOG: {
+  //   folder: FILESYSTEM_PATHS.LOGS_FOLDER,
+  //   extension: FILE_EXTENSIONS.LOG_FILE,
+  //   maxFileSize: 5 * 1024 * 1024, // 5MB
+  //   maxFiles: 100,
+  //   validation: VALIDATION_CONFIG.GENERAL,
+  // },
 } as const;
 
 /**

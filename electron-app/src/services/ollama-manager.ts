@@ -56,7 +56,7 @@ class OllamaManager {
         basePath: isDev
           ? app.getPath('userData')
           : path.dirname(app.getPath('exe')),
-        directory: 'ollama-binaries',
+        directory: 'Ollama Binaries',
       });
 
       this.isInitialized = true;
