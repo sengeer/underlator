@@ -14,7 +14,7 @@
     "build:dev": "cross-env NODE_ENV=development webpack --config webpack.config.ts",
     "copy-ollama-binaries": "node ./scripts/copy-ollama-binaries.mjs",
     "make:windows": "npm run react:build && npm run build:prod && electron-builder --win",
-    "make:macos": "npm run react:build && npm run build:prod && electron-builder --dir",
+    "make:macos": "npm run react:build && npm run build:prod && electron-builder --mac",
     "make:linux": "npm run react:build && npm run build:prod && electron-builder --linux",
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "eslint --fix . --ext .js,.ts",
@@ -129,7 +129,10 @@
     "mac": {
       "category": "public.app-category.utilities",
       "icon": "icons/icon.icns",
-      "target": "dmg"
+      "target": [
+        "dmg"
+      ],
+      "artifactName": "${productName}-${version}-macos-${arch}.${ext}"
     },
     "linux": {
       "target": [
