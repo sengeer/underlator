@@ -39,6 +39,20 @@ English &nbsp;&nbsp;|&nbsp;&nbsp; [Russian](README_RU.md)
 - 🎨 **Customizable themes** — choose your color scheme;
 - 🚀 **Fully autonomous application** — works without internet connection.
 
+## ⚙️ Initial Setup
+
+### Using Pre-installed Ollama
+
+If you already have Ollama installed and running, select the **Ollama** provider in **API configuration** and manually specify the URL and model. Note: The Ollama provider is disabled on macOS due to Gatekeeper restrictions that block local network requests.
+
+### Using Embedded Ollama
+
+If Ollama was automatically downloaded when you first launched the application, select the **Embedded Ollama** provider in **API configuration** and download your desired model using the **manage models** button.
+
+### RAG Configuration
+
+To use RAG (intelligent document analysis), download an embedding model via **manage embedding models** in **RAG configuration** and adjust the RAG settings as needed.
+
 ## 📸 Screenshots
 
 <div align="center">

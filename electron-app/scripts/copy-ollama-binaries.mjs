@@ -9,17 +9,17 @@ function getTargetPath() {
   const cwd = process.cwd();
 
   if (platform === 'win32') {
-    // Windows: electron-app/out/win-unpacked/ollama-binaries
-    return path.join(cwd, './out/win-unpacked/ollama-binaries');
+    // Windows: electron-app/out/win-unpacked/Ollama Binaries
+    return path.join(cwd, './out/win-unpacked/Ollama Binaries');
   } else if (platform === 'darwin') {
-    // macOS: electron-app/out/mac-arm64/Underlator.app/Contents/MacOS/ollama-binaries
+    // macOS: electron-app/out/mac-arm64/Underlator.app/Contents/MacOS/Ollama Binaries
     return path.join(
       cwd,
-      './out/mac-arm64/Underlator.app/Contents/MacOS/ollama-binaries'
+      './out/mac-arm64/Underlator.app/Contents/MacOS/Ollama Binaries'
     );
   } else if (platform === 'linux') {
-    // Linux: electron-app/out/linux-unpacked/ollama-binaries
-    return path.join(cwd, './out/linux-unpacked/ollama-binaries');
+    // Linux: electron-app/out/linux-unpacked/Ollama Binaries
+    return path.join(cwd, './out/linux-unpacked/Ollama Binaries');
   } else {
     throw new Error(`Unsupported platform: ${platform}`);
   }
@@ -27,7 +27,7 @@ function getTargetPath() {
 
 // Скрипт запускается из electron-app
 async function copyOllamaBinaries() {
-  const sourcePath = path.join(process.cwd(), '../temp/ollama-binaries');
+  const sourcePath = path.join(process.cwd(), '../temp/Ollama Binaries');
   const targetPath = getTargetPath();
 
   // Проверяет существование исходной папки
@@ -42,7 +42,7 @@ async function copyOllamaBinaries() {
     mkdirSync(targetDir, { recursive: true });
   }
 
-  // Удаляет существующую папку ollama-binaries в целевом месте, если она есть
+  // Удаляет существующую папку Ollama Binaries в целевом месте, если она есть
   if (existsSync(targetPath)) {
     rimrafSync(targetPath);
   }
@@ -50,7 +50,7 @@ async function copyOllamaBinaries() {
   // Создает целевую папку перед копированием
   mkdirSync(targetPath, { recursive: true });
 
-  // Копирует содержимое папки ollama-binaries в целевую папку
+  // Копирует содержимое папки Ollama Binaries в целевую папку
   await cpy([path.join(sourcePath, '**/*')], targetPath);
 }
 
