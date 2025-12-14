@@ -43,17 +43,25 @@ English &nbsp;&nbsp;|&nbsp;&nbsp; [Russian](README_RU.md)
 
 <div align="center">
 
+**Chat**
+
+![chat_macos](screenshots/chat_macos.png)
+
 **Text translation**
 
-![text_translation](screenshots/text_translation.png)
+![text_translation_linux](screenshots/text_translation_linux.png)
 
-**Interaction with model**
+**Interaction in PDF**
 
-![interaction_with_model](screenshots/interaction_with_model.png)
+![interaction_in_pdf_windows](screenshots/interaction_in_pdf_windows.png)
 
 **Document translation**
 
-![document_translation](screenshots/document_translation.png)
+![document_translation_macos](screenshots/document_translation_macos.png)
+
+**Settings**
+
+![settings_linux](screenshots/settings_linux.png)
 
 </div>
 

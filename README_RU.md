@@ -43,17 +43,25 @@
 
 <div align="center">
 
+**Чат**
+
+![чат_macos](screenshots/чат_macos.png)
+
 **Перевод текста**
 
-![перевод_текста](screenshots/перевод_текста.png)
+![перевод_текста_linux](screenshots/перевод_текста_linux.png)
 
-**Взаимодействие с моделью**
+**Взаимодействие в PDF**
 
-![взаимодействие_с_моделью](screenshots/взаимодействие_с_моделью.png)
+![взаимодействие_в_pdf_windows](screenshots/взаимодействие_в_pdf_windows.png)
 
 **Перевод документа**
 
-![перевод_документа](screenshots/перевод_документа.png)
+![перевод_документа_macos](screenshots/перевод_документа_macos.png)
+
+**Настройки**
+
+![настройки_linux](screenshots/настройки_linux.png)
 
 </div>
 
