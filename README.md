@@ -43,7 +43,9 @@ English &nbsp;&nbsp;|&nbsp;&nbsp; [Russian](README_RU.md)
 
 ### Using Pre-installed Ollama
 
-If you already have Ollama installed and running, select the **Ollama** provider in **API configuration** and manually specify the URL and model. Note: The Ollama provider is disabled on macOS due to Gatekeeper restrictions that block local network requests.
+> **Note:** The external Ollama provider is disabled on macOS due to Gatekeeper restrictions that block local network requests. In the future, we plan to pay for an Apple subscription to sign and notarize the code.
+
+If you already have external Ollama installed and running, select the **Ollama** provider in **API configuration** and manually specify the URL and model.
 
 ### Using Embedded Ollama
 
