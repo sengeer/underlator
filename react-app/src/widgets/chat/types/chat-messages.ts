@@ -14,6 +14,8 @@ export interface ChatMessagesProps {
   messages: ChatMessage[];
   /** Флаг генерации ответа */
   isGenerating?: boolean;
+  /** Текущий текст генерируемого ответа для отображения во время streaming */
+  currentText?: string;
   /** Дополнительные CSS классы */
   className?: string;
 }

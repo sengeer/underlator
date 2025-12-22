@@ -1,1 +1,1 @@
-export { default } from './text-button-filled';
+export { default } from './text-filled';

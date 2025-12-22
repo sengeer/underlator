@@ -18,12 +18,12 @@ import {
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import splashScreenIpcSlice from '../../pages/main/models/splash-screen-ipc-slice';
+import chatIpcSlice from '../../shared/models/chat-ipc-slice/';
 import elementStateSlice from '../../shared/models/element-state-slice';
 import notificationsSlice from '../../shared/models/notifications-slice/';
 import providerSettingsSlice from '../../shared/models/provider-settings-slice';
 import themesSlice from '../../shared/models/themes-slice';
 import translationLanguagesSlice from '../../shared/models/translation-languages-slice';
-import chatIpcSlice from '../../widgets/chat/models/chat-ipc-slice';
 import modelIpcSlice from '../../widgets/settings/models/model-ipc-slice';
 
 /**

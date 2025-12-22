@@ -5,6 +5,7 @@
 /temp
 .DS_Store
 .roo
+.cursor
 
 # typedoc
 /docs

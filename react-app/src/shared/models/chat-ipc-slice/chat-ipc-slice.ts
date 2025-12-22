@@ -6,10 +6,10 @@
 
 import { i18n } from '@lingui/core';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { chatIpc } from '../../../shared/apis/chat-ipc/';
-import type { ChatMessage } from '../../../shared/apis/chat-ipc/types/chat-ipc';
-import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log/call-a-notification-with-a-log';
-import { addNotification } from '../../../shared/models/notifications-slice';
+import { chatIpc } from '../../apis/chat-ipc';
+import type { ChatMessage } from '../../apis/chat-ipc/types/chat-ipc';
+import callANotificationWithALog from '../../lib/utils/call-a-notification-with-a-log/call-a-notification-with-a-log';
+import { addNotification } from '../notifications-slice';
 import type {
   ChatState,
   ChatsListState,
@@ -24,7 +24,7 @@ import type {
   AddMessageSliceParams,
   UpdateMessageParams,
   SetActiveChatParams,
-} from '../types/chat-ipc-slice';
+} from './types/chat-ipc-slice';
 
 /**
  * Начальное состояние списка чатов.

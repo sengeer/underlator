@@ -4,12 +4,6 @@
  * Предоставляет функции для работы с фрагментами в контекстном переводе.
  */
 
-export {
-  combineChunks,
-  splitCombinedText,
-  convertArrayToRecord,
-  prepareContextualTranslation,
-  processContextualResponse,
-} from './chunk-text-manager';
+export { combineChunks, processContextualResponse } from './chunk-text-manager';
 
 export { ChunkOperationResult } from './types/chunk-text-manager';
