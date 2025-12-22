@@ -1,54 +1,55 @@
 /**
  * @module FeatureProvider
  * Feature-провайдер для реализации специфичной обработки запроса к LLM.
- * Поддерживает контекстный перевод, инструкции, чат и простой перевод.
+ * Поддерживает четыре режима: контекстный перевод, инструкции, чат и простой перевод.
  */
 
-import { chatIpc } from '../../../apis/chat-ipc/';
-import { ragIpc } from '../../../apis/rag-ipc/';
+import {
+  addMessageLocally,
+  updateMessage,
+} from '../../../models/chat-ipc-slice';
 import { DEFAULT_MODEL } from '../../constants';
 import callANotificationWithALog from '../../utils/call-a-notification-with-a-log';
+import { loadChatContext } from '../../utils/chat-handlers/chat-context-loader';
+import { saveChatHistory } from '../../utils/chat-handlers/chat-history-saver';
+import { buildChatPromptWithContext } from '../../utils/chat-handlers/chat-prompt-builder';
+import { loadRagContext } from '../../utils/chat-handlers/chat-rag-loader';
 import {
-  prepareContextualTranslation,
-  processContextualResponse,
-} from '../../utils/chunk-text-manager/chunk-text-manager';
-import {
-  getContextualTranslationConfig,
-  validateContextualTranslationParams,
-} from '../../utils/contextual-translation';
-import { log } from '../../utils/log';
+  accumulateResponse,
+  createStreamingHandler,
+  handleStreamingChunk,
+} from '../../utils/chat-handlers/chat-response-handler';
+import { validateChatRequest } from '../../utils/chat-handlers/chat-validator';
+import { processContextualResponse } from '../../utils/chunk-text-manager/chunk-text-manager';
+import { prepareContextualData } from '../../utils/feature-handlers/contextual-translation-handler';
+import { handleInstruction as handleInstructionHandler } from '../../utils/feature-handlers/instruction-handler';
+import { handleSimpleTranslation as handleSimpleTranslationHandler } from '../../utils/feature-handlers/simple-translation-handler';
+import log from '../../utils/log';
 import { electron } from './apis/model-ipc';
 import type {
   IpcResponse,
   ContextualTranslationResult,
   ModelRequestContext,
 } from './types/feature-provider.ts';
-import type { ChatMessage, ChatContext } from './types/use-model';
-import {
-  buildChatPrompt,
-  getProviderTokenLimits,
-  calculateChatContextTokens,
-  validateChatContext,
-} from './utils/chat-context';
+import type { ChatMessage } from './types/use-model';
 
 /**
  * Обрабатывает контекстный перевод через Electron IPC.
+ * Использует translation handlers для соблюдения SRP.
  *
- * @param props - Контекст запроса. Подробнее см. ModelRequestContext.
+ * @param props - Контекст запроса. Подробнее см. в типе ModelRequestContext.
  * @returns Promise с результатом контекстного перевода.
  */
 async function handleContextualTranslation(
   props: ModelRequestContext
 ): Promise<ContextualTranslationResult> {
-  // Валидация параметров контекстного перевода
-  const config = getContextualTranslationConfig('Embedded Ollama');
-  const validation = validateContextualTranslationParams(
-    Array.isArray(props.text) ? props.text : [props.text],
-    config
-  );
+  // Подготовка данных через handler
+  const preparation = await prepareContextualData(props);
+  log('Промпт ContextualTranslation:', preparation.prompt);
 
-  if (!validation.valid) {
-    const error = `Contextual translation validation failed: ${validation.reason}`;
+  if (!preparation.success || !preparation.prompt) {
+    const error =
+      preparation.error || 'Failed to prepare contextual translation';
 
     callANotificationWithALog(
       props.dispatch,
@@ -59,27 +60,7 @@ async function handleContextualTranslation(
     throw new Error(error);
   }
 
-  // Подготовка контекстного перевода
-  const preparation = prepareContextualTranslation(
-    Array.isArray(props.text) ? props.text : [props.text],
-    props.sourceLanguage,
-    props.targetLanguage
-  );
-
-  if (!preparation.success) {
-    const error = `Failed to prepare contextual translation: ${preparation.error}`;
-
-    callANotificationWithALog(
-      props.dispatch,
-      props.t`Translation error`,
-      error
-    );
-
-    throw new Error(error);
-  }
-
-  const { prompt } = preparation.data;
-
+  const prompt = preparation.prompt;
   let fullResponse = '';
 
   // Подписка на прогресс генерации через IPC
@@ -94,9 +75,6 @@ async function handleContextualTranslation(
         props.t`Translation error`,
         `Streaming error in contextual translation: ${chunk.error}`
       );
-
-      // Не бросает исключение в callback, так как это не остановит основной промис
-      // Ошибка будет обработана в основном блоке try-catch
     }
   });
 
@@ -150,13 +128,15 @@ async function handleContextualTranslation(
 
 /**
  * Обрабатывает инструкции через Electron IPC.
- * Генерирует текст на основе инструкции и входного текста.
+ * Использует translation handlers для соблюдения SRP.
  *
  * @param props - Контекст запроса. Подробнее см. ModelRequestContext.
  * @returns Promise с результатом генерации инструкции.
  */
 async function handleInstruction(props: ModelRequestContext): Promise<void> {
-  const finalPrompt = `${props.params.instruction}: ${props.text}`;
+  // Получает промпт через handler
+  const prompt = handleInstructionHandler(props);
+  log('Промпт Instruction:', prompt);
 
   // Подписка на прогресс генерации через IPC
   const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {
@@ -170,8 +150,6 @@ async function handleInstruction(props: ModelRequestContext): Promise<void> {
         props.t`Failed to generate a response`,
         `Streaming error in instruction: ${chunk.error}`
       );
-
-      // Не бросает исключение в callback, так как это не остановит основной промис
     }
   });
 
@@ -180,7 +158,7 @@ async function handleInstruction(props: ModelRequestContext): Promise<void> {
     await electron.generate(
       {
         model: props.model || DEFAULT_MODEL,
-        prompt: finalPrompt,
+        prompt,
         ...props.options,
       },
       props.config
@@ -192,7 +170,7 @@ async function handleInstruction(props: ModelRequestContext): Promise<void> {
 
 /**
  * Обрабатывает простой перевод через Electron IPC.
- * Генерирует перевод для одного текста или массива текстов.
+ * Использует translation handlers для соблюдения SRP.
  *
  * @param props - Контекст запроса к модели. Подробнее см. ModelRequestContext.
  * @returns Promise с результатом генерации простого перевода.
@@ -200,8 +178,10 @@ async function handleInstruction(props: ModelRequestContext): Promise<void> {
 async function handleSimpleTranslation(
   props: ModelRequestContext
 ): Promise<void> {
-  // Формирование промпта для перевода
-  const prompt = `Translate from ${props.sourceLanguage} to ${props.targetLanguage} the text after the colon, and return only the translated text:${props.text}`;
+  // Получает промпт через handler
+  const prompt = handleSimpleTranslationHandler(props);
+  log('Промпт SimpleTranslation:', prompt);
+
   // Подписка на прогресс генерации через IPC
   const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {
     if (chunk.response && props.onModelResponse) {
@@ -214,8 +194,6 @@ async function handleSimpleTranslation(
         props.t`Translation error`,
         `Streaming error in simple translation: ${chunk.error}`
       );
-
-      // Не бросает исключение в callback, так как это не остановит основной промис
     }
   });
 
@@ -242,13 +220,14 @@ async function handleSimpleTranslation(
  * @returns Promise с результатом обработки чата.
  */
 async function handleChat(props: ModelRequestContext): Promise<void> {
-  // Валидация обязательных параметров для режима чата
-  if (!props.chatId) {
-    const error = 'Chat ID is required for chat mode';
+  // Валидация (ранний возврат при ошибках)
+  const validation = validateChatRequest(props);
+  if (!validation.success) {
+    const error = validation.error || 'Chat request validation failed';
 
     callANotificationWithALog(
       props.dispatch,
-      props.t`Chat ID is required for chat mode`,
+      props.t`Chat request validation failed`,
       error
     );
 
@@ -258,111 +237,18 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
   const message =
     typeof props.text === 'string' ? props.text : props.text.join(' ');
 
-  let ragContext: string = '';
+  // Параллельная загрузка данных
+  const [ragResult, chatContextResult] = await Promise.all([
+    loadRagContext(props),
+    loadChatContext(props),
+  ]);
 
-  try {
-    const result = await ragIpc.getCollectionStats(props.chatId);
-
-    if (result.sizeBytes > 0) {
-      try {
-        const searchResult = await ragIpc.queryDocuments(
-          {
-            query: message,
-            chatId: props.chatId,
-          },
-          props.ragConfig
-        );
-
-        // Формирует промпт с контекстом из документов
-        const context = searchResult.sources
-          .map((source: any, index: number) => {
-            // Извлекает текстовое содержимое из source
-            const content =
-              typeof source === 'string'
-                ? source
-                : source.content || JSON.stringify(source);
-            return `${index + 1}. ${content}`;
-          })
-          .join('\n\n');
-
-        ragContext = context;
-      } catch (error) {
-        const errMsg = `Failed getting RAG context: ${(error as Error).message}`;
-
-        callANotificationWithALog(
-          props.dispatch,
-          props.t`Failed getting RAG context`,
-          errMsg
-        );
-
-        throw new Error(errMsg);
-      }
-    }
-  } catch (error) {
-    const errMsg = `Failed getting RAG stats: ${(error as Error).message}`;
-
-    callANotificationWithALog(
-      props.dispatch,
-      props.t`Failed getting RAG stats`,
-      errMsg
-    );
-
-    throw new Error(errMsg);
+  if (!chatContextResult.success || !chatContextResult.context) {
+    throw new Error(chatContextResult.error || 'Failed to load chat context');
   }
 
-  let chatContext: ChatContext;
-
-  // Загружает контекст из файловой системы
-  try {
-    const chatResult = await chatIpc.getChat({ chatId: props.chatId });
-
-    if (!chatResult.success || !chatResult.data) {
-      const error = `Failed to load chat context: ${chatResult.error}`;
-
-      callANotificationWithALog(
-        props.dispatch,
-        props.t`Failed to load chat context`,
-        error
-      );
-
-      throw new Error(error);
-    }
-
-    chatContext = {
-      messages: chatResult.data.messages || [],
-      maxContextMessages: 50,
-      systemPrompt:
-        'You are a helpful assistant. Answer the user’s questions using the context of previous messages.',
-      generationSettings: {
-        temperature: 0.7,
-        maxTokens: 2048,
-      },
-    };
-  } catch (error) {
-    const errMsg = `Chat context loading failed: ${(error as Error).message}`;
-
-    callANotificationWithALog(
-      props.dispatch,
-      props.t`Failed to load chat context`,
-      errMsg
-    );
-
-    throw new Error(errMsg);
-  }
-
-  // Валидация контекста чата
-  const contextValidation = validateChatContext(chatContext);
-  if (!contextValidation.success) {
-    const error = `Invalid chat context: ${contextValidation.error}`;
-
-    callANotificationWithALog(
-      props.dispatch,
-      props.t`Invalid chat context`,
-      error
-    );
-
-    throw new Error(error);
-  }
+  const ragContext = ragResult.success ? ragResult.context || '' : '';
+  const chatContext = chatContextResult.context;
 
   // Создание сообщения пользователя
   const userMessage: ChatMessage = {
@@ -373,53 +259,20 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
   };
 
   // Добавление сообщения пользователя в контекст
-  const updatedContext: ChatContext = {
+  const updatedContext = {
     ...chatContext,
     messages: [...chatContext.messages, userMessage],
   };
 
-  // Получение лимитов токенов для провайдера
-  const providerLimits = getProviderTokenLimits(props.config.id);
-  const currentTokens = calculateChatContextTokens(updatedContext);
+  // Построение промпта
+  const promptResult = await buildChatPromptWithContext(
+    updatedContext,
+    ragContext,
+    props
+  );
 
-  // Проверка превышения лимитов и применение суммирования при необходимости
-  if (currentTokens > providerLimits.maxContextTokens) {
-    console.warn(
-      `Context tokens (${currentTokens}) exceed limit (${providerLimits.maxContextTokens}). Applying summarization.`
-    );
-
-    // Применяем суммирование контекста
-    const summarizationResult = buildChatPrompt(updatedContext, ragContext, {
-      provider: props.config.id,
-      maxContextTokens: providerLimits.maxContextTokens,
-      enableSummarization: true,
-      preserveRecentMessages: 5,
-    });
-
-    if (!summarizationResult.success) {
-      const error = `Context summarization failed: ${summarizationResult.error}`;
-
-      callANotificationWithALog(
-        props.dispatch,
-        props.t`Failed to process chat context`,
-        error
-      );
-
-      throw new Error(error);
-    }
-  }
-
-  // Построение промпта для чата
-  const promptResult = buildChatPrompt(updatedContext, ragContext, {
-    provider: props.config.id,
-    systemPrompt: updatedContext.systemPrompt,
-    maxContextTokens: providerLimits.maxContextTokens,
-    enableSummarization: true,
-    preserveRecentMessages: 5,
-  });
-
-  if (!promptResult.success) {
-    const error = `Prompt building failed: ${promptResult.error}`;
+  if (!promptResult.success || !promptResult.prompt) {
+    const error = promptResult.error || 'Failed to build chat prompt';
 
     callANotificationWithALog(
       props.dispatch,
@@ -430,35 +283,40 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
     throw new Error(error);
   }
 
-  const prompt = promptResult.data;
+  const prompt = promptResult.prompt;
 
-  let fullResponse = '';
+  log('Промпт Chat:', prompt);
+
+  // Создает временное сообщение ассистента сразу для стриминга
+  const tempAssistantMessageId = `assistant-temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const tempAssistantMessage: ChatMessage = {
+    id: tempAssistantMessageId,
+    role: 'assistant',
+    content: '', // Начнется с пустого контента, будет обновляться при стриминге
+    timestamp: new Date().toISOString(),
+    model: {
+      name: props.model || DEFAULT_MODEL,
+      provider: props.config.id,
+    },
+  };
+
+  // Добавляет временное сообщение в Redux для отображения стриминга
+  props.dispatch(
+    addMessageLocally({
+      chatId: props.chatId!,
+      message: tempAssistantMessage,
+    })
+  );
+
+  // Генерация ответа
+  const responseHandler = createStreamingHandler(props);
 
   // Подписка на прогресс генерации через IPC
   const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {
-    if (chunk.response) {
-      fullResponse += chunk.response;
-
-      // Передает частичный ответ в callback для streaming отображения
-      if (props.onModelResponse) {
-        props.onModelResponse(chunk.response);
-      }
-    }
-
-    if (chunk.error) {
-      const error = `Streaming error in chat: ${chunk.error}`;
-
-      callANotificationWithALog(
-        props.dispatch,
-        props.t`Chat generation error`,
-        error
-      );
-
-      throw new Error(error);
-    }
+    handleStreamingChunk(chunk, responseHandler);
+    // currentText обновляется через use-model.ts -> handleResponse -> updateGenerationText
+    // Временное сообщение отображается через currentText в chat-messages.tsx
   });
-
-  log('[Feature Provider]', `Cобранный промпт: ${prompt}`);
 
   try {
     // Запуск генерации через Electron IPC
@@ -471,54 +329,61 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
       props.config
     );
 
-    // Создание сообщения ассистента
+    // Получает полный ответ
+    const fullResponse = accumulateResponse(responseHandler);
+
+    // Проверка, что ответ не пустой
+    if (!fullResponse || fullResponse.trim().length === 0) {
+      const error = 'Empty response from model';
+
+      callANotificationWithALog(
+        props.dispatch,
+        props.t`Chat generation error`,
+        error
+      );
+
+      // Удаляет временное сообщение при ошибке
+      if (props.chatId) {
+        // Находит и удаляет временное сообщение из массива
+        const activeChatState = (props.dispatch as any).getState?.()?.chat
+          ?.activeChat;
+        if (activeChatState?.chat?.id === props.chatId) {
+          const messages = activeChatState.chat.messages;
+          const tempMessageIndex = messages.findIndex(
+            (msg: ChatMessage) => msg.id === tempAssistantMessageId
+          );
+          if (tempMessageIndex !== -1) {
+            messages.splice(tempMessageIndex, 1);
+          }
+        }
+      }
+
+      throw new Error(error);
+    }
+
+    // Обновляет временное сообщение финальным контентом
+    props.dispatch(
+      updateMessage({
+        chatId: props.chatId!,
+        messageId: tempAssistantMessageId,
+        content: fullResponse,
+      })
+    );
+
+    // Создает финальное сообщение ассистента для сохранения в IPC
     const assistantMessage: ChatMessage = {
+      ...tempAssistantMessage,
       id: `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      role: 'assistant',
       content: fullResponse,
-      timestamp: new Date().toISOString(),
-      model: {
-        name: props.model || DEFAULT_MODEL,
-        provider: props.config.id,
-      },
     };
 
-    // Сохранение ответа в контексте чата через IPC API
-    if (props.saveHistory !== false) {
-      try {
-        // Добавляет сообщение пользователя
-        const addUserMessageResult = await chatIpc.addMessage({
-          chatId: props.chatId,
-          role: 'user',
-          content: userMessage.content,
-        });
-
-        if (!addUserMessageResult.success) {
-          console.warn(
-            `Failed to save user message: ${addUserMessageResult.error}`
-          );
-        }
-
-        // Добавляет сообщение ассистента
-        const addAssistantMessageResult = await chatIpc.addMessage({
-          chatId: props.chatId,
-          role: 'assistant',
-          content: assistantMessage.content,
-          model: assistantMessage.model,
-        });
-
-        if (!addAssistantMessageResult.success) {
-          console.warn(
-            `Failed to save assistant message: ${addAssistantMessageResult.error}`
-          );
-        }
-      } catch (error) {
-        // Не прерывает выполнение при ошибках сохранения, только логирует
-        console.warn(
-          `Failed to save chat messages: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-      }
-    }
+    // Сохранение истории (не блокирует при ошибках)
+    await saveChatHistory({
+      requestContext: props,
+      userMessage: null, // Сообщение пользователя уже сохранено
+      assistantMessage,
+      fullResponse,
+    });
   } finally {
     unsubscribe();
   }

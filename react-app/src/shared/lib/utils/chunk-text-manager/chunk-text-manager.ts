@@ -6,7 +6,7 @@
  */
 
 import { CHUNK_DELIMITER } from '../../constants';
-import createContextualPrompt from '../../hofs/create-contextual-prompt';
+import { promptManager } from '../../utils/prompt-manager';
 import { ChunkOperationResult } from './types/chunk-text-manager';
 
 /**
@@ -81,7 +81,7 @@ export function combineChunks(chunks: string[]): ChunkOperationResult<string> {
  *   console.log(result.data); // []
  * }
  */
-export function splitCombinedText(
+function splitCombinedText(
   combinedText: string
 ): ChunkOperationResult<string[]> {
   // Валидация типа входных данных
@@ -109,6 +109,9 @@ export function splitCombinedText(
  * Утилитарная функция для преобразования массива текстовых фрагментов
  * в объект формата Record<number, string>. Используется для создания структуры данных,
  * удобной для обновления отдельных фрагментов в UI компонентах.
+ * Оптимизирована с использованием reduce для улучшения читаемости.
+ *
+ * Сложность: O(n) где n - количество фрагментов
  *
  * @param chunks - Массив текстовых фрагментов.
  * @returns Объект с числовыми ключами и строковыми значениями.
@@ -124,72 +127,14 @@ export function splitCombinedText(
  * const record = convertArrayToRecord(chunks);
  * // record[0] можно использовать для обновления первого элемента
  */
-export function convertArrayToRecord(chunks: string[]): Record<number, string> {
-  const result: Record<number, string> = {};
-  // Преобразование массива в объект с индексами в качестве ключей
-  for (let i = 0; i < chunks.length; i++) {
-    result[i] = chunks[i];
-  }
-  return result;
-}
-
-/**
- * Подготавливает данные для контекстного перевода.
- *
- * Композитная функция, объединяющая текстовые фрагменты и создающая промпт
- * для контекстного перевода. Использует createContextualPrompt для генерации промпта
- * с учетом исходного и целевого языков. Обеспечивает полную подготовку данных для LLM.
- *
- * @param chunks - Массив текстовых фрагментов для перевода.
- * @param sourceLanguage - Исходный язык (например, 'ru').
- * @param targetLanguage - Целевой язык (например, 'en').
- * @returns Результат с объединенным текстом и промптом.
- *
- * @example
- * // Подготовка перевода с русского на английский
- * const result = prepareContextualTranslation(
- *   ['Привет мир', 'Как дела?'],
- *   'ru',
- *   'en'
- * );
- * if (result.success) {
- *   console.log(result.data.prompt); // Промпт для перевода
- *   console.log(result.data.combinedText); // 'Привет мирКак дела?'
- * }
- *
- * @example
- * // Обработка ошибок подготовки
- * const result = prepareContextualTranslation([], 'ru', 'en');
- * if (!result.success) {
- *   console.error(result.error); // Сообщение об ошибке
- * }
- */
-export function prepareContextualTranslation(
-  chunks: string[],
-  sourceLanguage: string,
-  targetLanguage: string
-): ChunkOperationResult<{ combinedText: string; prompt: string }> {
-  // Объединение фрагментов в единый контекст
-  const combineResult = combineChunks(chunks);
-
-  // Ранний возврат при ошибке объединения
-  if (!combineResult.success) {
-    return combineResult;
-  }
-
-  // Создание функции-билдера промпта для конкретных языков
-  const promptBuilder = createContextualPrompt(sourceLanguage, targetLanguage);
-
-  // Генерация финального промпта с объединенным текстом
-  const prompt = promptBuilder(combineResult.data);
-
-  return {
-    success: true,
-    data: {
-      combinedText: combineResult.data,
-      prompt,
+function convertArrayToRecord(chunks: string[]): Record<number, string> {
+  return chunks.reduce(
+    (acc: Record<number, string>, chunk: string, index: number) => {
+      acc[index] = chunk;
+      return acc;
     },
-  };
+    {}
+  );
 }
 
 /**
@@ -258,11 +203,31 @@ export function processContextualResponse(
     );
 
     // Объединение лишних фрагментов в последний ожидаемый фрагмент
-    const correctedChunks = chunks.slice(0, originalChunksCount - 1);
-    const lastChunk = chunks.slice(originalChunksCount - 1).join(' ');
-    correctedChunks.push(lastChunk);
+    // Оптимизировано: используем slice один раз
+    const preservedChunks = chunks.slice(0, originalChunksCount - 1);
+    const remainingChunks = chunks.slice(originalChunksCount - 1);
+    const lastChunk = remainingChunks.join(' ');
+    preservedChunks.push(lastChunk);
 
-    const record = convertArrayToRecord(correctedChunks);
+    const record = convertArrayToRecord(preservedChunks);
+    return { success: true, data: record };
+  }
+
+  // Обработка случая, когда модель вернула меньше фрагментов, чем ожидалось
+  // Заполняет недостающие фрагменты пустыми строками
+  if (chunks.length < originalChunksCount) {
+    console.warn(
+      `Expected ${originalChunksCount} chunks, but got ${chunks.length}. ` +
+        'Filling missing chunks with empty strings'
+    );
+
+    const record = convertArrayToRecord(chunks);
+
+    // Добавляет недостающие фрагменты
+    for (let i = chunks.length; i < originalChunksCount; i++) {
+      record[i] = '';
+    }
+
     return { success: true, data: record };
   }
 

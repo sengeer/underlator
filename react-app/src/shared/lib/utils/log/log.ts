@@ -11,9 +11,9 @@ import { IS_LOGGING_ENABLED } from './constants/log';
  * @param prefix - Префикс для логирования.
  * @param message - Сообщение для логирования.
  */
-function log(message: string, prefix?: string): void {
+function log(prefix: string = '', message: any = ''): void {
   if (IS_LOGGING_ENABLED && import.meta.env.DEV) {
-    console.log(`${prefix ? `${prefix}: ` : ''}${message}`);
+    console.log(prefix, message);
   }
 }
 

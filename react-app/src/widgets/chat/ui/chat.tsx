@@ -9,29 +9,32 @@ import { useState, useEffect, useCallback, startTransition } from 'react';
 import { useSelector } from 'react-redux';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useAppDispatch } from '../../../app/';
+import { chatIpc } from '../../../shared/apis/chat-ipc/';
+import type { ChatMessage } from '../../../shared/apis/chat-ipc/types/chat-ipc';
 import { ragIpc } from '../../../shared/apis/rag-ipc/';
 import AddIcon from '../../../shared/assets/icons/add-icon';
 import AttachFileIcon from '../../../shared/assets/icons/attach-file';
 import MenuIcon from '../../../shared/assets/icons/menu-icon';
 import useModel from '../../../shared/lib/hooks/use-model';
 import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log/call-a-notification-with-a-log';
-import { addNotification } from '../../../shared/models/notifications-slice';
-import { selectProviderSettings } from '../../../shared/models/provider-settings-slice';
-import Gradient from '../../../shared/ui/gradient';
-import IconButton from '../../../shared/ui/icon-button';
-import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
-import TextButton from '../../../shared/ui/text-button';
-import TextButtonFilled from '../../../shared/ui/text-button-filled';
 import {
   loadChats,
   createChat,
   loadChat,
   setActiveChat,
   setGenerationState,
+  addMessageLocally,
   selectChatsList,
   selectActiveChat,
   selectGeneration,
-} from '../models/chat-ipc-slice';
+} from '../../../shared/models/chat-ipc-slice';
+import { addNotification } from '../../../shared/models/notifications-slice';
+import { selectProviderSettings } from '../../../shared/models/provider-settings-slice';
+import Gradient from '../../../shared/ui/gradient';
+import IconButton from '../../../shared/ui/icon-button';
+import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
+import TextButton from '../../../shared/ui/text-button';
+import TextFilled from '../../../shared/ui/text-button-filled';
 import ChatMessages from './chat-messages';
 import ChatSidebar from './chat-sidebar';
 import '../styles/chat.scss';
@@ -137,6 +140,31 @@ function Chat() {
     const text = messageText.trim();
     setMessageText('');
 
+    // Создает и сохраняет сообщение пользователя
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      role: 'user',
+      content: text,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Добавляет сообщение пользователя в Redux (оптимистичное обновление)
+    dispatch(
+      addMessageLocally({
+        chatId: activeChat.chat.id,
+        message: userMessage,
+      })
+    );
+
+    // Сохраняет сообщение пользователя через IPC
+    chatIpc
+      .addMessage({
+        chatId: activeChat.chat.id,
+        role: 'user',
+        content: text,
+      })
+      .catch((err) => console.warn('[Chat] Failed to save user message:', err));
+
     // Устанавливает состояние генерации
     dispatch(
       setGenerationState({
@@ -161,7 +189,7 @@ function Chat() {
         }
       ).chat();
 
-      // Обновляет чат после генерации
+      // Обновляет чат после генерации для синхронизации с IPC
       dispatch(
         loadChat({
           chatId: activeChat.chat.id,
@@ -378,6 +406,7 @@ function Chat() {
             <ChatMessages
               messages={activeChat.chat.messages}
               isGenerating={generation.isGenerating}
+              currentText={generation.currentText}
             />
           )}
 
@@ -411,11 +440,11 @@ function Chat() {
                 <TextAndIconButton
                   text={t`stop`}
                   onClick={handleStopGeneration}>
-                  <TextButtonFilled text='space' isDisabled />
+                  <TextFilled text='space' />
                 </TextAndIconButton>
               ) : (
                 <div className='chat__btns-container'>
-                  <TextButtonFilled text='enter' isDisabled />
+                  <TextFilled text='enter' />
                   <TextButton
                     text={t`send`}
                     onClick={handleSendMessage}

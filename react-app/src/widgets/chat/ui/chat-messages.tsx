@@ -23,6 +23,7 @@ import '../styles/empty-state.scss';
 function ChatMessages({
   messages,
   isGenerating = false,
+  currentText = '',
   className = '',
 }: ChatMessagesProps) {
   const { t } = useLingui();
@@ -131,7 +132,7 @@ function ChatMessages({
     if (!container) return;
 
     container.addEventListener('scroll', handleScroll);
-    // Также проверяем при изменении размера контейнера
+    // Также проверяет при изменении размера контейнера
     const resizeObserver = new ResizeObserver(() => {
       checkScrollToBottomVisibility();
     });
@@ -147,7 +148,7 @@ function ChatMessages({
     if (isGenerating) {
       scrollToBottom();
     }
-  }, [isGenerating]);
+  }, [isGenerating, currentText]); // Прокручивает при обновлении стриминга
 
   /**
    * Рендерит пустое состояние.
@@ -187,18 +188,59 @@ function ChatMessages({
     );
   }
 
+  /**
+   * Рендерит стриминговое сообщение ассистента.
+   * Обновляет последнее сообщение ассистента текущим текстом стриминга.
+   */
+  function renderStreamingMessage() {
+    if (!isGenerating || !currentText) return null;
+
+    // Находит временное сообщение ассистента
+    const lastAssistantMessage = [...messages]
+      .reverse()
+      .find((msg) => msg.role === 'assistant');
+
+    if (!lastAssistantMessage) return null;
+
+    // Создает сообщение с текущим текстом стриминга
+    const streamingMessage = {
+      ...lastAssistantMessage,
+      content: currentText || '', // Использует currentText для стриминга
+    };
+
+    return (
+      <div className='chat-messages__item chat-messages__item_streaming'>
+        <MessageBubble message={streamingMessage} isVisible={true} />
+      </div>
+    );
+  }
+
   return (
     <div ref={messagesContainerRef} className={`chat-messages ${className}`}>
       {renderEmptyState()}
 
-      {messages.map((message, index) => (
-        <div className='chat-messages__item' key={message.id}>
-          <MessageBubble
-            message={message}
-            isVisible={isVisible || index >= messages.length - 10}
-          />
-        </div>
-      ))}
+      {/* Отображает все сообщения кроме последнего ассистента (если идет стриминг) */}
+      {messages.map((message, index) => {
+        // Пропускает последнее сообщение ассистента если идет стриминг
+        const isLastAssistant =
+          isGenerating &&
+          message.role === 'assistant' &&
+          index === messages.length - 1;
+
+        if (isLastAssistant) return null;
+
+        return (
+          <div className='chat-messages__item' key={message.id}>
+            <MessageBubble
+              message={message}
+              isVisible={isVisible || index >= messages.length - 10}
+            />
+          </div>
+        );
+      })}
+
+      {/* Отображает стриминговое сообщение */}
+      {renderStreamingMessage()}
 
       {renderGeneratingIndicator()}
 

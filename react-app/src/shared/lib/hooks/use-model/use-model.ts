@@ -8,6 +8,7 @@
 import { useLingui } from '@lingui/react/macro';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { updateGenerationText } from '../../../models/chat-ipc-slice';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
 import { selectTranslationLanguages } from '../../../models/translation-languages-slice';
 import { DEFAULT_URL } from '../../constants';
@@ -30,6 +31,8 @@ type FeatureType = keyof typeof featureProvider;
 function useModel() {
   // Контроллер для отмены операций
   const abortControllerRef = useRef<AbortController | null>(null);
+  // Накопленный ответ для режима чата
+  const accumulatedChatResponseRef = useRef<string>('');
   const { getLanguageInEn } = useTranslationLanguages();
 
   const dispatch = useDispatch();
@@ -70,16 +73,28 @@ function useModel() {
             [response.idx]: (prev[response.idx] || '') + response.text,
           };
         });
-      // Обработка строкового ответа для простого перевода
+      // Обработка строкового ответа для простого перевода и чата
       else if (
         typeof response === 'string' &&
         params.responseMode === 'stringStream'
-      )
+      ) {
         setGeneratedResponse((prev) =>
           typeof prev === 'string' ? prev + response : ''
         );
+
+        // Для режима чата накапливает ответ и обновляет Redux state
+        if (params.chatId) {
+          accumulatedChatResponseRef.current += response;
+          dispatch(
+            updateGenerationText({
+              chatId: params.chatId!,
+              text: accumulatedChatResponseRef.current,
+            })
+          );
+        }
+      }
     },
-    [providerSettings]
+    [dispatch, providerSettings]
   );
 
   /**
@@ -100,6 +115,10 @@ function useModel() {
     setStatus('process');
     setGeneratedResponse(params.responseMode === 'arrayStream' ? {} : '');
     setError(null);
+    // Сбрасывает накопленный ответ для режима чата
+    if (params.chatId) {
+      accumulatedChatResponseRef.current = '';
+    }
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -145,7 +164,7 @@ function useModel() {
 
       if (
         (erorr as Error).message !==
-        'IPC Operation failed: model:generate: ❌ Operation was cancelled'
+        'IPC Operation failed: model:generate: Operation was cancelled'
       )
         callANotificationWithALog(
           dispatch,

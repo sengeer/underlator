@@ -3,7 +3,7 @@
  * IPC клиент для взаимодействия с RAG системой.
  */
 
-import { log } from '../../lib/utils/log';
+import log from '../../lib/utils/log';
 import type {
   RagApiConfig,
   ProcessDocumentRequest,
@@ -45,7 +45,7 @@ class RagIpc {
   async processDocument(
     params: ProcessDocumentRequest
   ): Promise<ProcessDocumentResult> {
-    log('[RAG IPC]', `processDocument: ${params}`);
+    log('Параметры processDocument:', params);
 
     try {
       const response = await (window as any).electron.rag.processDocument({
@@ -53,7 +53,7 @@ class RagIpc {
         chatId: params.chatId,
       });
 
-      log('[RAG IPC]', `Результат processDocument: ${response}`);
+      log('Результат processDocument:', response);
 
       // Извлекает data из обертки IPC
       if (!response.success) {
@@ -77,7 +77,7 @@ class RagIpc {
     params: RagQueryRequest,
     config: QueryDocumentsConfig
   ): Promise<RagResponse> {
-    log('[RAG IPC]', `queryDocuments: ${params}`);
+    log('Параметры queryDocuments:', params);
 
     try {
       const response = await (window as any).electron.rag.queryDocuments(
@@ -88,7 +88,7 @@ class RagIpc {
         config
       );
 
-      log('[RAG IPC]', `Результат queryDocuments: ${response}`);
+      log('Результат queryDocuments:', response);
 
       // Извлекает data из обертки IPC
       if (!response.success) {
@@ -111,8 +111,6 @@ class RagIpc {
   async deleteDocumentCollection(
     params: DeleteCollectionRequest
   ): Promise<DeleteCollectionResult> {
-    log('[RAG IPC]', `deleteDocumentCollection: ${params}`);
-
     try {
       const response = await (
         window as any
@@ -120,7 +118,7 @@ class RagIpc {
         chatId: params.chatId,
       });
 
-      log('[RAG IPC]', `Результат deleteDocumentCollection: ${response}`);
+      log('Результат deleteDocumentCollection:', response);
 
       // Извлекает data из обертки IPC
       if (!response.success) {
@@ -141,13 +139,13 @@ class RagIpc {
    * @returns Promise со статистикой коллекции.
    */
   async getCollectionStats(chatId: string): Promise<CollectionStats> {
-    log('[RAG IPC]', `getCollectionStats: ${chatId}`);
+    log('ID getCollectionStats:', chatId);
 
     try {
       const response = await (window as any).electron.rag.getCollectionStats(
         chatId
       );
-      log('[RAG IPC]', `Результат getCollectionStats: ${response}`);
+      log('Результат getCollectionStats:', response);
 
       // Извлекает data из обертки IPC
       if (!response.success) {
@@ -167,11 +165,9 @@ class RagIpc {
    * @returns Promise со списком коллекций.
    */
   async listCollections(): Promise<VectorCollection[]> {
-    log('[RAG IPC]', 'listCollections');
-
     try {
       const response = await (window as any).electron.rag.listCollections();
-      log('[RAG IPC]', `Результат listCollections: ${response}`);
+      log('Результат listCollections:', response);
 
       // Проверяет что response это IPC обертка
       if (response && typeof response === 'object' && 'success' in response) {
@@ -201,8 +197,6 @@ class RagIpc {
   onProcessingProgress(
     callback: (progress: RagProcessingProgress) => void
   ): () => void {
-    log('[RAG IPC]', 'onProcessingProgress');
-
     try {
       return (window as any).electron.rag.onProcessingProgress(callback);
     } catch (error) {
@@ -224,7 +218,7 @@ class RagIpc {
     chatId: string,
     config: UploadAndProcessDocumentConfig
   ): Promise<ProcessDocumentResult> {
-    log('[RAG IPC]', `uploadAndProcessDocument: ${file.name}, ${chatId}`);
+    log(`uploadAndProcessDocument: ${file.name}, ${chatId}`);
 
     try {
       // Читает файл как ArrayBuffer
@@ -253,7 +247,7 @@ class RagIpc {
         window as any
       ).electron.rag.uploadAndProcessDocument(request, config);
 
-      log('[RAG IPC]', `uploadAndProcessDocument result: ${response}`);
+      log('Результат uploadAndProcessDocument', response);
 
       // Извлекает data из обертки IPC
       if (!response.success) {

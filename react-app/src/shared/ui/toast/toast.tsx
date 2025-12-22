@@ -4,7 +4,6 @@
  * Управляет анимацией появления/исчезновения и автоудалением.
  */
 
-// @ts-ignore: 2724
 import { useEffect, useState, ViewTransition, startTransition } from 'react';
 import { useDispatch } from 'react-redux';
 import CloseIcon from '../../assets/icons/close-icon';
@@ -121,7 +120,6 @@ function Toast({ id, type, message }: ToastProps) {
         <aside className='toast'>
           <ButtonWrapperWithBackground isDisabled>
             <DecorativeTextAndIconButton
-              // Преобразование message в строку для текстового отображения
               text={
                 typeof message === 'string' ? message : JSON.stringify(message)
               }

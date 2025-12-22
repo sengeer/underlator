@@ -7,7 +7,7 @@ import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 import ProgressBar from '../progress-bar';
 import TextButton from '../text-button/text-button';
-import TextButtonFilled from '../text-button-filled';
+import TextFilled from '../text-button-filled';
 import {
   SelectorOptionProps,
   SelectorOptionState,
@@ -57,7 +57,7 @@ function renderProgressBar(progressInfo: any) {
  */
 function renderCompatibilityStatus(compatibilityMessages?: string) {
   // Отображает сообщение для всех статусов, включая 'ok'
-  return <TextButtonFilled text={compatibilityMessages} isDisabled />;
+  return <TextFilled text={compatibilityMessages || ''} />;
 }
 
 /**

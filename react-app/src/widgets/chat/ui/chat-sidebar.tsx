@@ -5,7 +5,6 @@
  */
 
 import { useLingui } from '@lingui/react/macro';
-// @ts-ignore: 2724
 import { useState, useEffect, useCallback, ViewTransition } from 'react';
 import { useDispatch } from 'react-redux';
 import { ragIpc } from '../../../shared/apis/rag-ipc/';
@@ -13,11 +12,11 @@ import AddIcon from '../../../shared/assets/icons/add-icon';
 import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log/call-a-notification-with-a-log';
 import splitByWordCount from '../../../shared/lib/utils/split-by-word-count';
 import splittingContentOfModel from '../../../shared/lib/utils/splitting-content-of-model';
+import { deleteChat } from '../../../shared/models/chat-ipc-slice';
 import IconButton from '../../../shared/ui/icon-button';
 import Search from '../../../shared/ui/search';
 import SelectorOption from '../../../shared/ui/selector-option';
 import TextButton from '../../../shared/ui/text-button/text-button';
-import { deleteChat } from '../models/chat-ipc-slice';
 import type { ChatSidebarProps, ChatSidebarState } from '../types/chat-sidebar';
 import '../styles/chat-sidebar.scss';
 

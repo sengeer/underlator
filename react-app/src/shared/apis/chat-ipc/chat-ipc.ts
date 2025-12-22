@@ -4,7 +4,7 @@
  * Предоставляет функции для управления чатами через IPC.
  */
 
-import { log } from '../../lib/utils/log';
+import log from '../../lib/utils/log';
 import { DEFAULT_CONFIG } from './constants/chat-ipc';
 import type {
   CreateChatParams,
@@ -35,7 +35,7 @@ class СhatIpc {
 
     // Проверяет доступность Electron API
     if (typeof window !== 'undefined' && window.electron) {
-      log('[Chat IPC]', 'Chat Electron API инициализирован');
+      log('Chat Electron API инициализирован');
     } else {
       console.warn(
         'Chat Electron API is unavailable, and some functions may not work'
@@ -56,7 +56,7 @@ class СhatIpc {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      log('[Chat IPC]', `createChat: ${params.title}`);
+      log('Параметры createChat:', params);
 
       const response = await window.electron.chat.create(params);
 
@@ -65,7 +65,7 @@ class СhatIpc {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      log('[Chat IPC]', `Ошибка createChat: ${errorMessage}`);
+      log('Ошибка createChat:', errorMessage);
 
       return {
         success: false,
@@ -89,7 +89,7 @@ class СhatIpc {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      log('[Chat IPC]', 'listChats');
+      log('Параметры listChats:', params);
 
       const response = await window.electron.chat.list(params);
 
@@ -98,7 +98,7 @@ class СhatIpc {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      log('[Chat IPC]', `Ошибка listChats: ${errorMessage}`);
+      log('Ошибка listChats:', errorMessage);
 
       return {
         success: false,
@@ -122,7 +122,7 @@ class СhatIpc {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      log('[Chat IPC]', `getChat: ${params.chatId}`);
+      log('Параметры getChat:', params);
 
       const response = await window.electron.chat.get(params);
 
@@ -131,7 +131,7 @@ class СhatIpc {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      log('[Chat IPC]', `Ошибка getChat: ${errorMessage}`);
+      log('Ошибка getChat:', errorMessage);
 
       return {
         success: false,
@@ -155,7 +155,7 @@ class СhatIpc {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      log('[Chat IPC]', `updateChat: ${params.chatId}`);
+      log('Параметры updateChat:', params);
 
       const response = await window.electron.chat.update(params);
 
@@ -164,7 +164,7 @@ class СhatIpc {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      log('[Chat IPC]', `Ошибка updateChat: ${errorMessage}`);
+      log('Ошибка updateChat:', errorMessage);
 
       return {
         success: false,
@@ -188,7 +188,7 @@ class СhatIpc {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      log('[Chat IPC]', `addMessage: ${params.chatId}`);
+      log('Параметры addMessage:', params);
 
       const response = await window.electron.chat.addMessage(params);
 
@@ -197,7 +197,7 @@ class СhatIpc {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      log('[Chat IPC]', `Ошибка addMessage: ${errorMessage}`);
+      log('Ошибка addMessage:', errorMessage);
 
       return {
         success: false,
@@ -221,7 +221,7 @@ class СhatIpc {
         throw new Error('Chat Electron API is unavailable');
       }
 
-      log('[Chat IPC]', `deleteChat: ${params.chatId}`);
+      log('Параметры deleteChat:', params);
 
       const response = await window.electron.chat.delete(params);
 
@@ -230,7 +230,7 @@ class СhatIpc {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      log('[Chat IPC]', `Ошибка deleteChat: ${errorMessage}`);
+      log('Ошибка deleteChat:', errorMessage);
 
       return {
         success: false,

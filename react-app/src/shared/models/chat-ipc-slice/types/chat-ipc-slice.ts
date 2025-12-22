@@ -14,7 +14,7 @@ import type {
   UpdateChatParams,
   DeleteChatParams,
   AddMessageParams,
-} from '../../../shared/apis/chat-ipc/types/chat-ipc';
+} from '../../../apis/chat-ipc/types/chat-ipc';
 
 /**
  * Состояние загрузки списка чатов.
