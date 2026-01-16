@@ -12,6 +12,7 @@ import type {
   ModelsApiModel,
 } from '../types/models';
 import { DEFAULT_CONFIG } from '../constants/models';
+import { APP_VERSION } from '../constants/shared';
 
 /**
  * @class ModelsApi
@@ -54,7 +55,7 @@ export class ModelsApi {
               method: 'GET',
               headers: {
                 Accept: 'application/json',
-                'User-Agent': 'Underlator-Electron/1.0.0',
+                'User-Agent': `Underlator-Electron/${APP_VERSION}`,
               },
               signal,
             },

@@ -9,6 +9,7 @@ import type {
   FileValidationResult,
   FileTypeConfig,
 } from '../types/filesystem';
+import { APP_VERSION } from '../constants/shared';
 
 /**
  * Базовый валидатор для универсальной структуры файла.
@@ -207,7 +208,7 @@ export abstract class BaseFileValidator {
  * Валидатор для чатов.
  */
 export class ChatFileValidator extends BaseFileValidator {
-  private readonly supportedVersions = ['1.0.0'];
+  private readonly supportedVersions = [APP_VERSION];
   private readonly maxTitleLength = 200;
   private readonly maxMessageLength = 50000;
   private readonly maxMessagesCount = 10000;
@@ -395,7 +396,7 @@ export class ChatFileValidator extends BaseFileValidator {
  * Валидатор для документов.
  */
 export class DocumentFileValidator extends BaseFileValidator {
-  private readonly supportedVersions = ['1.0.0'];
+  private readonly supportedVersions = [APP_VERSION];
   private readonly maxTitleLength = 500;
   private readonly maxContentLength = 1000000; // 1MB
   private readonly requiredMetadataFields = [

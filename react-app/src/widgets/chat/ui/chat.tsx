@@ -364,7 +364,7 @@ function Chat() {
   }, [status, dispatch, activeChat.chat?.id]);
 
   return (
-    <div className='chat'>
+    <section className='chat'>
       {/* Боковая панель */}
       {showSidebar ? (
         <ChatSidebar
@@ -461,7 +461,7 @@ function Chat() {
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 }
 

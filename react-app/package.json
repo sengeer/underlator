@@ -1,6 +1,6 @@
 {
   "name": "underlator",
-  "version": "1.0.0",
+  "version": "0.1.0-beta",
   "private": true,
   "homepage": "./",
   "description": "Frontend application for working with local LLMs",

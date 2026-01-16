@@ -4,6 +4,8 @@
  * Централизованная конфигурация для всех операций с Ollama.
  */
 
+import { APP_VERSION } from './shared';
+
 /**
  * Базовые настройки для Ollama API.
  * Используются по умолчанию для всех HTTP запросов.
@@ -50,7 +52,7 @@ export const OLLAMA_HEADERS = {
   /** Принятие JSON ответов */
   ACCEPT: 'application/json',
   /** User-Agent для идентификации клиента */
-  USER_AGENT: 'Underlator-Electron/1.0.0',
+  USER_AGENT: `Underlator-Electron/${APP_VERSION}`,
 } as const;
 
 /**

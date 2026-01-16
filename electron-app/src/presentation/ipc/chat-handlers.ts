@@ -26,6 +26,7 @@ import type {
   ChatFile,
 } from '../../types/chat';
 import type { ChatFileStructure } from '../../types/filesystem-chat';
+import { APP_VERSION } from '../../constants/shared';
 
 /**
  * @class ChatHandlers
@@ -219,7 +220,7 @@ export class ChatHandlers {
 
       // Создает структуру файла чата
       const chatFile: ChatFileStructure = {
-        version: '1.0.0',
+        version: APP_VERSION,
         metadata: {
           id: chatId,
           title: request.title,
