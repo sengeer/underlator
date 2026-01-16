@@ -10,6 +10,7 @@ import type {
   FileTypeConfig,
 } from '../types/filesystem';
 import { APP_VERSION } from '../constants/shared';
+import { CHAT_VERSION } from '../constants/chat';
 
 /**
  * Базовый валидатор для универсальной структуры файла.
@@ -208,7 +209,7 @@ export abstract class BaseFileValidator {
  * Валидатор для чатов.
  */
 export class ChatFileValidator extends BaseFileValidator {
-  private readonly supportedVersions = [APP_VERSION];
+  private readonly supportedVersions = [CHAT_VERSION];
   private readonly maxTitleLength = 200;
   private readonly maxMessageLength = 50000;
   private readonly maxMessagesCount = 10000;
