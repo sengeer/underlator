@@ -15,7 +15,7 @@ import type {
 } from '../types/filesystem';
 import type { ChatFileStructure } from '../types/filesystem-chat';
 import type { ChatData, ChatFile } from '../types/chat';
-import { APP_VERSION } from '../constants/shared';
+import { CHAT_VERSION } from '../constants/chat';
 
 /**
  * @class ChatFileSystemService
@@ -410,7 +410,7 @@ export class ChatFileSystemService {
    */
   convertChatDataToFile(chatData: ChatData): ChatFileStructure {
     return {
-      version: APP_VERSION,
+      version: CHAT_VERSION,
       metadata: {
         id: chatData.id,
         title: chatData.title,

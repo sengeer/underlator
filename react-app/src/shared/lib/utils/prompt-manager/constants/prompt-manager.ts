@@ -51,7 +51,7 @@ export const DEFAULT_CONTEXTUAL_TRANSLATION_PROMPT: PromptTemplate = {
       'combinedText',
     ],
     optionalPlaceholders: [],
-    version: '1.0.0',
+    version: '0.1.0',
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
@@ -68,7 +68,7 @@ export const DEFAULT_CHAT_SYSTEM_PROMPT: PromptTemplate = {
     mode: 'chat',
     requiredPlaceholders: [],
     optionalPlaceholders: [],
-    version: '1.0.0',
+    version: '0.1.0',
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
@@ -87,7 +87,7 @@ export const DEFAULT_CHAT_RULES_PROMPT: PromptTemplate = {
     mode: 'chat',
     requiredPlaceholders: [],
     optionalPlaceholders: ['historyMessages'],
-    version: '1.0.0',
+    version: '0.1.0',
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
@@ -104,7 +104,7 @@ export const DEFAULT_SIMPLE_TRANSLATION_PROMPT: PromptTemplate = {
     mode: 'simpleTranslation',
     requiredPlaceholders: ['sourceLanguage', 'targetLanguage', 'text'],
     optionalPlaceholders: [],
-    version: '1.0.0',
+    version: '0.1.0',
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
@@ -122,7 +122,7 @@ export const DEFAULT_INSTRUCTION_PROMPT: PromptTemplate = {
     mode: 'instruction',
     requiredPlaceholders: ['instruction', 'text'],
     optionalPlaceholders: [],
-    version: '1.0.0',
+    version: '0.1.0',
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
@@ -144,7 +144,7 @@ export const DEFAULT_PROMPT_TEMPLATES: Record<string, PromptTemplate> = {
  * Версия схемы хранения промптов.
  * Используется для миграции при обновлении структуры.
  */
-export const PROMPT_STORAGE_VERSION = '1.0.0';
+export const PROMPT_STORAGE_VERSION = '0.1.0';
 
 /**
  * Ключ для хранения промптов в localStorage.
