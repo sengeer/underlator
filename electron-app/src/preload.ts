@@ -50,6 +50,9 @@ contextBridge.exposeInMainWorld('electron', {
   updateTranslations: (translations: any) => {
     ipcRenderer.send('update-translations', translations);
   },
+  openMail: (email: string) => {
+    ipcRenderer.send('contact-mail', email);
+  },
 
   // API для управления моделями
   model: {

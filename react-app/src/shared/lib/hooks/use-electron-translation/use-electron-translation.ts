@@ -63,6 +63,11 @@ function useElectronTranslation(): UseElectronTranslationReturn {
     OK: t`ok!`,
     RAM: t`RAM`,
     INSUFFICIENT_RAM: t`insufficient RAM`,
+    CONTACT_DIALOG_TITLE: t`Contact`,
+    CONTACT_DIALOG_MESSAGE: t`The system could not automatically launch the email client for: `,
+    CONTACT_DIALOG_COPY_BUTTON: t`Copy Email`,
+    CONTACT_DIALOG_OPEN_BUTTON: t`Open Gmail`,
+    DIALOG_CANCEL_BUTTON: t`Cancel`,
   };
 
   /**

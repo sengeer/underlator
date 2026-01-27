@@ -144,12 +144,6 @@ function ChatMessages({
     };
   }, [handleScroll, checkScrollToBottomVisibility]);
 
-  useEffect(() => {
-    if (isGenerating) {
-      scrollToBottom();
-    }
-  }, [isGenerating, currentText]); // Прокручивает при обновлении стриминга
-
   /**
    * Рендерит пустое состояние.
    */

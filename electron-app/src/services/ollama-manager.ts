@@ -27,7 +27,7 @@ class OllamaManager {
   private isInitialized: boolean = false;
   private isStarting: boolean = false;
   private isStopping: boolean = false;
-  private MAX_ATTEMPTS = 60;
+  private MAX_ATTEMPTS = 2;
   private RETRY_DELAY_MS = 1000;
 
   /**

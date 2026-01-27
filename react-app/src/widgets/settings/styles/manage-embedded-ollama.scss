@@ -1,0 +1,12 @@
+.manage-embedded-ollama {
+  &__empty-state {
+    width: 100%;
+    margin: 1rem 0;
+  }
+
+  &__paragraph {
+    margin: 0;
+    color: var(--main);
+    text-align: center;
+  }
+}

@@ -386,7 +386,7 @@ function Settings() {
         <TextAndIconButton
           text={t`contact`}
           onClick={() => {
-            window.location.href = 'mailto:fox8911@gmail.com';
+            window.electron.openMail('fox8911@gmail.com');
           }}>
           <MailIcon />
         </TextAndIconButton>

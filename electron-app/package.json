@@ -1,6 +1,5 @@
 {
   "name": "underlator",
-  "productName": "Underlator",
   "version": "0.1.0-beta",
   "description": "Backend application for working with local LLMs",
   "main": "dist/electron/main.js",
@@ -109,14 +108,14 @@
     "productName": "Underlator",
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "directories": {
-      "output": "out"
+      "output": "out",
+      "buildResources": "icons"
     },
     "files": [
       "dist/**/*",
       "node_modules/**/*",
       "package.json",
-      "icons/icon.ico",
-      "icons/icon.png"
+      "icons/icon.ico"
     ],
     "win": {
       "target": [
@@ -136,28 +135,15 @@
     },
     "linux": {
       "target": [
-        {
-          "target": "dir",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "x64"
-          ]
-        }
+        "AppImage"
       ],
       "category": "Utility",
-      "icon": "icons/icon.png",
-      "executableName": "Underlator",
+      "icon": "icons/",
+      "executableName": "underlator",
       "artifactName": "${productName}-${version}-linux-${arch}.${ext}",
       "desktop": {
         "Name": "Underlator",
-        "Comment": "Desktop application for working with local LLMs",
-        "Categories": "Utility;Office;",
-        "StartupWMClass": "Underlator"
+        "Icon": "underlator.png"
       }
     }
   }

@@ -133,6 +133,7 @@ interface Window {
   electron: {
     /** Обновление переводов */
     updateTranslations: (message: any) => void;
+    openMail: (mail: string) => void;
     /** API для работы с моделями */
     model: {
       /** Генерация текста через модель */

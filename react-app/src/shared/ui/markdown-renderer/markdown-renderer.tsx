@@ -9,6 +9,7 @@
 import { useLingui } from '@lingui/react/macro';
 import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
+import type { Components } from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
@@ -27,6 +28,40 @@ import 'katex/dist/katex-swap.min.css';
 import './styles/markdown-renderer.scss';
 import './styles/thinking.scss';
 import { MarkdownRendererProps } from './types/markdown-renderer';
+
+const MD_COMPONENTS: Components = {
+  h1: ({ children }) => <h1 className='markdown-renderer__h1'>{children}</h1>,
+  h2: ({ children }) => <h2 className='markdown-renderer__h2'>{children}</h2>,
+  h3: ({ children }) => <h3 className='markdown-renderer__h3'>{children}</h3>,
+  p: ({ children }) => (
+    <p className='markdown-renderer__paragraph'>{children}</p>
+  ),
+  code: ({ children, className }) => (
+    <code className={`markdown-renderer__code ${className || ''}`}>
+      {children}
+    </code>
+  ),
+  pre: ({ children }) => (
+    <pre className='markdown-renderer__pre'>{children}</pre>
+  ),
+  blockquote: ({ children }) => (
+    <blockquote className='markdown-renderer__blockquote'>
+      {children}
+    </blockquote>
+  ),
+  ul: ({ children }) => <ul className='markdown-renderer__list'>{children}</ul>,
+  ol: ({ children }) => (
+    <ol className='markdown-renderer__list markdown-renderer__list_ordered'>
+      {children}
+    </ol>
+  ),
+  li: ({ children }) => (
+    <li className='markdown-renderer__list-item'>{children}</li>
+  ),
+  hr: ({ children }) => (
+    <hr className='markdown-renderer__thematic-break'>{children}</hr>
+  ),
+};
 
 /**
  * Компонент для рендера markdown-контента с поддержкой "мыслящих" блоков,
@@ -107,7 +142,7 @@ function MarkdownRenderer({
 
   useEffect(() => {
     scrollToBottom();
-  }, [content]);
+  }, [!content]);
 
   /**
    * Рендерит заглушку до появления основного markdown-контента.
@@ -144,8 +179,8 @@ function MarkdownRenderer({
         )}
         {isShowedCopyingBtn && (
           <IconButton
-            onClick={() => handleCopy(mainContentParts.toString())}
-            isDisabled={!mainContentParts || isCopied}>
+            onClick={() => handleCopy(mainContentParts.join('\n\n'))}
+            isDisabled={!mainContentParts || isCopied || !content}>
             <AnimatingWrapper isShow={isCopied}>
               <CheckIcon />
             </AnimatingWrapper>
@@ -171,50 +206,11 @@ function MarkdownRenderer({
         <div className='markdown-renderer__content'>
           <Markdown
             remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeRaw, rehypeKatex]}
-            components={{
-              h1: ({ children }) => (
-                <h1 className='markdown-renderer__h1'>{children}</h1>
-              ),
-              h2: ({ children }) => (
-                <h2 className='markdown-renderer__h2'>{children}</h2>
-              ),
-              h3: ({ children }) => (
-                <h3 className='markdown-renderer__h3'>{children}</h3>
-              ),
-              p: ({ children }) => (
-                <p className='markdown-renderer__paragraph'>{children}</p>
-              ),
-              code: ({ children, className }) => (
-                <code className={`markdown-renderer__code ${className || ''}`}>
-                  {children}
-                </code>
-              ),
-              pre: ({ children }) => (
-                <pre className='markdown-renderer__pre'>{children}</pre>
-              ),
-              blockquote: ({ children }) => (
-                <blockquote className='markdown-renderer__blockquote'>
-                  {children}
-                </blockquote>
-              ),
-              ul: ({ children }) => (
-                <ul className='markdown-renderer__list'>{children}</ul>
-              ),
-              ol: ({ children }) => (
-                <ol className='markdown-renderer__list markdown-renderer__list_ordered'>
-                  {children}
-                </ol>
-              ),
-              li: ({ children }) => (
-                <li className='markdown-renderer__list-item'>{children}</li>
-              ),
-              hr: ({ children }) => (
-                <hr className='markdown-renderer__thematic-break'>
-                  {children}
-                </hr>
-              ),
-            }}>
+            rehypePlugins={[
+              rehypeRaw,
+              [rehypeKatex, { strict: false, errorColor: 'var(--main)' }],
+            ]}
+            components={MD_COMPONENTS}>
             {finalContent}
           </Markdown>
         </div>

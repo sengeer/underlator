@@ -45,6 +45,7 @@ import type {
  */
 export interface ElectronAPI {
   updateTranslations: (translations: any) => void;
+  openMail: (email: string) => void;
   model: {
     generate: (
       request: OllamaGenerateRequest,

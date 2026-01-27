@@ -6,43 +6,31 @@
 import type { PromptTemplate } from '../types/prompt-manager';
 
 /**
- * Дефолтный шаблон промпта для контекстного перевода.
+ * Шаблон промпта для контекстного перевода.
  */
 export const DEFAULT_CONTEXTUAL_TRANSLATION_PROMPT: PromptTemplate = {
   id: 'default-contextual-translation',
-  content: `
-  [ROLE]
-  You are a professional document translation engine.
-  Your task is to translate technical/academic content while preserving ALL special markers.
+  content: `### Role
+You are a professional translation engine. Your task is to translate content from {sourceLanguage} to {targetLanguage} while strictly preserving technical markers "{chunkDelimiter}".
 
-  [RULES]
-  1. STRICTLY preserve every occurrence of "{chunkDelimiter}" unchanged
-  2. NEVER translate, modify, move, add or delete delimiter symbols
-  3. Treat delimiters as INVIOABLE technical markers, not linguistic elements
-  4. Maintain original spacing around delimiters exactly
-  5. Translate text segments BETWEEN delimiters independently
-  6. For incomplete sentences at segment boundaries:
-    - Keep grammatical consistency with adjacent chunks
-    - Preserve technical terms and proper names unchanged
-  7. Output ONLY the translated text with preserved markers
+### Rules
+1. Translate ONLY the text. Every occurrence of "{chunkDelimiter}" must remain UNCHANGED.
+2. DO NOT modify, add, or delete these markers.
+3. Keep the original spacing around markers.
+4. Output ONLY the translated text without any comments or quotes.
 
-  [CONTEXT]
-  - Document type: 'PDF'
-  - Source language: {sourceLanguage}
-  - Target language: {targetLanguage}
+### Example
+Input: Important{chunkDelimiter}safety{chunkDelimiter}information
+Output: Важная{chunkDelimiter}информация{chunkDelimiter}по безопасности
 
-  [EXAMPLE]
-  Input: "Important{chunkDelimiter}safety{chunkDelimiter}information"
-  Output: "Важная{chunkDelimiter}информация{chunkDelimiter}по безопасности"
+### Input to Translate
+{combinedText}
 
-  [INPUT TEXT]
-  {combinedText}
-
-  [TRANSLATION]
-  `,
+### Translated Text:
+`,
   metadata: {
     description:
-      'Prompt for contextual translation with preservation of delimiters',
+      'Optimized prompt for local LLMs to translate with delimiter preservation',
     mode: 'contextualTranslation',
     requiredPlaceholders: [
       'sourceLanguage',
@@ -51,14 +39,14 @@ export const DEFAULT_CONTEXTUAL_TRANSLATION_PROMPT: PromptTemplate = {
       'combinedText',
     ],
     optionalPlaceholders: [],
-    version: '0.1.0',
+    version: '1.0.1',
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
 
 /**
- * Дефолтный системный промпт для чата.
+ * Шаблон промпта для чата.
  */
 export const DEFAULT_CHAT_SYSTEM_PROMPT: PromptTemplate = {
   id: 'default-chat-system',
@@ -68,14 +56,14 @@ export const DEFAULT_CHAT_SYSTEM_PROMPT: PromptTemplate = {
     mode: 'chat',
     requiredPlaceholders: [],
     optionalPlaceholders: [],
-    version: '0.1.0',
+    version: '1.0.0',
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
 
 /**
- * Дефолтные правила для чата.
+ * Правила для чата.
  */
 export const DEFAULT_CHAT_RULES_PROMPT: PromptTemplate = {
   id: 'default-chat-rules',
@@ -87,14 +75,14 @@ export const DEFAULT_CHAT_RULES_PROMPT: PromptTemplate = {
     mode: 'chat',
     requiredPlaceholders: [],
     optionalPlaceholders: ['historyMessages'],
-    version: '0.1.0',
+    version: '1.0.0',
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
 
 /**
- * Дефолтный шаблон промпта для простого перевода.
+ * Шаблон промпта для простого перевода.
  */
 export const DEFAULT_SIMPLE_TRANSLATION_PROMPT: PromptTemplate = {
   id: 'default-simple-translation',
@@ -104,25 +92,25 @@ export const DEFAULT_SIMPLE_TRANSLATION_PROMPT: PromptTemplate = {
     mode: 'simpleTranslation',
     requiredPlaceholders: ['sourceLanguage', 'targetLanguage', 'text'],
     optionalPlaceholders: [],
-    version: '0.1.0',
+    version: '1.0.0',
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
 
 /**
- * Дефолтный шаблон промпта для инструкций.
+ * Шаблон промпта для инструкций.
  * Извлечен из handleInstruction в feature-provider.ts.
  */
 export const DEFAULT_INSTRUCTION_PROMPT: PromptTemplate = {
   id: 'default-instruction',
-  content: `{instruction}: {text}`,
+  content: `{instruction}\n{text}`,
   metadata: {
     description: 'Prompt for executing instructions',
     mode: 'instruction',
     requiredPlaceholders: ['instruction', 'text'],
     optionalPlaceholders: [],
-    version: '0.1.0',
+    version: '1.0.1',
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),

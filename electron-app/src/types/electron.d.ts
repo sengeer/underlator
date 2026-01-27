@@ -33,4 +33,9 @@ export interface MenuTranslations {
   OK?: string;
   RAM?: string;
   INSUFFICIENT_RAM?: string;
+  CONTACT_DIALOG_TITLE?: string;
+  CONTACT_DIALOG_MESSAGE?: string;
+  CONTACT_DIALOG_COPY_BUTTON?: string;
+  CONTACT_DIALOG_OPEN_BUTTON?: string;
+  DIALOG_CANCEL_BUTTON?: string;
 }

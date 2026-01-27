@@ -219,19 +219,6 @@ function Chat() {
   ]);
 
   /**
-   * Обрабатывает остановку генерации.
-   */
-  const handleStopGeneration = useCallback(() => {
-    stop();
-    dispatch(
-      setGenerationState({
-        isGenerating: false,
-        chatId: null,
-      })
-    );
-  }, [stop, dispatch]);
-
-  /**
    * Обрабатывает изменения в поле ввода.
    */
   const handleInputChange = useCallback(
@@ -437,9 +424,7 @@ function Chat() {
             </div>
             <div className='chat__actions'>
               {status === 'process' ? (
-                <TextAndIconButton
-                  text={t`stop`}
-                  onClick={handleStopGeneration}>
+                <TextAndIconButton text={t`stop`} onClick={stop}>
                   <TextFilled text='space' />
                 </TextAndIconButton>
               ) : (

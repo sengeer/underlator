@@ -65,53 +65,53 @@ msgid " model has been removed"
 msgstr " model has been removed"
 
 #. js-lingui-explicit-id
-#: src/widgets/chat/models/chat-ipc-slice.ts
-#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
 msgid "Error getting the chats list"
 msgstr "Error getting the chats list"
 
 #. js-lingui-explicit-id
-#: src/widgets/chat/models/chat-ipc-slice.ts
-#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
 msgid "Error creating chat"
 msgstr "Error creating chat"
 
 #. js-lingui-explicit-id
-#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
 msgid "Chat created successfully"
 msgstr "Chat created successfully"
 
 #. js-lingui-explicit-id
-#: src/widgets/chat/models/chat-ipc-slice.ts
-#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
 msgid "Error getting chat"
 msgstr "Error getting chat"
 
 #. js-lingui-explicit-id
-#: src/widgets/chat/models/chat-ipc-slice.ts
-#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
 msgid "Error updating chat"
 msgstr "Error updating chat"
 
 #. js-lingui-explicit-id
-#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
 msgid "Chat updated successfully"
 msgstr "Chat updated successfully"
 
 #. js-lingui-explicit-id
-#: src/widgets/chat/models/chat-ipc-slice.ts
-#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
 msgid "Error deleting chat"
 msgstr "Error deleting chat"
 
 #. js-lingui-explicit-id
-#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
 msgid "Chat deleted successfully"
 msgstr "Chat deleted successfully"
 
 #. js-lingui-explicit-id
-#: src/widgets/chat/models/chat-ipc-slice.ts
-#: src/widgets/chat/models/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
+#: src/shared/models/chat-ipc-slice/chat-ipc-slice.ts
 msgid "Error adding message"
 msgstr "Error adding message"
 
@@ -161,6 +161,10 @@ msgstr "bengali"
 msgid "burmese"
 msgstr "burmese"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Cancel"
+msgstr "Cancel"
+
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "cantonese"
 msgstr "cantonese"
@@ -186,8 +190,16 @@ msgid "contact"
 msgstr "contact"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Contact"
+msgstr "Contact"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Copy"
 msgstr "Copy"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Copy Email"
+msgstr "Copy Email"
 
 #: src/widgets/chat/ui/chat-sidebar.tsx
 msgid "Create your first chat"
@@ -424,6 +436,10 @@ msgstr "number of top results"
 msgid "ok!"
 msgstr "ok!"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Open Gmail"
+msgstr "Open Gmail"
+
 #: src/shared/ui/file-upload/file-upload.tsx
 msgid "or click"
 msgstr "or click"
@@ -529,6 +545,10 @@ msgstr "telugu"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "thai"
 msgstr "thai"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "The system could not automatically launch the email client for: "
+msgstr "The system could not automatically launch the email client for: "
 
 #: src/widgets/settings/ui/settings.tsx
 msgid "theme"

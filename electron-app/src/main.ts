@@ -5,7 +5,15 @@
  * Также можно поместить их в отдельные файлы и импортировать сюда.
  */
 
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  shell,
+  dialog,
+  clipboard,
+} = require('electron');
 const path = require('path');
 import { OllamaApi } from './services/ollama-api';
 import { ollamaManager } from './services/ollama-manager';
@@ -47,6 +55,13 @@ export let currentAbortController: AbortController | null = null;
 const isMac: boolean = process.platform === 'darwin';
 const isWindows: boolean = process.platform === 'win32';
 const isLinux: boolean = process.platform === 'linux';
+
+app.setAppUserModelId('com.example.underlator');
+
+if (process.platform === 'linux') {
+  app.setName('Underlator');
+  app.setDesktopName('Underlator');
+}
 
 export let translations: MenuTranslations = {};
 let isQuitting: boolean = false; // Флаг для отслеживания намерения завершить приложение
@@ -127,6 +142,8 @@ function sendSplashError(error: string): void {
 /**
  * Преобразование ошибки в строку.
  * Используется для преобразования ошибки в строку.
+ *
+ * @param error - Ошибка.
  */
 function convertErrorToString(error: Error) {
   let errorMessage = 'Critical error in main process';
@@ -356,6 +373,74 @@ async function loadPipeline(): Promise<void> {
 }
 
 /**
+ * Обработчик IPC события для связи по электронной почте.
+ * * На ОС Linux часто возникают проблемы с протоколом `mailto:` (ошибка GIO или отсутствие ассоциаций),
+ * поэтому для этой платформы принудительно вызывается диалоговое окно-заглушка.
+ * Для остальных ОС (Windows, macOS) предпринимается попытка открыть стандартный почтовый клиент.
+ *
+ * @param _event - Объект события IPC (не используется).
+ * @param email - Адрес электронной почты для отправки сообщения.
+ */
+ipcMain.on('contact-mail', async (_event: any, email: string) => {
+  const mailUrl = `mailto:${email}`;
+
+  try {
+    /**
+     * В Linux системные утилиты (gio, xdg-open) могут возвращать успех,
+     * даже если приложение не открылось, или вызывать ошибки в консоли.
+     * Поэтому для Linux мы сразу предлагаем альтернативные варианты через диалог.
+     */
+    if (process.platform === 'linux') {
+      await showFallbackDialog(email);
+    } else {
+      // Пытаемся открыть нативный почтовый клиент для Windows/macOS
+      await shell.openExternal(mailUrl);
+    }
+  } catch (error) {
+    console.error('Failed to open default mail client:', error);
+    // Если системный вызов завершился ошибкой, показываем фолбек
+    await showFallbackDialog(email);
+  }
+});
+
+/**
+ * Отображает системное диалоговое окно с предложением альтернативных действий,
+ * если не удалось запустить почтовый клиент по умолчанию.
+ * * Предоставляет пользователю выбор:
+ * 1. Скопировать адрес в буфер обмена.
+ * 2. Открыть Gmail в браузере (как наиболее вероятную альтернативу).
+ * 3. Отменить действие.
+ *
+ * @param email - Адрес электронной почты, который будет предложен для копирования или открытия.
+ * @returns Promise<void>
+ */
+async function showFallbackDialog(email: string): Promise<void> {
+  const { response } = await dialog.showMessageBox({
+    type: 'question',
+    title: translations.CONTACT_DIALOG_TITLE,
+    message: translations.CONTACT_DIALOG_MESSAGE + email,
+    buttons: [
+      translations.CONTACT_DIALOG_COPY_BUTTON, // ID 0
+      translations.CONTACT_DIALOG_OPEN_BUTTON, // ID 1
+      translations.DIALOG_CANCEL_BUTTON, // ID 2
+    ],
+    defaultId: 0,
+    cancelId: 2,
+  });
+
+  if (response === 0) {
+    // Пользователь выбрал: Скопировать в буфер обмена
+    clipboard.writeText(email);
+  } else if (response === 1) {
+    // Пользователь выбрал: Открыть веб-интерфейс Gmail
+    // Используется шаблонная строка для формирования URL внешней ссылки
+    shell.openExternal(
+      `https://mail.google.com/mail/?view=cm&fs=1&to=${email}`
+    );
+  }
+}
+
+/**
  * Обработчик обновления переводов меню.
  * Получает новые переводы от renderer процесса и перестраивает меню.
  */
@@ -380,6 +465,7 @@ function buildMenu(): void {
         {
           role: 'about',
           label: translations.ABOUT || 'About Underlator',
+          visible: !isLinux,
         },
         { role: 'undo', label: translations.UNDO || 'Undo' },
         { role: 'redo', label: translations.REDO || 'Redo' },
@@ -448,6 +534,7 @@ function createWindow(): void {
     minWidth: 480,
     minHeight: 350,
     icon: iconPath,
+    title: 'Underlator',
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,

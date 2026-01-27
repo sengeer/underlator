@@ -9,9 +9,16 @@
  */
 export const EMBEDDING_MODEL_WHITELIST = [
   'embeddinggemma',
+  'qwen3-embedding',
+  'nomic-embed-text-v2-moe',
+  'nomic-embed-text',
   'mxbai-embed-large',
   'all-minilm',
-  'bge-small-en',
+  'snowflake-arctic-embed',
+  'snowflake-arctic-embed2',
+  'granite-embedding',
+  'bge-large',
+  'embed',
 ] as const;
 
 /**

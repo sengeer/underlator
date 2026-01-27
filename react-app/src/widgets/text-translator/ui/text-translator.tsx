@@ -25,14 +25,11 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useResizeDetector } from 'react-resize-detector';
 import BackspaceIcon from '../../../shared/assets/icons/backspace-icon';
-import CheckIcon from '../../../shared/assets/icons/check-icon';
-import CopyIcon from '../../../shared/assets/icons/copy-icon';
 import GlobeIcon from '../../../shared/assets/icons/globe-icon';
 import GlobeUkIcon from '../../../shared/assets/icons/globe-uk-icon';
 import StopCircleIcon from '../../../shared/assets/icons/stop-circle-icon';
 import SyncIcon from '../../../shared/assets/icons/sync-icon';
 import TranslateIcon from '../../../shared/assets/icons/translate-icon';
-import useCopying from '../../../shared/lib/hooks/use-copying';
 import useModel from '../../../shared/lib/hooks/use-model';
 import useTranslationLanguages from '../../../shared/lib/hooks/use-translation-languages';
 import useWindowSize from '../../../shared/lib/hooks/use-window-size';
@@ -42,7 +39,6 @@ import {
   closeElement,
   isElementOpen,
 } from '../../../shared/models/element-state-slice';
-import AnimatingWrapper from '../../../shared/ui/animating-wrapper';
 import IconButton from '../../../shared/ui/icon-button';
 import MarkdownRenderer from '../../../shared/ui/markdown-renderer';
 import Popup from '../../../shared/ui/popup';
@@ -74,8 +70,6 @@ import '../styles/text-translator.scss';
  * @returns JSX элемент с интерфейсом перевода текста.
  */
 function TextTranslator() {
-  // Хуки для управления состоянием и функциональностью
-  const { isCopied, handleCopy } = useCopying();
   const { status, generatedResponse, generate, stop } = useModel();
   const {
     sourceLanguage,
@@ -220,6 +214,7 @@ function TextTranslator() {
           showThinking={false}
           style={{ height: heightOfOutputContainer + 'px' }}
           placeholder={getPlaceholderByLanguage(targetLanguage)}
+          isShowedCopyingBtn={false}
         />
       </div>
 

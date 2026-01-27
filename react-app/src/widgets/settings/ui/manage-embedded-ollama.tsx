@@ -54,6 +54,7 @@ import type {
   ModelEventCallbacks,
 } from '../types/model-ipc';
 import ModelItem from './model-item';
+import '../styles/manage-embedded-ollama.scss';
 
 /**
  * Утилита для определения состояния модели.
@@ -449,17 +450,23 @@ function ManageModels({
       onSearchChange={handleSearchChange}
       isLoading={catalogState.loading}>
       {/* Список моделей */}
-      {displayModels.length === 0 && !catalogState.loading
-        ? emptyStateContent
-        : displayModels.map(({ model, displayState }) => (
-            <ModelItem
-              key={model.name}
-              model={model}
-              displayState={displayState}
-              eventCallbacks={eventCallbacks}
-              onProgress={getModelProgress}
-            />
-          ))}
+      {displayModels.length === 0 && !catalogState.loading ? (
+        <div className='manage-embedded-ollama__empty-state'>
+          <p className='text-body-m manage-embedded-ollama__paragraph'>
+            {emptyStateContent}
+          </p>
+        </div>
+      ) : (
+        displayModels.map(({ model, displayState }) => (
+          <ModelItem
+            key={model.name}
+            model={model}
+            displayState={displayState}
+            eventCallbacks={eventCallbacks}
+            onProgress={getModelProgress}
+          />
+        ))
+      )}
     </PopupWithSearch>
   );
 }
