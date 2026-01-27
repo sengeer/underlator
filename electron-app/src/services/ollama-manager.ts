@@ -7,7 +7,7 @@
 
 import { ElectronOllama } from 'electron-ollama';
 const path = require('path');
-import { app } from 'electron';
+const { app, dialog } = require('electron');
 import { mainWindow } from '../main';
 import { exec } from 'child_process';
 import { platform } from 'os';
@@ -90,6 +90,27 @@ class OllamaManager {
     if (selectedParts) return selectedParts.join(' ');
 
     return '';
+  }
+
+  private async showFallbackDialog(error: string): Promise<boolean> {
+    const { response } = await dialog.showMessageBox({
+      type: 'question',
+      title: 'Ollama недоступна',
+      message:
+        'Underlator не смог загрузить бинарники Ollama в автоматическом режиме',
+      buttons: [
+        'Запустить без Ollama', // ID 0
+        'Отмена', // ID 1
+      ],
+      defaultId: 1,
+      cancelId: 1,
+    });
+
+    if (response === 0) {
+      return true;
+    }
+
+    throw new Error(error);
   }
 
   /**
@@ -203,11 +224,12 @@ class OllamaManager {
                 );
                 // Продолжает попытки запуска с локальными версиями
               } else {
+                // Если нет локальных версий и нет интернета, бросает ошибку
                 console.warn(
                   '⚠️ No local Ollama versions available and no internet connection'
                 );
-                // Если нет локальных версий и нет интернета, бросает ошибку
-                throw new Error(
+
+                return await this.showFallbackDialog(
                   'No local Ollama versions available and no internet connection. Please install Ollama manually or connect to the internet.'
                 );
               }
@@ -221,7 +243,7 @@ class OllamaManager {
 
           // Если это последняя попытка - пробрасывает ошибку дальше
           if (attempt >= this.MAX_ATTEMPTS) {
-            throw new Error(
+            return await this.showFallbackDialog(
               `Failed to start Ollama server after ${this.MAX_ATTEMPTS} attempts: ${(error as Error).message}`
             );
           }
