@@ -52,9 +52,9 @@ let modelHandlers: ModelHandlers | null = null;
 let catalogHandlers: CatalogHandlers | null = null;
 let ragHandlers: RagHandlers | null = null;
 export let currentAbortController: AbortController | null = null;
-const isMac: boolean = process.platform === 'darwin';
-const isWindows: boolean = process.platform === 'win32';
-const isLinux: boolean = process.platform === 'linux';
+export const isMac: boolean = process.platform === 'darwin';
+export const isWindows: boolean = process.platform === 'win32';
+export const isLinux: boolean = process.platform === 'linux';
 
 app.setAppUserModelId('com.example.underlator');
 
