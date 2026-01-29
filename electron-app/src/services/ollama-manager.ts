@@ -1,49 +1,41 @@
 /**
  * @module OllamaManager
- * Сервис для управления Ollama через electron-ollama библиотеку и нативными диалогами.
- * Обеспечивает автоматическую установку, запуск и интерактивный выбор режима работы.
+ * Сервис для управления Ollama через electron-ollama библиотеку.
+ * Обеспечивает автоматическую установку, запуск и остановку Ollama сервера.
+ * Реализует fallback логику и интерактивные диалоги для взаимодействия с пользователем.
  */
 
 import { ElectronOllama } from 'electron-ollama';
-import * as path from 'path';
+const path = require('path');
 const { app, dialog } = require('electron');
-import {
-  mainWindow,
-  translations,
-  isMac,
-  isWindows,
-  isLinux,
-  isDev,
-} from '../main';
+import { mainWindow } from '../main';
 import { exec } from 'child_process';
-import { platform, homedir } from 'os';
+import { platform } from 'os';
+import { translations, isDev, isMac, isWindows, isLinux } from '../main';
 import { errorHandler } from '../utils/error-handler';
 import type { OperationContext } from '../types/error-handler';
-
-// Типы состояний для навигации по меню
-type ActionState = 'main_menu' | 'download_info' | 'exit';
 
 /**
  * @class OllamaManager
  *
  * Менеджер для управления Ollama сервером в Electron main process.
- * Реализует Singleton паттерн.
+ * Обеспечивает автоматическую установку и управление жизненным циклом Ollama.
  */
 class OllamaManager {
   private electronOllama: ElectronOllama | null = null;
   private isInitialized: boolean = false;
   private isStarting: boolean = false;
   private isStopping: boolean = false;
-
-  // URL по умолчанию
-  private currentOllamaUrl: string = 'http://127.0.0.1:11434';
-
-  private readonly MAX_ATTEMPTS = 2;
-  private readonly RETRY_DELAY_MS = 1000;
+  private MAX_ATTEMPTS = 2;
+  private RETRY_DELAY_MS = 1000;
+  private readonly currentOllamaUrl = 'http://127.0.0.1:11434';
 
   /**
-   * Инициализирует OllamaManager.
-   * Устанавливает базовые пути, но не запускает загрузку автоматически.
+   * Инициализирует OllamaManager и выполняет автоматическую установку Ollama.
+   * Проверяет доступность Ollama и устанавливает его при необходимости.
+   *
+   * @returns {Promise<void>} Promise, который разрешается после инициализации.
+   * @throws {Error} Ошибка инициализации или установки Ollama.
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
@@ -59,6 +51,7 @@ class OllamaManager {
     try {
       console.log('🔄 Initialization of the OllamaManager...');
 
+      // Создание экземпляра ElectronOllama
       this.electronOllama = new ElectronOllama({
         basePath: isDev
           ? app.getPath('userData')
@@ -75,210 +68,6 @@ class OllamaManager {
         `Failed to initialize the OllamaManager: ${(error as Error).message}`
       );
     }
-  }
-
-  /**
-   * Основной метод запуска.
-   * Проверяет доступность Ollama. Если недоступна — запускает интерактивный сценарий.
-   *
-   * @returns {Promise<boolean>}
-   * true - Ollama запущена или пользователь выбрал "Запустить Underlator" (пропуск).
-   * false - Отмена действия или критическая ошибка.
-   */
-  async startOllama(): Promise<boolean> {
-    if (!this.electronOllama) {
-      throw new Error(
-        'OllamaManager is not initialized. Call initialize() first.'
-      );
-    }
-
-    if (this.isStarting) {
-      console.log('🔄 Ollama is already starting...');
-      return false;
-    }
-
-    this.isStarting = true;
-
-    try {
-      // 1. Быстрая проверка: может быть Ollama уже работает
-      const isRunning = await this.isOllamaRunning();
-      if (isRunning) {
-        console.log(
-          `✅ Ollama server is already running at ${this.currentOllamaUrl}`
-        );
-        return true;
-      }
-
-      // 2. Если не работает — запускаем интерактивный флоу
-      const success = await this.handleInteractiveStartup();
-      return success;
-    } catch (error) {
-      console.error('❌ Error during Ollama startup flow:', error);
-      return await this.showFallbackDialog(
-        `Critical error during startup: ${(error as Error).message}`
-      );
-    } finally {
-      this.isStarting = false;
-    }
-  }
-
-  /**
-   * Машина состояний для диалогов.
-   * Позволяет навигироваться между окнами ("Назад").
-   */
-  private async handleInteractiveStartup(): Promise<boolean> {
-    let action: ActionState = 'main_menu';
-
-    // Цикл работает пока action не станет 'exit'
-    // Если пользователь выберет успешный сценарий, метод вернет true внутри цикла
-    while (action !== 'exit') {
-      if (action === 'main_menu') {
-        // Диалог 1: Главное меню выбора
-        const { response } = await dialog.showMessageBox({
-          type: 'question',
-          title: 'Ollama не найдена', // 'Ollama not found'
-          message: `Ollama не обнаружена по адресу ${this.currentOllamaUrl}`, // 'Ollama was not found at...'
-          // [Download Ollama, Run Underlator, Cancel]
-          buttons: ['Загрузить Ollama', 'Запустить Underlator'],
-          defaultId: 3,
-          cancelId: 1,
-        });
-
-        if (response === 0) {
-          // Переход к инфо о загрузке
-          action = 'download_info';
-        } else if (response === 1) {
-          // Запустить приложение без Ollama (пропустить проверку)
-          console.log(
-            '⚠️ User chose to run Underlator without local Ollama check.'
-          );
-          return true;
-        }
-      }
-
-      if (action === 'download_info') {
-        // Диалог 2: Инфо о путях
-        const pathInfo = this.getPlatformSpecificPath();
-        const { response } = await dialog.showMessageBox({
-          type: 'info',
-          title: 'Загрузка Ollama', // 'Downloading Ollama'
-          message:
-            'Бинарные файлы Ollama будут сохранены в следующую директорию:', // 'Ollama binaries will be saved to:'
-          detail: pathInfo,
-          // [Download, Back]
-          buttons: ['Загрузить', 'Назад'],
-          defaultId: 2,
-          cancelId: 1,
-        });
-
-        if (response === 0) {
-          // Запуск скачивания
-          return await this.performLocalStart();
-        } else {
-          // Назад в главное меню
-          action = 'main_menu';
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Возвращает путь хранения бинарников в зависимости от ОС.
-   */
-  private getPlatformSpecificPath(): string {
-    const underlatorDir = 'Underlator';
-
-    if (isMac) {
-      return path.join(
-        homedir(),
-        'Library',
-        'Application Support',
-        underlatorDir,
-        path.sep
-      );
-    } else if (isLinux) {
-      return path.join(homedir(), '.config', underlatorDir, path.sep);
-    } else if (isWindows) {
-      return path.join(app.getPath('appData'), underlatorDir, path.sep);
-    }
-    return path.join(app.getPath('userData'), 'Ollama Binaries');
-  }
-
-  /**
-   * Логика загрузки и запуска локальной версии Ollama.
-   */
-  private async performLocalStart(): Promise<boolean> {
-    let attempt = 0;
-    try {
-      while (attempt < this.MAX_ATTEMPTS) {
-        attempt++;
-        console.log(
-          `🔄 Attempt ${attempt}/${this.MAX_ATTEMPTS} to start local Ollama...`
-        );
-
-        try {
-          if (!this.electronOllama) throw new Error('Ollama instance lost');
-
-          const downloadedVersions =
-            await this.electronOllama.downloadedVersions();
-          let versionToServe: string;
-
-          // Проверка на наличие элементов в массиве и undefined
-          if (
-            downloadedVersions.length > 0 &&
-            downloadedVersions[downloadedVersions.length - 1]
-          ) {
-            // Гарантируем, что это строка
-            versionToServe = downloadedVersions[
-              downloadedVersions.length - 1
-            ] as string;
-            console.log(`✅ Using local Ollama version: ${versionToServe}`);
-          } else {
-            console.log('🌐 Downloading latest Ollama...');
-            const metadata = await this.electronOllama.getMetadata('latest');
-            versionToServe = metadata.version || 'latest';
-          }
-
-          // as any используется т.к. библиотека ожидает строгий литерал 'vX.X.X', а мы передаем string
-          await this.electronOllama.serve(versionToServe as any, {
-            serverLog: message => console.log('🔌 [Ollama Server]', message),
-            downloadLog: (percent, message) =>
-              mainWindow.webContents.send('splash:status-update', {
-                status: 'downloading-ollama',
-                message:
-                  translations.DOWNLOADING_OLLAMA || 'Downloading Ollama...',
-                details: this.formatMessage(message),
-                progress: percent,
-              }),
-            timeoutSec: 3,
-          });
-
-          this.currentOllamaUrl = 'http://127.0.0.1:11434';
-          process.env['OLLAMA_HOST'] = this.currentOllamaUrl;
-
-          console.log('✅ Local Ollama server started successfully');
-          return true;
-        } catch (error) {
-          console.error(`Attempt ${attempt} failed:`, error);
-
-          const isNetworkError =
-            error instanceof Error &&
-            (error.message.includes('fetch') ||
-              error.message.includes('network'));
-
-          if (isNetworkError && attempt >= this.MAX_ATTEMPTS) {
-            throw error;
-          }
-
-          await new Promise(r => setTimeout(r, this.RETRY_DELAY_MS));
-        }
-      }
-    } catch (e) {
-      this.showFallbackDialog((e as Error).message);
-    }
-    return false;
   }
 
   /**
@@ -303,19 +92,271 @@ class OllamaManager {
     return '';
   }
 
-  private async showFallbackDialog(error: string): Promise<boolean> {
+  /**
+   * Возвращает путь установки бинарников Ollama для отображения пользователю.
+   *
+   * @returns {string} Путь к директории в зависимости от ОС.
+   */
+  private getBinaryPathDisplay(): string {
+    if (isMac) {
+      return '~/Library/Application Support/Underlator/';
+    }
+    if (isLinux) {
+      return '~/.config/Underlator/';
+    }
+    if (isWindows) {
+      return '%APPDATA%\\Underlator\\';
+    }
+    // Fallback на стандартный путь userData, если ОС не определена специфично
+    return app.getPath('userData');
+  }
+
+  /**
+   * Показывает диалоговое окно, когда Ollama не найдена (ни сервис, ни бинарники).
+   *
+   * @returns {Promise<number>} Индекс нажатой кнопки (0 - Загрузить, 1 - Запустить Underlator).
+   */
+  private async showNotFoundDialog(): Promise<number> {
     const { response } = await dialog.showMessageBox({
+      type: 'question',
+      title: 'Ollama не найдена', // 'Ollama not found'
+      message: `Ollama не обнаружена по адресу ${this.currentOllamaUrl} и локальные файлы не найдены.`, // 'Ollama was not found at ... and no local binaries were found.'
+      // [Download Ollama, Run Underlator]
+      buttons: ['Загрузить Ollama', 'Запустить Underlator'],
+      defaultId: 1,
+      cancelId: 1,
+    });
+    return response;
+  }
+
+  /**
+   * Показывает диалоговое окно с информацией о загрузке.
+   *
+   * @returns {Promise<number>} Индекс нажатой кнопки (0 - Загрузить, 1 - Назад).
+   */
+  private async showDownloadInfoDialog(): Promise<number> {
+    const pathInfo = this.getBinaryPathDisplay();
+    const { response } = await dialog.showMessageBox({
+      type: 'info',
+      title: 'Загрузка Ollama', // 'Downloading Ollama'
+      message: 'Бинарные файлы Ollama будут сохранены в следующую директорию:', // 'Ollama binaries will be saved to:'
+      detail: pathInfo,
+      // [Download, Back]
+      buttons: ['Загрузить', 'Назад'],
+      defaultId: 0,
+      cancelId: 1,
+    });
+    return response;
+  }
+
+  /**
+   * Показывает диалоговое окно ошибки при невозможности загрузить/запустить Ollama.
+   *
+   * @param {string} errorDetails - Текст ошибки.
+   * @returns {Promise<void>}
+   */
+  private async showFatalErrorDialog(errorDetails: string): Promise<void> {
+    await dialog.showMessageBox({
       type: 'question',
       title: 'Ollama недоступна', // 'Ollama unavailable'
       message:
         'Underlator не смог загрузить бинарники Ollama в автоматическом режиме.', // 'Underlator failed to load Ollama binaries...'
-      detail: error,
-      // [Start without Ollama]
-      buttons: ['Запустить без Ollama'],
-      defaultId: 1,
+      detail: errorDetails,
+      // [Run Underlator]
+      buttons: ['Запустить Underlator'],
+      defaultId: 0,
       cancelId: 0,
     });
-    return response === 0;
+  }
+
+  /**
+   * Внутренний метод для выполнения цикла запуска/загрузки.
+   * Инкапсулирует логику повторных попыток и выбора версии.
+   *
+   * @returns {Promise<boolean>} Успешность запуска.
+   */
+  private async performStartupSequence(): Promise<boolean> {
+    if (!this.electronOllama) return false;
+
+    let attempt = 0;
+    while (attempt < this.MAX_ATTEMPTS) {
+      attempt++;
+      console.log(
+        `🔄 Attempt ${attempt}/${this.MAX_ATTEMPTS} to start Ollama server...`
+      );
+
+      try {
+        // Сначала проверяет доступные версии Ollama
+        const downloadedVersions =
+          await this.electronOllama.downloadedVersions();
+        console.log('📦 Available local Ollama versions:', downloadedVersions);
+
+        let versionToServe: any;
+
+        if (downloadedVersions.length > 0) {
+          // Использует последнюю доступную версию
+          const lastVersion = downloadedVersions[downloadedVersions.length - 1];
+          if (lastVersion) {
+            versionToServe = lastVersion;
+            console.log(`✅ Using local Ollama version: ${versionToServe}`);
+          } else {
+            throw new Error('Invalid local version found');
+          }
+        } else {
+          // Если локальных версий нет, пытается получить метаданные из интернета
+          console.log(
+            '🌐 No local versions found, attempting to download latest...'
+          );
+          const metadata = await this.electronOllama.getMetadata('latest');
+          versionToServe = metadata.version;
+        }
+
+        // Запуск сервера с автоматической загрузкой при необходимости
+        await this.electronOllama.serve(versionToServe, {
+          serverLog: message => console.log('🔌 [Ollama Server]', message),
+          downloadLog: (percent, message) =>
+            mainWindow.webContents.send('splash:status-update', {
+              status: 'downloading-ollama',
+              message:
+                translations.DOWNLOADING_OLLAMA || 'Downloading Ollama...',
+              details: this.formatMessage(message),
+              progress: percent,
+            }),
+          timeoutSec: 1,
+        });
+
+        console.log('✅ Ollama server started successfully');
+        return true;
+      } catch (error) {
+        console.error(`Attempt ${attempt} failed:`, error);
+        const errorMessage = (error as Error).message;
+
+        const isNetworkError =
+          errorMessage.includes('fetch') ||
+          errorMessage.includes('network') ||
+          errorMessage.includes('ECONNREFUSED') ||
+          errorMessage.includes('ENOTFOUND');
+
+        // Если это последняя попытка - показывает диалог ошибки
+        if (attempt >= this.MAX_ATTEMPTS) {
+          await this.showFatalErrorDialog(errorMessage);
+          return false;
+        }
+
+        if (isNetworkError) {
+          try {
+            // Проверяет, есть ли локальные версии, чтобы попробовать еще раз без сети
+            const downloadedVersions =
+              await this.electronOllama.downloadedVersions();
+            if (downloadedVersions.length === 0) {
+              // Нет локальных версий и нет сети -> сразу показывает ошибку
+              await this.showFatalErrorDialog(
+                'No internet connection and no local Ollama versions found.'
+              );
+              return false;
+            }
+            // Если версии есть, цикл продолжится и попробует запустить их
+          } catch (localCheckError) {
+            await this.showFatalErrorDialog(
+              `Failed to check local versions: ${(localCheckError as Error).message}`
+            );
+            return false;
+          }
+        }
+
+        console.log(`⏳ Retrying in ${this.RETRY_DELAY_MS}ms...`);
+        await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY_MS));
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Запускает Ollama сервер с интерактивным взаимодействием.
+   *
+   * Логика принятия решений:
+   * 1. Если сервис Ollama уже работает -> успех (независимо от бинарников).
+   * 2. Если есть локальные бинарники -> автоматический запуск (без диалогов).
+   * 3. Если ничего нет -> показываем диалог с предложением загрузить.
+   *
+   * @returns {Promise<boolean>} Promise с результатом запуска (true - успешно запущено, false - работа без Ollama).
+   * @throws {Error} Ошибка инициализации.
+   */
+  async startOllama(): Promise<boolean> {
+    if (!this.electronOllama) {
+      throw new Error(
+        'OllamaManager is not initialized. Call initialize() first.'
+      );
+    }
+
+    if (this.isStarting) {
+      console.log('🔄 Ollama is already starting...');
+      return false;
+    }
+
+    this.isStarting = true;
+
+    try {
+      // Проверка текущего статуса сервера
+      // Если пользователь запустил вручную, неважно есть ли у нас бинарники
+      const isRunning = await this.isOllamaRunning();
+      if (isRunning) {
+        console.log('✅ Ollama server is already running');
+        return true; // Важно: возвращает true, так как сервис доступен
+      }
+
+      // Проверка наличия локальных бинарников
+      // Если бинарники есть, но сервер не запущен -> автостарт без вопросов
+      const downloadedVersions = await this.electronOllama.downloadedVersions();
+      const hasLocalBinaries = downloadedVersions.length > 0;
+
+      if (hasLocalBinaries) {
+        console.log('✅ Local binaries found. Auto-starting Ollama...');
+        return await this.performStartupSequence();
+      }
+
+      // Бинарников нет и сервер не работает
+      // Запускаем интерактивный цикл
+      let userDecisionMade = false;
+      let shouldDownload = false;
+
+      while (!userDecisionMade) {
+        // Диалог 1: Ollama не найдена
+        const initialResponse = await this.showNotFoundDialog();
+
+        if (initialResponse === 1) {
+          // Пользователь выбрал "Запустить Underlator" (без Ollama)
+          console.log('User chose to run without Ollama.');
+          return false;
+        } else {
+          // Пользователь выбрал "Загрузить Ollama" -> Диалог 2
+          const downloadResponse = await this.showDownloadInfoDialog();
+
+          if (downloadResponse === 1) {
+            // Пользователь выбрал "Назад", цикл повторяется
+            continue;
+          } else {
+            // Пользователь выбрал "Загрузить"
+            shouldDownload = true;
+            userDecisionMade = true;
+          }
+        }
+      }
+
+      if (shouldDownload) {
+        // Запускает попытку загрузки и старта
+        return await this.performStartupSequence();
+      }
+
+      return false;
+    } catch (unexpectedError) {
+      console.error('Unexpected error in startOllama:', unexpectedError);
+      await this.showFatalErrorDialog((unexpectedError as Error).message);
+      return false;
+    } finally {
+      this.isStarting = false;
+    }
   }
 
   /**
@@ -349,8 +390,8 @@ class OllamaManager {
       return true;
     } catch (error) {
       console.error('Error stopping the Ollama server gracefully:', error);
-      // НЕ пробрасываем ошибку, просто сообщаем о неудаче.
-      // Cleanup должен продолжиться в любом случае.
+      // Сообщает о неудаче без проброса ошибки
+      // Cleanup должен продолжиться в любом случае
       return false;
     } finally {
       this.isStopping = false;
