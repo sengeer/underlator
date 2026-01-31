@@ -129,6 +129,10 @@ msgstr " прикреплен!"
 msgid "About Underlator"
 msgstr "О Underlator"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "and no local binaries were found"
+msgstr "и локальные файлы не найдены"
+
 #: src/widgets/settings/ui/settings.tsx
 msgid "API configuration"
 msgstr "API конфигурация"
@@ -152,6 +156,10 @@ msgstr "Прикрепить файл"
 #: src/shared/ui/selector-option/bar-mode.tsx
 msgid "B"
 msgstr "Б"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Back"
+msgstr "Назад"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "bengali"
@@ -224,6 +232,18 @@ msgstr "Пожертвование"
 #: src/shared/ui/selector-option/bar-mode.tsx
 msgid "download"
 msgstr "Загрузить"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Download"
+msgstr "Загрузить"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Download Ollama"
+msgstr "Загрузить Ollama"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Downloading Ollama"
+msgstr "Загрузка Ollama"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Downloading Ollama..."
@@ -437,6 +457,22 @@ msgid "ok!"
 msgstr "Ок!"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Ollama binaries will be saved to:"
+msgstr "Бинарные файлы Ollama будут сохранены в следующую директорию:"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Ollama not found"
+msgstr "Ollama не найдена"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Ollama unavailable"
+msgstr "Ollama недоступна"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Ollama was not found at"
+msgstr "Ollama не обнаружена по адресу"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Open Gmail"
 msgstr "Открыть Gmail"
 
@@ -487,6 +523,10 @@ msgstr "Удалить"
 #: src/shared/lib/hooks/use-model/use-model.ts
 msgid "Request error, check the settings"
 msgstr "Ошибка запроса, проверьте настройки"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Run Underlator"
+msgstr "Запустить Underlator"
 
 #: src/pages/main/ui/main.tsx
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
@@ -593,6 +633,10 @@ msgstr "Турецкий"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "ukrainian"
 msgstr "Украинский"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Underlator failed to load Ollama binaries:"
+msgstr "Underlator не смог загрузить бинарные файлы Ollama:"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Undo"

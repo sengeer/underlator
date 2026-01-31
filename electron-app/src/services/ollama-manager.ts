@@ -1,6 +1,7 @@
 /**
  * @module OllamaManager
- * Сервис для управления Ollama через electron-ollama библиотеку.
+ * Сервис для управления Ollama через библиотеку electron-ollama.
+ *
  * Обеспечивает автоматическую установку, запуск и остановку Ollama сервера.
  * Реализует fallback логику и интерактивные диалоги для взаимодействия с пользователем.
  */
@@ -11,7 +12,14 @@ const { app, dialog } = require('electron');
 import { mainWindow } from '../main';
 import { exec } from 'child_process';
 import { platform } from 'os';
-import { translations, isDev, isMac, isWindows, isLinux } from '../main';
+import {
+  translations,
+  isDev,
+  isMac,
+  isWindows,
+  isLinux,
+  waitForTranslations,
+} from '../main';
 import { errorHandler } from '../utils/error-handler';
 import type { OperationContext } from '../types/error-handler';
 
@@ -113,16 +121,30 @@ class OllamaManager {
 
   /**
    * Показывает диалоговое окно, когда Ollama не найдена (ни сервис, ни бинарники).
+   * Метод ожидает загрузки переводов из Main процесса перед отображением,
+   * чтобы гарантировать корректный язык интерфейса при холодном старте.
    *
    * @returns {Promise<number>} Индекс нажатой кнопки (0 - Загрузить, 1 - Запустить Underlator).
    */
   private async showNotFoundDialog(): Promise<number> {
+    await waitForTranslations();
+
     const { response } = await dialog.showMessageBox({
       type: 'question',
-      title: 'Ollama не найдена', // 'Ollama not found'
-      message: `Ollama не обнаружена по адресу ${this.currentOllamaUrl} и локальные файлы не найдены.`, // 'Ollama was not found at ... and no local binaries were found.'
-      // [Download Ollama, Run Underlator]
-      buttons: ['Загрузить Ollama', 'Запустить Underlator'],
+      title:
+        translations['OLLAMA_NOT_FOUND_DIALOG_TITLE'] || 'Ollama not found',
+      message: `${
+        translations['OLLAMA_NOT_FOUND_DIALOG_MESSAGE_1'] ||
+        'Ollama was not found at'
+      } ${this.currentOllamaUrl} ${
+        translations['OLLAMA_NOT_FOUND_DIALOG_MESSAGE_2'] ||
+        'and no local binaries were found'
+      }`,
+      buttons: [
+        translations['OLLAMA_NOT_FOUND_DIALOG_DOWNLOAD_BUTTON'] ||
+          'Download Ollama',
+        translations['DIALOG_RUN_BUTTON'] || 'Run Underlator',
+      ],
       defaultId: 1,
       cancelId: 1,
     });
@@ -138,12 +160,17 @@ class OllamaManager {
     const pathInfo = this.getBinaryPathDisplay();
     const { response } = await dialog.showMessageBox({
       type: 'info',
-      title: 'Загрузка Ollama', // 'Downloading Ollama'
-      message: 'Бинарные файлы Ollama будут сохранены в следующую директорию:', // 'Ollama binaries will be saved to:'
-      detail: pathInfo,
-      // [Download, Back]
-      buttons: ['Загрузить', 'Назад'],
-      defaultId: 0,
+      title:
+        translations['DOWNLOADING_OLLAMA_DIALOG_TITLE'] || 'Downloading Ollama',
+      message: `${
+        translations['DOWNLOADING_OLLAMA_DIALOG_MESSAGE'] ||
+        'Ollama binaries will be saved to:'
+      } ${pathInfo}`,
+      buttons: [
+        translations['DOWNLOADING_OLLAMA_DIALOG_DOWNLOAD_BUTTON'] || 'Download',
+        translations['DOWNLOADING_OLLAMA_DIALOG_BACK_BUTTON'] || 'Back',
+      ],
+      defaultId: 2,
       cancelId: 1,
     });
     return response;
@@ -158,13 +185,14 @@ class OllamaManager {
   private async showFatalErrorDialog(errorDetails: string): Promise<void> {
     await dialog.showMessageBox({
       type: 'question',
-      title: 'Ollama недоступна', // 'Ollama unavailable'
-      message:
-        'Underlator не смог загрузить бинарники Ollama в автоматическом режиме.', // 'Underlator failed to load Ollama binaries...'
-      detail: errorDetails,
-      // [Run Underlator]
-      buttons: ['Запустить Underlator'],
-      defaultId: 0,
+      title:
+        translations['OLLAMA_UNAVAILABLE_DIALOG_TITLE'] || 'Ollama unavailable',
+      message: `${
+        translations['OLLAMA_UNAVAILABLE_DIALOG_MESSAGE'] ||
+        'Underlator failed to load Ollama binaries:'
+      } ${errorDetails}`,
+      buttons: [translations['DIALOG_RUN_BUTTON'] || 'Run Underlator'],
+      defaultId: 3,
       cancelId: 0,
     });
   }
@@ -218,7 +246,7 @@ class OllamaManager {
             mainWindow.webContents.send('splash:status-update', {
               status: 'downloading-ollama',
               message:
-                translations.DOWNLOADING_OLLAMA || 'Downloading Ollama...',
+                translations['DOWNLOADING_OLLAMA'] || 'Downloading Ollama...',
               details: this.formatMessage(message),
               progress: percent,
             }),

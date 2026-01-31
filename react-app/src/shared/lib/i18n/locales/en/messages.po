@@ -129,6 +129,10 @@ msgstr " file is attached!"
 msgid "About Underlator"
 msgstr "About Underlator"
 
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "and no local binaries were found"
+msgstr "and no local binaries were found"
+
 #: src/widgets/settings/ui/settings.tsx
 msgid "API configuration"
 msgstr "API configuration"
@@ -152,6 +156,10 @@ msgstr "attach file"
 #: src/shared/ui/selector-option/bar-mode.tsx
 msgid "B"
 msgstr "B"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Back"
+msgstr "Back"
 
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "bengali"
@@ -224,6 +232,18 @@ msgstr "donation"
 #: src/shared/ui/selector-option/bar-mode.tsx
 msgid "download"
 msgstr "download"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Download"
+msgstr "Download"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Download Ollama"
+msgstr "Download Ollama"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Downloading Ollama"
+msgstr "Downloading Ollama"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Downloading Ollama..."
@@ -437,6 +457,22 @@ msgid "ok!"
 msgstr "ok!"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Ollama binaries will be saved to:"
+msgstr "Ollama binaries will be saved to:"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Ollama not found"
+msgstr "Ollama not found"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Ollama unavailable"
+msgstr "Ollama unavailable"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Ollama was not found at"
+msgstr "Ollama was not found at"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Open Gmail"
 msgstr "Open Gmail"
 
@@ -487,6 +523,10 @@ msgstr "remove"
 #: src/shared/lib/hooks/use-model/use-model.ts
 msgid "Request error, check the settings"
 msgstr "Request error, check the settings"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Run Underlator"
+msgstr "Run Underlator"
 
 #: src/pages/main/ui/main.tsx
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
@@ -593,6 +633,10 @@ msgstr "turkish"
 #: src/shared/lib/hooks/use-translation-languages/use-translation-languages.ts
 msgid "ukrainian"
 msgstr "ukrainian"
+
+#: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
+msgid "Underlator failed to load Ollama binaries:"
+msgstr "Underlator failed to load Ollama binaries:"
 
 #: src/shared/lib/hooks/use-electron-translation/use-electron-translation.ts
 msgid "Undo"

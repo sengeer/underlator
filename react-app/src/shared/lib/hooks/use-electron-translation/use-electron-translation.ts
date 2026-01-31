@@ -68,6 +68,17 @@ function useElectronTranslation(): UseElectronTranslationReturn {
     CONTACT_DIALOG_COPY_BUTTON: t`Copy Email`,
     CONTACT_DIALOG_OPEN_BUTTON: t`Open Gmail`,
     DIALOG_CANCEL_BUTTON: t`Cancel`,
+    OLLAMA_NOT_FOUND_DIALOG_TITLE: t`Ollama not found`,
+    OLLAMA_NOT_FOUND_DIALOG_MESSAGE_1: t`Ollama was not found at`,
+    OLLAMA_NOT_FOUND_DIALOG_MESSAGE_2: t`and no local binaries were found`,
+    OLLAMA_NOT_FOUND_DIALOG_DOWNLOAD_BUTTON: t`Download Ollama`,
+    DIALOG_RUN_BUTTON: t`Run Underlator`,
+    DOWNLOADING_OLLAMA_DIALOG_TITLE: t`Downloading Ollama`,
+    DOWNLOADING_OLLAMA_DIALOG_MESSAGE: t`Ollama binaries will be saved to:`,
+    DOWNLOADING_OLLAMA_DIALOG_DOWNLOAD_BUTTON: t`Download`,
+    DOWNLOADING_OLLAMA_DIALOG_BACK_BUTTON: t`Back`,
+    OLLAMA_UNAVAILABLE_DIALOG_TITLE: t`Ollama unavailable`,
+    OLLAMA_UNAVAILABLE_DIALOG_MESSAGE: t`Underlator failed to load Ollama binaries:`,
   };
 
   /**

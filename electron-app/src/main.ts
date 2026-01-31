@@ -25,7 +25,7 @@ import { SplashHandlers } from './presentation/ipc/splash-handlers';
 import { ChatHandlers } from './presentation/ipc/chat-handlers';
 import { ModelHandlers } from './presentation/ipc/model-handlers';
 import { CatalogHandlers } from './presentation/ipc/catalog-handlers';
-import type { MenuTranslations } from './types/electron';
+import type { AppTranslations } from './types/electron';
 import type { SplashMessages } from './types/splash';
 import { RagHandlers } from './presentation/ipc/rag-handlers';
 
@@ -63,7 +63,62 @@ if (process.platform === 'linux') {
   app.setDesktopName('Underlator');
 }
 
-export let translations: MenuTranslations = {};
+export let translations: AppTranslations = {};
+
+/**
+ * Функция-резолвер для управления состоянием промиса translationsPromise.
+ * Инициализируется внутри конструктора Promise и вызывается при получении первых данных IPC.
+ */
+let resolveTranslations: (() => void) | null = null;
+
+/**
+ * Промис синхронизации локализации.
+ * Блокирует выполнение зависимых от текста операций до момента
+ * получения первого пакета переводов от Renderer процесса.
+ */
+const translationsPromise = new Promise<void>(resolve => {
+  resolveTranslations = resolve;
+});
+
+/**
+ * Ожидает инициализации переводов от Renderer процесса с безопасным таймаутом.
+ *
+ * Используется перед отображением нативных диалоговых окон (dialog.showMessageBox) при старте приложения,
+ * чтобы гарантировать наличие локализованных строк и избежать отображения 'undefined'.
+ *
+ * Реализует защиту от зависания: если React не ответит в течение timeoutMs,
+ * промис разрешится автоматически, позволяя приложению продолжить работу с fallback-строками.
+ *
+ * @param {number} [timeoutMs=3000] - Максимальное время ожидания в миллисекундах (по умолчанию 3 сек).
+ * @returns {Promise<void>} Promise, который разрешается при получении переводов или по истечении таймаута.
+ */
+export async function waitForTranslations(timeoutMs = 3000): Promise<void> {
+  // Если переводы уже загружены (словарь не пуст), ожидание не требуется
+  if (Object.keys(translations).length > 0) {
+    return;
+  }
+
+  console.log('⏳ Waiting for translations from Renderer process...');
+
+  let timer: NodeJS.Timeout;
+
+  // Создаем промис таймаута для предотвращения вечной блокировки
+  const timeoutPromise = new Promise<void>(resolve => {
+    timer = setTimeout(() => {
+      console.warn(
+        '⚠️ Translations wait timed out. Proceeding with fallback strings.'
+      );
+      resolve();
+    }, timeoutMs);
+  });
+
+  // Гонка: побеждает тот, кто первый (данные пришли ИЛИ время вышло)
+  await Promise.race([translationsPromise, timeoutPromise]);
+
+  // Очистка таймера, если данные пришли раньше таймаута
+  if (timer!) clearTimeout(timer);
+}
+
 let isQuitting: boolean = false; // Флаг для отслеживания намерения завершить приложение
 
 /**
@@ -193,7 +248,7 @@ async function loadPipeline(): Promise<void> {
     // Отправляет статус проверки Ollama в React splash screen
     sendSplashStatus({
       status: 'checking-ollama',
-      message: translations.LOADING_APP || '',
+      message: translations['LOADING_APP'],
     });
 
     // Инициализирует OllamaManager
@@ -202,7 +257,7 @@ async function loadPipeline(): Promise<void> {
     // Отправляет статус запуска Ollama в React splash screen
     sendSplashStatus({
       status: 'starting-ollama',
-      message: translations.LOADING_APP || '',
+      message: translations['LOADING_APP'],
     });
 
     // Запускает Ollama сервер
@@ -217,7 +272,7 @@ async function loadPipeline(): Promise<void> {
     // Отправляет статус ожидания сервера в React splash screen
     sendSplashStatus({
       status: 'waiting-for-server',
-      message: translations.LOADING_APP || '',
+      message: translations['LOADING_APP'],
       progress: 36,
     });
 
@@ -246,7 +301,7 @@ async function loadPipeline(): Promise<void> {
     // Отправляет статус проверки здоровья в React splash screen
     sendSplashStatus({
       status: 'health-check',
-      message: translations.LOADING_APP || '',
+      message: translations['LOADING_APP'],
       progress: 60,
     });
 
@@ -269,7 +324,7 @@ async function loadPipeline(): Promise<void> {
     // Отправляет статус создания API в React splash screen
     sendSplashStatus({
       status: 'creating-api',
-      message: translations.LOADING_APP || '',
+      message: translations['LOADING_APP'],
       progress: 60,
     });
 
@@ -279,7 +334,7 @@ async function loadPipeline(): Promise<void> {
     // Отправляет статус создания каталога в React splash screen
     sendSplashStatus({
       status: 'creating-catalog',
-      message: translations.LOADING_APP || '',
+      message: translations['LOADING_APP'],
       progress: 72,
     });
 
@@ -289,7 +344,7 @@ async function loadPipeline(): Promise<void> {
     // Инициализирует сервис файловой системы для чатов
     await chatFileSystemService.initialize();
 
-    // Создает сервис векторного хранилища (полностью локальное SQLite решение)
+    // Создает сервис векторного хранилища
     vectorStoreService = new VectorStoreService();
     const vectorStoreInitResult = await vectorStoreService.initialize();
 
@@ -311,7 +366,7 @@ async function loadPipeline(): Promise<void> {
     // Отправляет статус создания файловой системы в React splash screen
     sendSplashStatus({
       status: 'creating-filesystem',
-      message: translations.LOADING_APP || '',
+      message: translations['LOADING_APP'],
       progress: 78,
     });
 
@@ -344,7 +399,7 @@ async function loadPipeline(): Promise<void> {
 
     sendSplashStatus({
       status: 'getting-catalog',
-      message: translations.GETTING_CATALOG || '',
+      message: translations['GETTING_CATALOG'],
       progress: 84,
     });
 
@@ -353,7 +408,7 @@ async function loadPipeline(): Promise<void> {
     // Отправляет статус готовности в React splash screen
     sendSplashStatus({
       status: 'ready',
-      message: translations.LOADING_APP || '',
+      message: translations['LOADING_APP'],
       progress: 100,
     });
 
@@ -417,12 +472,12 @@ ipcMain.on('contact-mail', async (_event: any, email: string) => {
 async function showFallbackDialog(email: string): Promise<void> {
   const { response } = await dialog.showMessageBox({
     type: 'question',
-    title: translations.CONTACT_DIALOG_TITLE,
-    message: translations.CONTACT_DIALOG_MESSAGE + email,
+    title: translations['CONTACT_DIALOG_TITLE'],
+    message: translations['CONTACT_DIALOG_MESSAGE'] + email,
     buttons: [
-      translations.CONTACT_DIALOG_COPY_BUTTON, // ID 0
-      translations.CONTACT_DIALOG_OPEN_BUTTON, // ID 1
-      translations.DIALOG_CANCEL_BUTTON, // ID 2
+      translations['CONTACT_DIALOG_COPY_BUTTON'], // ID 0
+      translations['CONTACT_DIALOG_OPEN_BUTTON'], // ID 1
+      translations['DIALOG_CANCEL_BUTTON'], // ID 2
     ],
     defaultId: 0,
     cancelId: 2,
@@ -441,13 +496,25 @@ async function showFallbackDialog(email: string): Promise<void> {
 }
 
 /**
- * Обработчик обновления переводов меню.
- * Получает новые переводы от renderer процесса и перестраивает меню.
+ * Обработчик обновления переводов приложения.
+ * * Получает актуальный словарь локализации от Renderer процесса (React/Lingui).
+ * Выполняет:
+ * 1. Обновление глобальной переменной translations.
+ * 2. Разрешение промиса ожидания (resolveTranslations) для разблокировки диалогов.
+ * 3. Перестройку нативного меню приложения с новыми строками.
  */
 ipcMain.on(
   'update-translations',
-  (_event: Electron.IpcMainEvent, newTranslations: MenuTranslations) => {
+  (_event: Electron.IpcMainEvent, newTranslations: AppTranslations) => {
     translations = newTranslations;
+
+    // Сигнализируем всем ожидающим процессам, что переводы доступны
+    if (resolveTranslations) {
+      resolveTranslations();
+      resolveTranslations = null; // Предотвращаем повторный вызов
+      console.log('✅ Translations received and synchronization resolved');
+    }
+
     buildMenu();
   }
 );
@@ -460,22 +527,25 @@ function buildMenu(): void {
   // Шаблон кросс-платформенного меню
   const template: Electron.MenuItemConstructorOptions[] = [
     {
-      label: translations.MENU || 'Menu',
+      label: translations['MENU'] || 'Menu',
       submenu: [
         {
           role: 'about',
-          label: translations.ABOUT || 'About Underlator',
+          label: translations['ABOUT'] || 'About Underlator',
           visible: !isLinux,
         },
-        { role: 'undo', label: translations.UNDO || 'Undo' },
-        { role: 'redo', label: translations.REDO || 'Redo' },
-        { role: 'cut', label: translations.CUT || 'Cut' },
-        { role: 'copy', label: translations.COPY || 'Copy' },
-        { role: 'paste', label: translations.PASTE || 'Paste' },
-        { role: 'selectAll', label: translations.SELECT_ALL || 'Select All' },
+        { role: 'undo', label: translations['UNDO'] || 'Undo' },
+        { role: 'redo', label: translations['REDO'] || 'Redo' },
+        { role: 'cut', label: translations['CUT'] || 'Cut' },
+        { role: 'copy', label: translations['COPY'] || 'Copy' },
+        { role: 'paste', label: translations['PASTE'] || 'Paste' },
+        {
+          role: 'selectAll',
+          label: translations['SELECT_ALL'] || 'Select All',
+        },
         {
           role: 'quit',
-          label: translations.QUIT || 'Quit',
+          label: translations['QUIT'] || 'Quit',
           click: () => {
             // Устанавливает флаг завершения и корректно выходит из приложения
             isQuitting = true;

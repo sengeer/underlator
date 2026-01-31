@@ -148,8 +148,8 @@ export function checkModelCompatibility(
     return {
       status: 'ok',
       message: [
-        `${translations.OK}`,
-        `~${requiredGB}${translations.GB} ${translations.RAM}`,
+        `${translations['OK'] || 'ok!'}`,
+        `~${requiredGB}${translations['GB'] || 'GB'} ${translations['RAM'] || 'RAM'}`,
       ],
     };
   }
@@ -159,8 +159,8 @@ export function checkModelCompatibility(
   return {
     status: 'insufficient_ram',
     message: [
-      `${translations.INSUFFICIENT_RAM}`,
-      `~${requiredGB}${translations.GB} ${translations.RAM}`,
+      `${translations['INSUFFICIENT_RAM'] || 'insufficient RAM'}`,
+      `~${requiredGB}${translations['GB'] || 'GB'} ${translations['RAM'] || 'RAM'}`,
     ],
   };
 }
