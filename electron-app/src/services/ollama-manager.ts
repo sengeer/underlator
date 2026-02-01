@@ -12,14 +12,7 @@ const { app, dialog } = require('electron');
 import { mainWindow } from '../main';
 import { exec } from 'child_process';
 import { platform } from 'os';
-import {
-  translations,
-  isDev,
-  isMac,
-  isWindows,
-  isLinux,
-  waitForTranslations,
-} from '../main';
+import { translations, waitForTranslations } from '../main';
 import { errorHandler } from '../utils/error-handler';
 import type { OperationContext } from '../types/error-handler';
 
@@ -61,9 +54,7 @@ class OllamaManager {
 
       // Создание экземпляра ElectronOllama
       this.electronOllama = new ElectronOllama({
-        basePath: isDev
-          ? app.getPath('userData')
-          : path.dirname(app.getPath('exe')),
+        basePath: app.getPath('userData'),
         directory: 'Ollama Binaries',
       });
 
@@ -103,20 +94,10 @@ class OllamaManager {
   /**
    * Возвращает путь установки бинарников Ollama для отображения пользователю.
    *
-   * @returns {string} Путь к директории в зависимости от ОС.
+   * @returns {string} Путь к директории.
    */
   private getBinaryPathDisplay(): string {
-    if (isMac) {
-      return '~/Library/Application Support/Underlator/';
-    }
-    if (isLinux) {
-      return '~/.config/Underlator/';
-    }
-    if (isWindows) {
-      return '%APPDATA%\\Underlator\\';
-    }
-    // Fallback на стандартный путь userData, если ОС не определена специфично
-    return app.getPath('userData');
+    return path.join(app.getPath('userData'), 'Ollama Binaries');
   }
 
   /**

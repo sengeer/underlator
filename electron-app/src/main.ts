@@ -472,12 +472,15 @@ ipcMain.on('contact-mail', async (_event: any, email: string) => {
 async function showFallbackDialog(email: string): Promise<void> {
   const { response } = await dialog.showMessageBox({
     type: 'question',
-    title: translations['CONTACT_DIALOG_TITLE'],
-    message: translations['CONTACT_DIALOG_MESSAGE'] + email,
+    title: translations['CONTACT_DIALOG_TITLE'] || 'Contact',
+    message:
+      translations['CONTACT_DIALOG_MESSAGE'] ||
+      'The system could not automatically launch the email client for: ' +
+        email,
     buttons: [
-      translations['CONTACT_DIALOG_COPY_BUTTON'], // ID 0
-      translations['CONTACT_DIALOG_OPEN_BUTTON'], // ID 1
-      translations['DIALOG_CANCEL_BUTTON'], // ID 2
+      translations['CONTACT_DIALOG_COPY_BUTTON'] || 'Copy Email', // ID 0
+      translations['CONTACT_DIALOG_OPEN_BUTTON'] || 'Open Gmail', // ID 1
+      translations['DIALOG_CANCEL_BUTTON'] || 'Cancel', // ID 2
     ],
     defaultId: 0,
     cancelId: 2,

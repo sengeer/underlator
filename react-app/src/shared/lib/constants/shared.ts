@@ -31,4 +31,4 @@ export const CHUNK_DELIMITER = '🔴';
 /**
  * Локализация приложения по умолчанию.
  */
-export const DEFAULT_LOCALE = 'ru';
+export const DEFAULT_LOCALE = 'en';
