@@ -13,6 +13,10 @@ Desktop application for working with local LLMs: text and document translation, 
 
 English &nbsp;&nbsp;|&nbsp;&nbsp; [Russian](README_RU.md)
 
+![demo](screenshots/demo.gif)
+
+Inspired by [Monkeytype](https://monkeytype.com/). Powered by [Ollama](https://ollama.com/).
+
 [license-image]: https://img.shields.io/badge/license-BSD--3--Clause%20%2B%20Branding-7D6EDE.svg
 
 [license-url]: https://github.com/Sengeer/underlator/blob/main/LICENSE

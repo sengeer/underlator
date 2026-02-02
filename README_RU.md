@@ -13,6 +13,10 @@
 
 [Английский](README.md) &nbsp;&nbsp;|&nbsp;&nbsp; Русский
 
+![Демо](screenshots/demo.gif)
+
+Вдохновлён [Monkeytype](https://monkeytype.com/). Работает на [Ollama](https://ollama.com/).
+
 [license-image]: https://img.shields.io/badge/license-BSD--3--Clause%20%2B%20Branding-7D6EDE.svg
 
 [license-url]: https://github.com/Sengeer/underlator/blob/main/LICENSE
