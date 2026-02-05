@@ -19,11 +19,11 @@ Inspired by [Monkeytype](https://monkeytype.com/). Powered by [Ollama](https://o
 
 [license-image]: https://img.shields.io/badge/license-BSD--3--Clause%20%2B%20Branding-7D6EDE.svg
 
-[license-url]: https://github.com/Sengeer/underlator/blob/main/LICENSE
+[license-url]: https://github.com/sengeer/underlator/blob/main/LICENSE
 
-[release-image]: https://img.shields.io/github/v/release/underlator/underlator.svg
+[release-image]: https://img.shields.io/github/v/release/sengeer/underlator.svg
 
-[release-url]: https://github.com/Sengeer/underlator/releases/latest
+[release-url]: https://github.com/sengeer/underlator/releases/latest
 
 </div>
 
@@ -110,4 +110,4 @@ BSD-3-Clause + Branding (see [LICENSE](LICENSE))
 
 ## 👤 Author
 
-Sengeer
+sengeer
