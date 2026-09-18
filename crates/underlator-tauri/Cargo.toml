@@ -1,0 +1,26 @@
+[package]
+name = "underlator-tauri"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "Тонкий desktop-host Underlator (Tauri 2) над underlator-core"
+
+[lib]
+name = "underlator_tauri"
+path = "src/lib.rs"
+
+[[bin]]
+name = "underlator-tauri"
+path = "src/main.rs"
+
+[dependencies]
+tokio.workspace = true
+tracing.workspace = true
+underlator-core.workspace = true
+tauri = { version = "2", optional = true }
+
+[features]
+default = []
+# Включайте при наличии native-зависимостей Tauri 2 (GTK/WebKit на Linux):
+#   cargo check -p underlator-tauri --features desktop
+desktop = ["dep:tauri"]

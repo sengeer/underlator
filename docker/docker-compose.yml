@@ -1,0 +1,29 @@
+# Заготовка dual-mode (Docker): Axum-сервер + sidecar Ollama.
+# Полный `up` с UI — после реализации server и static-сборки react-app.
+# Данные приложения: volume `/data` (будущий StorageRoot).
+
+services:
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      UNDERLATOR_DATA_DIR: /data
+      OLLAMA_BASE_URL: http://ollama:11434
+    volumes:
+      - underlator-data:/data
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  underlator-data:
+  ollama-data:

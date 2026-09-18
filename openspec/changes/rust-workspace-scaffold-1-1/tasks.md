@@ -2,22 +2,22 @@
 
 ## 1. Cargo workspace и crates
 
-- [ ] 1.1 Создать корневой `Cargo.toml` (workspace) и при необходимости корневой `.gitignore` с `target/`
-- [ ] 1.2 Создать `crates/underlator-core` (library) с базовыми deps: `tokio`, `serde`, `thiserror`, `tracing`, HTTP-стек
-- [ ] 1.3 Создать `crates/underlator-server` (binary stub, Axum в deps, зависит от core)
-- [ ] 1.4 Создать `crates/underlator-tauri` (Tauri 2 host stub, зависит от core)
-- [ ] 1.5 Проверить границы: core не зависит от `tauri`/`axum`; host-crates зависят от core
+- [x] 1.1 Создать корневой `Cargo.toml` (workspace) и при необходимости корневой `.gitignore` с `target/`
+- [x] 1.2 Создать `crates/underlator-core` (library) с базовыми deps: `tokio`, `serde`, `thiserror`, `tracing`, HTTP-стек
+- [x] 1.3 Создать `crates/underlator-server` (binary stub, Axum в deps, зависит от core)
+- [x] 1.4 Создать `crates/underlator-tauri` (Tauri 2 host stub, зависит от core)
+- [x] 1.5 Проверить границы: core не зависит от `tauri`/`axum`; host-crates зависят от core
 
 ## 2. Docker stubs
 
-- [ ] 2.1 Добавить `docker/Dockerfile` (stub / placeholder под будущий server + static UI)
-- [ ] 2.2 Добавить `docker/docker-compose.yml` (stub: server + Ollama, volume для данных)
+- [x] 2.1 Добавить `docker/Dockerfile` (stub / placeholder под будущий server + static UI)
+- [x] 2.2 Добавить `docker/docker-compose.yml` (stub: server + Ollama, volume для данных)
 
 ## 3. Совместимость и проверка (DoD)
 
-- [ ] 3.1 Убедиться, что `electron-app/` и `react-app/` не удалены и не требуют правок для этого атома
-- [ ] 3.2 Выполнить `cargo check --workspace` успешно
-- [ ] 3.3 Кратко перечислить созданные пути в ответе агента
+- [x] 3.1 Убедиться, что `electron-app/` и `react-app/` не удалены и не требуют правок для этого атома
+- [x] 3.2 Выполнить `cargo check --workspace` успешно
+- [x] 3.3 Кратко перечислить созданные пути в ответе агента
 
 ## Definition of Done (DoD)
 

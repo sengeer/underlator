@@ -1,0 +1,20 @@
+[package]
+name = "underlator-server"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "Тонкий HTTP-host Underlator (Axum) для docker/web-режима"
+
+[lib]
+name = "underlator_server"
+path = "src/lib.rs"
+
+[[bin]]
+name = "underlator-server"
+path = "src/main.rs"
+
+[dependencies]
+axum.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+underlator-core.workspace = true
