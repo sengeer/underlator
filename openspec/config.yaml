@@ -1,0 +1,14 @@
+schema: spec-driven
+
+context: |
+  Language: ru
+  All artifacts must be written in ru.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+
+  Project: Underlator — confidential local-LLM translator/assistant.
+  Migration: Electron backend → Rust core + Tauri 2 (desktop) + Axum server (docker).
+  One react-app for both modes. No separate git repos for backend.
+  Architecture plan: .cursor/docs/ARCHITECTURAL_PLAN_TAURI_RUST_DUAL_MODE_V1.md
+  MVP API surface: model + catalog + chat from electron-app/src/preload.ts (RAG later).
+  Strict code rules: minimal big-O cost; SOLID; testable/maintainable/extensible; rustdoc in Russian.
+  Core MUST NOT depend on tauri/axum. Hosts are thin adapters only.

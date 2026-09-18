@@ -6,6 +6,9 @@
 .DS_Store
 .roo
 .cursor
+target/
+dist/
+*.log
 
 # typedoc
 /docs
