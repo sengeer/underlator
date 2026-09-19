@@ -3,13 +3,20 @@
 //! Crate **не** зависит от `tauri`, `axum` и Electron. Host-слои
 //! (`underlator-server`, `underlator-tauri`) только адаптируют вызовы.
 //!
-//! Каркас атома 1.1: зависимости и границы модулей. Use-cases MVP
-//! (`model` / `catalog` / `chat`) и RAG здесь не реализуются.
+//! Атом 1.2: serde-DTO и карта имён MVP (`model` / `catalog` / `chat`).
+//! Use-cases, полноценный HTTP-клиент, провайдеры и RAG здесь не реализуются.
 
 #![warn(missing_docs)]
 
+pub mod catalog;
+pub mod chat;
+pub mod contract;
 pub mod error;
+pub mod events;
 pub mod http;
+pub mod model;
+pub mod rag;
+pub mod splash;
 
 /// Имя crate ядра.
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
@@ -17,7 +24,7 @@ pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
 /// Версия crate ядра.
 pub const CRATE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-/// Снимок каркаса для smoke-сериализации (DTO контракта — атом 1.2).
+/// Снимок каркаса для smoke-сериализации.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct ScaffoldInfo {
     /// Имя crate.

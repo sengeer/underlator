@@ -2,24 +2,24 @@
 
 ## 1. Module skeleton
 
-- [ ] 1.1 Добавить в `underlator-core` модули `contract`, `events`, `model` (`dto`), `catalog` (`dto`), `chat` (`dto`), `rag`, `splash` и реэкспортировать их из `lib.rs`; проверить, что файлы существуют и `cargo check -p underlator-core` проходит
-- [ ] 1.2 Написать rustdoc на русском у всех новых `pub` items и placeholder-модулей (`rag`/`splash` без DTO); проверить `cargo doc -p underlator-core --no-deps` без ошибок missing docs
+- [x] 1.1 Добавить в `underlator-core` модули `contract`, `events`, `model` (`dto`), `catalog` (`dto`), `chat` (`dto`), `rag`, `splash` и реэкспортировать их из `lib.rs`; проверить, что файлы существуют и `cargo check -p underlator-core` проходит
+- [x] 1.2 Написать rustdoc на русском у всех новых `pub` items и placeholder-модулей (`rag`/`splash` без DTO); проверить `cargo doc -p underlator-core --no-deps` без ошибок missing docs
 
 ## 2. Model / catalog / chat DTO
 
-- [ ] 2.1 Реализовать DTO `model` (generate request + provider config `id`/`url`, install/remove/list, unary `{ success }` и список моделей) с JSON-ключами как в TS; проверить roundtrip-тест на ключи `model`, `prompt`, `max_tokens`, `name`, `models`, `modified_at`
-- [ ] 2.2 Реализовать DTO `catalog` (`forceRefresh`, filters, `ModelCatalog`, карточка модели, nullable `getModelInfo`); проверить roundtrip-тест на ключи `forceRefresh`, `displayName`, `totalCount`, `modelName`, `parameterSize`
-- [ ] 2.3 Реализовать DTO `chat` (сущности, CRUD-запросы, ответы `ChatData` / `{ deletedChatId }` / `{ chats, totalCount, pagination }` / `{ message, updatedChat }`); проверить roundtrip-тест на ключи `chatId`, `createdAt`, `defaultModel`, `deletedChatId`
+- [x] 2.1 Реализовать DTO `model` (generate request + provider config `id`/`url`, install/remove/list, unary `{ success }` и список моделей) с JSON-ключами как в TS; проверить roundtrip-тест на ключи `model`, `prompt`, `max_tokens`, `name`, `models`, `modified_at`
+- [x] 2.2 Реализовать DTO `catalog` (`forceRefresh`, filters, `ModelCatalog`, карточка модели, nullable `getModelInfo`); проверить roundtrip-тест на ключи `forceRefresh`, `displayName`, `totalCount`, `modelName`, `parameterSize`
+- [x] 2.3 Реализовать DTO `chat` (сущности, CRUD-запросы, ответы `ChatData` / `{ deletedChatId }` / `{ chats, totalCount, pagination }` / `{ message, updatedChat }`); проверить roundtrip-тест на ключи `chatId`, `createdAt`, `defaultModel`, `deletedChatId`
 
 ## 3. Events and naming map
 
-- [ ] 3.1 Добавить единую модель событий generate/install progress (`CoreEvent` + строковые имена `model:generate-progress` и `model:install-progress`) без IPC/WS/Tauri; проверить roundtrip payload на ключи `response`, `done`, `created_at`, `status`, `name`
-- [ ] 3.2 Зафиксировать naming map IPC → use-case → HTTP path → Tauri command по таблице в `design.md` (14 операций + 2 события, без `rag.*`/`splash.*`); проверить тест, что каждый IPC-имя из MVP резолвится ровно в один use-case id
+- [x] 3.1 Добавить единую модель событий generate/install progress (`CoreEvent` + строковые имена `model:generate-progress` и `model:install-progress`) без IPC/WS/Tauri; проверить roundtrip payload на ключи `response`, `done`, `created_at`, `status`, `name`
+- [x] 3.2 Зафиксировать naming map IPC → use-case → HTTP path → Tauri command по таблице в `design.md` (14 операций + 2 события, без `rag.*`/`splash.*`); проверить тест, что каждый IPC-имя из MVP резолвится ровно в один use-case id
 
 ## 4. Verification (DoD)
 
-- [ ] 4.1 Выполнить `cargo test -p underlator-core` и `cargo check --workspace` с кодом `0`
-- [ ] 4.2 Убедиться, что `underlator-core` не зависит от `tauri`/`axum`, в core нет use-case функций generate/CRUD/Ollama, нет routes/commands в host-crates, `electron-app/` и `react-app/` не изменены этим атомом
+- [x] 4.1 Выполнить `cargo test -p underlator-core` и `cargo check --workspace` с кодом `0`
+- [x] 4.2 Убедиться, что `underlator-core` не зависит от `tauri`/`axum`, в core нет use-case функций generate/CRUD/Ollama, нет routes/commands в host-crates, `electron-app/` и `react-app/` не изменены этим атомом
 
 ## Definition of Done (DoD)
 
