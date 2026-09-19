@@ -4,7 +4,8 @@
 //! (`underlator-server`, `underlator-tauri`) только адаптируют вызовы.
 //!
 //! Атом 1.2: serde-DTO и карта имён MVP (`model` / `catalog` / `chat`).
-//! Use-cases, полноценный HTTP-клиент, провайдеры и RAG здесь не реализуются.
+//! Атом 2.1: унифицированный исходящий HTTP-клиент.
+//! Use-cases, провайдеры LLM и RAG здесь не реализуются.
 
 #![warn(missing_docs)]
 
