@@ -11,4 +11,11 @@ context: |
   Architecture plan: .cursor/docs/ARCHITECTURAL_PLAN_TAURI_RUST_DUAL_MODE_V1.md
   MVP API surface: model + catalog + chat from electron-app/src/preload.ts (RAG later).
   Strict code rules: minimal big-O cost; SOLID; testable/maintainable/extensible; rustdoc in Russian.
-  Core MUST NOT depend on tauri/axum. Hosts are thin adapters only.
+  Core MUST NOT depend on tauri/axum. Hosts are thin driving adapters only.
+
+  After atom 2.4: strict hexagonal layout inside underlator-core —
+  domain / ports / application / adapters/out; lib.rs is composition root.
+  Layer lint: prefer arch-lint (in-crate) or rustqual Architecture; clippy as quality gate;
+  hex-lint only if core is later split into multiple crates.
+  Atoms 3.x+ MUST place new code only in hex layers; server/tauri = inbound/driving adapters.
+  DoD for post-2.4 Rust changes MUST run the architecture linter + cargo test -p underlator-core.
