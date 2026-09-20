@@ -1,29 +1,62 @@
 //! Ядро Underlator: общая логика dual-mode backend.
 //!
 //! Crate **не** зависит от `tauri`, `axum` и Electron. Host-слои
-//! (`underlator-server`, `underlator-tauri`) только адаптируют вызовы.
+//! (`underlator-server`, `underlator-tauri`) — driving adapters: разбор входа
+//! → вызов application/ports API → сериализация/emit.
 //!
-//! Атом 1.2: serde-DTO и карта имён MVP (`model` / `catalog` / `chat`).
-//! Атом 2.1: унифицированный исходящий HTTP-клиент.
-//! Атом 2.2: абстракция LLM-провайдера и адаптер Ollama.
-//! Атом 2.3: исполняемые use-cases `model` / `catalog` / `chat` через ports.
-//! Гексагональная раскладка атома 2.4 (`domain` / `ports` / `application`)
-//! ещё не выполнена: модули рядом с DTO, IO — через traits.
+//! Атом 2.4: гексагональная раскладка `domain` / `ports` / `application` /
+//! `adapters/out`. Этот файл — composition root (`pub use` и wiring factory
+//! провайдера в исходящем адаптерном слое, не в `application`).
 
 #![warn(missing_docs)]
 
-pub mod catalog;
-pub mod chat;
-pub mod contract;
-pub mod error;
-pub mod events;
-pub mod host_error;
-pub mod http;
-mod iso8601;
-pub mod model;
-pub mod provider;
-pub mod rag;
-pub mod splash;
+/// Исходящие адаптеры (HTTP, Ollama, filesystem/memory, library HTTP).
+pub mod adapters;
+/// Use-cases MVP; зависят только от ports и domain.
+pub mod application;
+/// Доменный слой: DTO, события, ошибки, без IO.
+pub mod domain;
+/// Исходящие порты (traits).
+pub mod ports;
+
+pub use adapters::out::http::{
+    HttpAuth, HttpByteStream, HttpClient, HttpClientConfig, HttpMethod, HttpRequest, RetryPolicy,
+    StreamMode, user_agent,
+};
+pub use adapters::out::ollama::{
+    OllamaProvider, ProviderFactoryConfig, UnsupportedProvider, create_provider,
+};
+pub use adapters::out::{FilesystemChatStore, HttpCatalogLibrary, MemoryChatStore};
+pub use application::{
+    CatalogService, ChatService, Clock, IdGenerator, ModelService, SystemClock, TickClock,
+    UuidIdGenerator,
+};
+pub use domain::catalog::{
+    CatalogFilters, CatalogModelType, CatalogSortBy, CompatibilityStatus, GetCatalogRequest,
+    GetModelInfoRequest, GetModelInfoResult, ModelCatalog, ModelStatus, OllamaModelInfo,
+    static_library_models,
+};
+pub use domain::chat::{
+    AddMessageRequest, AddMessageResponse, ChatContext, ChatData, ChatFile, ChatListSortBy,
+    ChatMessage, ChatMessageRole, ChatModelRef, ChatPreviewMessage, CreateChatRequest,
+    DeleteChatRequest, DeleteChatResponse, GenerationSettings, GetChatRequest, ListChatsRequest,
+    ListChatsResponse, MessageContext, Pagination, UpdateChatRequest,
+};
+pub use domain::contract::{
+    ContractEvent, ContractOp, MVP_IPC_EVENTS, MVP_IPC_OPERATIONS, event_by_ipc,
+    events as contract_events, operation_by_ipc, operations, use_case_for_ipc,
+};
+pub use domain::events::{
+    CoreEvent, GENERATE_PROGRESS_CORE_NAME, GENERATE_PROGRESS_EVENT, GenerateProgress,
+    INSTALL_PROGRESS_CORE_NAME, INSTALL_PROGRESS_EVENT, InstallProgress, InstallStatus,
+};
+pub use domain::model::{
+    DEFAULT_PROVIDER_ID, DEFAULT_PROVIDER_URL, GenerateRequest, GenerateResult, InstallRequest,
+    ListModelsRequest, ListModelsResponse, OllamaModel, OllamaModelDetails, ProviderConfig,
+    RemoveRequest, StopRequest, UnarySuccess,
+};
+pub use domain::{CoreError, HostErrorClass, host_error_class, rag, splash};
+pub use ports::{CatalogLibrary, ChatStore, LlmProvider, ProviderStream, StorageRoot};
 
 /// Имя crate ядра.
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");

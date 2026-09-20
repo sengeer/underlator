@@ -1,8 +1,10 @@
-//! Desktop-host Underlator (Tauri 2): тонкий адаптер над `underlator-core`.
+//! Desktop-host Underlator (Tauri 2): **driving adapter** над `underlator-core`.
 //!
 //! Полноценный runtime (`wry` / WebKit) включается feature `desktop`.
 //! Без него crate остаётся `cargo check`-friendly каркасом.
-//! Бизнес-логика и MVP API здесь не реализуются.
+//! Разбор IPC/команд → вызов application/ports API ядра → emit.
+//! Доменные правила, исходящий HTTP к LLM и MVP commands (`model` /
+//! `catalog` / `chat`) здесь не реализуются.
 
 #![warn(missing_docs)]
 

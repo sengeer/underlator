@@ -13,9 +13,11 @@ context: |
   Strict code rules: minimal big-O cost; SOLID; testable/maintainable/extensible; rustdoc in Russian.
   Core MUST NOT depend on tauri/axum. Hosts are thin driving adapters only.
 
-  After atom 2.4: strict hexagonal layout inside underlator-core —
+  Atom 2.4 is done: underlator-core uses strict hexagonal layers —
   domain / ports / application / adapters/out; lib.rs is composition root.
-  Layer lint: prefer arch-lint (in-crate) or rustqual Architecture; clippy as quality gate;
+  New core code MUST go only into those hex layers (not flat src/ modules).
+  Layer lint: arch-lint (in-crate, cargo test -p underlator-core) is the gate;
+  rustqual Architecture is optional backup; clippy is the quality companion;
   hex-lint only if core is later split into multiple crates.
   Atoms 3.x+ MUST place new code only in hex layers; server/tauri = inbound/driving adapters.
   DoD for post-2.4 Rust changes MUST run the architecture linter + cargo test -p underlator-core.

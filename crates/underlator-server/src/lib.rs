@@ -1,7 +1,8 @@
-//! HTTP-host Underlator (Docker / web): тонкий адаптер над `underlator-core`.
+//! HTTP-host Underlator (Docker / web): **driving adapter** над `underlator-core`.
 //!
-//! Бизнес-логика не живёт в маршрутах. MVP API (`model` / `catalog` / `chat`)
-//! в этом атоме не объявляется.
+//! Разбор HTTP-входа → вызов application/ports API ядра → сериализация ответа.
+//! Доменные правила и исходящий HTTP к LLM здесь не живут. MVP routes
+//! (`model` / `catalog` / `chat`) в этом атоме не объявляются.
 
 #![warn(missing_docs)]
 

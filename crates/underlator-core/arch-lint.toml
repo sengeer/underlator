@@ -1,0 +1,70 @@
+# Границы гексагональных слоёв underlator-core (атом 2.4).
+# Preset minimal: AL001 relaxed; без AL002 no-sync-io (FilesystemChatStore на std::fs).
+# Гексагон задаётся матрицей deny-scope-dep, не линейным [[layering]].
+
+preset = "minimal"
+fail_on = "error"
+
+[analyzer]
+# check!() в workspace резолвит корень репозитория; анализируем только crate ядра.
+root = "crates/underlator-core"
+
+[[scopes]]
+name = "domain"
+paths = ["src/domain/**"]
+
+[[scopes]]
+name = "ports"
+paths = ["src/ports/**"]
+
+[[scopes]]
+name = "application"
+paths = ["src/application/**"]
+
+[[scopes]]
+name = "adapters"
+paths = ["src/adapters/**"]
+
+[[scopes]]
+name = "composition"
+paths = ["src/lib.rs"]
+
+# reqwest/hyper только в HTTP-адаптере: except как исключение файлового пути
+# (в arch-lint 0.6 поле `except` у restrict-use — use-паттерны, поэтому путь
+# HTTP-адаптера задаётся через scope.exclude).
+[[scopes]]
+name = "outside-http-adapter"
+paths = ["src/**"]
+exclude = ["src/adapters/out/http/**"]
+
+[[deny-scope-dep]]
+from = "domain"
+to = ["ports", "application", "adapters"]
+message = "domain не зависит от ports, application и adapters"
+
+[[deny-scope-dep]]
+from = "ports"
+to = ["application", "adapters"]
+message = "ports не импортируют application и adapters"
+
+[[deny-scope-dep]]
+from = "application"
+to = ["adapters"]
+message = "application зависит только от ports и domain, не от adapters"
+
+[[deny-scope-dep]]
+from = "adapters"
+to = ["application"]
+message = "adapters не зависят от application"
+
+[[restrict-use]]
+name = "reqwest-only-in-http-adapter"
+scope = "outside-http-adapter"
+deny = ["reqwest::*"]
+message = "reqwest разрешён только в исходящем HTTP-адаптере (src/adapters/out/http/**)"
+
+[[restrict-use]]
+name = "hyper-only-in-http-adapter"
+scope = "outside-http-adapter"
+deny = ["hyper::*"]
+message = "hyper разрешён только в исходящем HTTP-адаптере (src/adapters/out/http/**)"
