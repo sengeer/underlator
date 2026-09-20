@@ -402,6 +402,42 @@ async fn default_trace_has_method_without_prompt_or_token() {
 }
 
 #[test]
+fn use_case_modules_keep_port_boundaries() {
+    let src = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+    for rel in [
+        "model/use_cases.rs",
+        "catalog/use_cases.rs",
+        "chat/use_cases.rs",
+    ] {
+        let text = std::fs::read_to_string(src.join(rel)).unwrap_or_else(|err| {
+            panic!("не удалось прочитать {rel}: {err}");
+        });
+        for needle in [
+            "use reqwest",
+            "use hyper",
+            "reqwest::",
+            "hyper::",
+            "/api/generate",
+        ] {
+            assert!(
+                !text.contains(needle),
+                "{rel} не должен содержать `{needle}`"
+            );
+        }
+    }
+    let catalog = std::fs::read_to_string(src.join("catalog/use_cases.rs")).unwrap();
+    assert!(
+        !catalog.contains("ollama-models.zwz.workers.dev"),
+        "catalog/use_cases.rs не должен содержать library URL"
+    );
+    let chat = std::fs::read_to_string(src.join("chat/use_cases.rs")).unwrap();
+    assert!(
+        !chat.contains("std::fs"),
+        "chat/use_cases.rs не должен вызывать std::fs"
+    );
+}
+
+#[test]
 fn domain_modules_do_not_import_reqwest_or_hyper() {
     let src = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
     let roots = [

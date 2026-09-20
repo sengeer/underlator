@@ -2,42 +2,42 @@
 
 ## 1. Errors, host mapping, skeleton
 
-- [ ] 1.1 Добавить варианты `CoreError`: `Validation { message }`, `NotFound { entity, id }`, `DeleteNotConfirmed`, `Storage { message }` с rustdoc на русском; проверить `cargo doc -p underlator-core --no-deps` без ошибок missing docs
-- [ ] 1.2 Добавить `host_error.rs`: `HostErrorClass` и `host_error_class`; проверить тесты: `NotFound` → `NotFound`, `Validation` → `Invalid`, `ProviderCancelled` → `Cancelled`, `HttpStatus` → `Http`; исходник MUST NOT импортировать `axum`/`tauri`
-- [ ] 1.3 Добавить зависимости `uuid` (v4) и dev-dep `tempfile`; проверить, что `crates/underlator-core/Cargo.toml` их содержит и `cargo check -p underlator-core` проходит
-- [ ] 1.4 Создать файлы `model/use_cases.rs`, `catalog/use_cases.rs`, `catalog/library.rs`, `chat/use_cases.rs`, `chat/store.rs`, `chat/fs_store.rs`, подключить `mod` и реэкспорт; проверить, что файлы существуют и `cargo check -p underlator-core` проходит
-- [ ] 1.5 Обновить rustdoc `lib.rs` / `model` / `catalog` / `chat`: use-cases атома 2.3 есть, hex 2.4 не сделан; проверить `cargo doc -p underlator-core --no-deps`
+- [x] 1.1 Добавить варианты `CoreError`: `Validation { message }`, `NotFound { entity, id }`, `DeleteNotConfirmed`, `Storage { message }` с rustdoc на русском; проверить `cargo doc -p underlator-core --no-deps` без ошибок missing docs
+- [x] 1.2 Добавить `host_error.rs`: `HostErrorClass` и `host_error_class`; проверить тесты: `NotFound` → `NotFound`, `Validation` → `Invalid`, `ProviderCancelled` → `Cancelled`, `HttpStatus` → `Http`; исходник MUST NOT импортировать `axum`/`tauri`
+- [x] 1.3 Добавить зависимости `uuid` (v4) и dev-dep `tempfile`; проверить, что `crates/underlator-core/Cargo.toml` их содержит и `cargo check -p underlator-core` проходит
+- [x] 1.4 Создать файлы `model/use_cases.rs`, `catalog/use_cases.rs`, `catalog/library.rs`, `chat/use_cases.rs`, `chat/store.rs`, `chat/fs_store.rs`, подключить `mod` и реэкспорт; проверить, что файлы существуют и `cargo check -p underlator-core` проходит
+- [x] 1.5 Обновить rustdoc `lib.rs` / `model` / `catalog` / `chat`: use-cases атома 2.3 есть, hex 2.4 не сделан; проверить `cargo doc -p underlator-core --no-deps`
 
 ## 2. ChatStore and filesystem
 
-- [ ] 2.1 Описать object-safe `ChatStore` (`save`, `load`, `delete`, `list`) и `StorageRoot`; проверить, что тип собирается как `Arc<dyn ChatStore>` (`cargo check -p underlator-core`)
-- [ ] 2.2 Реализовать in-memory mock `ChatStore` (`HashMap`); проверить тест: save/load/list/delete без диска, неизвестный id → `NotFound`
-- [ ] 2.3 Реализовать `FilesystemChatStore`: `{root}/chats/{id}.chat.json`, JSON как Electron `ChatFileStructure`, атомарная запись temp+rename; проверить тест на `tempfile`: roundtrip `id`/`title`/сообщений и наличие файла `{id}.chat.json`
-- [ ] 2.4 Реализовать backup при `delete(..., backup = true)` в `{root}/chats/backup/`; проверить тест: после delete чата нет в `list`, копия есть на диске
+- [x] 2.1 Описать object-safe `ChatStore` (`save`, `load`, `delete`, `list`) и `StorageRoot`; проверить, что тип собирается как `Arc<dyn ChatStore>` (`cargo check -p underlator-core`)
+- [x] 2.2 Реализовать in-memory mock `ChatStore` (`HashMap`); проверить тест: save/load/list/delete без диска, неизвестный id → `NotFound`
+- [x] 2.3 Реализовать `FilesystemChatStore`: `{root}/chats/{id}.chat.json`, JSON как Electron `ChatFileStructure`, атомарная запись temp+rename; проверить тест на `tempfile`: roundtrip `id`/`title`/сообщений и наличие файла `{id}.chat.json`
+- [x] 2.4 Реализовать backup при `delete(..., backup = true)` в `{root}/chats/backup/`; проверить тест: после delete чата нет в `list`, копия есть на диске
 
 ## 3. Chat use-cases
 
-- [ ] 3.1 Реализовать `ChatService::create` / `get` (ID `chat_…`, ISO-8601, `includeMessages` / limit/offset, пустой title → `Validation`); проверить mock-тесты create→get, `includeMessages = false` даёт пустые messages, пустой title не пишет в store
-- [ ] 3.2 Реализовать `update` / `addMessage` (ID `msg_…`, patch, unknown id → `NotFound`); проверить mock-тесты: title меняется и `updatedAt` растёт, сообщение появляется в конце get, unknown id не создаёт чат
-- [ ] 3.3 Реализовать `delete` (`confirmed` обязателен) и `list` (фильтры, sort, pagination, элементы без полной истории); проверить mock-тесты: без `confirmed` store не трогается и чат остаётся; с `confirmed` возвращается `deletedChatId`; list отдаёт `chats`/`totalCount`/`pagination`
+- [x] 3.1 Реализовать `ChatService::create` / `get` (ID `chat_…`, ISO-8601, `includeMessages` / limit/offset, пустой title → `Validation`); проверить mock-тесты create→get, `includeMessages = false` даёт пустые messages, пустой title не пишет в store
+- [x] 3.2 Реализовать `update` / `addMessage` (ID `msg_…`, patch, unknown id → `NotFound`); проверить mock-тесты: title меняется и `updatedAt` растёт, сообщение появляется в конце get, unknown id не создаёт чат
+- [x] 3.3 Реализовать `delete` (`confirmed` обязателен) и `list` (фильтры, sort, pagination, элементы без полной истории); проверить mock-тесты: без `confirmed` store не трогается и чат остаётся; с `confirmed` возвращается `deletedChatId`; list отдаёт `chats`/`totalCount`/`pagination`
 
 ## 4. Model use-cases
 
-- [ ] 4.1 Реализовать `ModelService` на `Arc<dyn LlmProvider>`: `generate` (callback + конкатенация `response`), пустые `model`/`prompt` → `Validation` без вызова провайдера; проверить mock-тест: два chunk → два callback и строка-конкатенация, пустой prompt даёт 0 вызовов провайдера
-- [ ] 4.2 Реализовать `stop` на том же экземпляре провайдера; проверить mock-тест: после stop новые успешные токены не приходят, ошибка мапится в `HostErrorClass::Cancelled`
-- [ ] 4.3 Реализовать `install` (progress callback + `UnarySuccess`), `remove`, `list`; проверить mock-тесты: кадры install до success, remove `{ success: true }`, list содержит `name`/`size`/`modified_at`; исходник use-case без `/api/generate`
+- [x] 4.1 Реализовать `ModelService` на `Arc<dyn LlmProvider>`: `generate` (callback + конкатенация `response`), пустые `model`/`prompt` → `Validation` без вызова провайдера; проверить mock-тест: два chunk → два callback и строка-конкатенация, пустой prompt даёт 0 вызовов провайдера
+- [x] 4.2 Реализовать `stop` на том же экземпляре провайдера; проверить mock-тест: после stop новые успешные токены не приходят, ошибка мапится в `HostErrorClass::Cancelled`
+- [x] 4.3 Реализовать `install` (progress callback + `UnarySuccess`), `remove`, `list`; проверить mock-тесты: кадры install до success, remove `{ success: true }`, list содержит `name`/`size`/`modified_at`; исходник use-case без `/api/generate`
 
 ## 5. Catalog use-cases
 
-- [ ] 5.1 Описать port `CatalogLibrary` и HTTP-адаптер через `HttpClient` (URL только в `catalog/library.rs`) плюс статический fallback (`qwen3`); проверить, что use-case не импортирует `reqwest` и не содержит library URL (`rg` по `use_cases.rs`)
-- [ ] 5.2 Реализовать `catalog.get`: merge локальных (`list_models`) и библиотеки, дедуп по `name` (локальные вытесняют), кэш TTL 1 ч, `forceRefresh`; ошибка library → static; ошибка list → пустые локальные; проверить mock-тесты: `llama` локальный + library `llama`/`qwen3` → две карточки; library error → static; повторный get без refresh не дергает library
-- [ ] 5.3 Реализовать `search` (search/size/tags/sort/limit/offset) и `getModelInfo` (точное имя, иначе contains, нет → `null`); проверить mock-тесты на фильтр по имени, `totalCount` после фильтра, null для неизвестной модели
+- [x] 5.1 Описать port `CatalogLibrary` и HTTP-адаптер через `HttpClient` (URL только в `catalog/library.rs`) плюс статический fallback (`qwen3`); проверить, что use-case не импортирует `reqwest` и не содержит library URL (`rg` по `use_cases.rs`)
+- [x] 5.2 Реализовать `catalog.get`: merge локальных (`list_models`) и библиотеки, дедуп по `name` (локальные вытесняют), кэш TTL 1 ч, `forceRefresh`; ошибка library → static; ошибка list → пустые локальные; проверить mock-тесты: `llama` локальный + library `llama`/`qwen3` → две карточки; library error → static; повторный get без refresh не дергает library
+- [x] 5.3 Реализовать `search` (search/size/tags/sort/limit/offset) и `getModelInfo` (точное имя, иначе contains, нет → `null`); проверить mock-тесты на фильтр по имени, `totalCount` после фильтра, null для неизвестной модели
 
 ## 6. Boundaries and verification (DoD)
 
-- [ ] 6.1 Расширить архитектурный тест: `model/use_cases.rs`, `catalog/use_cases.rs`, `chat/use_cases.rs` без `reqwest`/`hyper` и без `/api/generate`; use-cases chat не вызывают `std::fs`; проверить, что тест проходит
-- [ ] 6.2 Выполнить `cargo test -p underlator-core` и `cargo check --workspace` с кодом `0`; публичные items новых модулей имеют rustdoc на русском
-- [ ] 6.3 Убедиться, что нет Axum/Tauri MVP routes/commands из этого атома, нет RAG, нет папок hex 2.4 как обязательной раскладки, `electron-app/` и `react-app/` не изменены этим атомом, `underlator-core` не зависит от `tauri`/`axum`
+- [x] 6.1 Расширить архитектурный тест: `model/use_cases.rs`, `catalog/use_cases.rs`, `chat/use_cases.rs` без `reqwest`/`hyper` и без `/api/generate`; use-cases chat не вызывают `std::fs`; проверить, что тест проходит
+- [x] 6.2 Выполнить `cargo test -p underlator-core` и `cargo check --workspace` с кодом `0`; публичные items новых модулей имеют rustdoc на русском
+- [x] 6.3 Убедиться, что нет Axum/Tauri MVP routes/commands из этого атома, нет RAG, нет папок hex 2.4 как обязательной раскладки, `electron-app/` и `react-app/` не изменены этим атомом, `underlator-core` не зависит от `tauri`/`axum`
 
 ## Definition of Done (DoD)
 

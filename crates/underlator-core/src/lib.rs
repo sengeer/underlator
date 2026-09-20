@@ -6,7 +6,9 @@
 //! Атом 1.2: serde-DTO и карта имён MVP (`model` / `catalog` / `chat`).
 //! Атом 2.1: унифицированный исходящий HTTP-клиент.
 //! Атом 2.2: абстракция LLM-провайдера и адаптер Ollama.
-//! Use-cases `model` / `catalog` / `chat` и RAG здесь не реализуются.
+//! Атом 2.3: исполняемые use-cases `model` / `catalog` / `chat` через ports.
+//! Гексагональная раскладка атома 2.4 (`domain` / `ports` / `application`)
+//! ещё не выполнена: модули рядом с DTO, IO — через traits.
 
 #![warn(missing_docs)]
 
@@ -15,7 +17,9 @@ pub mod chat;
 pub mod contract;
 pub mod error;
 pub mod events;
+pub mod host_error;
 pub mod http;
+mod iso8601;
 pub mod model;
 pub mod provider;
 pub mod rag;

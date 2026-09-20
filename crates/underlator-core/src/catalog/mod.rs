@@ -1,5 +1,11 @@
-//! Домен `catalog`: контракт get / search / getModelInfo.
+//! Домен `catalog`: контракт и use-cases get / search / getModelInfo.
 //!
-//! Исполняемые use-case функции появятся в атоме 2.3; здесь только DTO.
+//! Атом 2.3: локальный список через провайдер, библиотека через
+//! [`library::CatalogLibrary`]. Гексагональная раскладка атома 2.4 ещё не выполнена.
 
 pub mod dto;
+pub mod library;
+pub mod use_cases;
+
+pub use library::{CatalogLibrary, HttpCatalogLibrary, static_library_models};
+pub use use_cases::CatalogService;

@@ -111,6 +111,13 @@ impl HttpClient {
         }
     }
 
+    /// Выполняет unary-запрос по уже собранному [`HttpRequest`].
+    ///
+    /// Тело необязательно: подходит для GET без JSON (источник каталога).
+    pub async fn send(&self, request: OutboundRequest) -> Result<Bytes, CoreError> {
+        self.send_unary_bytes(&request).await
+    }
+
     /// Выполняет потоковый запрос и отдаёт кадры выбранного режима.
     pub async fn send_stream(
         &self,
