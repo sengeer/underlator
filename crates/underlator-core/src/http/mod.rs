@@ -86,8 +86,29 @@ impl HttpClient {
     {
         let request = OutboundRequest::new(method, path).json(body)?;
         let bytes = self.send_unary_bytes(&request).await?;
-        serde_json::from_slice(&bytes)
-            .map_err(|err| CoreError::Internal(format!("не удалось разобрать JSON-ответ: {err}")))
+        decode_json_body(&bytes)
+    }
+
+    /// Как `send_json`, но пустое 2xx-тело даёт `T::default()` вместо ошибки serde.
+    ///
+    /// Вендорные пути не входят в API: метод и относительный путь задаёт вызывающий код.
+    pub async fn send_json_or_empty<B, T>(
+        &self,
+        method: HttpMethod,
+        path: &str,
+        body: &B,
+    ) -> Result<T, CoreError>
+    where
+        B: Serialize + ?Sized,
+        T: DeserializeOwned + Default,
+    {
+        let request = OutboundRequest::new(method, path).json(body)?;
+        let bytes = self.send_unary_bytes(&request).await?;
+        if is_empty_http_body(&bytes) {
+            Ok(T::default())
+        } else {
+            decode_json_body(&bytes)
+        }
     }
 
     /// Выполняет потоковый запрос и отдаёт кадры выбранного режима.
@@ -310,6 +331,15 @@ fn join_url(base: &str, path: &str, query: &[(String, String)]) -> Result<reqwes
         }
     }
     Ok(url)
+}
+
+fn decode_json_body<T: DeserializeOwned>(bytes: &Bytes) -> Result<T, CoreError> {
+    serde_json::from_slice(bytes)
+        .map_err(|err| CoreError::Internal(format!("не удалось разобрать JSON-ответ: {err}")))
+}
+
+fn is_empty_http_body(bytes: &Bytes) -> bool {
+    bytes.is_empty() || bytes.iter().all(u8::is_ascii_whitespace)
 }
 
 fn truncate_snippet(body: &[u8]) -> String {

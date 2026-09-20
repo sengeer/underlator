@@ -2,6 +2,12 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Идентификатор локального Ollama по умолчанию (`ElectronApiConfig.id`).
+pub const DEFAULT_PROVIDER_ID: &str = "ollama";
+
+/// URL локального Ollama по умолчанию (`http://127.0.0.1:11434`).
+pub const DEFAULT_PROVIDER_URL: &str = "http://127.0.0.1:11434";
+
 /// Конфигурация провайдера для вызова generate (`ElectronApiConfig`).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProviderConfig {
@@ -9,6 +15,15 @@ pub struct ProviderConfig {
     pub id: String,
     /// URL провайдера.
     pub url: String,
+}
+
+impl Default for ProviderConfig {
+    fn default() -> Self {
+        Self {
+            id: DEFAULT_PROVIDER_ID.to_owned(),
+            url: DEFAULT_PROVIDER_URL.to_owned(),
+        }
+    }
 }
 
 /// Параметры генерации (`OllamaGenerateRequest`) плюс конфиг провайдера.
@@ -115,10 +130,18 @@ pub struct ListModelsResponse {
 }
 
 /// Унарный результат install/remove: `{ success }`.
+///
+/// Пустой успешный HTTP-ответ (2xx без тела) мапится в `success: true`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UnarySuccess {
     /// Успешность операции.
     pub success: bool,
+}
+
+impl Default for UnarySuccess {
+    fn default() -> Self {
+        Self { success: true }
+    }
 }
 
 #[cfg(test)]
@@ -184,6 +207,25 @@ mod tests {
             list_json["models"][0].get("modified_at").is_some(),
             "ожидался ключ modified_at"
         );
+    }
+
+    #[test]
+    fn provider_config_default_and_id_url_roundtrip() {
+        let default = ProviderConfig::default();
+        assert_eq!(default.id, DEFAULT_PROVIDER_ID);
+        assert_eq!(default.url, DEFAULT_PROVIDER_URL);
+        assert_eq!(default.id, "ollama");
+        assert_eq!(default.url, "http://127.0.0.1:11434");
+
+        let config = ProviderConfig {
+            id: "embedded-ollama".to_owned(),
+            url: "http://127.0.0.1:11434".to_owned(),
+        };
+        let json = roundtrip(&config);
+        assert_eq!(json["id"], json!("embedded-ollama"));
+        assert_eq!(json["url"], json!("http://127.0.0.1:11434"));
+        assert!(json.get("id").is_some(), "ключ id должен сохраниться");
+        assert!(json.get("url").is_some(), "ключ url должен сохраниться");
     }
 
     #[test]

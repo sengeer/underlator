@@ -80,6 +80,23 @@ fn hyper_is_not_direct_dependency() {
 }
 
 #[tokio::test]
+async fn send_json_or_empty_delete_200_empty_body_is_default_success() {
+    let server = MockServer::start().await;
+    Mock::given(method("DELETE"))
+        .and(path("/api/delete"))
+        .respond_with(ResponseTemplate::new(200).set_body_string(""))
+        .mount(&server)
+        .await;
+
+    let client = HttpClient::from_config(config_for(&server.uri())).unwrap();
+    let result: crate::model::dto::UnarySuccess = client
+        .send_json_or_empty(HttpMethod::Delete, "/api/delete", &json!({"name": "llama"}))
+        .await
+        .expect("пустой 2xx не должен падать на serde");
+    assert!(result.success, "пустой 2xx мапится в успех");
+}
+
+#[tokio::test]
 async fn send_json_posts_body_and_headers() {
     let server = MockServer::start().await;
     Mock::given(method("POST"))
@@ -391,6 +408,7 @@ fn domain_modules_do_not_import_reqwest_or_hyper() {
         src.join("model"),
         src.join("catalog"),
         src.join("chat"),
+        src.join("provider"),
         src.join("contract.rs"),
         src.join("events.rs"),
         src.join("rag.rs"),
@@ -402,6 +420,9 @@ fn domain_modules_do_not_import_reqwest_or_hyper() {
     }
     assert!(!files.is_empty(), "ожидались исходники доменных модулей");
     for file in files {
+        if file.file_name().is_some_and(|name| name == "tests.rs") {
+            continue;
+        }
         let text = std::fs::read_to_string(&file).unwrap_or_else(|err| {
             panic!("не удалось прочитать {}: {err}", file.display());
         });
@@ -413,6 +434,38 @@ fn domain_modules_do_not_import_reqwest_or_hyper() {
             );
         }
     }
+}
+
+#[test]
+fn http_client_has_no_named_ollama_endpoints() {
+    let http_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src/http");
+    let mut files = Vec::new();
+    collect_rust_files(&http_dir, &mut files);
+    for file in files {
+        if file.file_name().is_some_and(|name| name == "tests.rs") {
+            continue;
+        }
+        let text = std::fs::read_to_string(&file).unwrap();
+        for needle in [
+            "pub async fn generate",
+            "pub async fn list_models",
+            "fn api_generate",
+            "fn api_tags",
+            "fn api_pull",
+            "fn api_delete",
+        ] {
+            assert!(
+                !text.contains(needle),
+                "{} не должен содержать именованный вендорный метод (`{needle}`)",
+                file.display()
+            );
+        }
+    }
+    let client_api = include_str!("mod.rs");
+    assert!(
+        !client_api.contains("/api/generate"),
+        "публичный HTTP-клиент не должен знать путь /api/generate"
+    );
 }
 
 #[test]
