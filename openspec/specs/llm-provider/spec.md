@@ -93,10 +93,11 @@
 - **THEN** адаптер Ollama MUST быть создан успешно
 
 ### Requirement: Provider change stays inside core adapters
-Этот атом MUST добавить только абстракцию провайдера, адаптер Ollama, stubs и реестр в `underlator-core`. Он MUST NOT реализовывать use-cases `model`/`catalog`/`chat`, входящие Axum routes, Tauri commands, RAG и изменения React.
+Ядро SHALL сохранять абстракцию LLM-провайдера как единственный путь вендорных операций generate / stop / list / install / remove. Use-cases `model` MUST вызывать эту абстракцию и MUST NOT собирать вендорные HTTP-пути. Абстракция провайдера MUST NOT тащить в себя CRUD чата. Этот capability MUST NOT добавлять Axum routes, Tauri commands, RAG или обязательные правки React.
 
 #### Scenario: No use-case or host runtime
-- **WHEN** атом 2.2 завершён
-- **THEN** в core нет исполняемых use-case функций generate/CRUD чата/выборки каталога (вызовы идут только через абстракцию провайдера в тестах адаптера)
+- **WHEN** исполняется generate, stop, list, install или remove в core
+- **THEN** вызов MUST идти через абстракцию LLM-провайдера
+- **AND** код use-case MUST NOT содержать URI `/api/generate`, `/api/tags`, `/api/pull` или `/api/delete`
 - **AND** `underlator-server` и `underlator-tauri` не получают MVP routes/commands и не ходят к LLM в обход core
 - **AND** `electron-app/` и `react-app/` остаются без обязательных правок этого атома
