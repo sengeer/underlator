@@ -1,0 +1,7 @@
+target
+**/node_modules
+.git
+.cursor
+openspec
+electron-app
+**/*.md

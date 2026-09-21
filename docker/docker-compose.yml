@@ -1,6 +1,5 @@
-# Заготовка dual-mode (Docker): Axum-сервер + sidecar Ollama.
-# Полный `up` с UI — после реализации server и static-сборки react-app.
-# Данные приложения: volume `/data` (будущий StorageRoot).
+# Dual-mode (Docker): Axum-сервер + sidecar Ollama.
+# Данные приложения: named volume `/data` (`StorageRoot` чатов).
 
 services:
   server:
@@ -11,7 +10,12 @@ services:
       - "8080:8080"
     environment:
       UNDERLATOR_DATA_DIR: /data
+      UNDERLATOR_BIND: 0.0.0.0:8080
+      UNDERLATOR_STATIC_DIR: /app/static
       OLLAMA_BASE_URL: http://ollama:11434
+      # Dev-default shared secret. Смените перед публичным продом:
+      # без token процесс с bind 0.0.0.0 не стартует (fail-closed).
+      UNDERLATOR_AUTH_TOKEN: dev-change-me
     volumes:
       - underlator-data:/data
     depends_on:
