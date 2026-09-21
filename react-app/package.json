@@ -72,7 +72,9 @@
     "lingui:extract": "lingui extract",
     "lingui:compile": "lingui compile --typescript",
     "docs": "npx typedoc",
-    "type:check": "tsc --noEmit --pretty"
+    "type:check": "tsc --noEmit --pretty",
+    "test": "vitest run",
+    "test:unit": "vitest run"
   },
   "eslintConfig": {
     "extends": [
@@ -121,7 +123,8 @@
     "stylelint-prettier": "^5.0.2",
     "stylelint-scss": "^6.5.0",
     "stylelint-selector-bem-pattern": "^4.0.1",
-    "typedoc": "^0.28.13"
+    "typedoc": "^0.28.13",
+    "vitest": "^3.2.7"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "npm run lint:fix",

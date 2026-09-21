@@ -4,6 +4,7 @@
  * Поддерживает четыре режима: контекстный перевод, инструкции, чат и простой перевод.
  */
 
+import { getBackendClient } from '../../../api';
 import {
   addMessageLocally,
   updateMessage,
@@ -25,9 +26,7 @@ import { prepareContextualData } from '../../utils/feature-handlers/contextual-t
 import { handleInstruction as handleInstructionHandler } from '../../utils/feature-handlers/instruction-handler';
 import { handleSimpleTranslation as handleSimpleTranslationHandler } from '../../utils/feature-handlers/simple-translation-handler';
 import log from '../../utils/log';
-import { electron } from './apis/model-ipc';
 import type {
-  IpcResponse,
   ContextualTranslationResult,
   ModelRequestContext,
 } from './types/feature-provider.ts';
@@ -64,7 +63,8 @@ async function handleContextualTranslation(
   let fullResponse = '';
 
   // Подписка на прогресс генерации через IPC
-  const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {
+  const model = getBackendClient().model;
+  const unsubscribe = model.onGenerateProgress((chunk) => {
     if (chunk.response) {
       fullResponse += chunk.response;
     }
@@ -79,8 +79,7 @@ async function handleContextualTranslation(
   });
 
   try {
-    // Запуск генерации через Electron IPC
-    await electron.generate(
+    await model.generate(
       {
         model: props.model || DEFAULT_MODEL,
         prompt,
@@ -139,7 +138,8 @@ async function handleInstruction(props: ModelRequestContext): Promise<void> {
   log('Промпт Instruction:', prompt);
 
   // Подписка на прогресс генерации через IPC
-  const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {
+  const model = getBackendClient().model;
+  const unsubscribe = model.onGenerateProgress((chunk) => {
     if (chunk.response && props.onModelResponse) {
       props.onModelResponse(chunk.response);
     }
@@ -154,8 +154,7 @@ async function handleInstruction(props: ModelRequestContext): Promise<void> {
   });
 
   try {
-    // Запуск генерации через Electron IPC
-    await electron.generate(
+    await model.generate(
       {
         model: props.model || DEFAULT_MODEL,
         prompt,
@@ -183,7 +182,8 @@ async function handleSimpleTranslation(
   log('Промпт SimpleTranslation:', prompt);
 
   // Подписка на прогресс генерации через IPC
-  const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {
+  const model = getBackendClient().model;
+  const unsubscribe = model.onGenerateProgress((chunk) => {
     if (chunk.response && props.onModelResponse) {
       props.onModelResponse(chunk.response);
     }
@@ -198,8 +198,7 @@ async function handleSimpleTranslation(
   });
 
   try {
-    // Запуск генерации через Electron IPC
-    await electron.generate(
+    await model.generate(
       {
         model: props.model || DEFAULT_MODEL,
         prompt,
@@ -312,15 +311,15 @@ async function handleChat(props: ModelRequestContext): Promise<void> {
   const responseHandler = createStreamingHandler(props);
 
   // Подписка на прогресс генерации через IPC
-  const unsubscribe = electron.onGenerateProgress((chunk: IpcResponse) => {
+  const model = getBackendClient().model;
+  const unsubscribe = model.onGenerateProgress((chunk) => {
     handleStreamingChunk(chunk, responseHandler);
     // currentText обновляется через use-model.ts -> handleResponse -> updateGenerationText
     // Временное сообщение отображается через currentText в chat-messages.tsx
   });
 
   try {
-    // Запуск генерации через Electron IPC
-    await electron.generate(
+    await model.generate(
       {
         model: props.model || DEFAULT_MODEL,
         prompt,

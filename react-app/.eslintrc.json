@@ -169,7 +169,29 @@
    *
    * Документация: https://eslint.org/docs/latest/use/configure/#configuration-based-on-glob-patterns
    */
-  "overrides": [],
+  "ignorePatterns": ["**/*.test.ts", "vitest.config.ts"],
+
+  "overrides": [
+    {
+      "files": ["src/widgets/**/*.{ts,tsx}", "src/pages/**/*.{ts,tsx}"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "**/shared/api/transports/**",
+                  "shared/api/transports/**"
+                ],
+                "message": "FSD: виджеты и страницы должны использовать shared/api, а не transports."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
 
   /**
    * Опции парсера

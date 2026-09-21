@@ -8,6 +8,7 @@
 import { useLingui } from '@lingui/react/macro';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { getBackendClient } from '../../../api';
 import { updateGenerationText } from '../../../models/chat-ipc-slice';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
 import { selectTranslationLanguages } from '../../../models/translation-languages-slice';
@@ -241,13 +242,15 @@ function useModel() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
 
-      window.electron.model.stop().catch((error: Error) => {
-        callANotificationWithALog(
-          dispatch,
-          t`Failed to stop generation`,
-          `Failed to stop generation via IPC: ${error}`
-        );
-      });
+      getBackendClient()
+        .model.stop()
+        .catch((error: Error) => {
+          callANotificationWithALog(
+            dispatch,
+            t`Failed to stop generation`,
+            `Failed to stop generation via IPC: ${error}`
+          );
+        });
     }
   }
 
