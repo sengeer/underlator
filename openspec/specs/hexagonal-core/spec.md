@@ -60,13 +60,13 @@
 - **AND** сериализация DTO MUST сохранить JSON-ключи контракта атома 1.2
 
 ### Requirement: Host crates are driving adapters only
-`underlator-server` и `underlator-tauri` SHALL оставаться driving adapters: разбор входа → вызов application/ports API core → сериализация/emit. Они MUST NOT дублировать доменные правила, MUST NOT ходить к LLM HTTP в обход core и MUST NOT получать MVP routes/commands из этого атома.
+`underlator-server` и `underlator-tauri` SHALL оставаться driving adapters: разбор входа → вызов application/ports API core → сериализация/emit. Они MUST NOT дублировать доменные правила и MUST NOT ходить к LLM HTTP в обход core. После атома 3.1 `underlator-server` SHALL смапить MVP HTTP-маршруты `model` / `catalog` / `chat` на use-cases ядра. `underlator-tauri` MUST NOT получать MVP commands этих поверхностей, пока не выполнен атом desktop-host.
 
 #### Scenario: Hosts stay thin after the layout change
-- **WHEN** атом 2.4 завершён
-- **THEN** `underlator-server` не объявляет MVP HTTP routes `model` / `catalog` / `chat`
-- **AND** `underlator-tauri` не объявляет MVP Tauri commands этих поверхностей
-- **AND** исходники hosts MUST NOT содержать копию use-case логики generate/CRUD чата/выборки каталога
+- **WHEN** атом 2.4 завершён и inbound HTTP обрабатывает `underlator-server`
+- **THEN** handlers MUST вызывать application/ports API ядра, а не копировать логику generate / CRUD чата / выборки каталога
+- **AND** исходники `underlator-server` MUST NOT содержать исходящий вызов Ollama в обход core (`reqwest` / вендорный URI `/api/generate`)
+- **AND** `underlator-tauri` MUST NOT объявлять MVP Tauri commands этих поверхностей
 
 ### Requirement: Layout change does not add out-of-scope product work
 Этот атом MUST ограничиться раскладкой, границами импортов и тестовым gate. Он MUST NOT добавлять Axum routes, Tauri commands, React `BackendClient`, RAG, выпил Electron и MUST NOT менять бизнес-правила MVP use-cases.

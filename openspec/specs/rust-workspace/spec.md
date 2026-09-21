@@ -34,11 +34,13 @@ The project SHALL provide `crates/underlator-tauri` as the desktop host crate de
 - **THEN** it declares a path dependency on `underlator-core`
 
 ### Requirement: Docker stubs directory
-The repository SHALL include a `docker/` directory with stub `Dockerfile` and `docker-compose` files for the future web delivery mode.
+The repository SHALL include a `docker/` directory with `Dockerfile` and `docker-compose` files for the web delivery mode. These files MUST build and run the server host together with a sidecar Ollama, including a volume for application data. They MUST NOT remain echo/TODO stubs that cannot start the binary.
 
 #### Scenario: Docker stubs present
 - **WHEN** a developer lists `docker/`
-- **THEN** both a Dockerfile stub and a compose stub exist (even if they do not yet build the full UI)
+- **THEN** both a Dockerfile and a compose file exist
+- **AND** the Dockerfile MUST produce an image that starts `underlator-server` rather than printing a stub message
+- **AND** compose MUST declare server and ollama services plus a data volume for the server `StorageRoot`
 
 ### Requirement: Workspace smoke build
 The Rust workspace SHALL compile successfully via `cargo check --workspace` after the scaffold is applied on a properly provisioned machine.
