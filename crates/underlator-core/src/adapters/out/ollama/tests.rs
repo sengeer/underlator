@@ -435,24 +435,34 @@ fn core_manifest_does_not_depend_on_host_frameworks() {
 #[test]
 fn host_crates_have_no_llm_http_or_mvp_runtime() {
     let crates = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    // Исходящий LLM HTTP в host запрещён всегда (2.2 / 3.1 / 5.1).
+    let llm_http = [
+        "reqwest",
+        "/api/generate",
+        "/api/tags",
+        "/api/pull",
+        "/api/delete",
+    ];
+    // Имена Tauri-команд в server запрещены; в tauri (атом 5.1) — обязательны.
+    let tauri_cmd_names = ["model_generate", "catalog_get", "chat_create"];
     for name in ["underlator-server", "underlator-tauri"] {
         let src = crates.join(name).join("src");
         visit_rs(&src, &mut |path, text| {
-            for needle in [
-                "reqwest",
-                "/api/generate",
-                "/api/tags",
-                "/api/pull",
-                "/api/delete",
-                "model_generate",
-                "catalog_get",
-                "chat_create",
-            ] {
+            for needle in llm_http {
                 assert!(
                     !text.contains(needle),
-                    "{} не должен содержать `{needle}` (атом 2.2)",
+                    "{} не должен содержать `{needle}` (LLM HTTP в обход core)",
                     path.display()
                 );
+            }
+            if name == "underlator-server" {
+                for needle in tauri_cmd_names {
+                    assert!(
+                        !text.contains(needle),
+                        "{} (server) не должен содержать `{needle}`",
+                        path.display()
+                    );
+                }
             }
         });
     }

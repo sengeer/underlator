@@ -14,13 +14,24 @@ name = "underlator-tauri"
 path = "src/main.rs"
 
 [dependencies]
+serde.workspace = true
+serde_json.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 underlator-core.workspace = true
 tauri = { version = "2", optional = true }
 
+[build-dependencies]
+tauri-build = { version = "2", optional = true }
+
+[dev-dependencies]
+async-trait = "0.1"
+futures-util.workspace = true
+tempfile = "3"
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "time"] }
+
 [features]
 default = []
 # Включайте при наличии native-зависимостей Tauri 2 (GTK/WebKit на Linux):
 #   cargo check -p underlator-tauri --features desktop
-desktop = ["dep:tauri"]
+desktop = ["dep:tauri", "dep:tauri-build"]

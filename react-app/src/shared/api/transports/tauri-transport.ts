@@ -1,6 +1,6 @@
 /**
  * @module TauriTransport
- * Типизированный скелет invoke/events по карте ядра. Host 5.1 не трогаем.
+ * Рабочий invoke/listen против `underlator-tauri` (атом 5.1).
  */
 
 import type {
@@ -9,7 +9,7 @@ import type {
   ChatApi,
   ModelApi,
 } from '../backend-client';
-import { BackendError } from '../errors';
+import { BackendError, backendErrorFromBody } from '../errors';
 import type {
   AddMessageRequest,
   CatalogFilters,
@@ -45,6 +45,11 @@ export interface TauriBridge {
 
 interface TauriInternals {
   invoke?: (command: string, args?: unknown) => Promise<unknown>;
+  transformCallback?: (
+    callback: (payload: unknown) => void,
+    once?: boolean
+  ) => number;
+  unregisterCallback?: (id: number) => void;
 }
 
 interface TauriGlobal {
@@ -61,6 +66,59 @@ interface TauriGlobal {
 
 function unsupported(message: string): BackendError {
   return new BackendError('unsupported', message);
+}
+
+/**
+ * Разбирает classified host error `{ class, message }` из reject invoke.
+ */
+export function parseTauriHostError(error: unknown): BackendError {
+  if (error instanceof BackendError) {
+    return error;
+  }
+  if (typeof error === 'string') {
+    try {
+      return backendErrorFromBody(JSON.parse(error), error);
+    } catch {
+      return unsupported(error);
+    }
+  }
+  if (error && typeof error === 'object') {
+    const record = error as {
+      class?: unknown;
+      message?: unknown;
+      error?: unknown;
+    };
+    if (typeof record.class === 'string') {
+      return backendErrorFromBody(
+        record,
+        String(record.message ?? 'Tauri error')
+      );
+    }
+    if (typeof record.error === 'string') {
+      try {
+        return backendErrorFromBody(JSON.parse(record.error), record.error);
+      } catch {
+        /* fall through */
+      }
+    }
+    if (typeof record.message === 'string' && record.message.length > 0) {
+      try {
+        const nested = JSON.parse(record.message);
+        if (nested && typeof nested === 'object' && 'class' in nested) {
+          return backendErrorFromBody(nested, record.message);
+        }
+      } catch {
+        /* plain message */
+      }
+      return unsupported(record.message);
+    }
+  }
+  return unsupported(error instanceof Error ? error.message : String(error));
+}
+
+/** Оборачивает DTO в `{ request }` для именованного аргумента host. */
+export function wrapRequest(request: unknown): { request: unknown } {
+  return { request };
 }
 
 function readTauriGlobals(): {
@@ -96,13 +154,7 @@ export function createDefaultTauriBridge(): TauriBridge {
       try {
         return (await invoke(command, args)) as T;
       } catch (error) {
-        if (error instanceof BackendError) {
-          throw error;
-        }
-        const message = error instanceof Error ? error.message : String(error);
-        throw unsupported(
-          `Команда ${command} не реализована host'ом: ${message}`
-        );
+        throw parseTauriHostError(error);
       }
     },
     listen: async (event, handler) => {
@@ -149,7 +201,7 @@ export const TAURI_NAME_MAP = {
 } as const;
 
 /**
- * Транспорт Tauri: typed skeleton без silent fallback на Electron/HTTP.
+ * Транспорт Tauri: invoke + listen, без silent fallback на Electron/HTTP.
  */
 export class TauriTransport implements BackendClient {
   readonly model: ModelApi;
@@ -162,8 +214,10 @@ export class TauriTransport implements BackendClient {
     this.model = {
       generate: (request, config) => this.generate(request, config),
       stop: () => this.bridge.invoke(COMMAND.stop),
-      install: (request) => this.bridge.invoke(COMMAND.install, request),
-      remove: (request) => this.bridge.invoke(COMMAND.remove, request),
+      install: (request) =>
+        this.bridge.invoke(COMMAND.install, wrapRequest(request)),
+      remove: (request) =>
+        this.bridge.invoke(COMMAND.remove, wrapRequest(request)),
       list: () => this.bridge.invoke(COMMAND.list),
       onGenerateProgress: (callback) =>
         this.subscribe(TAURI_EVENTS[0], callback),
@@ -172,25 +226,25 @@ export class TauriTransport implements BackendClient {
     };
     this.catalog = {
       get: (params: GetCatalogRequest = {}) =>
-        this.bridge.invoke(COMMAND.catalogGet, params),
+        this.bridge.invoke(COMMAND.catalogGet, wrapRequest(params)),
       search: (filters: CatalogFilters) =>
-        this.bridge.invoke(COMMAND.catalogSearch, filters),
+        this.bridge.invoke(COMMAND.catalogSearch, wrapRequest(filters)),
       getModelInfo: (params: GetModelInfoRequest) =>
-        this.bridge.invoke(COMMAND.catalogGetModelInfo, params),
+        this.bridge.invoke(COMMAND.catalogGetModelInfo, wrapRequest(params)),
     };
     this.chat = {
       create: (request: CreateChatRequest) =>
-        this.bridge.invoke(COMMAND.chatCreate, request),
+        this.bridge.invoke(COMMAND.chatCreate, wrapRequest(request)),
       get: (request: GetChatRequest) =>
-        this.bridge.invoke(COMMAND.chatGet, request),
+        this.bridge.invoke(COMMAND.chatGet, wrapRequest(request)),
       update: (request: UpdateChatRequest) =>
-        this.bridge.invoke(COMMAND.chatUpdate, request),
+        this.bridge.invoke(COMMAND.chatUpdate, wrapRequest(request)),
       delete: (request: DeleteChatRequest) =>
-        this.bridge.invoke(COMMAND.chatDelete, request),
+        this.bridge.invoke(COMMAND.chatDelete, wrapRequest(request)),
       list: (request: ListChatsRequest = {}) =>
-        this.bridge.invoke(COMMAND.chatList, request),
+        this.bridge.invoke(COMMAND.chatList, wrapRequest(request)),
       addMessage: (request: AddMessageRequest) =>
-        this.bridge.invoke(COMMAND.chatAddMessage, request),
+        this.bridge.invoke(COMMAND.chatAddMessage, wrapRequest(request)),
     };
   }
 
@@ -198,11 +252,14 @@ export class TauriTransport implements BackendClient {
     request: GenerateRequest,
     config?: Partial<ProviderConfig>
   ): Promise<string> {
-    return this.bridge.invoke(COMMAND.generate, {
-      ...request,
-      id: config?.id ?? DEFAULT_PROVIDER_ID,
-      url: config?.url ?? DEFAULT_PROVIDER_URL,
-    });
+    return this.bridge.invoke(
+      COMMAND.generate,
+      wrapRequest({
+        ...request,
+        id: config?.id ?? DEFAULT_PROVIDER_ID,
+        url: config?.url ?? DEFAULT_PROVIDER_URL,
+      })
+    );
   }
 
   private subscribe<T>(
