@@ -6,6 +6,10 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      # SPA Bearer = server secret (default Dockerfile тоже `dev-change-me`).
+      args:
+        VITE_BACKEND_TOKEN: ${UNDERLATOR_AUTH_TOKEN:-dev-change-me}
+        VITE_BACKEND_MODE: http
     ports:
       - "8080:8080"
     environment:
@@ -15,7 +19,7 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       # Dev-default shared secret. Смените перед публичным продом:
       # без token процесс с bind 0.0.0.0 не стартует (fail-closed).
-      UNDERLATOR_AUTH_TOKEN: dev-change-me
+      UNDERLATOR_AUTH_TOKEN: ${UNDERLATOR_AUTH_TOKEN:-dev-change-me}
     volumes:
       - underlator-data:/data
     depends_on:
@@ -23,8 +27,8 @@ services:
 
   ollama:
     image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
+    # Порт sidecar только во внутренней сети compose (`OLLAMA_BASE_URL=http://ollama:11434`).
+    # Не публикуем :11434 на host — часто занят локальным Ollama; для отладки: podman exec.
     volumes:
       - ollama-data:/root/.ollama
 

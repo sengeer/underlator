@@ -1,9 +1,9 @@
 /**
  * @module ModelIpcTest
- * Функции для ручного тестирования Model IPC API.
- * Используется для проверки работы Model Electron IPC энпоинтов.
+ * Функции для ручного тестирования Model API через BackendClient.
  */
 
+import { getBackendClient } from '../../../shared/api';
 import { DEFAULT_OPTIONS } from '../../../shared/lib/constants';
 import modelAndCatalogIpc from '../apis/model-and-catalog-ipc';
 import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../constants/ipc';
@@ -31,8 +31,7 @@ export async function testInstallModel(model = OLLAMA_TEST_MODEL) {
 }
 
 /**
- * Генерирует текст модели OLLAMA_TEST_MODEL.
- * Тестирует IPC endpoint ollama:generate с streaming ответом.
+ * Генерирует текст модели OLLAMA_TEST_MODEL через BackendClient (HTTP/SSE в web).
  */
 export async function testGenerateText(
   model = OLLAMA_TEST_MODEL,
@@ -43,49 +42,37 @@ export async function testGenerateText(
 
     let fullResponse = '';
     let isFirstChunk = true;
+    const client = getBackendClient();
 
-    const unsubscribeProgress = window.electron.model.onGenerateProgress(
-      (chunk) => {
-        if (isFirstChunk) {
-          console.log('🤖 Начинаем генерацию...');
-          isFirstChunk = false;
-        }
-
-        if (chunk.response) {
-          fullResponse += chunk.response;
-          console.log('🤖 Chunk:', chunk.response);
-        }
-
-        if (chunk.done) {
-          console.log('\n✅ Генерация завершена!');
-          console.log(`📝 Полный ответ: ${fullResponse}`);
-        }
+    const unsubscribeProgress = client.model.onGenerateProgress((chunk) => {
+      if (isFirstChunk) {
+        console.log('🤖 Начинаем генерацию...');
+        isFirstChunk = false;
       }
-    );
 
-    // Запуск генерации
-    const response = await window.electron.model.generate({
-      model: model,
-      prompt: prompt,
+      if (chunk.response) {
+        fullResponse += chunk.response;
+        console.log('🤖 Chunk:', chunk.response);
+      }
+
+      if (chunk.done) {
+        console.log('\n✅ Генерация завершена!');
+        console.log(`📝 Полный ответ: ${fullResponse}`);
+      }
+    });
+
+    const text = await client.model.generate({
+      model,
+      prompt,
       ...DEFAULT_OPTIONS,
     });
 
-    // Отписывание от прогресса
     unsubscribeProgress();
 
     console.log('✅ Генерация завершена');
-    console.log('📝 Финальный ответ:', response);
+    console.log('📝 Финальный ответ:', text);
 
-    if (response.success && response.data) {
-      console.log('✅ Генерация успешна, получен текст:', response.data);
-    } else {
-      console.log('❌ Ошибка генерации');
-      if (response.error) {
-        console.log('❌ Детали ошибки:', response.error);
-      }
-    }
-
-    return response;
+    return { success: true as const, data: text };
   } catch (error) {
     console.error('❌ Ошибка генерации текста:', error);
     throw error;

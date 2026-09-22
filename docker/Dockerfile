@@ -6,6 +6,11 @@ WORKDIR /src/react-app
 COPY react-app/package.json react-app/package-lock.json ./
 RUN npm ci --ignore-scripts
 COPY react-app ./
+# Same-origin SPA: URL пустой; token MUST совпадать с UNDERLATOR_AUTH_TOKEN (compose default).
+ARG VITE_BACKEND_TOKEN=dev-change-me
+ARG VITE_BACKEND_MODE=http
+ENV VITE_BACKEND_TOKEN=$VITE_BACKEND_TOKEN
+ENV VITE_BACKEND_MODE=$VITE_BACKEND_MODE
 RUN npm run lingui:compile && npm run build
 
 FROM rust:1-bookworm AS rust

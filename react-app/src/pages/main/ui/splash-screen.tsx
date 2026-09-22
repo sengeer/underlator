@@ -93,34 +93,40 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
 
   /**
    * Настраивает подписки на события splash screen.
-   * Подписывается на обновления статуса, прогресса и ошибок от Electron.
+   * В web/HTTP без Electron splash MUST NOT блокировать MVP UI (атом 4.2).
    */
   useEffect(() => {
-    // Получает начальный статус splash screen
+    if (typeof window === 'undefined' || !window.electron?.splash) {
+      dispatch(complete());
+      dispatch(hide());
+      return;
+    }
+
     dispatch(fetchSplashStatus());
 
-    // Подписывается на обновления статуса
     const unsubscribeStatus =
       splashScreenApi.onStatusUpdate(handleStatusUpdate);
 
-    // Подписывается на обновления прогресса
     const unsubscribeProgress =
       splashScreenApi.onProgressUpdate(handleProgressUpdate);
 
-    // Подписывается на завершение инициализации
     const unsubscribeComplete = splashScreenApi.onComplete(handleComplete);
 
-    // Подписывается на ошибки
     const unsubscribeError = splashScreenApi.onError(handleError);
 
-    // Очищает подписки при размонтировании компонента
     return () => {
       unsubscribeStatus();
       unsubscribeProgress();
       unsubscribeComplete();
       unsubscribeError();
     };
-  }, [handleStatusUpdate, handleProgressUpdate, handleComplete, handleError]);
+  }, [
+    dispatch,
+    handleStatusUpdate,
+    handleProgressUpdate,
+    handleComplete,
+    handleError,
+  ]);
 
   // Не рендерит компонент если splash screen скрыт
   if (!splashState.visible) {

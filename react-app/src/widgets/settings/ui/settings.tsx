@@ -372,7 +372,8 @@ function Settings() {
 
   return (
     <section className='settings'>
-      {import.meta.env.DEV && <Tests />}
+      {(import.meta.env.DEV ||
+        import.meta.env.VITE_BACKEND_MODE === 'http') && <Tests />}
 
       <div className='settings__header'>
         <TextAndIconButton

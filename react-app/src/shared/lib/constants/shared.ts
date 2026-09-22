@@ -4,9 +4,9 @@
  */
 
 /**
- * Модель по умолчанию.
+ * Модель по умолчанию (лёгкая для dual-mode / server-приёмки 4.2).
  */
-export const DEFAULT_MODEL = 'qwen3:4b';
+export const DEFAULT_MODEL = 'qwen3:0.6b';
 
 /**
  * URL по умолчанию.

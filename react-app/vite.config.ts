@@ -150,5 +150,20 @@ export default defineConfig({
      * Документация: https://vitejs.dev/config/server-options.html#server-open
      */
     open: true,
+
+    /**
+     * Proxy `/api` и `/healthz` на underlator-server (Vite-dev helper 4.2).
+     * Same-origin в браузере → без CORS на Axum.
+     */
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
+      },
+      '/healthz': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
+      },
+    },
   },
 });

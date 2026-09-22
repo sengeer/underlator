@@ -72,23 +72,32 @@ function ChatSidebar({
 
   /**
    * Обрабатывает удаление чата.
+   * RAG best-effort: отсутствие Electron / ошибка коллекции MUST NOT блокировать deleteChat.
    */
   const handleDeleteChat = useCallback(
     async (chatId: string) => {
       try {
-        // Удаляет коллекцию документов RAG
-        const resultOfDeletingCollection =
-          await ragIpc.deleteDocumentCollection({ chatId });
+        try {
+          const resultOfDeletingCollection =
+            await ragIpc.deleteDocumentCollection({ chatId });
 
-        if (!resultOfDeletingCollection.success) {
-          callANotificationWithALog(
-            dispatch,
-            t`Failed to delete document collection`,
-            resultOfDeletingCollection.error || 'Unknown error'
-          );
+          if (
+            resultOfDeletingCollection &&
+            typeof resultOfDeletingCollection === 'object' &&
+            'success' in resultOfDeletingCollection &&
+            !(resultOfDeletingCollection as { success?: boolean }).success
+          ) {
+            callANotificationWithALog(
+              dispatch,
+              t`Failed to delete document collection`,
+              (resultOfDeletingCollection as { error?: string }).error ||
+                'Unknown error'
+            );
+          }
+        } catch {
+          // web / нет window.electron.rag — продолжаем удаление чата
         }
 
-        // Удаляет чат через Redux thunk
         const result = await dispatch(
           deleteChat({
             chatId,
@@ -101,7 +110,6 @@ function ChatSidebar({
           onDeleteChat?.(chatId);
           onRefreshChats?.();
 
-          // Если удаляемый чат был активным, очищает выбор
           if (activeChatId === chatId) {
             onSelectChat?.('');
           }
