@@ -351,9 +351,7 @@ function PdfViewer({ isOpened }: PdfTranslator) {
               ? t`what does this mean?`
               : values.instruction.toString(),
         },
-        {
-          think: true,
-        }
+        {}
       ).instruct();
     } else if (settings.typeUse === 'contextualTranslation') {
       collectedTextInfos.forEach(({ element }) => {

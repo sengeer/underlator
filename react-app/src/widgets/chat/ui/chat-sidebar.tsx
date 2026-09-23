@@ -5,7 +5,7 @@
  */
 
 import { useLingui } from '@lingui/react/macro';
-import { useState, useEffect, useCallback, ViewTransition } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { ragIpc } from '../../../shared/apis/rag-ipc/';
 import AddIcon from '../../../shared/assets/icons/add-icon';
@@ -173,66 +173,64 @@ function ChatSidebar({
   }, [chats, state.searchQuery]);
 
   return (
-    <ViewTransition>
-      <div className='chat-sidebar'>
-        <Search
-          placeholder={t`Chat...`}
-          value={state.searchQuery}
-          onChange={handleSearchChange}
-          debounceMs={300}
-          hotkey='Ctrl+k'
-          showSearchIcon
-        />
+    <div className='chat-sidebar'>
+      <Search
+        placeholder={t`Chat...`}
+        value={state.searchQuery}
+        onChange={handleSearchChange}
+        debounceMs={300}
+        hotkey='Ctrl+k'
+        showSearchIcon
+      />
 
-        <div className='chat-sidebar__chats-list'>
-          {renderEmptyState()}
+      <div className='chat-sidebar__chats-list'>
+        {renderEmptyState()}
 
-          {state.filteredChats.map((chat) => (
-            <SelectorOption
-              type='bar'
-              key={chat.id}
-              state='installed'
-              onClick={() => {
-                handleSelectChat(chat.id);
-              }}
-              actionHandlers={{
-                onRemove: () => {
-                  handleExecuteDelete(chat.id);
-                },
-              }}>
-              <>
-                <TextButton
-                  className='chat-sidebar__date-btn'
-                  text={chat.messageCount}
-                  isDisabled
-                />
-                <TextButton
-                  className='chat-sidebar__chat-btn'
-                  text={
-                    chat.lastMessage
-                      ? getMainContent(chat.lastMessage.content)
-                      : splitByWordCount(chat.title, 2)[0]
-                  }
-                  isDisabled
-                  isActiveStyle={activeChatId === chat.id}
-                />
-                <TextButton
-                  className='chat-sidebar__date-btn'
-                  text={splitByWordCount(chat.title, 2)[1]}
-                  isDisabled
-                />
-              </>
-            </SelectorOption>
-          ))}
-          <IconButton
-            className='chat-sidebar__add-btn'
-            onClick={handleCreateChat}
-            isDisabled={isLoading}>
-            <AddIcon />
-          </IconButton>
-        </div>
+        {state.filteredChats.map((chat) => (
+          <SelectorOption
+            type='bar'
+            key={chat.id}
+            state='installed'
+            onClick={() => {
+              handleSelectChat(chat.id);
+            }}
+            actionHandlers={{
+              onRemove: () => {
+                handleExecuteDelete(chat.id);
+              },
+            }}>
+            <>
+              <TextButton
+                className='chat-sidebar__date-btn'
+                text={chat.messageCount}
+                isDisabled
+              />
+              <TextButton
+                className='chat-sidebar__chat-btn'
+                text={
+                  chat.lastMessage
+                    ? getMainContent(chat.lastMessage.content)
+                    : splitByWordCount(chat.title, 2)[0]
+                }
+                isDisabled
+                isActiveStyle={activeChatId === chat.id}
+              />
+              <TextButton
+                className='chat-sidebar__date-btn'
+                text={splitByWordCount(chat.title, 2)[1]}
+                isDisabled
+              />
+            </>
+          </SelectorOption>
+        ))}
+        <IconButton
+          className='chat-sidebar__add-btn'
+          onClick={handleCreateChat}
+          isDisabled={isLoading}>
+          <AddIcon />
+        </IconButton>
       </div>
-    </ViewTransition>
+    </div>
   );
 }
 

@@ -1,0 +1,72 @@
+# Разрешения ACL для MVP Tauri commands (атом 5.1 / 5.2).
+# Без этих файлов capabilities/default.json не резолвит allow-* идентификаторы.
+
+[[permission]]
+identifier = "allow-model-generate"
+description = "Разрешает invoke model_generate"
+commands.allow = ["model_generate"]
+
+[[permission]]
+identifier = "allow-model-stop"
+description = "Разрешает invoke model_stop"
+commands.allow = ["model_stop"]
+
+[[permission]]
+identifier = "allow-model-install"
+description = "Разрешает invoke model_install"
+commands.allow = ["model_install"]
+
+[[permission]]
+identifier = "allow-model-remove"
+description = "Разрешает invoke model_remove"
+commands.allow = ["model_remove"]
+
+[[permission]]
+identifier = "allow-model-list"
+description = "Разрешает invoke model_list"
+commands.allow = ["model_list"]
+
+[[permission]]
+identifier = "allow-catalog-get"
+description = "Разрешает invoke catalog_get"
+commands.allow = ["catalog_get"]
+
+[[permission]]
+identifier = "allow-catalog-search"
+description = "Разрешает invoke catalog_search"
+commands.allow = ["catalog_search"]
+
+[[permission]]
+identifier = "allow-catalog-get-model-info"
+description = "Разрешает invoke catalog_get_model_info"
+commands.allow = ["catalog_get_model_info"]
+
+[[permission]]
+identifier = "allow-chat-create"
+description = "Разрешает invoke chat_create"
+commands.allow = ["chat_create"]
+
+[[permission]]
+identifier = "allow-chat-get"
+description = "Разрешает invoke chat_get"
+commands.allow = ["chat_get"]
+
+[[permission]]
+identifier = "allow-chat-update"
+description = "Разрешает invoke chat_update"
+commands.allow = ["chat_update"]
+
+[[permission]]
+identifier = "allow-chat-delete"
+description = "Разрешает invoke chat_delete"
+commands.allow = ["chat_delete"]
+
+[[permission]]
+identifier = "allow-chat-list"
+description = "Разрешает invoke chat_list"
+commands.allow = ["chat_list"]
+
+[[permission]]
+identifier = "allow-chat-add-message"
+description = "Разрешает invoke chat_add_message"
+commands.allow = ["chat_add_message"]

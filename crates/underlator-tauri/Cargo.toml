@@ -19,10 +19,10 @@ serde_json.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 underlator-core.workspace = true
-tauri = { version = "2", optional = true }
+tauri = { version = "2", optional = true , features = [] }
 
 [build-dependencies]
-tauri-build = { version = "2", optional = true }
+tauri-build = { version = "2", optional = true , features = [] }
 
 [dev-dependencies]
 async-trait = "0.1"

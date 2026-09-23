@@ -85,6 +85,10 @@ To use RAG (intelligent document analysis), download an embedding model via **ma
 
 </div>
 
+## 🖥️ Desktop Tauri (Rust dual-mode)
+
+Native desktop host on Tauri 2 (alongside the temporary Electron app and the Docker server mode): build/run commands, OS prerequisites, canonical release artifacts (Linux AppImage, macOS arm64 DMG, Windows portable zip), and the verification matrix are in [docs/DESKTOP_TAURI.md](docs/DESKTOP_TAURI.md). Electron remains until atom 6.1 after the Fedora AppImage gate closes.
+
 ## 🔒 Security and Confidentiality
 
 Underlator is designed for working with sensitive data:

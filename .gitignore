@@ -7,8 +7,15 @@
 .roo
 .cursor
 target/
-dist/
+target-agent/
 *.log
 
-# typedoc
-/docs
+# Frontend / Electron build outputs
+dist/
+
+# typedoc (generated API docs) — keep developer desktop doc tracked
+/docs/*
+!/docs/DESKTOP_TAURI.md
+
+# Tauri desktop release artifacts + local smoke/debug leftovers (atom 5.2)
+dist-desktop/

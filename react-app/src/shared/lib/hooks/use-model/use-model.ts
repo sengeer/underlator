@@ -161,15 +161,18 @@ function useModel() {
 
       setStatus('success');
     } catch (erorr) {
-      const errMsg = `Failed to generate text: ${(erorr as Error).message}`;
+      const detail = (erorr as Error).message || 'unknown error';
+      const errMsg = `Failed to generate text: ${detail}`;
 
       if (
-        (erorr as Error).message !==
+        detail !==
         'IPC Operation failed: model:generate: Operation was cancelled'
       )
         callANotificationWithALog(
           dispatch,
-          t`Request error, check the settings`,
+          detail.length > 0 && detail.length < 180
+            ? detail
+            : t`Request error, check the settings`,
           errMsg
         );
 

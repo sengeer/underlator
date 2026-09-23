@@ -20,7 +20,6 @@ export const DEFAULT_OPTIONS = {
   temperature: 0.7,
   max_tokens: 200,
   num_predict: 1,
-  think: true,
 };
 
 /**

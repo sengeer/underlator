@@ -219,6 +219,54 @@ async fn generate_stream_two_chunks_without_id_url_in_body() {
 }
 
 #[tokio::test]
+async fn generate_retries_without_think_when_model_rejects_thinking() {
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/api/generate"))
+        .and(body_json(json!({
+            "model": "llama",
+            "prompt": "привет",
+            "temperature": 0.7,
+            "think": true,
+            "stream": true
+        })))
+        .respond_with(ResponseTemplate::new(400).set_body_string(
+            r#"{"error":"\"llama\" does not support thinking"}"#,
+        ))
+        .up_to_n_times(1)
+        .mount(&server)
+        .await;
+    Mock::given(method("POST"))
+        .and(path("/api/generate"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_string(
+                    "{\"model\":\"llama\",\"response\":\"ok\",\"created_at\":\"t\",\"done\":true}\n",
+                )
+                .insert_header("Content-Type", "application/x-ndjson"),
+        )
+        .mount(&server)
+        .await;
+
+    let provider = create_provider(&factory_config("ollama", &server.uri(), false)).unwrap();
+    let mut request = generate_request(&server.uri());
+    request.think = Some(true);
+    let mut stream = provider
+        .generate_stream(&request)
+        .await
+        .expect("retry generate");
+    let chunk = stream.next().await.expect("chunk").expect("ok");
+    assert_eq!(chunk.response, "ok");
+
+    let hits = server.received_requests().await.expect("запросы");
+    assert_eq!(hits.len(), 2, "первый отказ think + retry без think");
+    let first: Value = serde_json::from_slice(&hits[0].body).expect("json");
+    let second: Value = serde_json::from_slice(&hits[1].body).expect("json");
+    assert_eq!(first["think"], json!(true));
+    assert!(second.get("think").is_none(), "retry без think: {second}");
+}
+
+#[tokio::test]
 async fn list_models_maps_tags_payload() {
     let server = MockServer::start().await;
     Mock::given(method("GET"))

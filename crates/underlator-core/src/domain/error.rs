@@ -15,7 +15,7 @@ pub enum CoreError {
     #[error("сетевой сбой HTTP: {0}")]
     HttpNetwork(String),
     /// Сервер вернул неуспешный HTTP-статус.
-    #[error("HTTP-статус {status}")]
+    #[error("HTTP-статус {status}: {snippet}")]
     HttpStatus {
         /// Код HTTP-статуса.
         status: u16,

@@ -85,6 +85,10 @@
 
 </div>
 
+## 🖥️ Desktop Tauri (Rust dual-mode)
+
+Нативный desktop-host на Tauri 2 (рядом с временным Electron и Docker/server): команды сборки/запуска, prerequisites по ОС, канонические артефакты (Linux AppImage, macOS arm64 DMG, Windows portable zip) и матрица verified/unverified — в [docs/DESKTOP_TAURI.md](docs/DESKTOP_TAURI.md). Electron остаётся до атома 6.1 после закрытия Fedora AppImage gate.
+
 ## 🔒 Безопасность и конфиденциальность
 
 Underlator разработан для работы с чувствительными данными:

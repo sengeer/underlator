@@ -7,6 +7,7 @@
 
 #![warn(missing_docs)]
 
+pub mod acceptance_smoke;
 pub mod commands;
 pub mod config;
 pub mod error;
@@ -14,6 +15,22 @@ pub mod state;
 pub mod stubs;
 
 use underlator_core::CRATE_NAME;
+
+/// Workaround WebKitGTK на Linux (серое окно / GBM / DMABUF).
+///
+/// Вызывать **до** `run()` / любого GTK-WebKit, см.
+/// <https://v2.tauri.app/develop/Debug/linux-graphics/> и tauri-apps/tauri#9394.
+pub fn apply_linux_webview_workarounds() {
+    #[cfg(all(feature = "desktop", target_os = "linux"))]
+    {
+        if std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none() {
+            // SAFETY: один раз на старте процесса до WebKit/Tauri.
+            unsafe {
+                std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+            }
+        }
+    }
+}
 
 /// Запускает desktop-host.
 ///
@@ -34,6 +51,9 @@ fn run_tauri() {
     use crate::config::DesktopConfig;
     use crate::state::AppState;
 
+    // Дублируем на случай `run()` без `main` (тесты / альтернативный entry).
+    apply_linux_webview_workarounds();
+
     tracing::info!(core = CRATE_NAME, "запуск Tauri 2 host (MVP commands)");
     tauri::Builder::default()
         .setup(|app| {
@@ -45,7 +65,11 @@ fn run_tauri() {
             let data_dir = AppState::resolve_data_dir(&config, app_data);
             let state = AppState::from_config(&config, &data_dir)
                 .map_err(|err| format!("wiring AppState: {err}"))?;
+            let smoke_state = state.clone();
             app.manage(state);
+            tauri::async_runtime::spawn(async move {
+                crate::acceptance_smoke::maybe_run(&smoke_state).await;
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

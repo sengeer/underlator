@@ -5,7 +5,7 @@
  */
 
 import { useLingui } from '@lingui/react/macro';
-import { useState, useEffect, useCallback, startTransition } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useAppDispatch } from '../../../app/';
@@ -183,7 +183,6 @@ function Chat() {
           saveHistory: true,
         },
         {
-          think: true,
           temperature: 0.7,
           max_tokens: 2048,
         }
@@ -245,7 +244,7 @@ function Chat() {
    * Обрабатывает переключение боковой панели.
    */
   const handleToggleSidebar = useCallback(() => {
-    startTransition(() => setShowSidebar((prev) => !prev));
+    setShowSidebar((prev) => !prev);
   }, []);
 
   async function uploadAndProcessDocument() {

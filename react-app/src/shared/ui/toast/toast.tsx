@@ -4,7 +4,7 @@
  * Управляет анимацией появления/исчезновения и автоудалением.
  */
 
-import { useEffect, useState, ViewTransition, startTransition } from 'react';
+import { useEffect, useState, startTransition } from 'react';
 import { useDispatch } from 'react-redux';
 import CloseIcon from '../../assets/icons/close-icon';
 import { removeNotification } from '../../models/notifications-slice';
@@ -116,28 +116,26 @@ function Toast({ id, type, message }: ToastProps) {
 
   return (
     isShow && (
-      <ViewTransition>
-        <aside className='toast'>
-          <ButtonWrapperWithBackground isDisabled>
-            <DecorativeTextAndIconButton
-              text={
-                typeof message === 'string' ? message : JSON.stringify(message)
-              }
-              decorativeColor={params.color}
-              style={{
-                marginLeft: '1rem',
-                color: params.color,
-              }}>
-              {params.emoji}
-            </DecorativeTextAndIconButton>
-            <IconButton
-              style={{ marginRight: '1rem' }}
-              onClick={() => startTransition(() => setIsShow(false))}>
-              <CloseIcon />
-            </IconButton>
-          </ButtonWrapperWithBackground>
-        </aside>
-      </ViewTransition>
+      <aside className='toast'>
+        <ButtonWrapperWithBackground isDisabled>
+          <DecorativeTextAndIconButton
+            text={
+              typeof message === 'string' ? message : JSON.stringify(message)
+            }
+            decorativeColor={params.color}
+            style={{
+              marginLeft: '1rem',
+              color: params.color,
+            }}>
+            {params.emoji}
+          </DecorativeTextAndIconButton>
+          <IconButton
+            style={{ marginRight: '1rem' }}
+            onClick={() => startTransition(() => setIsShow(false))}>
+            <CloseIcon />
+          </IconButton>
+        </ButtonWrapperWithBackground>
+      </aside>
     )
   );
 }

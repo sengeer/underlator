@@ -200,6 +200,19 @@ fn map_generate_frame(bytes: &Bytes) -> Result<GenerateProgress, CoreError> {
         .map_err(|err| CoreError::Internal(format!("не удалось разобрать кадр generate: {err}")))
 }
 
+/// Ollama отвечает 4xx с текстом вроде `"model" does not support thinking`.
+fn is_thinking_unsupported(err: &CoreError) -> bool {
+    match err {
+        CoreError::HttpStatus { snippet, .. } => {
+            let lower = snippet.to_ascii_lowercase();
+            lower.contains("does not support thinking")
+                || lower.contains("не поддерживает thinking")
+        }
+        CoreError::HttpRetryExhausted { last, .. } => is_thinking_unsupported(last),
+        _ => false,
+    }
+}
+
 struct CancellableStream<T> {
     inner: Option<ProviderStream<T>>,
     guard: Arc<CancelGuard>,
@@ -244,12 +257,30 @@ impl LlmProvider for OllamaProvider {
         request: &GenerateRequest,
     ) -> Result<ProviderStream<GenerateProgress>, CoreError> {
         let guard = self.replace_generate_guard();
-        let body = Self::generate_body(request);
-        let http_request = HttpRequest::new(HttpMethod::Post, PATH_GENERATE).json(&body)?;
-        let byte_stream = self
+        let byte_stream = match self
             .client
-            .send_stream(http_request, StreamMode::NdJson)
-            .await?;
+            .send_stream(
+                HttpRequest::new(HttpMethod::Post, PATH_GENERATE)
+                    .json(&Self::generate_body(request))?,
+                StreamMode::NdJson,
+            )
+            .await
+        {
+            Ok(stream) => stream,
+            // Ollama ≥0.9 отклоняет think на моделях без thinking; один retry без флага.
+            Err(err) if request.think == Some(true) && is_thinking_unsupported(&err) => {
+                let mut retry = request.clone();
+                retry.think = None;
+                self.client
+                    .send_stream(
+                        HttpRequest::new(HttpMethod::Post, PATH_GENERATE)
+                            .json(&Self::generate_body(&retry))?,
+                        StreamMode::NdJson,
+                    )
+                    .await?
+            }
+            Err(err) => return Err(err),
+        };
         let mapped: ProviderStream<GenerateProgress> =
             Box::pin(byte_stream.map(|item| match item {
                 Ok(bytes) => map_generate_frame(&bytes),
