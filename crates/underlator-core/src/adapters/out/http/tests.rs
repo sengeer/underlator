@@ -409,9 +409,10 @@ fn use_case_modules_keep_port_boundaries() {
         "application/catalog.rs",
         "application/chat.rs",
     ] {
-        let text = std::fs::read_to_string(src.join(rel)).unwrap_or_else(|err| {
-            panic!("не удалось прочитать {rel}: {err}");
-        });
+        let text = match std::fs::read_to_string(src.join(rel)) {
+            Ok(text) => text,
+            Err(err) => panic!("не удалось прочитать {rel}: {err}"),
+        };
         for needle in [
             "use reqwest",
             "use hyper",
@@ -450,9 +451,10 @@ fn domain_modules_do_not_import_reqwest_or_hyper() {
         if file.file_name().is_some_and(|name| name == "tests.rs") {
             continue;
         }
-        let text = std::fs::read_to_string(&file).unwrap_or_else(|err| {
-            panic!("не удалось прочитать {}: {err}", file.display());
-        });
+        let text = match std::fs::read_to_string(&file) {
+            Ok(text) => text,
+            Err(err) => panic!("не удалось прочитать {}: {err}", file.display()),
+        };
         for needle in ["use reqwest", "use hyper", "reqwest::", "hyper::"] {
             assert!(
                 !text.contains(needle),

@@ -6,7 +6,7 @@ use crate::domain::iso8601::{millis_to_iso8601, unix_millis_now};
 /// Статический запасной список (как Electron `STATIC_MODELS`, минимум `qwen3`).
 pub fn static_library_models() -> Vec<OllamaModelInfo> {
     let now = millis_to_iso8601(unix_millis_now());
-    vec![OllamaModelInfo {
+    let models = vec![OllamaModelInfo {
         id: "library-qwen3-3".to_owned(),
         name: "qwen3".to_owned(),
         display_name: "qwen3".to_owned(),
@@ -23,5 +23,6 @@ pub fn static_library_models() -> Vec<OllamaModelInfo> {
         tags: Some(vec!["available".to_owned()]),
         compatibility_status: Some(CompatibilityStatus::Unknown),
         compatibility_messages: None,
-    }]
+    }];
+    models
 }

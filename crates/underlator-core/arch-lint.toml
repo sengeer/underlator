@@ -1,4 +1,4 @@
-# Границы гексагональных слоёв underlator-core (атом 2.4).
+# Границы гексагональных слоёв underlator-core.
 # Preset minimal: AL001 relaxed; без AL002 no-sync-io (FilesystemChatStore на std::fs).
 # Гексагон задаётся матрицей deny-scope-dep, не линейным [[layering]].
 

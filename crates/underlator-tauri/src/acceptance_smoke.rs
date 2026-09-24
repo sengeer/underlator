@@ -1,4 +1,4 @@
-//! Приёмочный smoke MVP внутри живого desktop-host (атом 5.2).
+//! Приёмочный smoke MVP внутри живого desktop-host.
 //!
 //! Включается только при `UNDERLATOR_ACCEPTANCE_SMOKE=1`. Прогоняет те же thin
 //! handlers, что и Tauri invoke, против **локального Ollama** (не mock).

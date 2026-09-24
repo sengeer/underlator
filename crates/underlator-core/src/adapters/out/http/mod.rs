@@ -304,7 +304,8 @@ impl HttpClient {
 
 /// User-agent исходящих запросов ядра.
 pub fn user_agent() -> String {
-    format!("{}/{}", crate::CRATE_NAME, crate::CRATE_VERSION)
+    let agent = format!("{}/{}", crate::CRATE_NAME, crate::CRATE_VERSION);
+    agent
 }
 
 pub(crate) fn map_reqwest(err: reqwest::Error) -> CoreError {

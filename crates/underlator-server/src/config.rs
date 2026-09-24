@@ -21,10 +21,11 @@ impl std::fmt::Display for ConfigError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::PublicBindWithoutAuth { bind } => {
-                write!(
+                let result = write!(
                     f,
                     "публичный bind `{bind}` требует UNDERLATOR_AUTH_TOKEN или пару UNDERLATOR_AUTH_USER и UNDERLATOR_AUTH_PASSWORD"
-                )
+                );
+                result
             }
         }
     }

@@ -1,4 +1,4 @@
-# Разрешения ACL для MVP Tauri commands (атом 5.1 / 5.2).
+# Разрешения ACL для MVP Tauri commands.
 # Без этих файлов capabilities/default.json не резолвит allow-* идентификаторы.
 
 [[permission]]

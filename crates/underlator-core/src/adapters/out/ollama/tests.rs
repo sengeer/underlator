@@ -491,7 +491,7 @@ fn host_crates_have_no_llm_http_or_mvp_runtime() {
         "/api/pull",
         "/api/delete",
     ];
-    // Имена Tauri-команд в server запрещены; в tauri (атом 5.1) — обязательны.
+    // Имена Tauri-команд в server запрещены; в tauri — обязательны.
     let tauri_cmd_names = ["model_generate", "catalog_get", "chat_create"];
     for name in ["underlator-server", "underlator-tauri"] {
         let src = crates.join(name).join("src");

@@ -18,7 +18,9 @@ pub(crate) fn millis_to_iso8601(millis: u64) -> String {
     let min = (tod % 3600) / 60;
     let sec = tod % 60;
     let (year, month, day) = civil_from_unix_days(days);
-    format!("{year:04}-{month:02}-{day:02}T{hour:02}:{min:02}:{sec:02}.{ms:03}Z")
+    let formatted =
+        format!("{year:04}-{month:02}-{day:02}T{hour:02}:{min:02}:{sec:02}.{ms:03}Z");
+    formatted
 }
 
 /// Гражданская дата UTC из числа суток с Unix epoch (алгоритм Howard Hinnant).

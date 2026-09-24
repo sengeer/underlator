@@ -19,9 +19,10 @@ fn application_sources_do_not_name_adapters_or_http_crates() {
     let mut files = Vec::new();
     collect_rust_files(&root, &mut files);
     for file in files {
-        let text = std::fs::read_to_string(&file).unwrap_or_else(|err| {
-            panic!("не удалось прочитать {}: {err}", file.display());
-        });
+        let text = match std::fs::read_to_string(&file) {
+            Ok(text) => text,
+            Err(err) => panic!("не удалось прочитать {}: {err}", file.display()),
+        };
         for needle in ["crate::adapters", "reqwest", "hyper", "/api/generate"] {
             assert!(
                 !text.contains(needle),

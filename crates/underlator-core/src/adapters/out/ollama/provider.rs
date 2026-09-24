@@ -1,7 +1,7 @@
 //! Runtime-адаптер локального Ollama поверх [`crate::adapters::out::http::HttpClient`].
 //!
 //! Вендорные пути живут только здесь. Эмбеддинги, show и health-check
-//! в этот атом не входят. `embedded-ollama` использует тот же HTTP-адаптер
+//! в этот crate не входят. `embedded-ollama` использует тот же HTTP-адаптер
 //! (lifecycle splash — вне скоупа).
 
 use std::pin::Pin;

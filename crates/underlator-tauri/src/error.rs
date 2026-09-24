@@ -38,7 +38,8 @@ impl From<CoreError> for HostError {
 
 impl std::fmt::Display for HostError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}: {}", self.class, self.message)
+        let result = write!(f, "{}: {}", self.class, self.message);
+        result
     }
 }
 

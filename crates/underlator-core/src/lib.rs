@@ -4,7 +4,7 @@
 //! (`underlator-server`, `underlator-tauri`) — driving adapters: разбор входа
 //! → вызов application/ports API → сериализация/emit.
 //!
-//! Атом 2.4: гексагональная раскладка `domain` / `ports` / `application` /
+//! Гексагональная раскладка `domain` / `ports` / `application` /
 //! `adapters/out`. Этот файл — composition root (`pub use` и wiring factory
 //! провайдера в исходящем адаптерном слое, не в `application`).
 

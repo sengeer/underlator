@@ -18,7 +18,7 @@ pub fn open_file_dialog_stub() -> Result<Option<String>, String> {
     Err("native dialog: заготовка desktop-only; не блокер MVP".to_owned())
 }
 
-/// Splash / embedded Ollama — **later**, без runtime в атоме 5.1.
+/// Splash / embedded Ollama — **later**, без runtime.
 ///
 /// См. architectural plan §5.1 / out of scope MVP dual-mode.
 pub fn splash_and_embedded_ollama_later() {

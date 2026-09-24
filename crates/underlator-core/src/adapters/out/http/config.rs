@@ -145,10 +145,11 @@ impl fmt::Debug for RedactedHeaders<'_> {
 
 /// Имена заголовков, значения которых нельзя писать в `Debug` и трассировку.
 pub(crate) fn is_sensitive_header(name: &str) -> bool {
-    matches!(
+    let sensitive = matches!(
         name.to_ascii_lowercase().as_str(),
         "authorization" | "proxy-authorization" | "x-api-key" | "api-key"
-    )
+    );
+    sensitive
 }
 
 #[cfg(test)]

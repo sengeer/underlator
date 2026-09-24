@@ -1,6 +1,6 @@
 //! Карта имён MVP API: IPC → use-case → HTTP path → Tauri command.
 //!
-//! Не содержит `rag.*` и `splash.*`. Черновик HTTP path атом 3.1 может
+//! Не содержит `rag.*` и `splash.*`. Черновик HTTP path может
 //! уточнить, не меняя идентификатор use-case.
 
 /// Описание одной MVP-операции.

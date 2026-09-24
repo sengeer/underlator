@@ -40,11 +40,13 @@ pub struct UuidIdGenerator;
 
 impl IdGenerator for UuidIdGenerator {
     fn chat_id(&self, millis: u64) -> String {
-        format!("chat_{millis}_{}", uuid::Uuid::new_v4().simple())
+        let id = format!("chat_{millis}_{}", uuid::Uuid::new_v4().simple());
+        id
     }
 
     fn message_id(&self, millis: u64) -> String {
-        format!("msg_{millis}_{}", uuid::Uuid::new_v4().simple())
+        let id = format!("msg_{millis}_{}", uuid::Uuid::new_v4().simple());
+        id
     }
 }
 
@@ -456,11 +458,13 @@ mod tests {
 
     impl IdGenerator for SeqIds {
         fn chat_id(&self, millis: u64) -> String {
-            format!("chat_{millis}_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+            let id = format!("chat_{millis}_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+            id
         }
 
         fn message_id(&self, millis: u64) -> String {
-            format!("msg_{millis}_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+            let id = format!("msg_{millis}_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+            id
         }
     }
 

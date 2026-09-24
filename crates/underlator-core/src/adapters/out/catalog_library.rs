@@ -69,7 +69,8 @@ fn map_library_models(api_models: &[LibraryApiModel]) -> Vec<OllamaModelInfo> {
             let full_name = if tag.contains(':') {
                 tag.clone()
             } else {
-                format!("{}:{tag}", api.name)
+                let name = format!("{}:{tag}", api.name);
+                name
             };
             let mut tags = api.tags.clone();
             tags.push("library".to_owned());
