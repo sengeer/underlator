@@ -15,13 +15,14 @@ import type {
 /**
  * Начальное состояние splash screen.
  * Состояние с настройками по умолчанию.
+ * TODO(splash): вернуть `visible: true` после реализации splash lifecycle в rust-core/desktop.
  */
 const initialState: SplashScreenState = {
   status: null,
   progress: 0,
   loading: false,
   error: null,
-  visible: true,
+  visible: false,
   startTime: null,
   endTime: null,
 };

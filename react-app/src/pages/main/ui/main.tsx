@@ -28,9 +28,10 @@ import SideNavigate from '../../../widgets/side-navigate/';
 import TextTranslator from '../../../widgets/text-translator';
 import { BOOSTY_DONATE_URL } from '../constants/donation';
 import { useAppLaunches } from '../hooks/use-app-launches';
-import { selectSplashVisible } from '../models/splash-screen-ipc-slice';
+// TODO(splash): вернуть после реализации splash lifecycle в rust-core/desktop
+// import { selectSplashVisible } from '../models/splash-screen-ipc-slice';
+// import SplashScreen from './splash-screen';
 import Donation from './donation';
-import SplashScreen from './splash-screen';
 import '../styles/main.scss';
 
 /**
@@ -75,8 +76,8 @@ function Main() {
     isElementOpen(state, 'settingsSection')
   );
 
-  // Получение состояния видимости SplashScreen из Redux store
-  const isSplashVisible = useSelector(selectSplashVisible);
+  // TODO(splash): restore when rust-core/desktop splash lifecycle exists
+  // const isSplashVisible = useSelector(selectSplashVisible);
 
   // Получение состояния видимости Chat из Redux store
   const isOpenChatSection = useSelector((state) =>
@@ -151,37 +152,36 @@ function Main() {
 
   return (
     <main className='main'>
-      {/* SplashScreen отображается первым для показа статуса загрузки всего приложения */}
+      {/* TODO(splash): вернуть после реализации splash lifecycle в rust-core/desktop
       <SplashScreen />
-      {/* Основной интерфейс показывается только после завершения загрузки приложения */}
-      {isSplashVisible ? null : (
-        <>
-          {/* Контейнер для отображения toast-уведомлений */}
-          <ToastContainer />
-          {/* Навигационная панель для переключения между компонентами */}
-          <SideNavigate />
-          {/* Виджет чата */}
-          <Activity mode={isOpenChatSection ? 'visible' : 'hidden'}>
-            <Chat />
-          </Activity>
-          {/* Виджет перевода текста */}
-          <Activity mode={isOpenTextTranslatorSection ? 'visible' : 'hidden'}>
-            <TextTranslator />
-          </Activity>
-          {/* Виджет просмотра и перевода PDF */}
-          <PdfViewer isOpened={isOpenPdfViewerSection} />
-          {/* Виджет настроек */}
-          <Activity mode={isOpenSettingsSection ? 'visible' : 'hidden'}>
-            <Settings />
-          </Activity>
-          {/* Модальное окно доната */}
-          <Donation
-            isOpened={shouldShowPopup || isOpenDonationPopup}
-            setOpened={handleCloseDonationPopup}
-            onDonate={handleDonate}
-          />
-        </>
-      )}
+      */}
+      {/* TODO(splash): вернуть после реализации splash lifecycle в rust-core/desktop
+      {isSplashVisible ? null : (…)}
+      */}
+      {/* Контейнер для отображения toast-уведомлений */}
+      <ToastContainer />
+      {/* Навигационная панель для переключения между компонентами */}
+      <SideNavigate />
+      {/* Виджет чата */}
+      <Activity mode={isOpenChatSection ? 'visible' : 'hidden'}>
+        <Chat />
+      </Activity>
+      {/* Виджет перевода текста */}
+      <Activity mode={isOpenTextTranslatorSection ? 'visible' : 'hidden'}>
+        <TextTranslator />
+      </Activity>
+      {/* Виджет просмотра и перевода PDF */}
+      <PdfViewer isOpened={isOpenPdfViewerSection} />
+      {/* Виджет настроек */}
+      <Activity mode={isOpenSettingsSection ? 'visible' : 'hidden'}>
+        <Settings />
+      </Activity>
+      {/* Модальное окно доната */}
+      <Donation
+        isOpened={shouldShowPopup || isOpenDonationPopup}
+        setOpened={handleCloseDonationPopup}
+        onDonate={handleDonate}
+      />
     </main>
   );
 }

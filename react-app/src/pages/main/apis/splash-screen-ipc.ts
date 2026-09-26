@@ -2,6 +2,8 @@
  * @module SplashScreenIpcApi
  * API клиент для взаимодействия с Splash Screen IPC.
  * Предоставляет функции для получения статуса и подписки на обновления splash screen.
+ *
+ * TODO(splash): модуль сохраняется как заготовка; живые вызовы из MVP UI отключены.
  */
 
 import { DEFAULT_CONFIG } from '../constants/splash-screen-ipc';

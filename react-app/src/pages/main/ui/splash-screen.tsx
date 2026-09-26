@@ -1,6 +1,8 @@
 /**
  * @module SplashScreen
  * Компонент SplashScreen для отображения процесса инициализации.
+ *
+ * TODO(splash): модуль сохраняется как заготовка; живые подписки отключены.
  */
 
 import { useEffect, useCallback } from 'react';
@@ -93,9 +95,13 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ className = '' }) => {
 
   /**
    * Настраивает подписки на события splash screen.
-   * В web/HTTP без Electron splash MUST NOT блокировать MVP UI (атом 4.2).
    */
   useEffect(() => {
+    // TODO(splash): убрать после реализации splash lifecycle в rust-core/desktop
+    dispatch(complete());
+    dispatch(hide());
+    return;
+
     if (typeof window === 'undefined' || !window.electron?.splash) {
       dispatch(complete());
       dispatch(hide());
