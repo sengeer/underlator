@@ -282,6 +282,7 @@ function ManageModels({
    * @returns Объект с обработчиками событий моделей.
    */
   const eventCallbacks: ModelEventCallbacks = useMemo(() => {
+    // TODO(rag): restore install/remove target: 'rag' when rust-core RAG lands
     if (isEmbeddingMode) {
       return {
         onModelSelect: (modelName: string) => {
@@ -294,7 +295,9 @@ function ManageModels({
           );
           onClose();
         },
-        onModelInstall: async (modelName: string) => {
+        onModelInstall: async (_modelName: string) => {
+          // TODO(rag): restore installModel({ name, target: 'rag' }) when rust-core RAG lands
+          /*
           const { payload } = (await dispatch(
             installModel({ name: modelName, target: 'rag' })
           )) as {
@@ -304,8 +307,11 @@ function ManageModels({
           if (payload?.success) {
             setSelectedModel(modelName);
           }
+          */
         },
-        onModelRemove: async (modelName: string) => {
+        onModelRemove: async (_modelName: string) => {
+          // TODO(rag): restore removeModel({ name, target: 'rag' }) when rust-core RAG lands
+          /*
           const { payload } = (await dispatch(
             removeModel({ name: modelName, target: 'rag' })
           )) as {
@@ -313,6 +319,7 @@ function ManageModels({
           };
 
           setSelectedModel(payload?.firstInstalledModel || undefined);
+          */
         },
       };
     }
@@ -431,6 +438,11 @@ function ManageModels({
       dispatch(fetchCatalog({ forceRefresh: false }));
     }
   }, [dispatch, isOpened]);
+
+  // TODO(rag): restore embedding-models UI (mode='rag' / target: 'rag') when rust-core RAG lands
+  if (isEmbeddingMode) {
+    return null;
+  }
 
   return (
     <PopupWithSearch

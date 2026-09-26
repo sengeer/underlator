@@ -21,7 +21,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import packageJson from '../../../../package.json';
-import BalanceIcon from '../../../shared/assets/icons/balance-icon';
+// TODO(rag): restore BalanceIcon / TextIncreaseIcon / TrophyIcon with RAG settings UI
+// import BalanceIcon from '../../../shared/assets/icons/balance-icon';
 import CableIcon from '../../../shared/assets/icons/cable-icon';
 import CommitIcon from '../../../shared/assets/icons/commit-icon';
 import DownloadIcon from '../../../shared/assets/icons/download-icon';
@@ -29,8 +30,8 @@ import HttpIcon from '../../../shared/assets/icons/http-icon';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
 import MailIcon from '../../../shared/assets/icons/mail-icon';
 import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
-import TextIncreaseIcon from '../../../shared/assets/icons/text-increase-icon';
-import TrophyIcon from '../../../shared/assets/icons/trophy-icon';
+// import TextIncreaseIcon from '../../../shared/assets/icons/text-increase-icon';
+// import TrophyIcon from '../../../shared/assets/icons/trophy-icon';
 import UnderlatorIcon from '../../../shared/assets/icons/underlator-icon';
 import {
   DEFAULT_LOCALE,
@@ -207,9 +208,10 @@ function Settings() {
   const isOpenManageModelsPopup = useSelector((state) =>
     isElementOpen(state, 'manageModelsPopup')
   );
-  const isOpenManageEmbeddingModelsPopup = useSelector((state) =>
-    isElementOpen(state, 'manageEmbeddingModelsPopup')
-  );
+  // TODO(rag): restore manageEmbeddingModelsPopup selector when rust-core RAG lands
+  // const isOpenManageEmbeddingModelsPopup = useSelector((state) =>
+  //   isElementOpen(state, 'manageEmbeddingModelsPopup')
+  // );
 
   /**
    * Обработчик изменения языка интерфейса.
@@ -475,6 +477,7 @@ function Settings() {
           </ButtonWrapperWithBackground>
         )}
       </Grid>
+      {/* TODO(rag): restore RAG settings when rust-core RAG lands
       <h2 className='text-heading-l settings__title'>
         <Trans>RAG configuration</Trans>
       </h2>
@@ -544,6 +547,7 @@ function Settings() {
           </p>
         </ButtonWrapperWithBackground>
       </Grid>
+      */}
       <h2 className='text-heading-l settings__title'>
         <Trans>theme</Trans>
       </h2>
@@ -600,12 +604,13 @@ function Settings() {
         isOpened={isOpenManageModelsPopup}
         onClose={() => dispatch(closeElement('manageModelsPopup'))}
       />
-      {/* ManageModels popup для RAG */}
+      {/* TODO(rag): restore ManageModels mode='rag' / manageEmbeddingModelsPopup when rust-core RAG lands
       <ManageModels
         mode='rag'
         isOpened={isOpenManageEmbeddingModelsPopup}
         onClose={() => dispatch(closeElement('manageEmbeddingModelsPopup'))}
       />
+      */}
     </section>
   );
 }

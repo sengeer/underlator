@@ -2,6 +2,8 @@
  * @module RagIpcTest
  * Функции для ручного тестирования RAG IPC API.
  * Используется для проверки работы RAG Electron IPC эндпоинтов.
+ *
+ * TODO(rag): restore settings Tests UI wiring when rust-core RAG lands; модуль не удалять.
  */
 
 import { ragIpc } from '../../../shared/apis/rag-ipc/';

@@ -7,7 +7,8 @@
 import { useLingui } from '@lingui/react/macro';
 import { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { ragIpc } from '../../../shared/apis/rag-ipc/';
+// TODO(rag): restore ragIpc.deleteDocumentCollection when rust-core RAG lands
+// import { ragIpc } from '../../../shared/apis/rag-ipc/';
 import AddIcon from '../../../shared/assets/icons/add-icon';
 import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log/call-a-notification-with-a-log';
 import splitByWordCount from '../../../shared/lib/utils/split-by-word-count';
@@ -72,11 +73,12 @@ function ChatSidebar({
 
   /**
    * Обрабатывает удаление чата.
-   * RAG best-effort: отсутствие Electron / ошибка коллекции MUST NOT блокировать deleteChat.
+   * TODO(rag): restore best-effort ragIpc.deleteDocumentCollection when rust-core RAG lands
    */
   const handleDeleteChat = useCallback(
     async (chatId: string) => {
       try {
+        /*
         try {
           const resultOfDeletingCollection =
             await ragIpc.deleteDocumentCollection({ chatId });
@@ -97,6 +99,7 @@ function ChatSidebar({
         } catch {
           // web / нет window.electron.rag — продолжаем удаление чата
         }
+        */
 
         const result = await dispatch(
           deleteChat({

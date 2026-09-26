@@ -4,9 +4,10 @@
  * Обеспечивает получение статистики коллекции, поиск документов и форматирование RAG контекста.
  */
 
-import { ragIpc } from '../../../apis/rag-ipc/';
+// TODO(rag): restore ragIpc / helpers when rust-core RAG lands
+// import { ragIpc } from '../../../apis/rag-ipc/';
 import type { ModelRequestContext } from '../../hooks/use-model/types/feature-provider';
-import callANotificationWithALog from '../../utils/call-a-notification-with-a-log';
+// import callANotificationWithALog from '../../utils/call-a-notification-with-a-log';
 import type { RAGContextResult } from './types/chat-handlers';
 
 /**
@@ -19,6 +20,14 @@ import type { RAGContextResult } from './types/chat-handlers';
 export async function loadRagContext(
   context: ModelRequestContext
 ): Promise<RAGContextResult> {
+  // TODO(rag): restore RAG context loading when rust-core RAG lands
+  void context;
+  return {
+    success: true,
+    context: '',
+  };
+
+  /*
   try {
     // Web / server-режим: RAG IPC нет — не блокируем чат и не спамим toast (атом 4.2).
     const electronApi = (window as Window & { electron?: { rag?: unknown } })
@@ -69,14 +78,12 @@ export async function loadRagContext(
   } catch (error) {
     return handleRagErrors(error, context);
   }
+  */
 }
 
-/**
- * Получает статистику коллекции RAG.
- *
- * @param context - Контекст запроса к модели.
- * @returns Результат получения статистики.
- */
+/*
+ * TODO(rag): helpers below restored with loadRagContext body
+
 async function getCollectionStats(
   context: ModelRequestContext
 ): Promise<{ success: boolean; sizeBytes?: number; error?: string }> {
@@ -118,6 +125,7 @@ async function getCollectionStats(
  * @param context - Контекст запроса к модели.
  * @returns Результат поиска документов.
  */
+/**
 async function searchRelevantDocuments(
   context: ModelRequestContext
 ): Promise<{ success: boolean; sources?: any[]; error?: string }> {
@@ -161,6 +169,7 @@ async function searchRelevantDocuments(
     };
   }
 }
+*/
 
 /**
  * Форматирует RAG контекст в строку.
@@ -169,6 +178,7 @@ async function searchRelevantDocuments(
  * @param sources - Массив источников из RAG поиска.
  * @returns Отформатированный RAG контекст.
  */
+/**
 function formatRagContext(sources: any[]): string {
   if (!sources || sources.length === 0) {
     return '';
@@ -186,6 +196,7 @@ function formatRagContext(sources: any[]): string {
     })
     .join('\n\n');
 }
+*/
 
 /**
  * Обрабатывает ошибки RAG с информативными сообщениями.
@@ -194,6 +205,7 @@ function formatRagContext(sources: any[]): string {
  * @param context - Контекст запроса к модели.
  * @returns Результат с ошибкой.
  */
+/**
 function handleRagErrors(
   error: unknown,
   context: ModelRequestContext
@@ -212,3 +224,4 @@ function handleRagErrors(
     error: errorMessage,
   };
 }
+*/

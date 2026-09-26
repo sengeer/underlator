@@ -11,6 +11,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import { useAppDispatch } from '../../../app/';
 import { chatIpc } from '../../../shared/apis/chat-ipc/';
 import type { ChatMessage } from '../../../shared/apis/chat-ipc/types/chat-ipc';
+// TODO(rag): restore ragIpc import when rust-core RAG lands (gated by RAG_UI_ENABLED)
 import { ragIpc } from '../../../shared/apis/rag-ipc/';
 import AddIcon from '../../../shared/assets/icons/add-icon';
 import AttachFileIcon from '../../../shared/assets/icons/attach-file';
@@ -39,6 +40,9 @@ import ChatMessages from './chat-messages';
 import ChatSidebar from './chat-sidebar';
 import '../styles/chat.scss';
 import '../styles/empty-state.scss';
+
+// TODO(rag): restore attach/upload UI when rust-core RAG lands
+const RAG_UI_ENABLED = false;
 
 function Chat() {
   const { t } = useLingui();
@@ -247,7 +251,12 @@ function Chat() {
     setShowSidebar((prev) => !prev);
   }, []);
 
+  // TODO(rag): restore upload/process document when rust-core RAG lands
   async function uploadAndProcessDocument() {
+    if (!RAG_UI_ENABLED) {
+      return;
+    }
+
     try {
       // Создает скрытый input элемент для выбора файла
       const input = document.createElement('input');
@@ -436,11 +445,14 @@ function Chat() {
                   />
                 </div>
               )}
-              <TextAndIconButton
-                text={t`attach file`}
-                onClick={() => uploadAndProcessDocument()}>
-                <AttachFileIcon />
-              </TextAndIconButton>
+              {/* TODO(rag): restore attach file button when rust-core RAG lands */}
+              {RAG_UI_ENABLED ? (
+                <TextAndIconButton
+                  text={t`attach file`}
+                  onClick={() => uploadAndProcessDocument()}>
+                  <AttachFileIcon />
+                </TextAndIconButton>
+              ) : null}
             </div>
           </div>
         )}

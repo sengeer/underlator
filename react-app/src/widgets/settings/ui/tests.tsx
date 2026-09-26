@@ -34,15 +34,16 @@ import {
   testSearchModels,
   testGetModelInfo,
 } from '../tests/model-ipc';
-import {
-  testUploadAndProcessDocument,
-  testQueryDocuments,
-  testGetCollectionStats,
-  testListCollections,
-  testDeleteCollection,
-  testProcessingProgress,
-  testGenerateWithRagContext,
-} from '../tests/rag-ipc';
+// TODO(rag): restore RAG test UI imports when rust-core RAG lands
+// import {
+//   testUploadAndProcessDocument,
+//   testQueryDocuments,
+//   testGetCollectionStats,
+//   testListCollections,
+//   testDeleteCollection,
+//   testProcessingProgress,
+//   testGenerateWithRagContext,
+// } from '../tests/rag-ipc';
 
 function Tests() {
   const [chatId, setChatId] = useState('');
@@ -215,6 +216,7 @@ function Tests() {
       <p className='text-body-m settings__text'>
         {'Кнопки тестирования Chat IPC API. Проверьте результаты в консоли.'}
       </p>
+      {/* TODO(rag): restore RAG IPC test buttons when rust-core RAG lands
       <h2 className='text-heading-l settings__title'>
         {'Тестирование RAG IPC API'}
       </h2>
@@ -278,6 +280,7 @@ function Tests() {
       <p className='text-body-m settings__text'>
         {'Кнопки тестирования RAG IPC API. Проверьте результаты в консоли.'}
       </p>
+      */}
       <h2 className='text-heading-l settings__title'>{'Тестирование UI'}</h2>
       <Grid columns={2}>
         <TextButton

@@ -44,16 +44,19 @@ describe('wiring call sites', () => {
     expect(source).not.toMatch(/window\.electron\.model/);
   });
 
-  it('chat-sidebar delete не блокируется RAG: deleteChat вызывается после try RAG', () => {
+  it('chat-sidebar delete не блокируется RAG: deleteChat без живого ragIpc', () => {
     const source = read('widgets/chat/ui/chat-sidebar.tsx');
     expect(source).toMatch(/deleteChat/);
-    expect(source).toMatch(/ragIpc\.deleteDocumentCollection/);
-    // RAG вложен в собственный try/catch до dispatch(deleteChat)
-    const ragTry = source.indexOf('ragIpc.deleteDocumentCollection');
-    const deleteDispatch = source.indexOf('deleteChat({');
-    expect(ragTry).toBeGreaterThan(-1);
-    expect(deleteDispatch).toBeGreaterThan(ragTry);
-    expect(source).toMatch(/catch \{\s*\/\/ web \/ нет window\.electron\.rag/);
+    // TODO(rag): живой вызов законсервирован; маркер и закомментированный вызов остаются
+    expect(source).toMatch(
+      /TODO\(rag\).*deleteDocumentCollection|deleteDocumentCollection/
+    );
+    expect(source).toMatch(/deleteChat\(\{/);
+    // Живого await ragIpc.deleteDocumentCollection вне комментариев быть не должно
+    const withoutBlockComments = source.replace(/\/\*[\s\S]*?\*\//g, '');
+    expect(withoutBlockComments).not.toMatch(
+      /await\s+ragIpc\.deleteDocumentCollection/
+    );
   });
 
   it('rag-ipc и splash остаются на Electron без BackendClient', () => {
