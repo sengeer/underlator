@@ -81,6 +81,12 @@ pub struct InstallRequest {
     /// Разрешить insecure registry.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub insecure: Option<bool>,
+    /// Идентификатор провайдера (override manage-models).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Base URL провайдера из UI; пустой/отсутствует → process wiring.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
 }
 
 /// Запрос удаления модели (`OllamaDeleteRequest`).
@@ -88,12 +94,37 @@ pub struct InstallRequest {
 pub struct RemoveRequest {
     /// Название модели.
     pub name: String,
+    /// Идентификатор провайдера (override manage-models).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Base URL провайдера из UI; пустой/отсутствует → process wiring.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
 }
 
-/// Пустое тело запроса `model.list`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub struct ListModelsRequest {}
+/// Запрос `model.list` с опциональным override провайдера.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct ListModelsRequest {
+    /// Идентификатор провайдера (override manage-models).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Base URL провайдера из UI; пустой/отсутствует → process wiring.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+}
 
+/// Непустой override URL из опциональных полей запроса.
+pub fn request_provider_url(url: &Option<String>) -> Option<&str> {
+    url.as_deref().map(str::trim).filter(|u| !u.is_empty())
+}
+
+/// Id провайдера для override: явный непустой или [`DEFAULT_PROVIDER_ID`].
+pub fn request_provider_id(id: &Option<String>) -> &str {
+    id.as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .unwrap_or(DEFAULT_PROVIDER_ID)
+}
 /// Элемент списка локальных моделей (`OllamaModel`).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct OllamaModel {
@@ -188,9 +219,30 @@ mod tests {
             tag: None,
             registry: None,
             insecure: None,
+            id: Some("ollama".to_owned()),
+            url: Some("http://127.0.0.1:11434".to_owned()),
         };
         let install_json = roundtrip(&install);
         assert!(install_json.get("name").is_some(), "ожидался ключ name");
+        assert_eq!(install_json["id"], json!("ollama"));
+        assert_eq!(install_json["url"], json!("http://127.0.0.1:11434"));
+
+        let remove = RemoveRequest {
+            name: "llama".to_owned(),
+            id: None,
+            url: Some("http://10.0.0.1:11434".to_owned()),
+        };
+        let remove_json = roundtrip(&remove);
+        assert!(remove_json.get("id").is_none(), "id omit при None");
+        assert_eq!(remove_json["url"], json!("http://10.0.0.1:11434"));
+
+        let list_req = ListModelsRequest {
+            id: Some("ollama".to_owned()),
+            url: Some("http://127.0.0.1:11434".to_owned()),
+        };
+        let list_req_json = roundtrip(&list_req);
+        assert_eq!(list_req_json["id"], json!("ollama"));
+        assert_eq!(list_req_json["url"], json!("http://127.0.0.1:11434"));
 
         let listed = ListModelsResponse {
             models: vec![OllamaModel {
@@ -233,7 +285,7 @@ mod tests {
         let success = UnarySuccess { success: true };
         assert_eq!(roundtrip(&success), json!({ "success": true }));
         assert_eq!(roundtrip(&StopRequest {}), json!({}));
-        assert_eq!(roundtrip(&ListModelsRequest {}), json!({}));
+        assert_eq!(roundtrip(&ListModelsRequest::default()), json!({}));
         let text: GenerateResult = "ok".to_owned();
         assert_eq!(
             serde_json::to_value(&text).expect("сериализация"),

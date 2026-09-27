@@ -49,12 +49,11 @@ pub async fn remove(state: &AppState, request: RemoveRequest) -> Result<UnarySuc
 }
 
 /// Список локальных моделей.
-pub async fn list(state: &AppState) -> Result<ListModelsResponse, HostError> {
-    state
-        .model
-        .list(ListModelsRequest {})
-        .await
-        .map_err(HostError::from)
+pub async fn list(
+    state: &AppState,
+    request: ListModelsRequest,
+) -> Result<ListModelsResponse, HostError> {
+    state.model.list(request).await.map_err(HostError::from)
 }
 
 #[cfg(feature = "desktop")]
@@ -62,7 +61,7 @@ mod tauri_cmds {
     use tauri::{AppHandle, Emitter, State};
     use underlator_core::{
         GENERATE_PROGRESS_EVENT, GenerateRequest, INSTALL_PROGRESS_EVENT, InstallRequest,
-        ListModelsResponse, RemoveRequest, UnarySuccess,
+        ListModelsRequest, ListModelsResponse, RemoveRequest, UnarySuccess,
     };
 
     use super::{generate_with_progress, install_with_progress, list, remove, stop};
@@ -112,8 +111,11 @@ mod tauri_cmds {
 
     /// `model_list`.
     #[tauri::command]
-    pub async fn model_list(state: State<'_, AppState>) -> Result<ListModelsResponse, HostError> {
-        list(&state).await
+    pub async fn model_list(
+        state: State<'_, AppState>,
+        request: Option<ListModelsRequest>,
+    ) -> Result<ListModelsResponse, HostError> {
+        list(&state, request.unwrap_or_default()).await
     }
 }
 

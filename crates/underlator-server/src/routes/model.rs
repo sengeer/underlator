@@ -2,7 +2,7 @@
 
 use std::convert::Infallible;
 
-use axum::extract::State;
+use axum::extract::{Query, State};
 use axum::response::sse::{Event, Sse};
 use axum::routing::{get, post};
 use axum::{Json, Router};
@@ -78,8 +78,11 @@ async fn remove(
     Ok(Json(state.model.remove(request).await?))
 }
 
-async fn list_models(State(state): State<AppState>) -> Result<Json<ListModelsResponse>, ApiError> {
-    Ok(Json(state.model.list(ListModelsRequest {}).await?))
+async fn list_models(
+    State(state): State<AppState>,
+    Query(request): Query<ListModelsRequest>,
+) -> Result<Json<ListModelsResponse>, ApiError> {
+    Ok(Json(state.model.list(request).await?))
 }
 
 fn named<T: Serialize>(event: &'static str, value: &T) -> SseMsg {

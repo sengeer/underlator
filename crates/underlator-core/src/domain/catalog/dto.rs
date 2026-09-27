@@ -9,6 +9,12 @@ pub struct GetCatalogRequest {
     /// Принудительно обновить снимок каталога.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub force_refresh: Option<bool>,
+    /// Идентификатор провайдера для локального merge.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Base URL из UI для локального inventory; пустой → process wiring.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
 }
 
 /// Тип модели в фильтрах каталога.
@@ -131,6 +137,12 @@ pub struct CatalogFilters {
     /// Смещение страницы.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub offset: Option<u32>,
+    /// Идентификатор провайдера для локального merge снимка.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Base URL из UI для локального inventory в снимке.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
 }
 
 /// Статус совместимости модели с системой.
@@ -210,6 +222,12 @@ pub struct ModelCatalog {
 pub struct GetModelInfoRequest {
     /// Имя модели для поиска карточки.
     pub model_name: String,
+    /// Идентификатор провайдера для локального merge снимка.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    /// Base URL из UI для локального inventory в снимке.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
 }
 
 /// Ответ `catalog.getModelInfo`: карточка или `null`, если не найдена.
@@ -255,12 +273,16 @@ mod tests {
     fn catalog_dto_json_keys_roundtrip() {
         let get = GetCatalogRequest {
             force_refresh: Some(true),
+            id: Some("ollama".to_owned()),
+            url: Some("http://127.0.0.1:11434".to_owned()),
         };
         let get_json = roundtrip(&get);
         assert!(
             get_json.get("forceRefresh").is_some(),
             "ожидался ключ forceRefresh"
         );
+        assert_eq!(get_json["id"], json!("ollama"));
+        assert_eq!(get_json["url"], json!("http://127.0.0.1:11434"));
 
         let card_json = roundtrip(&sample_card());
         assert!(
@@ -285,12 +307,15 @@ mod tests {
 
         let info_req = GetModelInfoRequest {
             model_name: "llama".to_owned(),
+            id: None,
+            url: Some("http://10.0.0.2:11434".to_owned()),
         };
         let info_json = roundtrip(&info_req);
         assert!(
             info_json.get("modelName").is_some(),
             "ожидался ключ modelName"
         );
+        assert_eq!(info_json["url"], json!("http://10.0.0.2:11434"));
     }
 
     #[test]

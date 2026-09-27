@@ -2,9 +2,13 @@
  * @module HttpTransportTests
  */
 
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, type Mock } from 'vitest';
 import { BackendError } from '../errors';
 import { HttpTransport } from './http-transport';
+
+type FetchMock = Mock<
+  (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+>;
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -48,11 +52,33 @@ function hangingSseResponse(signal?: AbortSignal): Response {
   });
 }
 
+function callUrl(fetchMock: FetchMock, index: number): string {
+  const call = fetchMock.mock.calls[index];
+  if (!call) {
+    throw new Error(`нет fetch-вызова #${index}`);
+  }
+  return String(call[0]);
+}
+
+function callInit(fetchMock: FetchMock, index: number): RequestInit {
+  const call = fetchMock.mock.calls[index];
+  if (!call) {
+    throw new Error(`нет fetch-вызова #${index}`);
+  }
+  return call[1] ?? {};
+}
+
+function createFetchMock(
+  impl: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+): FetchMock {
+  return vi.fn(impl);
+}
+
 describe('HttpTransport unary REST', () => {
   it('GET /api/model/list, GET /api/catalog, POST /api/chat, getModelInfo null', async () => {
-    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const fetchMock = createFetchMock(async (input) => {
       const url = String(input);
-      if (url.endsWith('/api/model/list')) {
+      if (url.startsWith('/api/model/list')) {
         return jsonResponse({
           models: [{ name: 'llama', size: 1, modified_at: 't' }],
         });
@@ -84,34 +110,80 @@ describe('HttpTransport unary REST', () => {
 
     const listed = await client.model.list();
     expect(listed.models[0]?.name).toBe('llama');
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('/api/model/list');
-    expect((fetchMock.mock.calls[0]?.[1] as RequestInit).method).toBe('GET');
+    expect(callUrl(fetchMock, 0)).toBe('/api/model/list');
+    expect(callInit(fetchMock, 0).method).toBe('GET');
 
     const catalog = await client.catalog.get({ forceRefresh: true });
     expect(catalog.totalCount).toBe(0);
-    expect(String(fetchMock.mock.calls[1]?.[0])).toBe(
-      '/api/catalog?forceRefresh=true'
-    );
+    expect(callUrl(fetchMock, 1)).toBe('/api/catalog?forceRefresh=true');
 
     const chat = await client.chat.create({
       title: 'Чат',
       defaultModel: { name: 'llama' },
     });
     expect(chat.id).toBe('c1');
-    expect(String(fetchMock.mock.calls[2]?.[0])).toBe('/api/chat');
-    expect((fetchMock.mock.calls[2]?.[1] as RequestInit).method).toBe('POST');
+    expect(callUrl(fetchMock, 2)).toBe('/api/chat');
+    expect(callInit(fetchMock, 2).method).toBe('POST');
 
     const info = await client.catalog.getModelInfo({
       modelName: 'qwen/7b',
     });
     expect(info).toBeNull();
-    expect(String(fetchMock.mock.calls[3]?.[0])).toBe(
-      '/api/catalog/models/qwen%2F7b'
+    expect(callUrl(fetchMock, 3)).toBe('/api/catalog/models/qwen%2F7b');
+  });
+
+  it('list/install/catalog передают id/url из settings', async () => {
+    const fetchMock = createFetchMock(async (input, init) => {
+      const url = String(input);
+      if (url.startsWith('/api/model/list')) {
+        return jsonResponse({ models: [] });
+      }
+      if (url.startsWith('/api/model/install')) {
+        return sseResponse('event: result\ndata: {"success":true}\n\n');
+      }
+      if (url.startsWith('/api/model/remove')) {
+        return jsonResponse({ success: true });
+      }
+      if (url.startsWith('/api/catalog')) {
+        return jsonResponse({
+          ollama: [],
+          totalCount: 0,
+          lastUpdated: 't',
+        });
+      }
+      throw new Error(`unexpected ${url} ${init?.method}`);
+    });
+
+    const client = new HttpTransport({ fetch: fetchMock as typeof fetch });
+    const provider = {
+      id: 'ollama',
+      url: 'http://127.0.0.1:11434',
+    };
+
+    await client.model.list(provider);
+    expect(callUrl(fetchMock, 0)).toBe(
+      '/api/model/list?id=ollama&url=http%3A%2F%2F127.0.0.1%3A11434'
+    );
+
+    await client.model.install({ name: 'llama', ...provider });
+    expect(JSON.parse(String(callInit(fetchMock, 1).body))).toMatchObject(
+      provider
+    );
+
+    await client.model.remove({ name: 'llama', ...provider });
+    expect(JSON.parse(String(callInit(fetchMock, 2).body))).toMatchObject(
+      provider
+    );
+
+    await client.catalog.get({ forceRefresh: true, ...provider });
+    expect(callUrl(fetchMock, 3)).toContain('id=ollama');
+    expect(callUrl(fetchMock, 3)).toContain(
+      'url=http%3A%2F%2F127.0.0.1%3A11434'
     );
   });
 
   it('merge config.id/url в тело generate', async () => {
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = createFetchMock(async () =>
       sseResponse('event: result\ndata: "ok"\n\n')
     );
     const client = new HttpTransport({ fetch: fetchMock as typeof fetch });
@@ -119,8 +191,7 @@ describe('HttpTransport unary REST', () => {
       { model: 'm', prompt: 'p' },
       { id: 'embedded', url: 'http://127.0.0.1:11435' }
     );
-    const init = fetchMock.mock.calls[0]?.[1] as RequestInit;
-    expect(JSON.parse(String(init.body))).toMatchObject({
+    expect(JSON.parse(String(callInit(fetchMock, 0).body))).toMatchObject({
       model: 'm',
       prompt: 'p',
       id: 'embedded',
@@ -129,11 +200,11 @@ describe('HttpTransport unary REST', () => {
   });
 
   it('2xx stop при теле null — успех', async () => {
-    const fetchMock = vi.fn(async () => jsonResponse(null));
+    const fetchMock = createFetchMock(async () => jsonResponse(null));
     const client = new HttpTransport({ fetch: fetchMock as typeof fetch });
     await expect(client.model.stop()).resolves.toBeUndefined();
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('/api/model/stop');
-    expect((fetchMock.mock.calls[0]?.[1] as RequestInit).method).toBe('POST');
+    expect(callUrl(fetchMock, 0)).toBe('/api/model/stop');
+    expect(callInit(fetchMock, 0).method).toBe('POST');
   });
 });
 
@@ -150,7 +221,7 @@ describe('HttpTransport SSE', () => {
       'data: "Hello"',
       '',
     ].join('\n');
-    const fetchMock = vi.fn(async () => sseResponse(frames));
+    const fetchMock = createFetchMock(async () => sseResponse(frames));
     const client = new HttpTransport({ fetch: fetchMock as typeof fetch });
     const chunks: string[] = [];
     const unsubscribe = client.model.onGenerateProgress((progress) => {
@@ -163,10 +234,10 @@ describe('HttpTransport SSE', () => {
     unsubscribe();
     expect(chunks).toEqual(['Hel', 'lo']);
     expect(text).toBe('Hello');
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('/api/model/generate');
-    expect((fetchMock.mock.calls[0]?.[1] as RequestInit).headers).toMatchObject(
-      { Accept: 'text/event-stream' }
-    );
+    expect(callUrl(fetchMock, 0)).toBe('/api/model/generate');
+    expect(callInit(fetchMock, 0).headers).toMatchObject({
+      Accept: 'text/event-stream',
+    });
   });
 
   it('SSE install: status кадры и result { success: true }', async () => {
@@ -178,7 +249,7 @@ describe('HttpTransport SSE', () => {
       'data: {"success":true}',
       '',
     ].join('\n');
-    const fetchMock = vi.fn(async () => sseResponse(frames));
+    const fetchMock = createFetchMock(async () => sseResponse(frames));
     const client = new HttpTransport({ fetch: fetchMock as typeof fetch });
     const statuses: string[] = [];
     client.model.onInstallProgress((progress) => {
@@ -190,7 +261,7 @@ describe('HttpTransport SSE', () => {
   });
 
   it('404 { class: not_found } сохраняет класс', async () => {
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = createFetchMock(async () =>
       jsonResponse({ class: 'not_found', message: 'нет' }, 404)
     );
     const client = new HttpTransport({ fetch: fetchMock as typeof fetch });
@@ -206,7 +277,7 @@ describe('HttpTransport SSE', () => {
       'data: {"model":"m","response":"x","created_at":"t","done":false}',
       '',
     ].join('\n');
-    const fetchMock = vi.fn(async () => sseResponse(frames));
+    const fetchMock = createFetchMock(async () => sseResponse(frames));
     const client = new HttpTransport({ fetch: fetchMock as typeof fetch });
     await expect(
       client.model.generate({ model: 'm', prompt: 'p' })
@@ -214,18 +285,16 @@ describe('HttpTransport SSE', () => {
   });
 
   it('stop во время generate вызывает /api/model/stop и прерывает поток', async () => {
-    const fetchMock = vi.fn(
-      async (input: RequestInfo | URL, init?: RequestInit) => {
-        const url = String(input);
-        if (url.endsWith('/api/model/generate')) {
-          return hangingSseResponse(init?.signal);
-        }
-        if (url.endsWith('/api/model/stop')) {
-          return jsonResponse(null);
-        }
-        throw new Error(`unexpected ${url}`);
+    const fetchMock = createFetchMock(async (input, init) => {
+      const url = String(input);
+      if (url.endsWith('/api/model/generate')) {
+        return hangingSseResponse(init?.signal ?? undefined);
       }
-    );
+      if (url.endsWith('/api/model/stop')) {
+        return jsonResponse(null);
+      }
+      throw new Error(`unexpected ${url}`);
+    });
     const client = new HttpTransport({ fetch: fetchMock as typeof fetch });
     const generatePromise = client.model.generate({
       model: 'm',
@@ -248,25 +317,26 @@ describe('HttpTransport SSE', () => {
 
 describe('HttpTransport auth and relative URL', () => {
   it('с токеном заголовок есть, без токена — нет; URL относительный', async () => {
-    const withToken = vi.fn(async () => jsonResponse({ models: [] }));
+    const withToken = createFetchMock(async () => jsonResponse({ models: [] }));
     const clientWithToken = new HttpTransport({
       fetch: withToken as typeof fetch,
       token: 'secret',
     });
     await clientWithToken.model.list();
-    expect(withToken.mock.calls[0]?.[0]).toBe('/api/model/list');
-    expect((withToken.mock.calls[0]?.[1] as RequestInit).headers).toMatchObject(
-      { Authorization: 'Bearer secret' }
-    );
+    expect(callUrl(withToken, 0)).toBe('/api/model/list');
+    expect(callInit(withToken, 0).headers).toMatchObject({
+      Authorization: 'Bearer secret',
+    });
 
-    const withoutToken = vi.fn(async () => jsonResponse({ models: [] }));
+    const withoutToken = createFetchMock(async () =>
+      jsonResponse({ models: [] })
+    );
     const clientWithoutToken = new HttpTransport({
       fetch: withoutToken as typeof fetch,
       token: '',
     });
     await clientWithoutToken.model.list();
-    const headers = (withoutToken.mock.calls[0]?.[1] as RequestInit)
-      .headers as Record<string, string>;
+    const headers = callInit(withoutToken, 0).headers as Record<string, string>;
     expect(headers.Authorization).toBeUndefined();
   });
 });

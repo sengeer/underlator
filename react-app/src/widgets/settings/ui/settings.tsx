@@ -17,7 +17,7 @@
 import '../styles/settings.scss';
 import { useLingui } from '@lingui/react/macro';
 import { Trans } from '@lingui/react/macro';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import packageJson from '../../../../package.json';
@@ -29,7 +29,6 @@ import DownloadIcon from '../../../shared/assets/icons/download-icon';
 import HttpIcon from '../../../shared/assets/icons/http-icon';
 import LanguageIcon from '../../../shared/assets/icons/language-icon';
 import MailIcon from '../../../shared/assets/icons/mail-icon';
-import NetworkIntelligenceIcon from '../../../shared/assets/icons/network-intelligence-icon';
 // import TextIncreaseIcon from '../../../shared/assets/icons/text-increase-icon';
 // import TrophyIcon from '../../../shared/assets/icons/trophy-icon';
 import UnderlatorIcon from '../../../shared/assets/icons/underlator-icon';
@@ -66,7 +65,7 @@ import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import TextButton from '../../../shared/ui/text-button';
 import { LANGUAGES, PROVIDERS } from '../constants/settings';
 import type { SettingsFormData } from '../types/settings';
-import ManageModels from './manage-embedded-ollama';
+import ManageModels from './manage-models';
 import Tests from './tests';
 import Themes from './themes';
 
@@ -81,6 +80,10 @@ import Themes from './themes';
 function Settings() {
   const dispatch = useDispatch();
   const { provider, settings, rag } = useSelector(selectProviderSettings);
+  const settingsRef = useRef(settings);
+  const ragRef = useRef(rag);
+  settingsRef.current = settings;
+  ragRef.current = rag;
 
   /**
    * Инициализация формы с react-hook-form.
@@ -245,8 +248,7 @@ function Settings() {
   }
 
   /**
-   * Синхронизация формы с настройками провайдера из Redux.
-   * Обновляет форму при изменении провайдера или настроек RAG.
+   * Синхронизация формы при смене провайдера / RAG-полей.
    */
   useEffect(() => {
     if (!provider || !settings[provider]) {
@@ -269,18 +271,11 @@ function Settings() {
       ),
       chunkSize: String(rag?.chunkSize ?? DEFAULT_RAG_CHUNK_SIZE),
     });
-  }, [
-    provider,
-    rag?.topK,
-    rag?.similarityThreshold,
-    rag?.chunkSize,
-    settings,
-    reset,
-  ]);
+    // settings читается при смене provider; url/model не должны триггерить reset
+  }, [provider, rag?.topK, rag?.similarityThreshold, rag?.chunkSize, reset]);
 
   /**
    * Автоматическое сохранение изменений формы в Redux store.
-   * Использует watch для отслеживания изменений и синхронизации с Redux.
    */
   useEffect(() => {
     if (!provider) {
@@ -290,11 +285,13 @@ function Settings() {
     const subscription = watch((data, { name }) => {
       if (!name) return;
 
-      // Обновление настроек провайдера
+      const latestSettings = settingsRef.current;
+      const latestRag = ragRef.current;
+
       if (name === 'url' || name === 'model') {
         const providerPayload: Partial<ProviderSettings> = {};
-        const currentUrl = settings[provider]?.url || '';
-        const currentModel = settings[provider]?.model || '';
+        const currentUrl = latestSettings[provider]?.url || '';
+        const currentModel = latestSettings[provider]?.model || '';
 
         if (
           name === 'url' &&
@@ -319,17 +316,16 @@ function Settings() {
         }
       }
 
-      // Обновление настроек RAG
       if (
         name === 'topK' ||
         name === 'similarityThreshold' ||
         name === 'chunkSize'
       ) {
         const ragPayload: Partial<RagSettings> = {};
-        const currentTopK = rag?.topK ?? DEFAULT_RAG_TOP_K;
+        const currentTopK = latestRag?.topK ?? DEFAULT_RAG_TOP_K;
         const currentThreshold =
-          rag?.similarityThreshold ?? DEFAULT_RAG_SIMILARITY_THRESHOLD;
-        const currentChunkSize = rag?.chunkSize ?? DEFAULT_RAG_CHUNK_SIZE;
+          latestRag?.similarityThreshold ?? DEFAULT_RAG_SIMILARITY_THRESHOLD;
+        const currentChunkSize = latestRag?.chunkSize ?? DEFAULT_RAG_CHUNK_SIZE;
 
         if (name === 'topK' && data.topK !== undefined && data.topK !== '') {
           const parsedTopK = Number(data.topK);
@@ -370,7 +366,7 @@ function Settings() {
     });
 
     return () => subscription.unsubscribe();
-  }, [watch, provider, settings, rag, dispatch]);
+  }, [watch, provider, dispatch]);
 
   return (
     <section className='settings'>
@@ -421,61 +417,51 @@ function Settings() {
           </TextAndIconButton>
           <p className='text-body-m settings__text'>{provider}</p>
         </ButtonWrapperWithBackground>
-        {provider === 'Ollama' && (
-          <ButtonWrapperWithBackground>
-            <TextAndIconButton
-              text={'url'}
-              style={{ marginLeft: '1rem' }}
-              isDisabled>
-              <HttpIcon />
-            </TextAndIconButton>
-            <input
-              className='text-body-m settings__input settings__text'
-              placeholder='http://127.0.0.1:11434'
-              type='url'
-              id='url'
-              {...register('url', {
-                pattern: {
-                  value: /^https?:\/\/.+/,
-                  message: 'Invalid URL format',
-                },
-              })}
-            />
-          </ButtonWrapperWithBackground>
-        )}
-        {provider === 'Ollama' && (
-          <ButtonWrapperWithBackground>
-            <TextAndIconButton
-              text={t`model`}
-              style={{ marginLeft: '1rem' }}
-              isDisabled>
-              <NetworkIntelligenceIcon />
-            </TextAndIconButton>
-            <input
-              className='text-body-m settings__input settings__text'
-              placeholder='llama3.1'
-              type='text'
-              id='model'
-              {...register('model', {
-                required: 'Model name is required',
-              })}
-            />
-          </ButtonWrapperWithBackground>
-        )}
-        {provider === 'Embedded Ollama' && (
-          <ButtonWrapperWithBackground
-            onClick={() => dispatch(openElement('manageModelsPopup'))}>
-            <TextAndIconButton
-              text={t`manage models`}
-              style={{ marginLeft: '1rem' }}
-              isDisabled>
-              <DownloadIcon />
-            </TextAndIconButton>
-            <p className='text-body-m settings__text'>
-              {settings[provider]?.model || t`no model selected`}
-            </p>
-          </ButtonWrapperWithBackground>
-        )}
+        {(() => {
+          switch (provider) {
+            case 'Ollama':
+              return (
+                <Grid columns={1}>
+                  <ButtonWrapperWithBackground>
+                    <TextAndIconButton
+                      text={'url'}
+                      style={{ marginLeft: '1rem' }}
+                      isDisabled>
+                      <HttpIcon />
+                    </TextAndIconButton>
+                    <input
+                      className='text-body-m settings__input settings__text'
+                      placeholder='http://127.0.0.1:11434'
+                      type='text'
+                      inputMode='url'
+                      autoComplete='url'
+                      id='url'
+                      {...register('url', {
+                        pattern: {
+                          value: /^https?:\/\/.+/,
+                          message: 'Invalid URL format',
+                        },
+                      })}
+                    />
+                  </ButtonWrapperWithBackground>
+                  <ButtonWrapperWithBackground
+                    onClick={() => dispatch(openElement('manageModelsPopup'))}>
+                    <TextAndIconButton
+                      text={t`manage models`}
+                      style={{ marginLeft: '1rem' }}
+                      isDisabled>
+                      <DownloadIcon />
+                    </TextAndIconButton>
+                    <p className='text-body-m settings__text'>
+                      {settings[provider]?.model || t`no model selected`}
+                    </p>
+                  </ButtonWrapperWithBackground>
+                </Grid>
+              );
+            default:
+              return null;
+          }
+        })()}
       </Grid>
       {/* TODO(rag): restore RAG settings when rust-core RAG lands
       <h2 className='text-heading-l settings__title'>
@@ -598,7 +584,6 @@ function Settings() {
         ))}
       </Popup>
 
-      {/* ManageModels popup для провайдера Embedded Ollama */}
       <ManageModels
         mode='provider'
         isOpened={isOpenManageModelsPopup}

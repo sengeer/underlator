@@ -15,10 +15,10 @@ use serde_json::{Value, json};
 use tempfile::tempdir;
 use tower::ServiceExt;
 use underlator_core::{
-    CatalogLibrary, CatalogService, ChatService, CoreError, FilesystemChatStore, GenerateProgress,
-    GenerateRequest, InstallProgress, InstallRequest, InstallStatus, ListModelsResponse,
-    LlmProvider, MemoryChatStore, ModelService, OllamaModel, ProviderStream, RemoveRequest,
-    StorageRoot, UnarySuccess,
+    CatalogLibrary, CatalogService, ChatService, CoreError, CoreLlmProviderFactory,
+    FilesystemChatStore, GenerateProgress, GenerateRequest, InstallProgress, InstallRequest,
+    InstallStatus, ListModelsResponse, LlmProvider, MemoryChatStore, ModelService, OllamaModel,
+    ProviderStream, RemoveRequest, StorageRoot, UnarySuccess,
 };
 
 use crate::config::ServerConfig;
@@ -206,9 +206,12 @@ fn harness_with(
     let mut provider = MockProvider::new();
     provider.hold_after_first = hold;
     let provider = Arc::new(provider);
-    let model = ModelService::new(provider.clone());
+    let factory: Arc<dyn underlator_core::LlmProviderFactory> =
+        Arc::new(CoreLlmProviderFactory::new());
+    let model = ModelService::new(provider.clone(), Arc::clone(&factory));
     let catalog = Arc::new(CatalogService::new(
         provider.clone(),
+        factory,
         Arc::new(EmptyLibrary),
     ));
     let chat = Arc::new(ChatService::new(store));

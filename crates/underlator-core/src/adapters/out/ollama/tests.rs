@@ -130,6 +130,8 @@ async fn cloud_stubs_are_unsupported_without_http() {
                 tag: None,
                 registry: None,
                 insecure: None,
+                id: None,
+                url: None,
             })
             .await
         {
@@ -144,6 +146,8 @@ async fn cloud_stubs_are_unsupported_without_http() {
         let remove_err = provider
             .remove_model(&RemoveRequest {
                 name: "m".to_owned(),
+                id: None,
+                url: None,
             })
             .await
             .expect_err("remove stub");
@@ -312,6 +316,8 @@ async fn install_model_maps_progress_and_error_frame() {
         tag: None,
         registry: None,
         insecure: None,
+        id: None,
+        url: None,
     };
     let mut stream = provider.install_model(&request).await.expect("install");
     let first = stream.next().await.expect("progress").expect("ok");
@@ -359,6 +365,8 @@ async fn remove_model_empty_2xx_is_success() {
     let result = provider
         .remove_model(&RemoveRequest {
             name: "llama".to_owned(),
+            id: None,
+            url: None,
         })
         .await
         .expect("remove");

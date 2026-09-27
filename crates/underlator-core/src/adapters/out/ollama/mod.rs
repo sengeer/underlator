@@ -9,7 +9,7 @@ mod provider;
 mod stub;
 
 pub use config::ProviderFactoryConfig;
-pub use factory::create_provider;
+pub use factory::{CoreLlmProviderFactory, create_provider};
 pub use provider::OllamaProvider;
 pub use stub::UnsupportedProvider;
 

@@ -4,8 +4,8 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use underlator_core::{
-    CatalogService, ChatService, FilesystemChatStore, HttpCatalogLibrary, ModelService,
-    ProviderFactoryConfig, StorageRoot, create_provider,
+    CatalogService, ChatService, CoreLlmProviderFactory, FilesystemChatStore, HttpCatalogLibrary,
+    ModelService, ProviderFactoryConfig, StorageRoot, create_provider,
 };
 
 use crate::config::DesktopConfig;
@@ -53,9 +53,11 @@ impl AppState {
         })
         .map_err(HostError::from)?;
         let provider: Arc<dyn underlator_core::LlmProvider> = Arc::from(boxed);
-        let model = ModelService::new(Arc::clone(&provider));
+        let factory: Arc<dyn underlator_core::LlmProviderFactory> =
+            Arc::new(CoreLlmProviderFactory::new());
+        let model = ModelService::new(Arc::clone(&provider), Arc::clone(&factory));
         let library = Arc::new(HttpCatalogLibrary::new().map_err(HostError::from)?);
-        let catalog = Arc::new(CatalogService::new(provider, library));
+        let catalog = Arc::new(CatalogService::new(provider, factory, library));
         let store = FilesystemChatStore::new(StorageRoot::new(data_dir));
         let chat = Arc::new(ChatService::new(Arc::new(store)));
         Ok(Self::new(model, catalog, chat, data_dir.to_path_buf()))

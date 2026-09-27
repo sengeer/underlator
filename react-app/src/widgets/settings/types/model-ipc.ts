@@ -4,6 +4,22 @@
  */
 
 /**
+ * Срез Redux store с настройками провайдеров, достаточный для thunks manage-models.
+ * Используется при чтении `id`/`url` активного провайдера из `getState()`.
+ */
+export type ProviderSettingsRoot = {
+  /** Состояние provider-settings slice. */
+  providerSettings: {
+    /** Активный провайдер UI. */
+    provider: ProviderType;
+    /** Настройки по имени провайдера. */
+    settings: {
+      [providerName in ProviderType]?: ProviderSettings;
+    };
+  };
+};
+
+/**
  * Статус совместимости модели с системой.
  */
 export type CompatibilityStatus =
@@ -57,6 +73,10 @@ export interface ModelCatalog {
 export interface GetCatalogParams {
   /** Принудительное обновление, игнорируя кэш */
   forceRefresh?: boolean;
+  /** Идентификатор провайдера из settings */
+  id?: string;
+  /** Base URL из settings */
+  url?: string;
 }
 
 /**
@@ -82,6 +102,10 @@ export interface ModelSearchFilters {
   limit?: number;
   /** Смещение для пагинации */
   offset?: number;
+  /** Идентификатор провайдера из settings */
+  id?: string;
+  /** Base URL из settings */
+  url?: string;
 }
 
 /**
@@ -95,6 +119,10 @@ export interface InstallModelParams {
   tag?: string;
   /** Целевая подсистема для синхронизации (LLM или RAG) */
   target?: 'provider' | 'rag';
+  /** Идентификатор провайдера из settings */
+  id?: string;
+  /** Base URL из settings */
+  url?: string;
 }
 
 /**
@@ -106,6 +134,10 @@ export interface RemoveModelParams {
   name: string;
   /** Целевая подсистема для синхронизации (LLM или RAG) */
   target?: 'provider' | 'rag';
+  /** Идентификатор провайдера из settings */
+  id?: string;
+  /** Base URL из settings */
+  url?: string;
 }
 
 /**
@@ -115,6 +147,20 @@ export interface RemoveModelParams {
 export interface GetModelInfoParams {
   /** Название модели */
   modelName: string;
+  /** Идентификатор провайдера из settings */
+  id?: string;
+  /** Base URL из settings */
+  url?: string;
+}
+
+/**
+ * Параметры list установленных моделей.
+ */
+export interface ListInstalledModelsParams {
+  /** Идентификатор провайдера из settings */
+  id?: string;
+  /** Base URL из settings */
+  url?: string;
 }
 
 /**
@@ -278,7 +324,7 @@ export interface RemoveModelPayload {
 
 /**
  * Пропсы для компонента ManageModels.
- * Основной компонент для управления моделями Embedded Ollama.
+ * Основной компонент для управления моделями Ollama.
  */
 export interface ManageModelsProps {
   /** Состояние открытия модального окна */

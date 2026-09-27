@@ -1,8 +1,8 @@
 /**
- * @module ManageEmbeddedOllama
- * Компонент для управления моделями Embedded Ollama.
+ * @module ManageModels
+ * Компонент для управления моделями Ollama.
  *
- * Предоставляет полнофункциональный интерфейс для управления моделями Embedded Ollama,
+ * Предоставляет полнофункциональный интерфейс для управления моделями Ollama,
  * включая поиск, установку, удаление и выбор моделей. Интегрируется с Redux store
  * для управления состоянием каталога, установки и поиска моделей.
  *
@@ -54,7 +54,7 @@ import type {
   ModelEventCallbacks,
 } from '../types/model-ipc';
 import ModelItem from './model-item';
-import '../styles/manage-embedded-ollama.scss';
+import '../styles/manage-models.scss';
 
 /**
  * Утилита для определения состояния модели.
@@ -143,7 +143,7 @@ function getModelDisplayState(
 /**
  * Основной компонент ManageModels.
  *
- * Реализует полнофункциональный интерфейс управления моделями Embedded Ollama.
+ * Реализует полнофункциональный интерфейс управления моделями Ollama.
  * Управляет состоянием поиска, каталога моделей, установки и удаления моделей.
  * Интегрируется с Redux store для синхронизации состояния с остальным приложением.
  *
@@ -413,31 +413,20 @@ function ManageModels({
     <Trans>Мodels not found</Trans>
   );
 
-  /**
-   * Сбрасывает поиск при открытии модального окна.
-   *
-   * Выполняется при каждом открытии компонента для обеспечения
-   * чистого состояния поиска. Также загружает каталог моделей
-   * без принудительного обновления для оптимизации производительности.
-   */
-  useEffect(() => {
-    setSearchQueryLocal('');
-    dispatch(setSearchQuery(''));
-    dispatch(fetchCatalog({ forceRefresh: false }));
-  }, [dispatch]);
+  const providerUrl = settings[provider]?.url;
 
   /**
-   * Загружает каталог моделей при монтировании.
-   *
-   * Инициализирует каталог моделей при первом рендере компонента.
-   * Использует кэшированные данные если они доступны для быстрого
-   * отображения интерфейса.
+   * При открытии и при смене url из settings — свежий каталог с актуальным base URL.
+   * forceRefresh: true, чтобы не отдавать снимок от предыдущего Ollama.
    */
   useEffect(() => {
-    if (isOpened) {
-      dispatch(fetchCatalog({ forceRefresh: false }));
+    if (!isOpened) {
+      return;
     }
-  }, [dispatch, isOpened]);
+    setSearchQueryLocal('');
+    dispatch(setSearchQuery(''));
+    dispatch(fetchCatalog({ forceRefresh: true }));
+  }, [dispatch, isOpened, providerUrl]);
 
   // TODO(rag): restore embedding-models UI (mode='rag' / target: 'rag') when rust-core RAG lands
   if (isEmbeddingMode) {
@@ -463,8 +452,8 @@ function ManageModels({
       isLoading={catalogState.loading}>
       {/* Список моделей */}
       {displayModels.length === 0 && !catalogState.loading ? (
-        <div className='manage-embedded-ollama__empty-state'>
-          <p className='text-body-m manage-embedded-ollama__paragraph'>
+        <div className='manage-models__empty-state'>
+          <p className='text-body-m manage-models__paragraph'>
             {emptyStateContent}
           </p>
         </div>

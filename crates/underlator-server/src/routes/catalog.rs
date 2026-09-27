@@ -37,10 +37,15 @@ async fn search_catalog(
 async fn get_model_info(
     State(state): State<AppState>,
     Path(name): Path<String>,
+    Query(query): Query<GetCatalogRequest>,
 ) -> Result<Json<Option<OllamaModelInfo>>, ApiError> {
     let info = state
         .catalog
-        .get_model_info(GetModelInfoRequest { model_name: name })
+        .get_model_info(GetModelInfoRequest {
+            model_name: name,
+            id: query.id,
+            url: query.url,
+        })
         .await?;
     Ok(Json(info))
 }

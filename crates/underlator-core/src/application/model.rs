@@ -8,23 +8,24 @@ use crate::domain::error::CoreError;
 use crate::domain::events::{GenerateProgress, InstallProgress};
 use crate::domain::model::dto::{
     GenerateRequest, GenerateResult, InstallRequest, ListModelsRequest, ListModelsResponse,
-    RemoveRequest, StopRequest, UnarySuccess,
+    RemoveRequest, StopRequest, UnarySuccess, request_provider_id, request_provider_url,
 };
-use crate::ports::LlmProvider;
+use crate::ports::{LlmProvider, LlmProviderFactory};
 
-/// Исполняемые use-cases `model` на одном экземпляре [`LlmProvider`].
+/// Исполняемые use-cases `model` на process-scoped [`LlmProvider`].
 ///
-/// Host создаёт сервис через [`crate::create_provider`]. Поля `id`/`url`
-/// в DTO не пересобирают провайдера: иначе `stop` попадёт в другой объект.
+/// Generate/`stop` всегда на process `Arc`. List/install/remove при непустом
+/// `url` в запросе идут через краткоживущий провайдер из [`LlmProviderFactory`].
 #[derive(Clone)]
 pub struct ModelService {
     provider: Arc<dyn LlmProvider>,
+    factory: Arc<dyn LlmProviderFactory>,
 }
 
 impl ModelService {
-    /// Собирает сервис вокруг уже созданного провайдера.
-    pub fn new(provider: Arc<dyn LlmProvider>) -> Self {
-        Self { provider }
+    /// Собирает сервис вокруг process-провайдера и фабрики override.
+    pub fn new(provider: Arc<dyn LlmProvider>, factory: Arc<dyn LlmProviderFactory>) -> Self {
+        Self { provider, factory }
     }
 
     /// Потоковая генерация: callback прогресса и конкатенация `response`.
@@ -64,7 +65,8 @@ impl ModelService {
                 message: "name обязателен".to_owned(),
             });
         }
-        let mut stream = self.provider.install_model(&request).await?;
+        let provider = self.resolve_provider(&request.id, &request.url)?;
+        let mut stream = provider.install_model(&request).await?;
         while let Some(item) = stream.next().await {
             on_progress(item?);
         }
@@ -78,12 +80,25 @@ impl ModelService {
                 message: "name обязателен".to_owned(),
             });
         }
-        self.provider.remove_model(&request).await
+        let provider = self.resolve_provider(&request.id, &request.url)?;
+        provider.remove_model(&request).await
     }
 
     /// Список локальных моделей провайдера.
-    pub async fn list(&self, _request: ListModelsRequest) -> Result<ListModelsResponse, CoreError> {
-        self.provider.list_models().await
+    pub async fn list(&self, request: ListModelsRequest) -> Result<ListModelsResponse, CoreError> {
+        let provider = self.resolve_provider(&request.id, &request.url)?;
+        provider.list_models().await
+    }
+
+    fn resolve_provider(
+        &self,
+        id: &Option<String>,
+        url: &Option<String>,
+    ) -> Result<Arc<dyn LlmProvider>, CoreError> {
+        match request_provider_url(url) {
+            Some(url) => self.factory.create(request_provider_id(id), url),
+            None => Ok(Arc::clone(&self.provider)),
+        }
     }
 }
 
@@ -104,7 +119,9 @@ mod tests {
 
     #[derive(Clone)]
     struct MockProvider {
+        id: &'static str,
         generate_calls: Arc<AtomicUsize>,
+        list_calls: Arc<AtomicUsize>,
         cancelled: Arc<AtomicBool>,
         waker: Arc<Mutex<Option<Waker>>>,
         hold_after_first: bool,
@@ -115,7 +132,9 @@ mod tests {
     impl MockProvider {
         fn new() -> Self {
             Self {
+                id: "ollama",
                 generate_calls: Arc::new(AtomicUsize::new(0)),
+                list_calls: Arc::new(AtomicUsize::new(0)),
                 cancelled: Arc::new(AtomicBool::new(false)),
                 waker: Arc::new(Mutex::new(None)),
                 hold_after_first: false,
@@ -185,7 +204,7 @@ mod tests {
     #[async_trait]
     impl LlmProvider for MockProvider {
         fn provider_id(&self) -> &str {
-            "ollama"
+            self.id
         }
 
         async fn generate_stream(
@@ -217,6 +236,7 @@ mod tests {
         }
 
         async fn list_models(&self) -> Result<ListModelsResponse, CoreError> {
+            self.list_calls.fetch_add(1, Ordering::SeqCst);
             if self.list_error {
                 return Err(CoreError::HttpNetwork("down".to_owned()));
             }
@@ -255,6 +275,29 @@ mod tests {
         }
     }
 
+    struct TrackingFactory {
+        created: Arc<AtomicUsize>,
+        last_url: Arc<Mutex<Option<String>>>,
+        override_provider: Arc<MockProvider>,
+    }
+
+    impl LlmProviderFactory for TrackingFactory {
+        fn create(&self, _provider_id: &str, url: &str) -> Result<Arc<dyn LlmProvider>, CoreError> {
+            self.created.fetch_add(1, Ordering::SeqCst);
+            *self.last_url.lock().expect("url") = Some(url.to_owned());
+            Ok(self.override_provider.clone())
+        }
+    }
+
+    fn svc(provider: Arc<MockProvider>) -> ModelService {
+        let factory = Arc::new(TrackingFactory {
+            created: Arc::new(AtomicUsize::new(0)),
+            last_url: Arc::new(Mutex::new(None)),
+            override_provider: Arc::new(MockProvider::new()),
+        });
+        ModelService::new(provider, factory)
+    }
+
     fn generate_req(prompt: &str) -> GenerateRequest {
         GenerateRequest {
             model: "llama".to_owned(),
@@ -273,7 +316,7 @@ mod tests {
     #[tokio::test]
     async fn generate_concatenates_two_chunks() {
         let provider = Arc::new(MockProvider::new());
-        let svc = ModelService::new(provider.clone());
+        let svc = svc(provider.clone());
         let mut seen = Vec::new();
         let text = svc
             .generate(generate_req("привет"), |chunk| {
@@ -289,7 +332,7 @@ mod tests {
     #[tokio::test]
     async fn empty_prompt_does_not_call_provider() {
         let provider = Arc::new(MockProvider::new());
-        let svc = ModelService::new(provider.clone());
+        let svc = svc(provider.clone());
         let mut req = generate_req("");
         req.prompt.clear();
         let err = svc.generate(req, |_| {}).await.expect_err("validation");
@@ -302,7 +345,7 @@ mod tests {
         let mut provider = MockProvider::new();
         provider.hold_after_first = true;
         let provider = Arc::new(provider);
-        let svc = ModelService::new(provider.clone());
+        let svc = svc(provider.clone());
         let (tx, rx) = tokio::sync::oneshot::channel::<()>();
         let tx = std::sync::Mutex::new(Some(tx));
         let generate = {
@@ -328,7 +371,7 @@ mod tests {
     #[tokio::test]
     async fn install_remove_list_delegate_to_provider() {
         let provider = Arc::new(MockProvider::new());
-        let svc = ModelService::new(provider);
+        let svc = svc(provider);
         let mut frames = Vec::new();
         let installed = svc
             .install(
@@ -337,6 +380,8 @@ mod tests {
                     tag: None,
                     registry: None,
                     insecure: None,
+                    id: None,
+                    url: None,
                 },
                 |frame| frames.push(frame.status),
             )
@@ -351,14 +396,73 @@ mod tests {
         let removed = svc
             .remove(RemoveRequest {
                 name: "llama".to_owned(),
+                id: None,
+                url: None,
             })
             .await
             .expect("remove");
         assert_eq!(removed, UnarySuccess { success: true });
 
-        let listed = svc.list(ListModelsRequest {}).await.expect("list");
+        let listed = svc.list(ListModelsRequest::default()).await.expect("list");
         assert_eq!(listed.models[0].name, "llama");
         assert_eq!(listed.models[0].size, 42);
         assert_eq!(listed.models[0].modified_at, "2026-01-01T00:00:00Z");
+    }
+
+    #[tokio::test]
+    async fn list_with_explicit_url_uses_factory_not_process() {
+        let process = Arc::new(MockProvider::new());
+        let override_provider = Arc::new(MockProvider {
+            id: "override",
+            models: vec![OllamaModel {
+                name: "remote".to_owned(),
+                size: 7,
+                modified_at: "2026-02-01T00:00:00Z".to_owned(),
+                digest: None,
+                details: None,
+            }],
+            ..MockProvider::new()
+        });
+        let created = Arc::new(AtomicUsize::new(0));
+        let last_url = Arc::new(Mutex::new(None));
+        let factory = Arc::new(TrackingFactory {
+            created: created.clone(),
+            last_url: last_url.clone(),
+            override_provider: override_provider.clone(),
+        });
+        let svc = ModelService::new(process.clone(), factory);
+
+        let listed = svc
+            .list(ListModelsRequest {
+                id: Some("ollama".to_owned()),
+                url: Some("http://10.0.0.5:11434".to_owned()),
+            })
+            .await
+            .expect("list");
+
+        assert_eq!(listed.models[0].name, "remote");
+        assert_eq!(created.load(Ordering::SeqCst), 1);
+        assert_eq!(
+            last_url.lock().expect("url").as_deref(),
+            Some("http://10.0.0.5:11434")
+        );
+        assert_eq!(process.list_calls.load(Ordering::SeqCst), 0);
+        assert_eq!(override_provider.list_calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn list_without_url_uses_process_provider() {
+        let process = Arc::new(MockProvider::new());
+        let created = Arc::new(AtomicUsize::new(0));
+        let factory = Arc::new(TrackingFactory {
+            created: created.clone(),
+            last_url: Arc::new(Mutex::new(None)),
+            override_provider: Arc::new(MockProvider::new()),
+        });
+        let svc = ModelService::new(process.clone(), factory);
+        let listed = svc.list(ListModelsRequest::default()).await.expect("list");
+        assert_eq!(listed.models[0].name, "llama");
+        assert_eq!(created.load(Ordering::SeqCst), 0);
+        assert_eq!(process.list_calls.load(Ordering::SeqCst), 1);
     }
 }

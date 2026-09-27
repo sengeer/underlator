@@ -10,10 +10,10 @@ use futures_util::stream;
 use tempfile::tempdir;
 use underlator_core::{
     CatalogLibrary, CatalogService, ChatMessageRole, ChatModelRef, ChatService, CoreError,
-    CreateChatRequest, FilesystemChatStore, GenerateProgress, GenerateRequest, GetChatRequest,
-    GetModelInfoRequest, InstallProgress, InstallRequest, InstallStatus, ListModelsResponse,
-    LlmProvider, ModelService, OllamaModel, ProviderStream, RemoveRequest, StorageRoot,
-    UnarySuccess,
+    CoreLlmProviderFactory, CreateChatRequest, FilesystemChatStore, GenerateProgress,
+    GenerateRequest, GetChatRequest, GetModelInfoRequest, InstallProgress, InstallRequest,
+    InstallStatus, ListModelsRequest, ListModelsResponse, LlmProvider, ModelService, OllamaModel,
+    ProviderStream, RemoveRequest, StorageRoot, UnarySuccess,
 };
 
 use underlator_tauri::commands::{catalog, chat, model};
@@ -183,9 +183,12 @@ fn harness(data_dir: PathBuf, hold: bool) -> (AppState, Arc<MockProvider>) {
     let mut provider = MockProvider::new();
     provider.hold_after_first = hold;
     let provider = Arc::new(provider);
-    let model = ModelService::new(provider.clone());
+    let factory: Arc<dyn underlator_core::LlmProviderFactory> =
+        Arc::new(CoreLlmProviderFactory::new());
+    let model = ModelService::new(provider.clone(), Arc::clone(&factory));
     let catalog = Arc::new(CatalogService::new(
         provider.clone(),
+        factory,
         Arc::new(EmptyLibrary),
     ));
     let store = FilesystemChatStore::new(StorageRoot::new(&data_dir));
@@ -216,7 +219,9 @@ async fn model_list_remove_stop_share_provider_arc() {
     let dir = tempdir().expect("temp");
     let (state, provider) = harness(dir.path().to_path_buf(), false);
 
-    let listed = model::list(&state).await.expect("list");
+    let listed = model::list(&state, ListModelsRequest::default())
+        .await
+        .expect("list");
     assert_eq!(listed.models.len(), 1);
     assert_eq!(provider.list_calls.load(Ordering::SeqCst), 1);
 
@@ -224,6 +229,8 @@ async fn model_list_remove_stop_share_provider_arc() {
         &state,
         RemoveRequest {
             name: "llama".to_owned(),
+            id: None,
+            url: None,
         },
     )
     .await
@@ -276,6 +283,8 @@ async fn install_emits_progress_frames() {
             tag: None,
             registry: None,
             insecure: None,
+            id: None,
+            url: None,
         },
         |frame| {
             frames_cb.lock().expect("lock").push(frame.status);
@@ -318,6 +327,8 @@ async fn catalog_unknown_model_returns_null() {
         &state,
         GetModelInfoRequest {
             model_name: "no-such-model".to_owned(),
+            id: None,
+            url: None,
         },
     )
     .await

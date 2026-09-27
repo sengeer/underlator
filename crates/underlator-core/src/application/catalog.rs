@@ -1,6 +1,6 @@
 //! Use-cases поверхности `catalog`: get / search / getModelInfo.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -11,36 +11,45 @@ use crate::domain::catalog::dto::{
 use crate::domain::catalog::static_library_models;
 use crate::domain::error::CoreError;
 use crate::domain::iso8601::{millis_to_iso8601, unix_millis_now};
-use crate::domain::model::dto::OllamaModel;
+use crate::domain::model::dto::{OllamaModel, request_provider_id, request_provider_url};
 use crate::ports::CatalogLibrary;
-use crate::ports::LlmProvider;
+use crate::ports::{LlmProvider, LlmProviderFactory};
 
 const CACHE_TTL: Duration = Duration::from_secs(60 * 60);
+const PROCESS_CACHE_KEY: &str = "";
 
 /// Исполняемые use-cases каталога: локальный список + библиотека + кэш.
 pub struct CatalogService {
     provider: Arc<dyn LlmProvider>,
+    factory: Arc<dyn LlmProviderFactory>,
     library: Arc<dyn CatalogLibrary>,
-    cache: Mutex<Option<(ModelCatalog, Instant)>>,
+    cache: Mutex<HashMap<String, (ModelCatalog, Instant)>>,
 }
 
 impl CatalogService {
-    /// Собирает сервис из провайдера и источника библиотеки.
-    pub fn new(provider: Arc<dyn LlmProvider>, library: Arc<dyn CatalogLibrary>) -> Self {
+    /// Собирает сервис из process-провайдера, фабрики override и источника библиотеки.
+    pub fn new(
+        provider: Arc<dyn LlmProvider>,
+        factory: Arc<dyn LlmProviderFactory>,
+        library: Arc<dyn CatalogLibrary>,
+    ) -> Self {
         Self {
             provider,
+            factory,
             library,
-            cache: Mutex::new(None),
+            cache: Mutex::new(HashMap::new()),
         }
     }
 
     /// Снимок каталога: merge локальных и библиотечных карточек, дедуп по `name`.
     pub async fn get(&self, request: GetCatalogRequest) -> Result<ModelCatalog, CoreError> {
         let force = request.force_refresh.unwrap_or(false);
-        if !force && let Some(cached) = self.cached() {
+        let cache_key = cache_key_for(&request.url);
+        if !force && let Some(cached) = self.cached(&cache_key) {
             return Ok(cached);
         }
-        let local = match self.provider.list_models().await {
+        let local_provider = self.resolve_provider(&request.id, &request.url)?;
+        let local = match local_provider.list_models().await {
             Ok(listed) => listed
                 .models
                 .into_iter()
@@ -54,7 +63,7 @@ impl CatalogService {
             Err(_) => static_library_models(),
         };
         let catalog = merge_catalog(local, library);
-        self.store_cache(catalog.clone());
+        self.store_cache(cache_key, catalog.clone());
         Ok(catalog)
     }
 
@@ -63,6 +72,8 @@ impl CatalogService {
         let snapshot = self
             .get(GetCatalogRequest {
                 force_refresh: None,
+                id: filters.id.clone(),
+                url: filters.url.clone(),
             })
             .await?;
         Ok(apply_filters(snapshot, &filters))
@@ -76,6 +87,8 @@ impl CatalogService {
         let snapshot = self
             .get(GetCatalogRequest {
                 force_refresh: None,
+                id: request.id.clone(),
+                url: request.url.clone(),
             })
             .await?;
         let exact = snapshot
@@ -92,24 +105,41 @@ impl CatalogService {
             .find(|card| card.name.contains(&request.model_name)))
     }
 
-    fn cached(&self) -> Option<ModelCatalog> {
+    fn resolve_provider(
+        &self,
+        id: &Option<String>,
+        url: &Option<String>,
+    ) -> Result<Arc<dyn LlmProvider>, CoreError> {
+        match request_provider_url(url) {
+            Some(url) => self.factory.create(request_provider_id(id), url),
+            None => Ok(Arc::clone(&self.provider)),
+        }
+    }
+
+    fn cached(&self, key: &str) -> Option<ModelCatalog> {
         let guard = match self.cache.lock() {
             Ok(g) => g,
             Err(p) => p.into_inner(),
         };
-        match guard.as_ref() {
+        match guard.get(key) {
             Some((catalog, at)) if at.elapsed() < CACHE_TTL => Some(catalog.clone()),
             _ => None,
         }
     }
 
-    fn store_cache(&self, catalog: ModelCatalog) {
+    fn store_cache(&self, key: String, catalog: ModelCatalog) {
         let mut guard = match self.cache.lock() {
             Ok(g) => g,
             Err(p) => p.into_inner(),
         };
-        *guard = Some((catalog, Instant::now()));
+        guard.insert(key, (catalog, Instant::now()));
     }
+}
+
+fn cache_key_for(url: &Option<String>) -> String {
+    request_provider_url(url)
+        .unwrap_or(PROCESS_CACHE_KEY)
+        .to_owned()
 }
 
 fn local_card((index, model): (usize, OllamaModel)) -> OllamaModelInfo {
@@ -250,12 +280,23 @@ mod tests {
     use crate::domain::model::dto::{
         GenerateRequest, InstallRequest, ListModelsResponse, RemoveRequest, UnarySuccess,
     };
-    use crate::ports::{LlmProvider, ProviderStream};
+    use crate::ports::{LlmProvider, LlmProviderFactory, ProviderStream};
 
     #[derive(Clone)]
     struct MockProvider {
         models: Vec<OllamaModel>,
         fail_list: bool,
+        list_calls: Arc<AtomicUsize>,
+    }
+
+    impl Default for MockProvider {
+        fn default() -> Self {
+            Self {
+                models: vec![],
+                fail_list: false,
+                list_calls: Arc::new(AtomicUsize::new(0)),
+            }
+        }
     }
 
     #[async_trait]
@@ -279,6 +320,7 @@ mod tests {
         }
 
         async fn list_models(&self) -> Result<ListModelsResponse, CoreError> {
+            self.list_calls.fetch_add(1, Ordering::SeqCst);
             if self.fail_list {
                 return Err(CoreError::HttpNetwork("down".to_owned()));
             }
@@ -303,6 +345,32 @@ mod tests {
                 operation: "remove_model".to_owned(),
             })
         }
+    }
+
+    struct TrackingFactory {
+        created: Arc<AtomicUsize>,
+        override_provider: Arc<MockProvider>,
+    }
+
+    impl LlmProviderFactory for TrackingFactory {
+        fn create(&self, _provider_id: &str, _url: &str) -> Result<Arc<dyn LlmProvider>, CoreError> {
+            self.created.fetch_add(1, Ordering::SeqCst);
+            Ok(self.override_provider.clone())
+        }
+    }
+
+    fn process_factory() -> Arc<dyn LlmProviderFactory> {
+        Arc::new(TrackingFactory {
+            created: Arc::new(AtomicUsize::new(0)),
+            override_provider: Arc::new(MockProvider::default()),
+        })
+    }
+
+    fn make_svc(
+        provider: MockProvider,
+        library: MockLibrary,
+    ) -> CatalogService {
+        CatalogService::new(Arc::new(provider), process_factory(), Arc::new(library))
     }
 
     struct MockLibrary {
@@ -356,21 +424,20 @@ mod tests {
     #[tokio::test]
     async fn get_merges_local_over_library() {
         let fetches = Arc::new(AtomicUsize::new(0));
-        let svc = CatalogService::new(
-            Arc::new(MockProvider {
+        let svc = make_svc(
+            MockProvider {
                 models: vec![local_llama()],
                 fail_list: false,
-            }),
-            Arc::new(MockLibrary {
+                list_calls: Arc::new(AtomicUsize::new(0)),
+            },
+            MockLibrary {
                 cards: vec![card("llama", 1), card("qwen3", 2)],
                 fail: false,
                 fetches: fetches.clone(),
-            }),
+            },
         );
         let catalog = svc
-            .get(GetCatalogRequest {
-                force_refresh: None,
-            })
+            .get(GetCatalogRequest::default())
             .await
             .expect("get");
         let names: Vec<_> = catalog.ollama.iter().map(|c| c.name.as_str()).collect();
@@ -389,20 +456,22 @@ mod tests {
 
     #[tokio::test]
     async fn library_error_falls_back_to_static() {
-        let svc = CatalogService::new(
-            Arc::new(MockProvider {
+        let svc = make_svc(
+            MockProvider {
                 models: vec![local_llama()],
                 fail_list: false,
-            }),
-            Arc::new(MockLibrary {
+                list_calls: Arc::new(AtomicUsize::new(0)),
+            },
+            MockLibrary {
                 cards: vec![],
                 fail: true,
                 fetches: Arc::new(AtomicUsize::new(0)),
-            }),
+            },
         );
         let catalog = svc
             .get(GetCatalogRequest {
                 force_refresh: Some(true),
+                ..GetCatalogRequest::default()
             })
             .await
             .expect("get");
@@ -413,20 +482,22 @@ mod tests {
 
     #[tokio::test]
     async fn local_list_failure_keeps_library() {
-        let svc = CatalogService::new(
-            Arc::new(MockProvider {
+        let svc = make_svc(
+            MockProvider {
                 models: vec![],
                 fail_list: true,
-            }),
-            Arc::new(MockLibrary {
+                list_calls: Arc::new(AtomicUsize::new(0)),
+            },
+            MockLibrary {
                 cards: vec![card("qwen3", 2)],
                 fail: false,
                 fetches: Arc::new(AtomicUsize::new(0)),
-            }),
+            },
         );
         let catalog = svc
             .get(GetCatalogRequest {
                 force_refresh: Some(true),
+                ..GetCatalogRequest::default()
             })
             .await
             .expect("get");
@@ -437,30 +508,28 @@ mod tests {
     #[tokio::test]
     async fn cache_skips_library_until_force_refresh() {
         let fetches = Arc::new(AtomicUsize::new(0));
-        let svc = CatalogService::new(
-            Arc::new(MockProvider {
+        let svc = make_svc(
+            MockProvider {
                 models: vec![local_llama()],
                 fail_list: false,
-            }),
-            Arc::new(MockLibrary {
+                list_calls: Arc::new(AtomicUsize::new(0)),
+            },
+            MockLibrary {
                 cards: vec![card("qwen3", 2)],
                 fail: false,
                 fetches: fetches.clone(),
-            }),
+            },
         );
-        svc.get(GetCatalogRequest {
-            force_refresh: None,
-        })
-        .await
-        .expect("first");
-        svc.get(GetCatalogRequest {
-            force_refresh: None,
-        })
-        .await
-        .expect("cached");
+        svc.get(GetCatalogRequest::default())
+            .await
+            .expect("first");
+        svc.get(GetCatalogRequest::default())
+            .await
+            .expect("cached");
         assert_eq!(fetches.load(Ordering::SeqCst), 1);
         svc.get(GetCatalogRequest {
             force_refresh: Some(true),
+            ..GetCatalogRequest::default()
         })
         .await
         .expect("refresh");
@@ -469,16 +538,17 @@ mod tests {
 
     #[tokio::test]
     async fn search_filters_and_total_count() {
-        let svc = CatalogService::new(
-            Arc::new(MockProvider {
+        let svc = make_svc(
+            MockProvider {
                 models: vec![local_llama()],
                 fail_list: false,
-            }),
-            Arc::new(MockLibrary {
+                list_calls: Arc::new(AtomicUsize::new(0)),
+            },
+            MockLibrary {
                 cards: vec![card("qwen3", 200), card("other", 5)],
                 fail: false,
                 fetches: Arc::new(AtomicUsize::new(0)),
-            }),
+            },
         );
         let found = svc
             .search(CatalogFilters {
@@ -500,20 +570,23 @@ mod tests {
 
     #[tokio::test]
     async fn get_model_info_exact_contains_or_null() {
-        let svc = CatalogService::new(
-            Arc::new(MockProvider {
+        let svc = make_svc(
+            MockProvider {
                 models: vec![local_llama()],
                 fail_list: false,
-            }),
-            Arc::new(MockLibrary {
+                list_calls: Arc::new(AtomicUsize::new(0)),
+            },
+            MockLibrary {
                 cards: vec![card("qwen3:latest", 2)],
                 fail: false,
                 fetches: Arc::new(AtomicUsize::new(0)),
-            }),
+            },
         );
         let exact = svc
             .get_model_info(GetModelInfoRequest {
                 model_name: "llama".to_owned(),
+                id: None,
+                url: None,
             })
             .await
             .expect("exact");
@@ -521,6 +594,8 @@ mod tests {
         let contains = svc
             .get_model_info(GetModelInfoRequest {
                 model_name: "qwen3".to_owned(),
+                id: None,
+                url: None,
             })
             .await
             .expect("contains");
@@ -528,9 +603,70 @@ mod tests {
         let missing = svc
             .get_model_info(GetModelInfoRequest {
                 model_name: "nope".to_owned(),
+                id: None,
+                url: None,
             })
             .await
             .expect("null");
         assert!(missing.is_none());
+    }
+
+    #[tokio::test]
+    async fn get_with_explicit_url_uses_factory_and_separate_cache() {
+        let process_calls = Arc::new(AtomicUsize::new(0));
+        let override_calls = Arc::new(AtomicUsize::new(0));
+        let created = Arc::new(AtomicUsize::new(0));
+        let factory = Arc::new(TrackingFactory {
+            created: created.clone(),
+            override_provider: Arc::new(MockProvider {
+                models: vec![OllamaModel {
+                    name: "remote".to_owned(),
+                    size: 99,
+                    modified_at: "2026-03-01T00:00:00Z".to_owned(),
+                    digest: None,
+                    details: None,
+                }],
+                fail_list: false,
+                list_calls: override_calls.clone(),
+            }),
+        });
+        let fetches = Arc::new(AtomicUsize::new(0));
+        let svc = CatalogService::new(
+            Arc::new(MockProvider {
+                models: vec![local_llama()],
+                fail_list: false,
+                list_calls: process_calls.clone(),
+            }),
+            factory,
+            Arc::new(MockLibrary {
+                cards: vec![],
+                fail: false,
+                fetches: fetches.clone(),
+            }),
+        );
+
+        let catalog = svc
+            .get(GetCatalogRequest {
+                force_refresh: None,
+                id: Some("ollama".to_owned()),
+                url: Some("http://10.0.0.9:11434".to_owned()),
+            })
+            .await
+            .expect("get");
+        assert!(catalog.ollama.iter().any(|c| c.name == "remote"));
+        assert_eq!(created.load(Ordering::SeqCst), 1);
+        assert_eq!(override_calls.load(Ordering::SeqCst), 1);
+        assert_eq!(process_calls.load(Ordering::SeqCst), 0);
+
+        // Повтор с тем же url — кэш (library не дергается снова).
+        svc.get(GetCatalogRequest {
+            force_refresh: None,
+            id: Some("ollama".to_owned()),
+            url: Some("http://10.0.0.9:11434".to_owned()),
+        })
+        .await
+        .expect("cached");
+        assert_eq!(fetches.load(Ordering::SeqCst), 1);
+        assert_eq!(created.load(Ordering::SeqCst), 1);
     }
 }

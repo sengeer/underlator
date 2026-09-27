@@ -28,6 +28,7 @@ import type {
   InstallRequest,
   ListChatsRequest,
   ListChatsResponse,
+  ListModelsRequest,
   ListModelsResponse,
   ModelCatalog,
   OllamaModelInfo,
@@ -106,7 +107,7 @@ export class HttpTransport implements BackendClient {
       stop: () => this.stop(),
       install: (request) => this.install(request),
       remove: (request) => this.remove(request),
-      list: () => this.listModels(),
+      list: (request) => this.listModels(request),
       onGenerateProgress: (callback) => {
         this.generateListeners.add(callback);
         return () => {
@@ -288,12 +289,19 @@ export class HttpTransport implements BackendClient {
     return this.unary<UnarySuccess>('POST', '/api/model/remove', request);
   }
 
-  private listModels(): Promise<ListModelsResponse> {
-    return this.unary<ListModelsResponse>('GET', '/api/model/list');
+  private listModels(
+    request: ListModelsRequest = {}
+  ): Promise<ListModelsResponse> {
+    const query = toQuery({ id: request.id, url: request.url });
+    return this.unary<ListModelsResponse>('GET', `/api/model/list${query}`);
   }
 
   private getCatalog(params: GetCatalogRequest = {}): Promise<ModelCatalog> {
-    const query = toQuery({ forceRefresh: params.forceRefresh });
+    const query = toQuery({
+      forceRefresh: params.forceRefresh,
+      id: params.id,
+      url: params.url,
+    });
     return this.unary<ModelCatalog>('GET', `/api/catalog${query}`);
   }
 
@@ -305,9 +313,10 @@ export class HttpTransport implements BackendClient {
     params: GetModelInfoRequest
   ): Promise<OllamaModelInfo | null> {
     const name = encodeURIComponent(params.modelName);
+    const query = toQuery({ id: params.id, url: params.url });
     return this.unary<OllamaModelInfo | null>(
       'GET',
-      `/api/catalog/models/${name}`
+      `/api/catalog/models/${name}${query}`
     );
   }
 

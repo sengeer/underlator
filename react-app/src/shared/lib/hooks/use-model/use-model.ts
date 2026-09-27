@@ -128,7 +128,7 @@ function useModel() {
       // Собирает контекст запроса
       const requestContext: ModelRequestContext = {
         config: {
-          id: (providerSettings.settings as any)?.id || 'embedded-ollama',
+          id: (providerSettings.settings as any)?.id || 'ollama',
           url: providerSettings.settings.url || DEFAULT_URL,
         },
         ragConfig: {

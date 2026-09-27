@@ -20,6 +20,7 @@ import type {
   InstallRequest,
   ListChatsRequest,
   ListChatsResponse,
+  ListModelsRequest,
   ListModelsResponse,
   ModelCatalog,
   OllamaModelInfo,
@@ -38,7 +39,7 @@ export interface ModelApi {
   stop(): Promise<void>;
   install(request: InstallRequest): Promise<UnarySuccess>;
   remove(request: RemoveRequest): Promise<UnarySuccess>;
-  list(): Promise<ListModelsResponse>;
+  list(request?: ListModelsRequest): Promise<ListModelsResponse>;
   onGenerateProgress(
     callback: (progress: GenerateProgress) => void
   ): () => void;

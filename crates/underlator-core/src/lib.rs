@@ -24,7 +24,8 @@ pub use adapters::out::http::{
     StreamMode, user_agent,
 };
 pub use adapters::out::ollama::{
-    OllamaProvider, ProviderFactoryConfig, UnsupportedProvider, create_provider,
+    CoreLlmProviderFactory, OllamaProvider, ProviderFactoryConfig, UnsupportedProvider,
+    create_provider,
 };
 pub use adapters::out::{FilesystemChatStore, HttpCatalogLibrary, MemoryChatStore};
 pub use application::{
@@ -56,7 +57,9 @@ pub use domain::model::{
     RemoveRequest, StopRequest, UnarySuccess,
 };
 pub use domain::{CoreError, HostErrorClass, host_error_class, rag, splash};
-pub use ports::{CatalogLibrary, ChatStore, LlmProvider, ProviderStream, StorageRoot};
+pub use ports::{
+    CatalogLibrary, ChatStore, LlmProvider, LlmProviderFactory, ProviderStream, StorageRoot,
+};
 
 /// Имя crate ядра.
 pub const CRATE_NAME: &str = env!("CARGO_PKG_NAME");

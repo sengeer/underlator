@@ -9,22 +9,46 @@ import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import {
   persistStore,
   persistReducer,
+  createMigrate,
   FLUSH,
   REHYDRATE,
   PAUSE,
   PERSIST,
   PURGE,
   REGISTER,
+  type PersistedState,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import splashScreenIpcSlice from '../../pages/main/models/splash-screen-ipc-slice';
 import chatIpcSlice from '../../shared/models/chat-ipc-slice/';
 import elementStateSlice from '../../shared/models/element-state-slice';
 import notificationsSlice from '../../shared/models/notifications-slice/';
-import providerSettingsSlice from '../../shared/models/provider-settings-slice';
+import providerSettingsSlice, {
+  ensureProviderSettingsState,
+} from '../../shared/models/provider-settings-slice';
 import themesSlice from '../../shared/models/themes-slice';
 import translationLanguagesSlice from '../../shared/models/translation-languages-slice';
 import modelIpcSlice from '../../widgets/settings/models/model-ipc-slice';
+
+/**
+ * Persist v1: приводит providerSettings к каноническому каталогу провайдеров.
+ */
+const migrations = {
+  1: (state: PersistedState) => {
+    if (!state || typeof state !== 'object') {
+      return state;
+    }
+    const root = state as PersistedState & {
+      providerSettings?: unknown;
+    };
+    if (root.providerSettings) {
+      root.providerSettings = ensureProviderSettingsState(
+        root.providerSettings
+      );
+    }
+    return root;
+  },
+};
 
 /**
  * Конфигурация персистентности для redux-persist.
@@ -34,8 +58,10 @@ import modelIpcSlice from '../../widgets/settings/models/model-ipc-slice';
  */
 const persistConfig = {
   key: 'root',
+  version: 1,
   storage,
   whitelist: ['elements', 'providerSettings', 'translationLanguages', 'themes'],
+  migrate: createMigrate(migrations, { debug: false }),
 };
 
 /**

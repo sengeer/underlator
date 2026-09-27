@@ -27,6 +27,7 @@ import type {
   InstallRequest,
   ListChatsRequest,
   ListChatsResponse,
+  ListModelsRequest,
   ListModelsResponse,
   ModelCatalog,
   OllamaModelInfo,
@@ -81,7 +82,7 @@ export class ElectronTransport implements BackendClient {
       stop: () => this.stop(),
       install: (request) => this.install(request),
       remove: (request) => this.remove(request),
-      list: () => this.list(),
+      list: (request) => this.list(request),
       onGenerateProgress: (callback) => this.onGenerateProgress(callback),
       onInstallProgress: (callback) => this.onInstallProgress(callback),
     };
@@ -123,8 +124,13 @@ export class ElectronTransport implements BackendClient {
     return unwrapIpcResponse<UnarySuccess>(response);
   }
 
-  private async list(): Promise<ListModelsResponse> {
-    const response = await requireModel().list();
+  private async list(
+    request: ListModelsRequest = {}
+  ): Promise<ListModelsResponse> {
+    const listFn = requireModel().list as (
+      req?: ListModelsRequest
+    ) => Promise<unknown>;
+    const response = await listFn(request);
     return unwrapIpcResponse<ListModelsResponse>(response);
   }
 

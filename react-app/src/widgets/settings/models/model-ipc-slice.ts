@@ -28,7 +28,23 @@ import type {
   InstallModelParams,
   RemoveModelParams,
   GetModelInfoParams,
+  ProviderSettingsRoot,
 } from '../types/model-ipc';
+
+/**
+ * Читает id/url активного провайдера из Redux settings.
+ */
+function activeProviderConfig(state: ProviderSettingsRoot): {
+  id?: string;
+  url?: string;
+} {
+  const { provider, settings } = state.providerSettings;
+  const active = settings[provider];
+  return {
+    id: active?.id,
+    url: active?.url,
+  };
+}
 
 /**
  * Начальное состояние каталога моделей.
@@ -91,9 +107,17 @@ const getInstalledModelName = (model?: { model?: string; name?: string }) =>
  */
 export const fetchCatalog = createAsyncThunk(
   'manageModels/fetchCatalog',
-  async (params: GetCatalogParams = {}, { rejectWithValue, dispatch }) => {
+  async (
+    params: GetCatalogParams = {},
+    { rejectWithValue, dispatch, getState }
+  ) => {
     try {
-      const result = await modelAndCatalogIpc.getCatalog(params);
+      const config = activeProviderConfig(getState() as ProviderSettingsRoot);
+      const result = await modelAndCatalogIpc.getCatalog({
+        ...params,
+        id: params.id ?? config.id,
+        url: params.url ?? config.url,
+      });
 
       if (!result.success) {
         const errMsg = 'Error getting the models catalog';
@@ -128,9 +152,17 @@ export const fetchCatalog = createAsyncThunk(
  */
 export const searchModels = createAsyncThunk(
   'manageModels/searchModels',
-  async (filters: ModelSearchFilters, { rejectWithValue, dispatch }) => {
+  async (
+    filters: ModelSearchFilters,
+    { rejectWithValue, dispatch, getState }
+  ) => {
     try {
-      const result = await modelAndCatalogIpc.searchModels(filters);
+      const config = activeProviderConfig(getState() as ProviderSettingsRoot);
+      const result = await modelAndCatalogIpc.searchModels({
+        ...filters,
+        id: filters.id ?? config.id,
+        url: filters.url ?? config.url,
+      });
 
       if (!result.success) {
         const errMsg = 'Error searching models';
@@ -165,9 +197,17 @@ export const searchModels = createAsyncThunk(
  */
 export const fetchModelInfo = createAsyncThunk(
   'manageModels/fetchModelInfo',
-  async (params: GetModelInfoParams, { rejectWithValue, dispatch }) => {
+  async (
+    params: GetModelInfoParams,
+    { rejectWithValue, dispatch, getState }
+  ) => {
     try {
-      const result = await modelAndCatalogIpc.getModelInfo(params);
+      const config = activeProviderConfig(getState() as ProviderSettingsRoot);
+      const result = await modelAndCatalogIpc.getModelInfo({
+        ...params,
+        id: params.id ?? config.id,
+        url: params.url ?? config.url,
+      });
 
       if (!result.success) {
         const errMsg = 'Error getting model info';
@@ -202,15 +242,23 @@ export const fetchModelInfo = createAsyncThunk(
  */
 export const installModel = createAsyncThunk(
   'manageModels/installModel',
-  async (params: InstallModelParams, { rejectWithValue, dispatch }) => {
+  async (
+    params: InstallModelParams,
+    { rejectWithValue, dispatch, getState }
+  ) => {
     try {
       const { target = 'provider', ...request } = params;
+      const config = activeProviderConfig(getState() as ProviderSettingsRoot);
 
       // Добавляет модель в список устанавливаемых
       dispatch(addInstallingModel(params.name));
 
       const result = await modelAndCatalogIpc.installModel(
-        request,
+        {
+          ...request,
+          id: request.id ?? config.id,
+          url: request.url ?? config.url,
+        },
         (progress: ModelInstallProgress) => {
           // Обновляет прогресс через dispatch
           dispatch(
@@ -246,7 +294,7 @@ export const installModel = createAsyncThunk(
       dispatch(
         target === 'provider'
           ? updateProviderSettings({
-              provider: 'Embedded Ollama',
+              provider: 'Ollama',
               settings: { model: params.name },
             })
           : updateRagSettings({
@@ -285,10 +333,19 @@ export const installModel = createAsyncThunk(
  */
 export const removeModel = createAsyncThunk(
   'manageModels/removeModel',
-  async (params: RemoveModelParams, { rejectWithValue, dispatch }) => {
+  async (
+    params: RemoveModelParams,
+    { rejectWithValue, dispatch, getState }
+  ) => {
     try {
       const { target = 'provider', ...request } = params;
-      const resultRemove = await modelAndCatalogIpc.removeModel(request);
+      const config = activeProviderConfig(getState() as ProviderSettingsRoot);
+      const withConfig = {
+        ...request,
+        id: request.id ?? config.id,
+        url: request.url ?? config.url,
+      };
+      const resultRemove = await modelAndCatalogIpc.removeModel(withConfig);
       if (!resultRemove.success) {
         const errMsg = 'Model removal error';
 
@@ -301,7 +358,10 @@ export const removeModel = createAsyncThunk(
         return rejectWithValue(resultRemove.error || errMsg);
       }
 
-      const resultList = await modelAndCatalogIpc.listInstalledModels();
+      const resultList = await modelAndCatalogIpc.listInstalledModels({
+        id: withConfig.id,
+        url: withConfig.url,
+      });
       if (!resultList.success) {
         const errMsg = 'Error getting list of models';
 
@@ -325,7 +385,7 @@ export const removeModel = createAsyncThunk(
       if (target === 'provider' && nextProviderModel) {
         dispatch(
           updateProviderSettings({
-            provider: 'Embedded Ollama',
+            provider: 'Ollama',
             settings: { model: nextProviderModel },
           })
         );
@@ -376,9 +436,10 @@ export const removeModel = createAsyncThunk(
  */
 export const fetchInstalledModels = createAsyncThunk(
   'manageModels/fetchInstalledModels',
-  async (_, { rejectWithValue, dispatch }) => {
+  async (_, { rejectWithValue, dispatch, getState }) => {
     try {
-      const result = await modelAndCatalogIpc.listInstalledModels();
+      const config = activeProviderConfig(getState() as ProviderSettingsRoot);
+      const result = await modelAndCatalogIpc.listInstalledModels(config);
 
       if (!result.success) {
         const errMsg = 'Error getting list of models';

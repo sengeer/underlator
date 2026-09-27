@@ -261,11 +261,11 @@ msgstr "drag and drop your file here"
 msgid "dutch"
 msgstr "dutch"
 
-#: src/widgets/settings/ui/manage-embedded-ollama.tsx
+#: src/widgets/settings/ui/manage-models.tsx
 msgid "Embedding model..."
 msgstr "Embedding model..."
 
-#: src/widgets/settings/ui/manage-embedded-ollama.tsx
+#: src/widgets/settings/ui/manage-models.tsx
 msgid "Embedding models not found"
 msgstr "Embedding models not found"
 
@@ -423,7 +423,7 @@ msgstr "Menu"
 msgid "model"
 msgstr "model"
 
-#: src/widgets/settings/ui/manage-embedded-ollama.tsx
+#: src/widgets/settings/ui/manage-models.tsx
 msgid "Model..."
 msgstr "Model..."
 
@@ -671,6 +671,6 @@ msgstr "welcome to chat"
 msgid "what does this mean?"
 msgstr "what does this mean?"
 
-#: src/widgets/settings/ui/manage-embedded-ollama.tsx
+#: src/widgets/settings/ui/manage-models.tsx
 msgid "Мodels not found"
 msgstr "Мodels not found"

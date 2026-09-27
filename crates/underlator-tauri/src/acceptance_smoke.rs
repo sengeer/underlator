@@ -52,7 +52,7 @@ async fn run(state: &AppState) -> Vec<Step> {
     let mut steps = Vec::new();
 
     // --- model: list ---
-    let list = match model::list(state).await {
+    let list = match model::list(state, underlator_core::ListModelsRequest::default()).await {
         Ok(resp) => {
             let names: Vec<_> = resp.models.iter().map(|m| m.name.clone()).collect();
             steps.push(Step {
@@ -175,6 +175,8 @@ async fn run(state: &AppState) -> Vec<Step> {
                 tag: None,
                 registry: None,
                 insecure: None,
+                id: None,
+                url: None,
             },
             |_| {},
         )
@@ -195,6 +197,8 @@ async fn run(state: &AppState) -> Vec<Step> {
             state,
             RemoveRequest {
                 name: smoke_name.clone(),
+                id: None,
+                url: None,
             },
         )
         .await
@@ -223,6 +227,8 @@ async fn run(state: &AppState) -> Vec<Step> {
         state,
         GetCatalogRequest {
             force_refresh: Some(true),
+            id: None,
+            url: None,
         },
     )
     .await
@@ -264,6 +270,8 @@ async fn run(state: &AppState) -> Vec<Step> {
         state,
         GetModelInfoRequest {
             model_name: model_name.clone(),
+            id: None,
+            url: None,
         },
     )
     .await

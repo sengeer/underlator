@@ -7,15 +7,17 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
-  DEFAULT_MODEL,
-  DEFAULT_URL,
   DEFAULT_RAG_MODEL,
   DEFAULT_RAG_TOP_K,
   DEFAULT_RAG_SIMILARITY_THRESHOLD,
   DEFAULT_RAG_CHUNK_SIZE,
   getEmbeddingModelDimension,
 } from '../../lib/constants';
-import { SECTION_TYPEUSE_MAPPING } from './constants/provider-settings-slice';
+import {
+  DEFAULT_PROVIDER,
+  SECTION_TYPEUSE_MAPPING,
+  defaultSettingsFor,
+} from './constants/provider-settings-slice';
 import {
   ProviderSettingsState,
   State,
@@ -28,20 +30,9 @@ import {
  * Восстановление сохраненного состояния выполняется автоматически через redux-persist.
  */
 const initialState: ProviderSettingsState = {
-  provider: 'Embedded Ollama',
+  provider: DEFAULT_PROVIDER,
   settings: {
-    Ollama: {
-      id: 'ollama',
-      url: DEFAULT_URL,
-      model: DEFAULT_MODEL,
-      typeUse: 'instruction',
-    },
-    'Embedded Ollama': {
-      id: 'embedded-ollama',
-      url: DEFAULT_URL,
-      model: DEFAULT_MODEL,
-      typeUse: 'instruction',
-    },
+    [DEFAULT_PROVIDER]: defaultSettingsFor(DEFAULT_PROVIDER),
   },
   rag: {
     model: DEFAULT_RAG_MODEL,
@@ -87,12 +78,7 @@ export const providerSettingsSlice = createSlice({
     ) {
       const { provider, settings } = action.payload;
       if (!state.settings[provider]) {
-        state.settings[provider] = {
-          id: provider,
-          url: DEFAULT_URL,
-          model: DEFAULT_MODEL,
-          typeUse: 'instruction',
-        };
+        state.settings[provider] = defaultSettingsFor(provider);
       }
       state.settings[provider] = { ...state.settings[provider], ...settings };
     },
@@ -145,7 +131,6 @@ export const providerSettingsSlice = createSlice({
      * @param action - Действие с частичным набором полей RAG.
      */
     updateRagSettings(state, action: PayloadAction<Partial<RagSettings>>) {
-      // Объединяет существующие настройки с новыми, сохраняя все поля
       const newModel =
         action.payload.model !== undefined
           ? action.payload.model
@@ -159,7 +144,6 @@ export const providerSettingsSlice = createSlice({
             : state.rag.vectorSize ||
               getEmbeddingModelDimension(state.rag.model || DEFAULT_RAG_MODEL);
 
-      // Объединяет существующие настройки с новыми, используя значения по умолчанию для отсутствующих полей
       state.rag = {
         model: newModel,
         vectorSize: newVectorSize,
@@ -207,17 +191,13 @@ export const selectProviderSettings = (state: State) => state.providerSettings;
  */
 export const selectActiveProviderSettings = (state: State) => {
   const { provider, settings, rag } = state.providerSettings;
-  const defaultSettings: ProviderSettings = {
-    id: 'embedded-ollama',
-    url: DEFAULT_URL,
-    model: DEFAULT_MODEL,
-    typeUse: 'instruction',
-  };
   return {
     provider,
-    settings: settings[provider] || defaultSettings,
+    settings: settings[provider] || defaultSettingsFor(provider),
     rag: rag,
   };
 };
+
+export { ensureProviderSettingsState } from './ensure-provider-settings-state';
 
 export default providerSettingsSlice.reducer;

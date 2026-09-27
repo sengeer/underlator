@@ -23,6 +23,7 @@ import type {
   InstallProgress,
   InstallRequest,
   ListChatsRequest,
+  ListModelsRequest,
   ProviderConfig,
   RemoveRequest,
   UpdateChatRequest,
@@ -218,7 +219,8 @@ export class TauriTransport implements BackendClient {
         this.bridge.invoke(COMMAND.install, wrapRequest(request)),
       remove: (request) =>
         this.bridge.invoke(COMMAND.remove, wrapRequest(request)),
-      list: () => this.bridge.invoke(COMMAND.list),
+      list: (request: ListModelsRequest = {}) =>
+        this.bridge.invoke(COMMAND.list, wrapRequest(request)),
       onGenerateProgress: (callback) =>
         this.subscribe(TAURI_EVENTS[0], callback),
       onInstallProgress: (callback) =>

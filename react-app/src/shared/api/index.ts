@@ -33,6 +33,7 @@ export type {
   InstallRequest,
   ListChatsRequest,
   ListChatsResponse,
+  ListModelsRequest,
   ListModelsResponse,
   ModelCatalog,
   OllamaModelInfo,

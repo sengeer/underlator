@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use underlator_core::{
     CatalogService, ChatService, FilesystemChatStore, HttpCatalogLibrary, ModelService,
-    ProviderFactoryConfig, StorageRoot, create_provider,
+    CoreLlmProviderFactory, ProviderFactoryConfig, StorageRoot, create_provider,
 };
 
 use crate::config::{ConfigError, ServerConfig};
@@ -94,9 +94,11 @@ impl AppState {
             allow_cloud: false,
         })?;
         let provider: Arc<dyn underlator_core::LlmProvider> = Arc::from(boxed);
-        let model = ModelService::new(Arc::clone(&provider));
+        let factory: Arc<dyn underlator_core::LlmProviderFactory> =
+            Arc::new(CoreLlmProviderFactory::new());
+        let model = ModelService::new(Arc::clone(&provider), Arc::clone(&factory));
         let library = Arc::new(HttpCatalogLibrary::new()?);
-        let catalog = Arc::new(CatalogService::new(provider, library));
+        let catalog = Arc::new(CatalogService::new(provider, factory, library));
         let store = FilesystemChatStore::new(StorageRoot::new(&config.data_dir));
         let chat = Arc::new(ChatService::new(Arc::new(store)));
         Ok(Self::new(model, catalog, chat, config))

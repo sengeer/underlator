@@ -12,6 +12,7 @@ import type {
   InstallModelParams,
   RemoveModelParams,
   GetModelInfoParams,
+  ListInstalledModelsParams,
   ModelInstallProgress,
   ModelOperationResult,
   ModelProgressCallback,
@@ -86,6 +87,8 @@ class ModelAndCatalogIpc {
     try {
       const data = await getBackendClient().catalog.get({
         forceRefresh: params.forceRefresh,
+        id: params.id,
+        url: params.url,
       });
       return okResult(data);
     } catch (error) {
@@ -116,6 +119,8 @@ class ModelAndCatalogIpc {
     try {
       const data = await getBackendClient().catalog.getModelInfo({
         modelName: params.modelName,
+        id: params.id,
+        url: params.url,
       });
       return okResult(data);
     } catch (error) {
@@ -142,6 +147,8 @@ class ModelAndCatalogIpc {
       const data = await getBackendClient().model.install({
         name: params.name,
         tag: params.tag,
+        id: params.id,
+        url: params.url,
       });
 
       this.progressCallbacks.delete(params.name);
@@ -172,6 +179,8 @@ class ModelAndCatalogIpc {
     try {
       const data = await getBackendClient().model.remove({
         name: params.name,
+        id: params.id,
+        url: params.url,
       });
       return okResult(data);
     } catch (error) {
@@ -182,9 +191,14 @@ class ModelAndCatalogIpc {
   /**
    * Получает список установленных моделей.
    */
-  async listInstalledModels(): Promise<ModelOperationResult> {
+  async listInstalledModels(
+    params: ListInstalledModelsParams = {}
+  ): Promise<ModelOperationResult> {
     try {
-      const data = await getBackendClient().model.list();
+      const data = await getBackendClient().model.list({
+        id: params.id,
+        url: params.url,
+      });
       return okResult(data);
     } catch (error) {
       return failResult(error);

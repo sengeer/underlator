@@ -11,7 +11,7 @@ type TypeUse = 'instruction' | 'translation' | 'contextualTranslation' | 'chat';
 /**
  * Типы существующих провайдеров в приложении.
  */
-type ProviderType = 'Ollama' | 'Embedded Ollama';
+type ProviderType = 'Ollama';
 
 /**
  * Настройки конекретного провайдера.
@@ -147,18 +147,26 @@ interface Window {
       /** Удаление модели */
       remove: (request: any) => Promise<{ success: boolean }>;
       /** Список моделей */
-      list: () => Promise<any>;
+      list: (request?: { id?: string; url?: string }) => Promise<any>;
       /** Подписка на прогресс установки */
       onInstallProgress: (callback: (progress: any) => void) => () => void;
     };
     /** API для работы с каталогом моделей */
     catalog: {
       /** Получение каталога моделей */
-      get: (params?: { forceRefresh?: boolean }) => Promise<any>;
+      get: (params?: {
+        forceRefresh?: boolean;
+        id?: string;
+        url?: string;
+      }) => Promise<any>;
       /** Поиск в каталоге моделей */
       search: (filters: any) => Promise<any>;
       /** Информация о модели */
-      getModelInfo: (params: { modelName: string }) => Promise<any>;
+      getModelInfo: (params: {
+        modelName: string;
+        id?: string;
+        url?: string;
+      }) => Promise<any>;
     };
     /** API для работы с splash screen */
     splash: {

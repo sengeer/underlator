@@ -88,12 +88,28 @@ export interface InstallRequest {
   registry?: string;
   /** Разрешить insecure registry. */
   insecure?: boolean;
+  /** Идентификатор провайдера (override manage-models). */
+  id?: string;
+  /** Base URL провайдера из UI. */
+  url?: string;
 }
 
 /** Запрос удаления модели. */
 export interface RemoveRequest {
   /** Название модели. */
   name: string;
+  /** Идентификатор провайдера (override manage-models). */
+  id?: string;
+  /** Base URL провайдера из UI. */
+  url?: string;
+}
+
+/** Запрос `model.list` с опциональным override провайдера. */
+export interface ListModelsRequest {
+  /** Идентификатор провайдера (override manage-models). */
+  id?: string;
+  /** Base URL провайдера из UI. */
+  url?: string;
 }
 
 /** Элемент списка локальных моделей. */
@@ -146,6 +162,10 @@ export interface InstallProgress {
 export interface GetCatalogRequest {
   /** Принудительно обновить снимок каталога. */
   forceRefresh?: boolean;
+  /** Идентификатор провайдера для локального merge. */
+  id?: string;
+  /** Base URL из UI для локального inventory. */
+  url?: string;
 }
 
 /** Фильтры `catalog.search` (camelCase JSON ядра). */
@@ -170,6 +190,10 @@ export interface CatalogFilters {
   sortOrder?: string;
   limit?: number;
   offset?: number;
+  /** Идентификатор провайдера для локального merge. */
+  id?: string;
+  /** Base URL из UI для локального inventory. */
+  url?: string;
 }
 
 /** Карточка модели каталога. */
@@ -202,6 +226,10 @@ export interface ModelCatalog {
 /** Запрос `catalog.getModelInfo`. */
 export interface GetModelInfoRequest {
   modelName: string;
+  /** Идентификатор провайдера для локального merge. */
+  id?: string;
+  /** Base URL из UI для локального inventory. */
+  url?: string;
 }
 
 /** Ссылка на модель в чате. */

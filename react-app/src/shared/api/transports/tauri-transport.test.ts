@@ -13,6 +13,16 @@ import {
   type TauriBridge,
 } from './tauri-transport';
 
+function createBridge(overrides: Partial<TauriBridge> = {}): TauriBridge {
+  return {
+    invoke: async <T>(_command: string, _args?: unknown): Promise<T> => {
+      return undefined as T;
+    },
+    listen: async () => () => undefined,
+    ...overrides,
+  };
+}
+
 describe('TauriTransport', () => {
   it('таблица имён совпадает с domain/contract.rs', () => {
     expect([...TAURI_COMMANDS]).toEqual([
@@ -49,34 +59,66 @@ describe('TauriTransport', () => {
   });
 
   it('invoke передаёт { request } для install/catalog/chat', async () => {
-    const invoke = vi.fn(async () => ({ success: true }));
-    const bridge: TauriBridge = {
-      invoke,
-      listen: async () => () => undefined,
-    };
+    const invokeCalls: Array<{ command: string; args?: unknown }> = [];
+    const bridge = createBridge({
+      invoke: async <T>(command: string, args?: unknown): Promise<T> => {
+        invokeCalls.push({ command, args });
+        return { success: true } as T;
+      },
+    });
     const client = new TauriTransport(bridge);
 
     await client.model.install({ name: 'm' });
-    expect(invoke).toHaveBeenCalledWith('model_install', {
-      request: { name: 'm' },
+    expect(invokeCalls).toContainEqual({
+      command: 'model_install',
+      args: { request: { name: 'm' } },
+    });
+
+    await client.model.list({
+      id: 'ollama',
+      url: 'http://127.0.0.1:11434',
+    });
+    expect(invokeCalls).toContainEqual({
+      command: 'model_list',
+      args: { request: { id: 'ollama', url: 'http://127.0.0.1:11434' } },
+    });
+
+    await client.catalog.get({
+      forceRefresh: true,
+      id: 'ollama',
+      url: 'http://127.0.0.1:11434',
+    });
+    expect(invokeCalls).toContainEqual({
+      command: 'catalog_get',
+      args: {
+        request: {
+          forceRefresh: true,
+          id: 'ollama',
+          url: 'http://127.0.0.1:11434',
+        },
+      },
     });
 
     await client.catalog.search({ search: 'q' });
-    expect(invoke).toHaveBeenCalledWith('catalog_search', {
-      request: { search: 'q' },
+    expect(invokeCalls).toContainEqual({
+      command: 'catalog_search',
+      args: { request: { search: 'q' } },
     });
 
     await client.chat.create({
       title: 't',
       defaultModel: { name: 'llama' },
     });
-    expect(invoke).toHaveBeenCalledWith('chat_create', {
-      request: { title: 't', defaultModel: { name: 'llama' } },
+    expect(invokeCalls).toContainEqual({
+      command: 'chat_create',
+      args: { request: { title: 't', defaultModel: { name: 'llama' } } },
     });
 
     await client.model.generate({ model: 'm', prompt: 'p' });
-    expect(invoke).toHaveBeenCalledWith(
-      'model_generate',
+    const generateCall = invokeCalls.find(
+      (c) => c.command === 'model_generate'
+    );
+    expect(generateCall?.args).toEqual(
       expect.objectContaining({
         request: expect.objectContaining({
           model: 'm',
@@ -101,7 +143,7 @@ describe('TauriTransport', () => {
   it('invoke отсутствует → throw, fetch не вызывается', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    const bridge: TauriBridge = {
+    const bridge = createBridge({
       invoke: async () => {
         throw new BackendError(
           'unsupported',
@@ -111,7 +153,7 @@ describe('TauriTransport', () => {
       listen: async () => {
         throw new BackendError('unsupported', 'listen unavailable');
       },
-    };
+    });
     const client = new TauriTransport(bridge);
     await expect(
       client.model.generate({ model: 'm', prompt: 'p' })
@@ -134,13 +176,13 @@ describe('TauriTransport', () => {
 
   it('listen доставляет payload progress', async () => {
     const handlers: Array<(payload: unknown) => void> = [];
-    const bridge: TauriBridge = {
-      invoke: async () => 'ok',
+    const bridge = createBridge({
+      invoke: async <T>(): Promise<T> => 'ok' as T,
       listen: async (_event, handler) => {
         handlers.push(handler);
         return () => undefined;
       },
-    };
+    });
     const client = new TauriTransport(bridge);
     const seen: unknown[] = [];
     client.model.onGenerateProgress((p) => seen.push(p));
