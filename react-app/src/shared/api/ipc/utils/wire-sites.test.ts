@@ -9,8 +9,14 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const src = join(here, '../..');
+const src = join(here, '../../../..');
 
+/**
+ * Читает исходник относительно `src/`.
+ *
+ * @param rel - Относительный путь от `src/`.
+ * @returns Содержимое файла.
+ */
 function read(rel: string): string {
   return readFileSync(join(src, rel), 'utf8');
 }

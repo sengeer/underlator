@@ -3,15 +3,17 @@
  * Инкрементальный разбор `text/event-stream` из ReadableStream (не EventSource).
  */
 
-/** Один SSE-кадр: имя события + сырые data-строки. */
-export interface SseFrame {
-  event: string;
-  data: string;
-}
+import type { SseFrame } from '../types/sse';
+
+export type { SseFrame };
 
 /**
  * Читает кадры SSE из потока. O(n) по байтам: хвост буфера не копируется
  * целиком на каждый chunk сверх необходимого slice.
+ *
+ * @param stream - Тело HTTP-ответа `text/event-stream`.
+ * @param signal - Опциональный AbortSignal для отмены чтения.
+ * @yields Полные SSE-кадры.
  */
 export async function* readSseFrames(
   stream: ReadableStream<Uint8Array>,
@@ -62,6 +64,12 @@ export async function* readSseFrames(
   }
 }
 
+/**
+ * Вырезает завершённые кадры из буфера (разделитель `\n\n`).
+ *
+ * @param buffer - Накопленный текст SSE.
+ * @returns Кадры и остаток буфера.
+ */
 function extractCompleteFrames(buffer: string): {
   frames: SseFrame[];
   rest: string;
@@ -82,6 +90,12 @@ function extractCompleteFrames(buffer: string): {
   return { frames, rest };
 }
 
+/**
+ * Разбирает один блок SSE в кадр.
+ *
+ * @param block - Текст между разделителями кадров.
+ * @returns Кадр или `null` для пустого/комментария.
+ */
 function parseFrameBlock(block: string): SseFrame | null {
   if (!block.trim()) {
     return null;
@@ -113,6 +127,9 @@ function parseFrameBlock(block: string): SseFrame | null {
 
 /**
  * Разбирает JSON из поля data кадра. Невалидный JSON → сырая строка.
+ *
+ * @param raw - Содержимое `data:` кадра.
+ * @returns Объект JSON или исходная строка.
  */
 export function parseSseData(raw: string): unknown {
   try {

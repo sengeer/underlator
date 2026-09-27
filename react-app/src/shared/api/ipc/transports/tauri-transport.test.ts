@@ -3,14 +3,14 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { BackendError } from '../errors';
-import { TAURI_COMMANDS, TAURI_EVENTS } from '../types';
+import { TAURI_COMMANDS, TAURI_EVENTS } from '../constants/tauri-transport';
+import type { TauriBridge } from '../types/tauri-transport';
+import { BackendError } from '../utils/errors';
 import {
   TAURI_NAME_MAP,
   TauriTransport,
   parseTauriHostError,
   wrapRequest,
-  type TauriBridge,
 } from './tauri-transport';
 
 function createBridge(overrides: Partial<TauriBridge> = {}): TauriBridge {

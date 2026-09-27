@@ -4,12 +4,13 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { BackendError } from '../../api';
+import { BackendError } from '../../api/ipc';
 
 const createMock = vi.fn();
 
-vi.mock('../../api', async () => {
-  const actual = await vi.importActual<typeof import('../../api')>('../../api');
+vi.mock('../../api/ipc', async () => {
+  const actual =
+    await vi.importActual<typeof import('../../api/ipc')>('../../api/ipc');
   return {
     ...actual,
     getBackendClient: () => ({

@@ -182,9 +182,11 @@
               {
                 "group": [
                   "**/shared/api/transports/**",
-                  "shared/api/transports/**"
+                  "shared/api/transports/**",
+                  "**/shared/api/ipc/transports/**",
+                  "shared/api/ipc/transports/**"
                 ],
-                "message": "FSD: виджеты и страницы должны использовать shared/api, а не transports."
+                "message": "FSD: виджеты и страницы должны использовать shared/api/ipc, а не transports."
               }
             ]
           }

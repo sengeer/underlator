@@ -8,7 +8,7 @@
 import { useLingui } from '@lingui/react/macro';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { getBackendClient } from '../../../api';
+import { getBackendClient } from '../../../api/ipc';
 import { updateGenerationText } from '../../../models/chat-ipc-slice';
 import { selectActiveProviderSettings } from '../../../models/provider-settings-slice';
 import { selectTranslationLanguages } from '../../../models/translation-languages-slice';

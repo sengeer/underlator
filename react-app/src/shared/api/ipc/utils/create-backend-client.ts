@@ -3,16 +3,18 @@
  * Фабрика и ленивый singleton над выбранным транспортом.
  */
 
-import type { BackendClient } from './backend-client';
+import { ElectronTransport } from '../transports/electron-transport';
+import { HttpTransport } from '../transports/http-transport';
+import { TauriTransport } from '../transports/tauri-transport';
+import type { BackendClient } from '../types/backend-client';
 import { detectTransport } from './detect-transport';
-import { ElectronTransport } from './transports/electron-transport';
-import { HttpTransport } from './transports/http-transport';
-import { TauriTransport } from './transports/tauri-transport';
 
 let singleton: BackendClient | null = null;
 
 /**
  * Создаёт клиент для текущего режима (без кэша).
+ *
+ * @returns Новый экземпляр BackendClient под выбранный транспорт.
  */
 export function createBackendClient(): BackendClient {
   const mode = detectTransport();
@@ -28,6 +30,8 @@ export function createBackendClient(): BackendClient {
 
 /**
  * Ленивый singleton BackendClient.
+ *
+ * @returns Общий экземпляр BackendClient для процесса UI.
  */
 export function getBackendClient(): BackendClient {
   if (!singleton) {
@@ -38,6 +42,8 @@ export function getBackendClient(): BackendClient {
 
 /**
  * Сбрасывает singleton. Только для unit-тестов.
+ *
+ * @returns Ничего.
  */
 export function resetBackendClientForTests(): void {
   singleton = null;

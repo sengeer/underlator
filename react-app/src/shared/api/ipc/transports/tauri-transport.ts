@@ -3,16 +3,18 @@
  * Рабочий invoke/listen против `underlator-tauri` (атом 5.1).
  */
 
-import type {
-  BackendClient,
-  CatalogApi,
-  ChatApi,
-  ModelApi,
-} from '../backend-client';
-import { BackendError, backendErrorFromBody } from '../errors';
+import {
+  DEFAULT_PROVIDER_ID,
+  DEFAULT_PROVIDER_URL,
+  TAURI_COMMANDS,
+  TAURI_EVENTS,
+} from '../constants/tauri-transport';
 import type {
   AddMessageRequest,
+  BackendClient,
+  CatalogApi,
   CatalogFilters,
+  ChatApi,
   CreateChatRequest,
   DeleteChatRequest,
   GenerateProgress,
@@ -24,46 +26,19 @@ import type {
   InstallRequest,
   ListChatsRequest,
   ListModelsRequest,
+  ModelApi,
   ProviderConfig,
   RemoveRequest,
   UpdateChatRequest,
-} from '../types';
-import {
-  DEFAULT_PROVIDER_ID,
-  DEFAULT_PROVIDER_URL,
-  TAURI_COMMANDS,
-  TAURI_EVENTS,
-} from '../types';
+} from '../types/backend-client';
+import type {
+  TauriBridge,
+  TauriGlobal,
+  TauriInternals,
+} from '../types/tauri-transport';
+import { BackendError, backendErrorFromBody } from '../utils/errors';
 
-/** Узкий порт runtime Tauri 2 без зависимости `@tauri-apps/api`. */
-export interface TauriBridge {
-  invoke<T>(command: string, args?: unknown): Promise<T>;
-  listen(
-    event: string,
-    handler: (payload: unknown) => void
-  ): Promise<() => void>;
-}
-
-interface TauriInternals {
-  invoke?: (command: string, args?: unknown) => Promise<unknown>;
-  transformCallback?: (
-    callback: (payload: unknown) => void,
-    once?: boolean
-  ) => number;
-  unregisterCallback?: (id: number) => void;
-}
-
-interface TauriGlobal {
-  core?: {
-    invoke?: (command: string, args?: unknown) => Promise<unknown>;
-  };
-  event?: {
-    listen?: (
-      event: string,
-      handler: (event: { payload?: unknown }) => void
-    ) => Promise<() => void>;
-  };
-}
+export type { TauriBridge };
 
 function unsupported(message: string): BackendError {
   return new BackendError('unsupported', message);
@@ -71,6 +46,9 @@ function unsupported(message: string): BackendError {
 
 /**
  * Разбирает classified host error `{ class, message }` из reject invoke.
+ *
+ * @param error - Значение reject invoke / listen.
+ * @returns Нормализованный BackendError.
  */
 export function parseTauriHostError(error: unknown): BackendError {
   if (error instanceof BackendError) {
@@ -117,7 +95,12 @@ export function parseTauriHostError(error: unknown): BackendError {
   return unsupported(error instanceof Error ? error.message : String(error));
 }
 
-/** Оборачивает DTO в `{ request }` для именованного аргумента host. */
+/**
+ * Оборачивает DTO в `{ request }` для именованного аргумента host.
+ *
+ * @param request - Тело запроса MVP.
+ * @returns Объект `{ request }` для invoke.
+ */
 export function wrapRequest(request: unknown): { request: unknown } {
   return { request };
 }
@@ -141,6 +124,8 @@ function readTauriGlobals(): {
 
 /**
  * Default-мост: ищет Tauri 2 runtime. Нет invoke — явная ошибка.
+ *
+ * @returns TauriBridge поверх window globals.
  */
 export function createDefaultTauriBridge(): TauriBridge {
   return {
@@ -205,11 +190,17 @@ export const TAURI_NAME_MAP = {
  * Транспорт Tauri: invoke + listen, без silent fallback на Electron/HTTP.
  */
 export class TauriTransport implements BackendClient {
+  /** Фасад model. */
   readonly model: ModelApi;
+  /** Фасад catalog. */
   readonly catalog: CatalogApi;
+  /** Фасад chat. */
   readonly chat: ChatApi;
   private readonly bridge: TauriBridge;
 
+  /**
+   * @param bridge - Порт runtime (по умолчанию window globals).
+   */
   constructor(bridge: TauriBridge = createDefaultTauriBridge()) {
     this.bridge = bridge;
     this.model = {

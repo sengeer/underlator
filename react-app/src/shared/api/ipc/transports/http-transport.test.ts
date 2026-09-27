@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it, vi, type Mock } from 'vitest';
-import { BackendError } from '../errors';
+import { BackendError } from '../utils/errors';
 import { HttpTransport } from './http-transport';
 
 type FetchMock = Mock<

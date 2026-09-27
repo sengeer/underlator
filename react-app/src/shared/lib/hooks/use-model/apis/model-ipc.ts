@@ -3,4 +3,4 @@
  * Совместимый re-export: generate живёт в BackendClient, не в отдельном IPC-клиенте.
  */
 
-export { getBackendClient } from '../../../../api';
+export { getBackendClient } from '../../../../api/ipc';

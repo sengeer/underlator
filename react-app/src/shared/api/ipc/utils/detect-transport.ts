@@ -3,15 +3,18 @@
  * Выбор транспорта: явный `VITE_BACKEND_MODE` побеждает runtime detect.
  */
 
-import type { BackendMode } from './types';
+import type {
+  BackendMode,
+  DetectTransportGlobals,
+} from '../types/detect-transport';
 
-/** Глобали для detect без обязательного DOM. */
-export interface DetectTransportGlobals {
-  electron?: unknown;
-  __TAURI__?: unknown;
-  __TAURI_INTERNALS__?: unknown;
-}
+export type { BackendMode, DetectTransportGlobals };
 
+/**
+ * Читает host-глобали из `window` (пусто вне браузера).
+ *
+ * @returns Снимок Electron/Tauri globals.
+ */
 function readWindowGlobals(): DetectTransportGlobals {
   if (typeof window === 'undefined') {
     return {};
@@ -29,6 +32,7 @@ function readWindowGlobals(): DetectTransportGlobals {
  *
  * @param mode - Явный флаг (`http`/`electron`/`tauri`); пустой = detect.
  * @param globals - Window-глобали (по умолчанию `window`).
+ * @returns Режим BackendClient.
  */
 export function detectTransport(
   mode: string | undefined = import.meta.env.VITE_BACKEND_MODE,

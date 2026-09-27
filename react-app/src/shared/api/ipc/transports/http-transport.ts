@@ -3,18 +3,17 @@
  * REST `fetch` + SSE (`text/event-stream`). WebSocket не используется.
  */
 
-import type {
-  BackendClient,
-  CatalogApi,
-  ChatApi,
-  ModelApi,
-} from '../backend-client';
-import { BackendError, backendErrorFromResponse } from '../errors';
-import { parseSseData, readSseFrames } from '../sse';
+import {
+  DEFAULT_PROVIDER_ID,
+  DEFAULT_PROVIDER_URL,
+} from '../constants/http-transport';
 import type {
   AddMessageRequest,
   AddMessageResponse,
+  BackendClient,
+  CatalogApi,
   CatalogFilters,
+  ChatApi,
   ChatData,
   CreateChatRequest,
   DeleteChatRequest,
@@ -30,23 +29,19 @@ import type {
   ListChatsResponse,
   ListModelsRequest,
   ListModelsResponse,
+  ModelApi,
   ModelCatalog,
   OllamaModelInfo,
   ProviderConfig,
   RemoveRequest,
   UnarySuccess,
   UpdateChatRequest,
-} from '../types';
-import { DEFAULT_PROVIDER_ID, DEFAULT_PROVIDER_URL } from '../types';
+} from '../types/backend-client';
+import type { HttpTransportOptions } from '../types/http-transport';
+import { BackendError, backendErrorFromResponse } from '../utils/errors';
+import { parseSseData, readSseFrames } from '../utils/sse';
 
-export interface HttpTransportOptions {
-  /** Base URL без trailing slash. Пусто = relative `/api/...`. */
-  baseUrl?: string;
-  /** Bearer-токен для `/api/*`. */
-  token?: string;
-  /** Инъекция fetch (тесты). */
-  fetch?: typeof fetch;
-}
+export type { HttpTransportOptions };
 
 function envBaseUrl(): string {
   return (import.meta.env.VITE_BACKEND_URL ?? '').replace(/\/$/, '');
@@ -83,8 +78,11 @@ function isAbortError(error: unknown): boolean {
  * HTTP-транспорт карты атома 3.1.
  */
 export class HttpTransport implements BackendClient {
+  /** Фасад model. */
   readonly model: ModelApi;
+  /** Фасад catalog. */
   readonly catalog: CatalogApi;
+  /** Фасад chat. */
   readonly chat: ChatApi;
 
   private readonly baseUrl: string;
@@ -98,6 +96,9 @@ export class HttpTransport implements BackendClient {
   >();
   private activeSseAbort: AbortController | null = null;
 
+  /**
+   * @param options - Base URL, token и инъекция fetch.
+   */
   constructor(options: HttpTransportOptions = {}) {
     this.baseUrl = options.baseUrl ?? envBaseUrl();
     this.token = options.token ?? envToken();

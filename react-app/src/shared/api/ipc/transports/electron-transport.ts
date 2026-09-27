@@ -4,16 +4,12 @@
  */
 
 import type {
-  BackendClient,
-  CatalogApi,
-  ChatApi,
-  ModelApi,
-} from '../backend-client';
-import { BackendError, unwrapIpcResponse } from '../errors';
-import type {
   AddMessageRequest,
   AddMessageResponse,
+  BackendClient,
+  CatalogApi,
   CatalogFilters,
+  ChatApi,
   ChatData,
   CreateChatRequest,
   DeleteChatRequest,
@@ -29,13 +25,15 @@ import type {
   ListChatsResponse,
   ListModelsRequest,
   ListModelsResponse,
+  ModelApi,
   ModelCatalog,
   OllamaModelInfo,
   ProviderConfig,
   RemoveRequest,
   UnarySuccess,
   UpdateChatRequest,
-} from '../types';
+} from '../types/backend-client';
+import { BackendError, unwrapIpcResponse } from '../utils/errors';
 
 function requireElectron(): Window['electron'] {
   if (typeof window === 'undefined' || !window.electron) {
@@ -72,8 +70,11 @@ function requireChat(): Window['electron']['chat'] {
  * Транспорт Electron IPC. Fail closed без fallback на HTTP.
  */
 export class ElectronTransport implements BackendClient {
+  /** Фасад model. */
   readonly model: ModelApi;
+  /** Фасад catalog. */
   readonly catalog: CatalogApi;
+  /** Фасад chat. */
   readonly chat: ChatApi;
 
   constructor() {

@@ -9,8 +9,15 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const reactAppRoot = join(here, '../../..');
+const reactAppRoot = join(here, '../../../../..');
 
+/**
+ * Рекурсивно собирает пути `.ts` / `.tsx` в каталоге.
+ *
+ * @param dir - Корневой каталог обхода.
+ * @param acc - Накопитель путей.
+ * @returns Список абсолютных путей.
+ */
 function walkTsFiles(dir: string, acc: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
@@ -27,12 +34,12 @@ function walkTsFiles(dir: string, acc: string[] = []): string[] {
 }
 
 describe('FSD: widgets/pages не импортируют transports', () => {
-  it('eslint запрещает shared/api/transports из widgets и pages', () => {
+  it('eslint запрещает shared/api/ipc/transports из widgets и pages', () => {
     const eslintrc = readFileSync(join(reactAppRoot, '.eslintrc.json'), 'utf8');
     expect(eslintrc).toMatch(/src\/widgets\/\*\*\/\*\.\{ts,tsx\}/);
     expect(eslintrc).toMatch(/src\/pages\/\*\*\/\*\.\{ts,tsx\}/);
     expect(eslintrc).toMatch(/no-restricted-imports/);
-    expect(eslintrc).toMatch(/shared\/api\/transports/);
+    expect(eslintrc).toMatch(/shared\/api\/ipc\/transports/);
   });
 
   it('реальное дерево widgets/pages не импортирует transports', () => {
@@ -45,7 +52,7 @@ describe('FSD: widgets/pages не импортируют transports', () => {
       for (const file of walkTsFiles(root)) {
         const source = readFileSync(file, 'utf8');
         if (
-          /from ['"][^'"]*shared\/api\/transports/.test(source) ||
+          /from ['"][^'"]*shared\/api\/(?:ipc\/)?transports/.test(source) ||
           /from ['"][^'"]*\/transports\/(http|electron|tauri)-transport/.test(
             source
           )

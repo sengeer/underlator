@@ -3,7 +3,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { BackendError } from '../errors';
+import { BackendError } from '../utils/errors';
 import { ElectronTransport } from './electron-transport';
 
 type ProgressCb = (payload: unknown) => void;

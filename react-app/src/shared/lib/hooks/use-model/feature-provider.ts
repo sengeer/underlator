@@ -4,7 +4,7 @@
  * Поддерживает четыре режима: контекстный перевод, инструкции, чат и простой перевод.
  */
 
-import { getBackendClient } from '../../../api';
+import { getBackendClient } from '../../../api/ipc';
 import {
   addMessageLocally,
   updateMessage,

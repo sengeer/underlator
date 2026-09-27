@@ -3,7 +3,7 @@
  * Функции для ручного тестирования Model API через BackendClient.
  */
 
-import { getBackendClient } from '../../../shared/api';
+import { getBackendClient } from '../../../shared/api/ipc';
 import { DEFAULT_OPTIONS } from '../../../shared/lib/constants';
 import modelAndCatalogIpc from '../apis/model-and-catalog-ipc';
 import { OLLAMA_TEST_MODEL, OLLAMA_TEST_PROMPT } from '../constants/ipc';

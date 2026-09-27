@@ -3,8 +3,8 @@
  * Тонкий фасад ModelOperationResult над BackendClient (catalog/model).
  */
 
-import { BackendError, getBackendClient } from '../../../shared/api';
-import type { InstallProgress } from '../../../shared/api';
+import { BackendError, getBackendClient } from '../../../shared/api/ipc';
+import type { InstallProgress } from '../../../shared/api/ipc';
 import { DEFAULT_CONFIG } from '../constants/electron';
 import type {
   GetCatalogParams,

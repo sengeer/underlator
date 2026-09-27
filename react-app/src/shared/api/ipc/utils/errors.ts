@@ -3,18 +3,8 @@
  * Ошибка клиента MVP: класс host + сообщение, без `IpcResponse`.
  */
 
-import type { BackendErrorClass } from './types';
-
-const KNOWN_CLASSES: readonly BackendErrorClass[] = [
-  'invalid',
-  'not_found',
-  'cancelled',
-  'unsupported',
-  'provider',
-  'http',
-  'storage',
-  'internal',
-];
+import { KNOWN_ERROR_CLASSES } from '../constants/errors';
+import type { BackendErrorClass } from '../types/errors';
 
 /**
  * Ошибка BackendClient. Поле `class` совпадает с JSON server 3.1.
@@ -23,6 +13,10 @@ export class BackendError extends Error {
   /** Класс ошибки host (`not_found`, `cancelled`, …). */
   readonly class: BackendErrorClass;
 
+  /**
+   * @param errorClass - Класс host.
+   * @param message - Человекочитаемое сообщение.
+   */
   constructor(errorClass: BackendErrorClass, message: string) {
     super(message);
     this.name = 'BackendError';
@@ -32,9 +26,12 @@ export class BackendError extends Error {
 
 /**
  * Нормализует строку класса; неизвестное значение → `internal`.
+ *
+ * @param value - Сырое значение `class` из JSON.
+ * @returns Известный BackendErrorClass.
  */
 export function normalizeErrorClass(value: string): BackendErrorClass {
-  return KNOWN_CLASSES.includes(value as BackendErrorClass)
+  return KNOWN_ERROR_CLASSES.includes(value as BackendErrorClass)
     ? (value as BackendErrorClass)
     : 'internal';
 }
@@ -42,6 +39,10 @@ export function normalizeErrorClass(value: string): BackendErrorClass {
 /**
  * Собирает BackendError из HTTP JSON `{ class, message }`.
  * Без класса (Electron) — `internal`.
+ *
+ * @param body - Распарсенное тело ответа или envelope.
+ * @param fallbackMessage - Сообщение, если в теле нет `message`.
+ * @returns Экземпляр BackendError.
  */
 export function backendErrorFromBody(
   body: unknown,
@@ -63,6 +64,9 @@ export function backendErrorFromBody(
 
 /**
  * Разбор тела 4xx/5xx ответа в BackendError.
+ *
+ * @param response - HTTP Response с ошибкой.
+ * @returns BackendError из JSON или текста.
  */
 export async function backendErrorFromResponse(
   response: Response
@@ -82,6 +86,9 @@ export async function backendErrorFromResponse(
 /**
  * Разворачивает Electron `IpcResponse` в DTO.
  * Строка generate (старый формат) возвращается как есть.
+ *
+ * @param response - Сырой ответ preload.
+ * @returns Тело DTO или строка generate.
  */
 export function unwrapIpcResponse<T>(response: unknown): T {
   if (typeof response === 'string') {
@@ -102,6 +109,12 @@ export function unwrapIpcResponse<T>(response: unknown): T {
   return response as T;
 }
 
+/**
+ * Проверяет форму Electron IpcResponse envelope.
+ *
+ * @param value - Произвольное значение.
+ * @returns `true`, если есть boolean `success`.
+ */
 function isIpcEnvelope(
   value: unknown
 ): value is { success: boolean; data?: unknown; error?: string } {

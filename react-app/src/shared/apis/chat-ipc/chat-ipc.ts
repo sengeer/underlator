@@ -3,7 +3,7 @@
  * Тонкий фасад ChatOperationResult над BackendClient.chat.
  */
 
-import { BackendError, getBackendClient } from '../../api';
+import { BackendError, getBackendClient } from '../../api/ipc';
 import log from '../../lib/utils/log';
 import { DEFAULT_CONFIG } from './constants/chat-ipc';
 import type {

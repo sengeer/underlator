@@ -4,17 +4,17 @@
  */
 
 import { afterEach, describe, expect, it } from 'vitest';
-import type { BackendClient } from './backend-client';
-import {
-  getBackendClient,
-  resetBackendClientForTests,
-} from './create-backend-client';
-import { HttpTransport } from './transports/http-transport';
 import {
   MVP_CATALOG_METHODS,
   MVP_CHAT_METHODS,
   MVP_MODEL_METHODS,
-} from './types';
+} from '../constants/backend-client';
+import type { BackendClient } from '../types/backend-client';
+import { HttpTransport } from '../transports/http-transport';
+import {
+  getBackendClient,
+  resetBackendClientForTests,
+} from './create-backend-client';
 
 describe('BackendClient contract', () => {
   it('набор методов совпадает с картой MVP без rag/splash', () => {

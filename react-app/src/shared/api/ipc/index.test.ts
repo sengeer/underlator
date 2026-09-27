@@ -1,5 +1,6 @@
 /**
  * @module PublicApiIndexTests
+ * Проверяет публичный surface сегмента ipc без реэкспорта transports.
  */
 
 import { readFileSync } from 'node:fs';
@@ -10,7 +11,7 @@ import * as api from './index';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-describe('shared/api public index', () => {
+describe('shared/api/ipc public index', () => {
   it('экспортирует getBackendClient, типы и BackendError без transports/', () => {
     expect(typeof api.getBackendClient).toBe('function');
     expect(api.BackendError).toBeDefined();
