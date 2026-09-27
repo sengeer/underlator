@@ -47,7 +47,7 @@
 - **AND** исходники адаптера MUST NOT импортировать `reqwest` или `hyper`
 
 ### Requirement: Registry selects provider by id
-Ядро SHALL выбирать реализацию провайдера по `provider_id` из конфига. Идентификаторы `ollama` и `embedded-ollama` MUST резолвиться в runtime-адаптер Ollama. Неизвестный id MUST давать классифицированную ошибку, а не молча подменять вендора.
+Ядро SHALL выбирать реализацию провайдера по `provider_id` из конфига. Идентификатор `ollama` MUST резолвиться в runtime-адаптер Ollama. Идентификатор `embedded-ollama` MUST оставаться alias того же runtime-адаптера Ollama для back-compat (миграция persist / старые payload), но продуктовый UI MUST NOT требовать отдельного Embedded-провайдера. Неизвестный id MUST давать классифицированную ошибку, а не молча подменять вендора.
 
 #### Scenario: ollama id resolves to runtime adapter
 - **WHEN** factory/реестр получает `provider_id` `ollama` или `embedded-ollama` и валидный `url`
@@ -58,6 +58,11 @@
 - **WHEN** factory/реестр получает неизвестный `provider_id`
 - **THEN** создание провайдера MUST завершиться ошибкой unknown provider
 - **AND** MUST NOT выполнить исходящий HTTP
+
+#### Scenario: Product default id is ollama not Embedded
+- **WHEN** вызывающий код задаёт локальный MVP-провайдер без legacy id
+- **THEN** `provider_id` MUST быть `ollama`
+- **AND** MUST NOT требоваться отдельный продуктовый id Embedded Ollama для list/install/remove
 
 ### Requirement: Only Ollama is runtime-required in MVP
 Для MVP runtime-обязательным SHALL быть только локальный Ollama. Идентификаторы `openrouter` и `anthropic` MUST существовать как stubs без полной облачной реализации: операции генерации и списка моделей MUST возвращать unsupported, пока адаптер не будет реализован отдельным изменением.
