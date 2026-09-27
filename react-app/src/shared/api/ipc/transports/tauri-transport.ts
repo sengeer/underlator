@@ -1,6 +1,6 @@
 /**
  * @module TauriTransport
- * Рабочий invoke/listen против `underlator-tauri` (атом 5.1).
+ * Рабочий invoke/listen против `underlator-tauri`.
  */
 
 import {

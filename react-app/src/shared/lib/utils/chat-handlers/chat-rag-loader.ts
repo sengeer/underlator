@@ -29,7 +29,7 @@ export async function loadRagContext(
 
   /*
   try {
-    // Web / server-режим: RAG IPC нет — не блокируем чат и не спамим toast (атом 4.2).
+    // Web / server-режим: RAG IPC нет — не блокируем чат и не спамим toast.
     const electronApi = (window as Window & { electron?: { rag?: unknown } })
       .electron;
     if (typeof window === 'undefined' || !electronApi?.rag) {

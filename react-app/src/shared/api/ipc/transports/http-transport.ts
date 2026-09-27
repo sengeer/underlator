@@ -75,7 +75,7 @@ function isAbortError(error: unknown): boolean {
 }
 
 /**
- * HTTP-транспорт карты атома 3.1.
+ * HTTP-транспорт.
  */
 export class HttpTransport implements BackendClient {
   /** Фасад model. */

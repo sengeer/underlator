@@ -94,7 +94,7 @@ function useElectronTranslation(): UseElectronTranslationReturn {
    */
   async function translateElectron(): Promise<void> {
     try {
-      // Web / server: нет Electron IPC — не toast'им (атом 4.2).
+      // Web / server: нет Electron IPC — не toast'им.
       if (
         typeof window === 'undefined' ||
         !window.electron?.updateTranslations
