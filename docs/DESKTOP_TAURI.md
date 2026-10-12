@@ -147,18 +147,18 @@ cargo tauri build --features desktop
 ### Linux: AppImage (Fedora 44)
 
 ```bash
-cd react-app && npm run build && cd ..
-cd crates/underlator-tauri
-# Fedora 40+/44: linuxdeploy ship-strip не понимает ELF `.relr.dyn` → NO_STRIP=1
-NO_STRIP=1 APPIMAGE_EXTRACT_AND_RUN=1 \
-  cargo tauri build --features desktop --bundles appimage
-cd ../..
-# если CARGO_TARGET_DIR нестандартный — передайте --bundle-root
-./scripts/rename-desktop-artifacts.sh
-ls -la dist-desktop/Underlator-*-linux-x86_64.AppImage
-chmod +x dist-desktop/Underlator-*-linux-x86_64.AppImage
-# Запуск .AppImage
-./dist-desktop/Underlator-0.1.0-beta-linux-x86_64.AppImage --appimage-extract-and-run
+  cd react-app && npm run build && cd ..
+  cd crates/underlator-tauri
+  # Fedora 40+/44: linuxdeploy ship-strip не понимает ELF `.relr.dyn` → NO_STRIP=1
+    NO_STRIP=1 APPIMAGE_EXTRACT_AND_RUN=1 \
+      cargo tauri build --features desktop --bundles appimage
+  cd ../..
+  # если CARGO_TARGET_DIR нестандартный — передайте --bundle-root
+  ./scripts/rename-desktop-artifacts.sh
+  ls -la dist-desktop/Underlator-*-linux-x86_64.AppImage
+  chmod +x dist-desktop/Underlator-*-linux-x86_64.AppImage
+  # Запуск .AppImage
+  ./dist-desktop/Underlator-0.1.0-beta-linux-x86_64.AppImage --appimage-extract-and-run
 # альтернатива: extract → AppRun (тот же payload AppImage)
 #   ./Underlator-0.1.0-beta-linux-x86_64.AppImage --appimage-extract
 #   APPIMAGELAUNCHER_DISABLE=1 UNDERLATOR_DATA_DIR=/tmp/u ./squashfs-root/AppRun

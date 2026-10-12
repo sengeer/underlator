@@ -47,6 +47,17 @@ function activeProviderConfig(state: ProviderSettingsRoot): {
 }
 
 /**
+ * Ключ снимка каталога: пара provider id и base URL.
+ * Пустая часть остаётся в ключе, чтобы отсутствие id не совпало с чужим значением.
+ */
+export function catalogCacheKey(
+  id: string | undefined,
+  url: string | undefined
+): string {
+  return `${id ?? ''}\u0000${url ?? ''}`;
+}
+
+/**
  * Начальное состояние каталога моделей.
  * Состояние с настройками по умолчанию.
  */
@@ -56,6 +67,7 @@ const initialCatalogState: CatalogState = {
   error: null,
   lastUpdated: null,
   forceRefresh: false,
+  sourceKey: null,
 };
 
 /**
@@ -113,10 +125,12 @@ export const fetchCatalog = createAsyncThunk(
   ) => {
     try {
       const config = activeProviderConfig(getState() as ProviderSettingsRoot);
+      const id = params.id ?? config.id;
+      const url = params.url ?? config.url;
       const result = await modelAndCatalogIpc.getCatalog({
         ...params,
-        id: params.id ?? config.id,
-        url: params.url ?? config.url,
+        id,
+        url,
       });
 
       if (!result.success) {
@@ -131,7 +145,10 @@ export const fetchCatalog = createAsyncThunk(
         return rejectWithValue(result.error || errMsg);
       }
 
-      return result;
+      return {
+        ...result,
+        sourceKey: catalogCacheKey(id, url),
+      };
     } catch (error) {
       const errMsg = `Error getting the catalog: ${(error as Error).message}`;
 
@@ -630,6 +647,7 @@ const electronSlice = createSlice({
       .addCase(fetchCatalog.fulfilled, (state, action) => {
         state.catalog.loading = false;
         state.catalog.catalog = action.payload.data;
+        state.catalog.sourceKey = action.payload.sourceKey;
         state.catalog.lastUpdated = Date.now();
         state.catalog.error = null;
       })

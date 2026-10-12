@@ -3,7 +3,8 @@
  * Компонент Popup с поддержкой ленивой загрузки.
  */
 
-import { useEffect, createRef, useMemo, isValidElement } from 'react';
+import { useEffect, useMemo, useRef, isValidElement } from 'react';
+import useProgressiveReveal from '../../lib/hooks/use-progressive-reveal';
 import { LazyListItem } from './lazy-list-item';
 import './styles/popup.scss';
 import { PopupProps } from './types/popup';
@@ -82,7 +83,7 @@ function Popup({
   animationDelay = 0,
   animationType = 'fadeIn',
 }: PopupProps) {
-  const popupRef = createRef<HTMLDivElement>();
+  const popupRef = useRef<HTMLDivElement>(null);
 
   // Определяет количество дочерних элементов для ленивой загрузки
   const childrenCount = useMemo(() => {
@@ -136,15 +137,30 @@ function Popup({
     }
   };
 
-  // Рендерит контент с учетом ленивой загрузки
+  const revealItems =
+    shouldUseLazyLoading && Array.isArray(children) ? children : [];
+  const { prefix: revealedChildren, shellReady } = useProgressiveReveal({
+    items: revealItems,
+    open: isOpened && shouldUseLazyLoading,
+    chunkSize: lazyLoadingThreshold,
+    defer: 'transitionend',
+    targetRef: popupRef,
+  });
+
+  // Рендерит контент с учетом ленивой загрузки.
+  // Длинный список: оболочка сразу (shellReady), элементы — префиксом после анимации.
   function renderContent() {
     if (!shouldUseLazyLoading) {
       return children;
     }
+    // Закрытый попап не держит хвост списка. Открытый рисует только префикс.
+    if (!shellReady) {
+      return null;
+    }
 
     // Если включена ленивая загрузка и есть массив элементов
     if (Array.isArray(children)) {
-      return children.map((child, index) => {
+      return revealedChildren.map((child, index) => {
         // Если элемент уже является LazyListItem, возвращает как есть
         if (
           isValidElement(child) &&

@@ -142,6 +142,7 @@ const PopupWithSearch = forwardRef<PopupWithSearchRef, PopupWithSearchProps>(
       }
     }, [popupProps.isOpened, searchAutoFocus]);
 
+    // Длинный список уходит в Popup: useProgressiveReveal режет его префиксом.
     return (
       <Popup
         searchComponent={

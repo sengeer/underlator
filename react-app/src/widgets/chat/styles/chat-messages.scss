@@ -3,11 +3,26 @@
   flex: 1;
   flex-direction: column;
   overflow-y: auto;
+  min-height: 0;
+  overflow-anchor: none;
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: auto;
+    overflow-anchor: none;
+
+    &_pending {
+      visibility: hidden;
+    }
+  }
 
   &__item {
     display: flex;
     flex-direction: column;
     width: 100%;
+    overflow-anchor: none;
 
     &:first-child {
       margin: 2rem 0 0;

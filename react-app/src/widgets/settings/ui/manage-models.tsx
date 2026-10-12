@@ -20,7 +20,7 @@
 
 import { useLingui } from '@lingui/react/macro';
 import { Trans } from '@lingui/react/macro';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '../../../app';
 import {
@@ -34,6 +34,7 @@ import {
 } from '../../../shared/models/provider-settings-slice';
 import PopupWithSearch from '../../../shared/ui/popup-with-search';
 import {
+  catalogCacheKey,
   fetchCatalog,
   searchModels,
   installModel,
@@ -154,9 +155,10 @@ function getModelDisplayState(
  * - Выбор активной модели и сохранение в настройках провайдера.
  * - Обработка ошибок и отображение состояний загрузки.
  *
- * Компонент автоматически загружает каталог при монтировании и сбрасывает
- * поиск при каждом открытии. Использует PopupWithSearch для отображения
- * списка моделей с поддержкой ленивой загрузки и анимаций.
+ * Каталог запрашивается при открытии, если для пары provider id + url нет
+ * годного снимка. Повторное открытие с тем же ключом показывает кэш.
+ * Поиск сбрасывается при каждом открытии. Использует PopupWithSearch
+ * для отображения списка моделей с поддержкой ленивой загрузки и анимаций.
  *
  * @param props - Пропсы компонента.
  * @param props.isOpened - Состояние открытия модального окна.
@@ -413,11 +415,14 @@ function ManageModels({
     <Trans>Мodels not found</Trans>
   );
 
-  const providerUrl = settings[provider]?.url;
+  const activeSettings = settings[provider];
+  const catalogKey = catalogCacheKey(activeSettings?.id, activeSettings?.url);
+  const catalogStateRef = useRef(catalogState);
+  catalogStateRef.current = catalogState;
+  const requestedKeyRef = useRef<string | null>(null);
 
   /**
-   * При открытии и при смене url из settings — свежий каталог с актуальным base URL.
-   * forceRefresh: true, чтобы не отдавать снимок от предыдущего Ollama.
+   * Сброс поиска при открытии и при смене пары provider id + url.
    */
   useEffect(() => {
     if (!isOpened) {
@@ -425,8 +430,28 @@ function ManageModels({
     }
     setSearchQueryLocal('');
     dispatch(setSearchQuery(''));
+  }, [dispatch, isOpened, catalogKey]);
+
+  /**
+   * Тяжёлый refresh — только если снимка нет или его ключ не совпадает
+   * с текущими provider id и url. Тот же ключ отдаёт кэш.
+   * install/remove сами диспатчат forceRefresh после мутации.
+   * Снимок читается из ref, чтобы приход каталога не запускал второй запрос.
+   */
+  useEffect(() => {
+    if (!isOpened) {
+      requestedKeyRef.current = null;
+      return;
+    }
+    const snapshot = catalogStateRef.current;
+    const cacheHit =
+      snapshot.catalog != null && snapshot.sourceKey === catalogKey;
+    if (cacheHit || requestedKeyRef.current === catalogKey) {
+      return;
+    }
+    requestedKeyRef.current = catalogKey;
     dispatch(fetchCatalog({ forceRefresh: true }));
-  }, [dispatch, isOpened, providerUrl]);
+  }, [dispatch, isOpened, catalogKey]);
 
   // TODO(rag): restore embedding-models UI (mode='rag' / target: 'rag') when rust-core RAG lands
   if (isEmbeddingMode) {

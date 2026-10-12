@@ -10,6 +10,8 @@ import type { ChatMessage } from '../../../shared/apis/chat-ipc/types/chat-ipc';
  * Пропсы компонента ChatMessages.
  */
 export interface ChatMessagesProps {
+  /** Идентификатор открытого чата. Смена id заново ставит вид к последнему сообщению. */
+  chatId: string;
   /** Массив сообщений чата */
   messages: ChatMessage[];
   /** Флаг генерации ответа */

@@ -108,13 +108,14 @@ export function LazyListItem({
   useEffect(() => {
     if (hasBeenVisible && onVisible) {
       // Создание фиктивного entry для совместимости с API
+      const emptyRect = new DOMRect();
       const mockEntry = {
         target: ref.current!,
         isIntersecting: true,
         intersectionRatio: threshold,
-        boundingClientRect: ref.current!.getBoundingClientRect(),
+        boundingClientRect: emptyRect,
         rootBounds: null,
-        intersectionRect: ref.current!.getBoundingClientRect(),
+        intersectionRect: emptyRect,
         time: Date.now(),
       } as IntersectionObserverEntry;
 

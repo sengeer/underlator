@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 // TODO(rag): restore ragIpc.deleteDocumentCollection when rust-core RAG lands
 // import { ragIpc } from '../../../shared/apis/rag-ipc/';
 import AddIcon from '../../../shared/assets/icons/add-icon';
+import useProgressiveReveal from '../../../shared/lib/hooks/use-progressive-reveal';
 import callANotificationWithALog from '../../../shared/lib/utils/call-a-notification-with-a-log/call-a-notification-with-a-log';
 import splitByWordCount from '../../../shared/lib/utils/split-by-word-count';
 import splittingContentOfModel from '../../../shared/lib/utils/splitting-content-of-model';
@@ -20,6 +21,8 @@ import SelectorOption from '../../../shared/ui/selector-option';
 import TextButton from '../../../shared/ui/text-button/text-button';
 import type { ChatSidebarProps, ChatSidebarState } from '../types/chat-sidebar';
 import '../styles/chat-sidebar.scss';
+
+const CHAT_ROW_CHUNK = 20;
 
 function ChatSidebar({
   chats,
@@ -175,6 +178,15 @@ function ChatSidebar({
     }));
   }, [chats, state.searchQuery]);
 
+  const { prefix: visibleChats } = useProgressiveReveal({
+    items: state.filteredChats,
+    open: true,
+    chunkSize: CHAT_ROW_CHUNK,
+    initialCount: CHAT_ROW_CHUNK,
+    defer: 'frame',
+    getItemKey: (chat) => chat.id,
+  });
+
   return (
     <div className='chat-sidebar'>
       <Search
@@ -189,7 +201,7 @@ function ChatSidebar({
       <div className='chat-sidebar__chats-list'>
         {renderEmptyState()}
 
-        {state.filteredChats.map((chat) => (
+        {visibleChats.map((chat) => (
           <SelectorOption
             type='bar'
             key={chat.id}

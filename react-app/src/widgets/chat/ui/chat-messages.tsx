@@ -42,30 +42,23 @@ function ChatMessages({
 
   /**
    * Проверяет, нужно ли показывать кнопку прокрутки вниз.
-   * Кнопка скрывается, если:
-   * - Нет скроллбара (контент не переполняет контейнер)
-   * - Пользователь уже внизу списка сообщений
-   * - Идет генерация ответа (происходит автоматическая прокрутка)
+   * Кнопка скрывается только если нет скроллбара или пользователь уже внизу.
+   * Во время генерации тоже показывается: пользователь мог уйти вверх и хочет вернуться к ответу.
    */
   const checkScrollToBottomVisibility = useCallback(() => {
-    if (!messagesContainerRef.current || isGenerating) {
+    const container = messagesContainerRef.current;
+    if (!container) {
       setShowScrollToBottom(false);
       return;
     }
 
-    const container = messagesContainerRef.current;
     const { scrollTop, scrollHeight, clientHeight } = container;
-    const threshold = 50; // Порог в пикселях для определения "внизу"
-
-    // Проверяет, есть ли скроллбар
+    const threshold = 50;
     const hasScrollbar = scrollHeight > clientHeight;
-
-    // Проверяет, находится ли пользователь внизу
     const isAtBottom = scrollTop + clientHeight >= scrollHeight - threshold;
 
-    // Показывает кнопку только если есть скроллбар и пользователь не внизу
     setShowScrollToBottom(hasScrollbar && !isAtBottom);
-  }, [isGenerating]);
+  }, []);
 
   /**
    * Обрабатывает событие скролла контейнера сообщений.
@@ -162,11 +155,8 @@ function ChatMessages({
 
   /**
    * Рендерит кнопку прокрутки к низу.
-   * Кнопка отображается только если:
-   * - Есть сообщения
-   * - Есть скроллбар (контент переполняет контейнер)
-   * - Пользователь не находится внизу списка
-   * - Не идет генерация ответа
+   * Кнопка отображается при наличии сообщений и скроллбара, если низ не виден,
+   * в том числе во время генерации.
    */
   function renderScrollToBottomButton() {
     if (messages.length === 0 || !showScrollToBottom) return null;

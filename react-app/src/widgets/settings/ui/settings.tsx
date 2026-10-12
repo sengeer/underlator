@@ -211,6 +211,17 @@ function Settings() {
   const isOpenManageModelsPopup = useSelector((state) =>
     isElementOpen(state, 'manageModelsPopup')
   );
+
+  /**
+   * Скрытие секции settings снимает effects (Activity → hidden).
+   * Cleanup закрывает manage-models, чтобы persist флага не поднял список
+   * при следующем открытии settings.
+   */
+  useEffect(() => {
+    return () => {
+      dispatch(closeElement('manageModelsPopup'));
+    };
+  }, [dispatch]);
   // TODO(rag): restore manageEmbeddingModelsPopup selector when rust-core RAG lands
   // const isOpenManageEmbeddingModelsPopup = useSelector((state) =>
   //   isElementOpen(state, 'manageEmbeddingModelsPopup')
@@ -584,11 +595,13 @@ function Settings() {
         ))}
       </Popup>
 
-      <ManageModels
-        mode='provider'
-        isOpened={isOpenManageModelsPopup}
-        onClose={() => dispatch(closeElement('manageModelsPopup'))}
-      />
+      {isOpenManageModelsPopup && (
+        <ManageModels
+          mode='provider'
+          isOpened={isOpenManageModelsPopup}
+          onClose={() => dispatch(closeElement('manageModelsPopup'))}
+        />
+      )}
       {/* TODO(rag): restore ManageModels mode='rag' / manageEmbeddingModelsPopup when rust-core RAG lands
       <ManageModels
         mode='rag'

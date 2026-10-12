@@ -39,6 +39,15 @@
     overflow: hidden;
   }
 
+  &__messages-loader {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   &__main {
     display: flex;
     flex: 1;

@@ -241,6 +241,11 @@ export interface CatalogState {
   lastUpdated: number | null;
   /** Принудительное обновление */
   forceRefresh: boolean;
+  /**
+   * Ключ снимка: provider id + url.
+   * null, пока годного снимка для пары нет.
+   */
+  sourceKey: string | null;
 }
 
 /**

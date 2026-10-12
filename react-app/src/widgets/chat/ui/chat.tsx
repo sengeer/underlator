@@ -33,6 +33,7 @@ import { addNotification } from '../../../shared/models/notifications-slice';
 import { selectProviderSettings } from '../../../shared/models/provider-settings-slice';
 import Gradient from '../../../shared/ui/gradient';
 import IconButton from '../../../shared/ui/icon-button';
+import Loader from '../../../shared/ui/loader';
 import TextAndIconButton from '../../../shared/ui/text-and-icon-button';
 import TextButton from '../../../shared/ui/text-button';
 import TextFilled from '../../../shared/ui/text-button-filled';
@@ -327,7 +328,7 @@ function Chat() {
    * Рендерит пустое состояние.
    */
   function renderEmptyState() {
-    if (activeChat.chat || chatsList.loading) return null;
+    if (activeChat.chat || chatsList.loading || activeChat.loading) return null;
 
     return (
       <div className='empty-state'>
@@ -397,8 +398,16 @@ function Chat() {
           />
           {renderEmptyState()}
 
+          {activeChat.loading && !activeChat.chat && (
+            <div className='chat__messages-loader'>
+              <Loader />
+            </div>
+          )}
+
           {activeChat.chat && (
             <ChatMessages
+              key={activeChat.chat.id}
+              chatId={activeChat.chat.id}
               messages={activeChat.chat.messages}
               isGenerating={generation.isGenerating}
               currentText={generation.currentText}
